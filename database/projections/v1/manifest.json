@@ -1,0 +1,19 @@
+{
+  "projections_version": "schoolsafe-projections-v1",
+  "requires_baseline": "schoolsafe-vps-v1",
+  "target": "one SchoolSafe database per environment (TEST/PROD); filtered reads only via api.*",
+  "units": [
+    {
+      "order": 1,
+      "name": "student_read",
+      "file": "01_student_read.sql",
+      "sha256": "56af4a67429b647470bf29897308dd04890454509fccf652cee288451dec5237"
+    },
+    {
+      "order": 2,
+      "name": "session_bootstrap",
+      "file": "02_session_bootstrap.sql",
+      "sha256": "d59d9684276b662273f443d36831ababf547437ec89ca853ca64ba88427b94c7"
+    }
+  ]
+}
