@@ -1,1 +1,1 @@
-# schoolsafev2-fin
+# schoolsafe-v
