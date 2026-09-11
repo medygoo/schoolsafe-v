@@ -6,9 +6,10 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Dépendances (cache efficace)
+# Dépendances (cache efficace) — --include=dev : le stage builder a besoin de
+# TypeScript (tsc) même si NODE_ENV=production est injecté au build par Coolify.
 COPY server/package.json server/package-lock.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 # Sources TypeScript
 COPY server/tsconfig.json ./
