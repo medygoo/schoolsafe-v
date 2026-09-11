@@ -36,9 +36,6 @@ COPY app/ /app/dist/public/
 # Migrations SQL (déployées manuellement ou via init)
 COPY database/ /app/database/
 
-# Copie du point d'entrée
-COPY server/src/index.ts /app/dist/src/index.js
-
 EXPOSE 8787
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
