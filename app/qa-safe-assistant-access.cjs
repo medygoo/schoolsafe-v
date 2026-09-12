@@ -38,13 +38,18 @@ function loadAccess(context) {
 function makeDom() {
   const appended = [];
   const container = {
-    innerHTML: "", hidden: false,
-    setAttribute() {}, querySelector() { return null; }, querySelectorAll() { return []; },
+    innerHTML: "", hidden: false, dataset: {}, style: {},
+    classList: { add() {}, remove() {}, toggle() {} },
+    setAttribute() {}, remove() {}, querySelector() { return null; }, querySelectorAll() { return []; },
   };
   const document = {
     readyState: "complete",
-    body: { classList: { contains: () => false }, appendChild(el) { appended.push(el); } },
+    body: { classList: { contains: (name) => name === "screen-workspace" }, appendChild(el) { appended.push(el); } },
     createElement() { return container; },
+    getElementById() { return null; },
+    querySelector() { return null; },
+    querySelectorAll() { return []; },
+    addEventListener() {},
   };
   return { appended, container, document };
 }
@@ -55,7 +60,12 @@ function loadAssistant(options) {
   const sandbox = {
     document: dom.document,
     localStorage: { getItem() { return stored; }, setItem() {} },
+    sessionStorage: { getItem() { return stored; }, setItem() {} },
     addEventListener() {},
+    setTimeout() { return 1; },
+    clearTimeout() {},
+    innerWidth: 1440,
+    innerHeight: 900,
     currentSession: options.liveSession || null,
     console,
   };
@@ -72,6 +82,8 @@ function loadAssistant(options) {
   const { dom } = loadAssistant({});
   assert.strictEqual(dom.appended.length, 1, "démo : Jaspe doit s’initialiser");
   assert.ok(dom.container.innerHTML.includes("safe-avatar"), "démo : avatar rendu");
+  assert.ok(dom.container.innerHTML.includes("safe-avatar-stage"), "démo : la scène de l’avatar doit rester explicitement 2D");
+  assert.ok(!dom.container.innerHTML.includes(["safe", "3d", "stage"].join("-")), "démo : aucun conteneur 3D ne doit être rendu");
 }
 
 // Session réelle sans safe.assistant.use : pas d’initialisation (même admin).

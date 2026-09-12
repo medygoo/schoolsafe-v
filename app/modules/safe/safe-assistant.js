@@ -183,7 +183,7 @@
       container = null;
     }
     if (destroyRuntime) {
-      // JASPE 2.5D : pas de runtime 3D à détruire
+      // JASPE 2.5D ne conserve aucun runtime visuel après démontage.
     }
   }
 
@@ -457,7 +457,7 @@
     }
     if (!state.userHidden) {
       html += '<div class="safe-avatar' + (state.minimized ? " safe-minimized" : "") + '" role="button" tabindex="0" aria-label="' + (state.open ? "Fermer Jaspe" : "Ouvrir Jaspe") + '" aria-expanded="' + (state.open ? "true" : "false") + '" aria-controls="safeJaspeBubble">';
-      html += '<div class="safe-3d-stage" aria-hidden="true"></div>';
+      html += '<div class="safe-avatar-stage" aria-hidden="true"></div>';
       html += '</div>';
     }
     if (currentSurface === "workspace") {
@@ -478,12 +478,12 @@
   }
 
   function mountJaspe2D() {
-    var stage = container && container.querySelector(".safe-3d-stage");
+    var stage = container && container.querySelector(".safe-avatar-stage");
     if (!stage) return;
     stage.classList.remove("is-loading");
     stage.classList.add("is-ready");
-    stage.innerHTML = '<span class="safe-3d-fallback-label">Jaspe</span>';
-    if (container) container.classList.remove("has-3d-fallback");
+    stage.innerHTML = '<span class="safe-avatar-fallback-label">Jaspe</span>';
+    if (container) container.classList.remove("has-avatar-fallback");
     if (currentSurface === "auth") startAuthGreeting();
     else playVisual(state.animation, { once: state.animation !== "Idle" && state.animation !== "Listening" });
   }

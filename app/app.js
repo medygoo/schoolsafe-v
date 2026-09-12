@@ -3085,8 +3085,6 @@
   function closeWorkspaceMenu() {
     var sidebar = document.getElementById("workspaceSidebar");
     if (sidebar) sidebar.classList.remove("open");
-    var cubeMenu = document.getElementById("cubeMenu");
-    if (cubeMenu) cubeMenu.setAttribute("aria-expanded", "false");
     var backdrop = document.getElementById("workspaceMenuBackdrop");
     if (backdrop) backdrop.classList.remove("visible");
   }
@@ -3397,14 +3395,6 @@
       renderPilotageTab(button.getAttribute("data-pilotage-tab"));
     });
   });
-  var cubeMenu = document.getElementById("cubeMenu");
-  if (cubeMenu) {
-    cubeMenu.addEventListener("click", function () {
-      var sidebar = document.getElementById("workspaceSidebar");
-      var isOpen = sidebar.classList.toggle("open");
-      cubeMenu.setAttribute("aria-expanded", String(isOpen));
-    });
-  }
   var closeWorkspaceMenuBtn = document.getElementById("closeWorkspaceMenu");
   if (closeWorkspaceMenuBtn) closeWorkspaceMenuBtn.addEventListener("click", closeWorkspaceMenu);
   var workspaceMenuBackdrop = document.getElementById("workspaceMenuBackdrop");
