@@ -1,7 +1,7 @@
 # Contrôleur physique JASPE 2,5D — Spécification d'architecture
 
 Date : 13 septembre 2026
-Statut : conception validée en conversation, en attente de revue du document
+Statut : approuvée par le propriétaire le 13 septembre 2026
 Décision : approche 1, contrôleur unique progressif
 
 ## 1. Capacité livrée

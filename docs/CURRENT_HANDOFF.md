@@ -79,10 +79,10 @@ Le contrôleur traduit chaque intention en action v12 autorisée, intensité, ex
 
 ## Prochaine action exacte
 
-1. Faire relire et valider par le propriétaire la spécification `docs/superpowers/specs/2026-09-13-jaspe-physical-controller-design.md`.
-2. Après cette validation, écrire le plan d'implémentation détaillé du premier lot.
-3. Implémenter ensuite le contrôleur et ses tests essentiels conformément au plan validé.
-4. Ne pas inclure la voix, les lèvres, le déploiement VPS ni le durcissement du Worker dans ce premier lot physique.
+1. Choisir le mode d'exécution du plan `docs/superpowers/plans/2026-09-13-jaspe-physical-controller.md`.
+2. Exécuter les quatre tâches du plan avec un contrôle après chaque commit.
+3. Ne pas inclure la voix, les lèvres, GLM, l'assistant du tableau de bord, le déploiement VPS ni le durcissement du Worker dans ce premier lot physique.
+4. Mettre à jour ce handoff avec les preuves réelles, puis vérifier le miroir GitHub/local.
 
 ## Procédure de reprise depuis l'autre compte
 
