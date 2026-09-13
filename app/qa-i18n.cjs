@@ -40,7 +40,6 @@ async function domClick(page, selector) {
 
   await page.goto(baseUrl + "?i18n=1", { waitUntil: "networkidle", timeout: 30000 });
   await domClick(page, "#enterSplash");
-  await domClick(page, "#continueGuardian");
   await domClick(page, '.auth-topbar [data-language="en"]');
   await page.waitForTimeout(100);
   check(await page.getByText("Welcome to your secure workspace.", { exact: true }).count(), "La connexion ne passe pas en anglais");
@@ -67,7 +66,6 @@ async function domClick(page, selector) {
   check(await page.getByText("Tap to continue", { exact: true }).count(), "La préférence anglaise ne persiste pas");
 
   await domClick(page, "#enterSplash");
-  await domClick(page, "#continueGuardian");
   await page.locator("#demoRole").selectOption("teacher");
   await domClick(page, "#previewWorkspace");
   await page.setViewportSize({ width: 390, height: 844 });

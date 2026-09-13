@@ -46,7 +46,7 @@ svg { width: 18px; height: 18px; stroke-width: 2; }
 .screen.active { opacity: 1; pointer-events: auto; visibility: visible; }
 .brand-shield { display: block; object-fit: contain; }
 .wordmark { display: flex; align-items: baseline; justify-content: center; color: #fff; font-size: 44px; font-weight: 760; line-height: 1; }
-.wordmark strong, .overlay-brand strong, .brand-button strong, .setup-brand strong { color: var(--gold-500); }
+.wordmark strong, .brand-button strong, .setup-brand strong { color: var(--gold-500); }
 .eyebrow {
   display: inline-flex;
   align-items: center;
@@ -227,77 +227,6 @@ svg { width: 18px; height: 18px; stroke-width: 2; }
 .splash-country i:last-child { background: linear-gradient(90deg, rgba(255, 255, 255, .45), transparent); }
 .splash-country svg { width: 15px; height: 15px; color: rgba(255, 255, 255, .5); }
 
-/* Portraits patrimoniaux - aucune video */
-.guardian { overflow: hidden; background: var(--navy-950); color: #fff; }
-.children-line {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 3px;
-  background: var(--navy-950);
-}
-.children-line figure {
-  position: relative;
-  min-width: 0;
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: #0b2857;
-}
-.children-line img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: var(--face-desktop-x,50%) var(--face-desktop-y,25%);
-  transform-origin: var(--face-desktop-x,50%) var(--face-desktop-y,25%);
-  transform: scale(1.005);
-  image-rendering: auto;
-  backface-visibility: hidden;
-  will-change: transform;
-  transition: opacity .45s ease,filter .45s ease;
-  animation: portraitMove 10s ease-in-out infinite alternate;
-}
-.children-line figure.switching img { opacity: .22; filter: saturate(.7); }
-.children-line figure:nth-child(2) img { animation-delay: -3s; }
-.children-line figure:nth-child(3) img { animation-delay: -6s; }
-.children-line figure:nth-child(4) img { animation-delay: -9s; }
-.guardian::after {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(4,17,42,.86) 0%, rgba(4,17,42,.48) 42%, rgba(4,17,42,.08) 72%),
-              linear-gradient(0deg, rgba(4,17,42,.58), transparent 48%);
-}
-.overlay-brand {
-  position: absolute;
-  z-index: 3;
-  top: max(22px, env(safe-area-inset-top));
-  left: 32px;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  font-size: 24px;
-  font-weight: 780;
-}
-.gallery-source { position: absolute; z-index: 3; top: max(84px,calc(env(safe-area-inset-top) + 62px)); left: 32px; display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,.62); font-size: 12px; font-weight: 750; }
-.gallery-source svg { width: 13px; height: 13px; }
-.overlay-brand img { width: 46px; height: 46px; object-fit: contain; }
-.guardian-copy {
-  position: absolute;
-  z-index: 3;
-  left: clamp(28px, 7vw, 110px);
-  bottom: clamp(44px, 12vh, 130px);
-  width: min(620px, calc(100% - 56px));
-}
-.guardian-copy h1 {
-  margin: 18px 0 28px;
-  max-width: 620px;
-  font-size: 48px;
-  line-height: 1.08;
-  letter-spacing: 0;
-}
 .primary-button, .secondary-button, .login-button {
   min-height: 46px;
   border-radius: 6px;
@@ -396,13 +325,6 @@ html[lang="en"] .translation-fallback[data-source-language="en"] { display: none
   .splash-description { max-width: 330px; padding: 0 10px; font-size: 14px; line-height: 1.7; }
   .splash-tap { min-height: 54px; padding: 0 34px; font-size: 16px; }
   .splash-country { margin-top: 28px; }
-  .guardian-copy { left: 22px; width: calc(100% - 44px); bottom: 45px; }
-  .guardian-copy h1 { font-size: 34px; }
-  .overlay-brand { left: 20px; }
-  .children-line { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .children-line figure:nth-child(4) { display: none; }
-  .children-line img { object-position: var(--face-mobile-x,50%) var(--face-mobile-y,22%); transform-origin: var(--face-mobile-x,50%) var(--face-mobile-y,22%); }
-  .gallery-source { top: max(76px,calc(env(safe-area-inset-top) + 56px)); left: 20px; }
 }
 
 /* En paysage ou avec une faible hauteur, tout le contenu reste accessible

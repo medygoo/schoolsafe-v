@@ -146,7 +146,7 @@
   }
 
   function detectSurface() {
-    var names = ["splash", "guardian", "auth", "setup", "workspace"];
+    var names = ["splash", "auth", "setup", "workspace"];
     for (var index = 0; index < names.length; index += 1) {
       var name = names[index];
       if (document.body.classList.contains("screen-" + name)) return name;

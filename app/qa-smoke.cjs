@@ -65,9 +65,7 @@ async function downloadFrom(page, selector, filename) {
   check((await page.locator("#particles .particle").count()) >= 12, "Les particules animées ne sont pas créées");
 
   await domClick(page, "#enterSplash");
-  check(await page.locator("#guardian.active").count(), "La galerie d'élèves ne s'ouvre pas");
-  await domClick(page, "#continueGuardian");
-  check(await page.locator("#auth.active").count(), "L'écran de connexion ne s'ouvre pas");
+  check(await page.locator("#auth.active").count(), "L'écran de connexion ne s'ouvre pas directement");
   await page.locator("#demoRole").selectOption("admin");
   await domClick(page, "#previewWorkspace");
   check(await page.locator("#workspace.active").count(), "Le tableau de bord ne s'ouvre pas");
@@ -209,8 +207,8 @@ async function downloadFrom(page, selector, filename) {
   await domClick(page, "#backToSplash");
   await domClick(page, "#enterSplash");
   await page.waitForTimeout(3500);
-  await page.screenshot({ path: path.join(outputDir, "galerie-mobile.png"), fullPage: true });
-  check(await page.locator("#guardian.active").count(), "La galerie mobile n'est pas active");
+  await page.screenshot({ path: path.join(outputDir, "connexion-mobile.png"), fullPage: true });
+  check(await page.locator("#auth.active").count(), "La connexion mobile ne s'ouvre pas directement");
 
   check(errors.length === 0, `Erreurs navigateur: ${errors.join(" | ")}`);
   await browser.close();

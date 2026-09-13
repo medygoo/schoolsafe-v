@@ -4,89 +4,66 @@ Dernière mise à jour : 13 septembre 2026.
 
 ## Objectif actif
 
-Préparer l'amélioration du physique de JASPE 2,5D : expressions faciales, regard, tête, respiration, postures et gestes du corps. La voix et la synchronisation des lèvres sont hors périmètre de ce lot.
+Clôturer le premier lot physique JASPE 2,5D sur la connexion et supprimer définitivement l'ancien écran visuel `guardian`. La voix, GLM, la synchronisation labiale, le raccordement JASPE au tableau de bord et le VPS restent hors de ce lot.
 
-## État du dépôt au début de ce handoff
+## Source de vérité
 
 - Dépôt : `https://github.com/medygoo/schoolsafe-v`
 - Branche : `main`
-- Commit de référence avant la mise en place de la mémoire : `43982cb`
-- Le dépôt était propre avant la création de ces documents.
-- Le commit `43982cb` retire les dernières traces 3D identifiées.
-
-Toujours vérifier le commit réel avec Git avant de reprendre : ce document ne remplace pas l'historique Git.
+- Toujours vérifier le commit réel et `git status` avant de reprendre.
+- Le serveur local correct sert le dépôt courant sur `http://127.0.0.1:4176/`.
+- Le port `4175` sert une ancienne copie distincte et ne doit pas servir à valider le dépôt courant.
 
 ## Dernier lot terminé
 
-Mise en place de la continuité entre comptes ChatGPT/Codex :
+### Contrôleur physique JASPE
 
-- création de `AGENTS.md` pour imposer la procédure de reprise et de synchronisation ;
-- création de `docs/PROJECT_CONTEXT.md` pour les invariants produit et techniques ;
-- création de `docs/DECISIONS.md` pour les décisions humaines validées ;
-- création de ce handoff courant pour transmettre l'état, les preuves et la prochaine action.
+- ajout de neuf intentions fermées : `idle`, `listen`, `think`, `speak`, `explain`, `reassure`, `refuse`, `success`, `error` ;
+- traduction déterministe vers le moteur v12 et le repli WebP ;
+- arbitrage par priorité, minuterie, arrêt et destruction ;
+- cycle de vie v12 indépendant de `.auth-screen` ;
+- nettoyage des écouteurs et de la boucle d'animation à la destruction ;
+- raccordement de la connexion par intentions au lieu des références directes de packs ;
+- correction du conflit qui annulait `listen` pendant la saisie ;
+- ajout du repli `SPEAKING` et contournement ciblé de l'ancien cache des scripts.
 
-Vérifications de ce lot :
+### Suppression de l'ancien écran `guardian`
 
-- contrôle de format Git sans erreur ;
-- recherche ciblée de formes de secrets sans résultat ;
-- aucune modification du code applicatif, du serveur, des données ou des ressources JASPE.
+- le splash ouvre directement la connexion ;
+- suppression des styles `.guardian`, `.guardian-copy`, `.children-line`, `.overlay-brand` et `.gallery-source` ;
+- retrait de `guardian` de la détection de surface de l'ancien assistant ;
+- correction des scénarios QA qui attendaient encore la galerie intermédiaire ;
+- conservation explicite des permissions et données métier `school.guardian` relatives aux tuteurs d'élèves.
 
-## Audit JASPE déjà effectué
+## Vérifications exécutées
 
-### Éléments solides
+- `npm run test:jaspe-physical` : 5 tests réussis, 0 échec ; contrat physique v12/façade affiché `PASS`.
+- `node app/qa-safe-assistant-access.cjs` : `FE-SEC-A3A4 access law + safe assistant gate: PASS`.
+- `npm run test:no-guardian-screen` : `Legacy guardian screen removal: PASS`.
+- contrôles de syntaxe Node des scripts modifiés : code 0.
+- navigateur sur `4176` : bouton `Commencer` vers `#auth.active`, formulaire visible et aucun élément `#guardian`.
+- navigateur sur `4176` : JASPE v12 visible ; `listen` observé en `attentive`, `explain` en `guide` et la soumission en `deepThink`.
 
-- Le moteur v12 possède une machine de transitions, des poses, des intensités, des clignements, un regard, une respiration et des gestes déterministes.
-- Les poses sont chargées à la demande et leur empreinte SHA-256 est vérifiée.
-- L'animation est limitée à 24 images par seconde, suspendue lorsque l'écran n'est pas visible et adaptée à `prefers-reduced-motion`.
-- Le moteur léger fournit un rendu WebP de secours et des états `IDLE`, `LISTENING`, `THINKING`, `SPEAKING`, `ERROR` et `OFFLINE`.
-- Le routeur JASPE applique une gouvernance par permissions et portées, avec refus par défaut.
-- Le serveur protège `/native/jaspe/chat` par session lorsque l'authentification est branchée et applique une limite de requêtes.
+## Limites vérifiées honnêtement
 
-### Défauts confirmés à ne pas ignorer
+- La priorité `error/refuse` et le repli lors d'un refus du moteur sont couverts par les tests automatisés.
+- L'émulation navigateur de `prefers-reduced-motion` et le blocage réseau du manifeste v12 n'ont pas été rejoués manuellement avec l'outil de navigateur disponible.
+- L'assistant flottant de l'espace de travail n'est toujours pas activé.
+- La voix, GLM et la synchronisation labiale ne sont pas implémentés dans ce lot.
 
-1. `app/app.js` monte JASPE sur la connexion en mode explicitement visuel uniquement.
-2. `app/modules/safe/safe-assistant.js` conserve des noms d'animations historiques (`TalkHandsOpen`, `Agree`, `Shrug`, etc.) qui ne correspondent pas directement aux actions v12.
-3. La fonction `playVisual()` de cet assistant ne commande actuellement aucun moteur.
-4. L'assistant et sa feuille de style ne sont pas chargés par `app/index.html` dans l'état audité.
-5. Aucun écran actif n'appelle `SchoolSafeJaspe2d.chat()`.
-6. Le client léger cherche `reply` directement, alors que le serveur renvoie `{ data: { reply } }`.
-7. `live-companion.js` suppose une surface `.auth-screen` et ne peut pas être réutilisé tel quel dans l'espace de travail.
-8. Aucun moteur vocal, flux audio, système de phonèmes ou synchronisation labiale n'est présent.
-9. Les ressources JASPE totalisent environ 63,8 Mo ; v12 représente environ 42,8 Mo et doit rester chargé progressivement.
-10. Le moteur doit obtenir un cycle explicite `mount/play/stop/destroy` avant des montages multiples.
-11. Le Worker Cloudflare autorise actuellement une origine générique et n'utilise pas encore les variables prévues pour l'identité de l'instance et les origines autorisées. Traiter ce point dans un lot de sécurité distinct.
+## Direction visuelle proposée, non encore verrouillée
 
-## Vérifications déjà exécutées
-
-- `node app/qa-safe-assistant-access.cjs` : **PASS**.
-- Les tests serveur JASPE n'ont pas été exécutés pendant l'audit, car `vitest` n'était pas installé dans l'environnement local. Ne pas les considérer comme validés.
-
-## Architecture recommandée pour le prochain lot
-
-Créer un contrôleur de présentation unique avec une liste fermée d'intentions :
-
-- `idle`
-- `listen`
-- `think`
-- `speak`
-- `explain`
-- `reassure`
-- `refuse`
-- `success`
-- `error`
-
-Le contrôleur traduit chaque intention en action v12 autorisée, intensité, expression et priorité. Le moteur v12 est l'adaptateur principal ; les images WebP restent le repli. Aucun modèle IA ne fournit un nom d'animation libre.
+Le propriétaire a fourni deux références. La recommandation est d'adopter la deuxième direction visuelle SchoolSafe, sans React ni Ant Design, car elle s'intègre à l'architecture HTML/CSS/JavaScript existante. Cette direction doit encore être confirmée explicitement avant d'être ajoutée au plan d'implémentation.
 
 ## Prochaine action exacte
 
-1. Choisir le mode d'exécution du plan `docs/superpowers/plans/2026-09-13-jaspe-physical-controller.md`.
-2. Exécuter les quatre tâches du plan avec un contrôle après chaque commit.
-3. Ne pas inclure la voix, les lèvres, GLM, l'assistant du tableau de bord, le déploiement VPS ni le durcissement du Worker dans ce premier lot physique.
-4. Mettre à jour ce handoff avec les preuves réelles, puis vérifier le miroir GitHub/local.
+1. Obtenir la validation explicite de la direction visuelle 2, sans React ni Ant Design.
+2. Après validation, écrire une spécification séparée pour les composants, la connexion/OTP, le tableau de bord mobile et l'adaptation bureau.
+3. Préparer ensuite un plan par petits lots sans mélanger la voix, GLM, le VPS ou l'assistant de tableau de bord.
 
 ## Procédure de reprise depuis l'autre compte
 
-1. Ouvrir ou cloner ce dépôt GitHub.
+1. Ouvrir ou cloner le dépôt GitHub.
 2. Lire `AGENTS.md`, puis `docs/PROJECT_CONTEXT.md`, `docs/DECISIONS.md` et ce fichier.
 3. Vérifier `git status`, la branche active et la correspondance avec `origin/main`.
-4. Demander à l'assistant de reprendre la section « Prochaine action exacte » sans réinventer les décisions validées.
+4. Reprendre la section « Prochaine action exacte » sans réinventer les décisions validées.

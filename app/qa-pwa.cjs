@@ -68,7 +68,6 @@ async function domClick(page, selector) {
   check(onlineAssets.every((item) => item.ok), `Assets locaux indisponibles: ${onlineAssets.filter((item) => !item.ok).map((item) => item.asset).join(", ")}`);
 
   await domClick(page, "#enterSplash");
-  await domClick(page, "#continueGuardian");
   await domClick(page, "#previewWorkspace");
   check(await page.evaluate(() => Boolean(window.SchoolSafeSync && window.SchoolSafeSync.state)), "Le moteur de synchronisation est absent");
 
@@ -119,7 +118,6 @@ async function domClick(page, selector) {
 
   await page.setViewportSize({ width: 390, height: 844 });
   await domClick(page, "#enterSplash");
-  await domClick(page, "#continueGuardian");
   await domClick(page, "#previewWorkspace");
   check(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "Le panneau PWA déborde sur téléphone");
   await page.screenshot({ path: path.join(outputDir, "pwa-sync-mobile.png"), fullPage: true });

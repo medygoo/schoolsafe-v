@@ -28,7 +28,7 @@ async function domClick(page, selector) {
 async function openWorkspace(page, role) {
   await page.goto(baseUrl, { waitUntil: "networkidle", timeout: 30000 });
   await domClick(page, "#enterSplash");
-  await domClick(page, "#continueGuardian");
+  check(await page.locator("#auth.active").count(), "L'écran de connexion ne s'ouvre pas directement");
   await page.locator("#demoRole").selectOption(role);
   await domClick(page, "#previewWorkspace");
   await page.waitForFunction(() => {
