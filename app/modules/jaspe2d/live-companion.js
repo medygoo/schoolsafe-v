@@ -39,7 +39,7 @@ export async function mountLiveCompanion(box,host,{
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const planner=new IdlePlanner();
   let closed=false,closedEyes,renderer,body,last=0,lastDraw=0,frameId=0,failed=false,requestId=0,pendingAction=false;
-  let faceBlend=0,wasTyping=false,snapshot=null,dirty=true;
+  let faceBlend=0,snapshot=null,dirty=true;
   const scene=makeCanvas(),context=scene.getContext('2d');
   const faceLayer=document.createElement('canvas');faceLayer.width=208;faceLayer.height=180;
   const faceContext=faceLayer.getContext('2d');
@@ -147,9 +147,7 @@ export async function mountLiveCompanion(box,host,{
     if(now-lastDraw<interval)return;
     const dt=last?Math.min(50,now-last):interval;last=now;lastDraw=now;
     const typing=isTyping();
-    if(typing&&!wasTyping){++requestId;pendingAction=false;controller.request('idle');controller.idleBlockedUntil=Infinity;}
-    if(typing||wasTyping)planner.activity(controller.clock);
-    wasTyping=typing;
+    if(typing)planner.activity(controller.clock);
     controller.liveliness=typing?.4:1.2;
     if(!reduced.matches)controller.advance(dt);
     if(!review&&!reduced.matches&&!pendingAction) {
@@ -175,7 +173,7 @@ export async function mountLiveCompanion(box,host,{
   const activity=()=>{
     planner.activity(controller.clock);
     ++requestId;pendingAction=false;
-    if(['walk','joySway','attentive'].includes(controller.action)){controller.request('idle');controller.idleBlockedUntil=Infinity;}
+    if(['walk','joySway'].includes(controller.action)){controller.request('idle');controller.idleBlockedUntil=Infinity;}
   };
   if(!review)for(const event of ['pointerdown','keydown','input'])listen(activityTarget,event,activity,{passive:true});
   const stop=()=>{

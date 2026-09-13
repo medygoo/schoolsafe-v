@@ -288,6 +288,10 @@
             play: function (command) {
               var ref = FALLBACK_REF[command.fallback] || FALLBACK_REF.IDLE;
               var idx = sc.variants.findIndex(function (v) { return v.pack === ref.pack && v.key === ref.key; });
+              if (sc.bubble && sc.pendingBubble !== undefined) {
+                sc.bubble.textContent = sc.pendingBubble;
+                sc.bubble.classList.remove("jaspe2d__bubble--off", "switching");
+              }
               if (idx >= 0) showVariant(sc, idx, sc.pendingBubble);
               sc.pendingBubble = undefined;
               return true;
@@ -300,7 +304,7 @@
         createPrimary: function (context) {
           if (!sc.transparent || sc.photoOnly) return null;
           sc.enginePending = true;
-          return import("./live-companion.js?v=physical-controller-01").then(function (live) {
+          return import("./live-companion.js?v=physical-controller-02").then(function (live) {
             return live.mountLiveCompanion(box, el, {
               isVisible: context.isVisible,
               isTyping: function () {

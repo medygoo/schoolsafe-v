@@ -3171,6 +3171,7 @@
           // poses de réaction (hors rotation automatique)
           { pack: "pack2", key: "listening", rotate: false, bubble: "Je vous écoute…" },
           { pack: "pack2", key: "thinking", rotate: false, bubble: "Je vérifie vos identifiants…" },
+          { pack: "pack2", key: "speaking", rotate: false, bubble: "Je vous accompagne…" },
           { pack: "pack4", key: "worried", rotate: false, bubble: "Hmm… vérifiez vos identifiants et réessayez." },
           { pack: "pack3", key: "congratulate", rotate: false, bubble: "Bienvenue ! J'ouvre votre espace…" }
         ]
