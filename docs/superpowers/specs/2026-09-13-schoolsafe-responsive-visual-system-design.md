@@ -1,6 +1,6 @@
 # Système visuel responsive SchoolSafe — Spécification approuvée
 
-Date : 13 septembre 2026  
+Date : 13 septembre 2026
 Statut : approuvée par le propriétaire le 13 septembre 2026
 
 ## 1. Décision

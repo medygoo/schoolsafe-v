@@ -4,7 +4,7 @@ Dernière mise à jour : 13 septembre 2026.
 
 ## Objectif actif
 
-Clôturer le premier lot physique JASPE 2,5D sur la connexion et supprimer définitivement l'ancien écran visuel `guardian`. La voix, GLM, la synchronisation labiale, le raccordement JASPE au tableau de bord et le VPS restent hors de ce lot.
+Préparer puis exécuter par petits lots le système visuel responsive SchoolSafe validé pour la connexion, l'OTP, la navigation et le tableau de bord. La logique métier, SchoolSafe Control, la voix, GLM, la synchronisation labiale, le raccordement JASPE au tableau de bord et le VPS restent hors de ce chantier visuel.
 
 ## Source de vérité
 
@@ -51,15 +51,19 @@ Clôturer le premier lot physique JASPE 2,5D sur la connexion et supprimer défi
 - L'assistant flottant de l'espace de travail n'est toujours pas activé.
 - La voix, GLM et la synchronisation labiale ne sont pas implémentés dans ce lot.
 
-## Direction visuelle proposée, non encore verrouillée
+## Direction visuelle verrouillée
 
-Le propriétaire a fourni deux références. La recommandation est d'adopter la deuxième direction visuelle SchoolSafe, sans React ni Ant Design, car elle s'intègre à l'architecture HTML/CSS/JavaScript existante. Cette direction doit encore être confirmée explicitement avant d'être ajoutée au plan d'implémentation.
+Le propriétaire a validé le 13 septembre 2026 les références SchoolSafe mobile et bureau avec les corrections proposées : moins de verre, de lueurs et d'ombres, meilleure lisibilité, accessibilité et performance. L'implémentation reste en HTML/CSS/JavaScript, utilise `app/schoolsafe-logo.png`, conserve JASPE 2D/2,5D et n'introduit ni React, ni Ant Design, ni 3D.
+
+Spécification : `docs/superpowers/specs/2026-09-13-schoolsafe-responsive-visual-system-design.md`.
+
+Plan : `docs/superpowers/plans/2026-09-13-schoolsafe-responsive-visual-system.md`.
 
 ## Prochaine action exacte
 
-1. Obtenir la validation explicite de la direction visuelle 2, sans React ni Ant Design.
-2. Après validation, écrire une spécification séparée pour les composants, la connexion/OTP, le tableau de bord mobile et l'adaptation bureau.
-3. Préparer ensuite un plan par petits lots sans mélanger la voix, GLM, le VPS ou l'assistant de tableau de bord.
+1. Exécuter le lot 1 du plan visuel : contrat QA, consolidation des tokens et réduction des effets globaux excessifs.
+2. Valider ce socle aux trois largeurs de référence avant de modifier la connexion/OTP.
+3. Continuer ensuite lot par lot sans mélanger la voix, GLM, le VPS ni l'assistant de tableau de bord.
 
 ## Procédure de reprise depuis l'autre compte
 
