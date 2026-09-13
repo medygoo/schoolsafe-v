@@ -32,6 +32,7 @@ SchoolSafe est prêt pour production lorsque les parcours réels d'une école fo
 
 ```text
 0 Baseline
+  -> 0A Réparations baseline
   -> 1 Fondations visuelles
   -> 2 Connexion / OTP
   -> 3 Shell / dashboards
@@ -68,6 +69,40 @@ Les lots 5 à 9 peuvent être préparés séparément, mais leur intégration su
 - [ ] Committer avec `git commit -m "docs(baseline): record production readiness gaps"` puis pousser et vérifier le miroir.
 
 **Gate:** inventaire complet, aucun changement métier, état Git propre et causes des échecs connues.
+
+---
+
+### Lot 0A: Réparer la baseline avant le design
+
+**Files:**
+- Create: `shared/permissions.json`
+- Create: `scripts/check-migration-versions.mjs`
+- Create: `.gitattributes` only if LF normalization is required after the cross-platform test
+- Modify: `database/**/scripts/generate-manifest.mjs`
+- Modify: `server/src/native-app.ts`
+- Modify: `server/tests/native-app.test.ts`
+- Modify: `server/tests/permission-catalog.test.ts`
+- Modify: `server/src/school/routes.ts`
+- Modify: `server/tests/school.test.ts`
+- Modify: `server/package.json`
+- Modify: `package-lock.json`
+- Modify: `server/package-lock.json`
+- Test: `database/baseline/v1/tests/static-contract.test.mjs`
+
+**Produces:** suite serveur et contrats statiques exécutables, manifestes identiques sur Windows/Linux et dépendances critiques corrigées sans changement fonctionnel caché.
+
+- [ ] Écrire ou restaurer `shared/permissions.json` à partir des 60 permissions canoniques vérifiées par `12_seed_permissions.sql`, avec `code`, `label` et l'une des sept portées autorisées.
+- [ ] Faire passer `server/tests/permission-catalog.test.ts` et le test baseline « canonical 60 permissions » sans modifier le seed pour masquer un écart.
+- [ ] Écrire `scripts/check-migration-versions.mjs` comme contrôle en lecture seule des ordres, versions requises et SHA-256 ; la commande ne doit réécrire aucun manifeste.
+- [ ] Normaliser explicitement les octets SQL en LF dans les générateurs ou imposer LF aux SQL avec `.gitattributes`, puis prouver que les six ensembles conservent des hashes identiques après régénération.
+- [ ] Décider dans le code natif que `/config.setup_available` dépend de la présence réelle du token setup et supprimer l'enregistrement des deux anciennes routes `/session/bootstrap` et `/auth/lookup-phone` dans l'application VPS native.
+- [ ] Faire écrire les tests d'upload dans un répertoire temporaire créé par le test et supprimé dans `finally`.
+- [ ] Mettre Fastify à une version `>=5.12.4` compatible, mettre à jour la résolution `fast-uri`, puis exécuter l'audit ; ne pas appliquer `npm audit fix --force`.
+- [ ] Évaluer Vitest 5 par installation verrouillée et suite complète ; conserver la version actuelle seulement si la migration casse le harnais, en documentant le risque de développement sans l'exposer en production.
+- [ ] Exécuter `npm run check:migration-versions`, `npm run typecheck`, `npm test`, les six tests statiques SQL, `npm run test:jaspe-physical` et `npm run test:no-guardian-screen`.
+- [ ] Committer avec `git commit -m "fix(baseline): restore reproducible critical contracts"` puis pousser et vérifier le miroir.
+
+**Gate:** aucun test serveur en échec, catalogue de permissions présent, manifestes reproductibles, aucun upload de test résiduel et vulnérabilité élevée supprimée.
 
 ---
 

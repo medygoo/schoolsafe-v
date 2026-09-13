@@ -4,7 +4,7 @@ Dernière mise à jour : 13 septembre 2026.
 
 ## Objectif actif
 
-Préparer puis exécuter par petits lots le système visuel responsive SchoolSafe validé pour la connexion, l'OTP, la navigation et le tableau de bord. La logique métier, SchoolSafe Control, la voix, GLM, la synchronisation labiale, le raccordement JASPE au tableau de bord et le VPS restent hors de ce chantier visuel.
+Réparer les blocages révélés par la baseline avant de commencer le système visuel responsive : catalogue de permissions absent, contrôle de migrations absent, manifestes non reproductibles sous Windows, contrats VPS natifs divergents, upload de test résiduel et dépendances vulnérables. Le rapport détaillé est dans `docs/BASELINE_REPORT.md`.
 
 ## Source de vérité
 
@@ -15,6 +15,20 @@ Préparer puis exécuter par petits lots le système visuel responsive SchoolSaf
 - Le port `4175` sert une ancienne copie distincte et ne doit pas servir à valider le dépôt courant.
 
 ## Dernier lot terminé
+
+### Lot 0 — baseline et inventaire
+
+- dépendances verrouillées installées avec succès ;
+- TypeScript valide ;
+- 49 fichiers de tests serveur passent, 2 échouent ; 274 tests passent sur 276 ;
+- 54 tests statiques SQL passent sur 55 ;
+- tests JASPE physique et suppression `guardian` réussis ;
+- 1 111 marqueurs démonstration/placeholder/BACKEND_LATER classés dans 68 fichiers ;
+- écarts techniques et dette de dépendances documentés sans correction métier dans ce lot.
+
+Rapport : `docs/BASELINE_REPORT.md`.
+
+## Lots précédents
 
 ### Contrôleur physique JASPE
 
@@ -63,7 +77,7 @@ Feuille de route complète : `docs/superpowers/plans/2026-09-13-schoolsafe-compl
 
 ## Prochaine action exacte
 
-1. Exécuter le lot 0 de la feuille de route complète : baseline reproductible et inventaire des écarts démonstration/réel.
+1. Exécuter le lot 0A de la feuille de route : restaurer les contrats critiques et obtenir une baseline verte.
 2. Exécuter ensuite le lot 1 visuel : contrat QA, consolidation des tokens et réduction des effets globaux excessifs.
 3. Continuer dans l'ordre de la feuille de route ; le VPS reste le dernier lot et se fait directement, sans Docker.
 
