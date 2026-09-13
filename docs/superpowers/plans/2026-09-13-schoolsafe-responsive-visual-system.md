@@ -43,7 +43,7 @@
 - Create: `app/qa-responsive-visual-system.cjs`
 - Modify: `package.json`
 
-- [ ] **Step 1: Écrire le test statique avant le changement CSS**
+- [x] **Step 1: Écrire le test statique avant le changement CSS**
 
 Le script doit charger `package.json`, `app/index.html`, `app/app.js` et les feuilles concernées avec `node:fs`, puis vérifier avec `node:assert/strict` :
 
@@ -62,13 +62,13 @@ assert.doesNotMatch(combinedCss, /\.guardian(?:\W|$)/);
 
 Le test doit aussi vérifier l'ordre `design-tokens.css`, `design-system.css`, `components.css`, `dashboard.css`, puis `screens/auth.css` dans `app/index.html`.
 
-- [ ] **Step 2: Exécuter le test et constater les contrats manquants**
+- [x] **Step 2: Exécuter le test et constater les contrats manquants**
 
 Run: `node app/qa-responsive-visual-system.cjs`
 
 Expected: FAIL sur le nouveau token de focus ou le contrat d'accessibilité, tout en confirmant les identifiants existants.
 
-- [ ] **Step 3: Ajouter la commande ciblée**
+- [x] **Step 3: Ajouter la commande ciblée**
 
 Dans `package.json` :
 
@@ -76,7 +76,7 @@ Dans `package.json` :
 "test:visual-system": "node app/qa-responsive-visual-system.cjs && node app/qa-no-guardian-screen.cjs"
 ```
 
-- [ ] **Step 4: Vérifier la syntaxe du script et du manifeste**
+- [x] **Step 4: Vérifier la syntaxe du script et du manifeste**
 
 Run: `node --check app/qa-responsive-visual-system.cjs`
 
@@ -86,7 +86,9 @@ Run: `node -e "JSON.parse(require('node:fs').readFileSync('package.json','utf8')
 
 Expected: `package.json: PASS`.
 
-- [ ] **Step 5: Committer le contrat rouge**
+- [x] **Step 5: Intégrer le contrat avec les fondations dans un commit vert**
+
+Le contrat a bien été observé rouge sur `--ss-focus-ring`. Comme le propriétaire a demandé un miroir direct de `main`, le test et son implémentation sont publiés ensemble afin de ne pas introduire un commit cassé dans la branche partagée.
 
 ```bash
 git add app/qa-responsive-visual-system.cjs package.json
@@ -102,15 +104,15 @@ git commit -m "test(ui): define responsive visual system contract"
 - Modify: `app/styles/design-system.css`
 - Modify: `app/styles/components.css`
 
-- [ ] **Step 1: Ajouter les tokens manquants**
+- [x] **Step 1: Ajouter les tokens manquants**
 
 Ajouter aux tokens `--ss-*` : anneau de focus, largeurs de contenu, hauteurs de contrôle, opacités de surface et ombres corrigées. Garder les valeurs approuvées : contrôle 48 px, cible tactile 44 px, focus bleu avec décalage blanc, ombre légère et rayons 12/16/20 px.
 
-- [ ] **Step 2: Migrer les alias `--ds-*` utiles**
+- [x] **Step 2: Migrer les alias `--ds-*` utiles**
 
 Dans `design-system.css`, remplacer les valeurs indépendantes par les tokens `--ss-*`. Si un alias `--ds-*` doit survivre pendant la transition, le définir une seule fois comme `var(--ss-...)` et marquer son retrait après harmonisation des modules.
 
-- [ ] **Step 3: Retirer les effets globaux excessifs**
+- [x] **Step 3: Retirer les effets globaux excessifs**
 
 Supprimer ou restreindre :
 
@@ -122,11 +124,11 @@ Supprimer ou restreindre :
 
 Conserver un dégradé maîtrisé uniquement sur les actions principales et la navigation active.
 
-- [ ] **Step 4: Harmoniser les composants partagés**
+- [x] **Step 4: Harmoniser les composants partagés**
 
 Dans `components.css`, appliquer aux boutons, champs, cartes, badges et contrôles icône les tailles, focus, contraste, états désactivés et zones tactiles de la spécification. Ne pas cibler globalement tous les `input` ou `button` quand une classe SchoolSafe existe.
 
-- [ ] **Step 5: Faire passer le contrat**
+- [x] **Step 5: Faire passer le contrat**
 
 Run: `npm run test:visual-system`
 
@@ -136,11 +138,11 @@ Run: `git diff --check`
 
 Expected: aucune sortie, code 0.
 
-- [ ] **Step 6: Vérifier visuellement trois surfaces sans chercher la finition**
+- [x] **Step 6: Vérifier visuellement trois surfaces sans chercher la finition**
 
 Sur `http://127.0.0.1:4176/`, vérifier connexion, tableau de bord mobile et bureau : aucune carte transparente illisible, aucun halo fixe, focus visible et aucune régression de clic.
 
-- [ ] **Step 7: Committer les fondations**
+- [x] **Step 7: Committer les fondations**
 
 ```bash
 git add app/styles/design-tokens.css app/styles/design-system.css app/styles/components.css

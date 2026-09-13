@@ -18,6 +18,7 @@
     "test:e2e:staging": "npm run test:e2e:existing",
     "test:jaspe-physical": "node --no-warnings --test app/qa-jaspe-presentation-controller.test.mjs && node app/qa-jaspe-physical-contract.cjs",
     "test:no-guardian-screen": "node app/qa-no-guardian-screen.cjs",
+    "test:visual-system": "node app/qa-responsive-visual-system.cjs && node app/qa-no-guardian-screen.cjs",
     "supabase:start": "supabase start",
     "supabase:reset": "supabase db reset",
     "test:rls": "node scripts/run-rls-tests.mjs"

@@ -96,6 +96,11 @@
   --ss-bg-brand: var(--ss-blue-900);
   --ss-bg-brand-hover: var(--ss-blue-800);
   --ss-bg-accent: var(--ss-gold-400);
+  --ss-surface-solid: #ffffff;
+  --ss-surface-muted: rgb(248 250 252 / 0.96);
+  --ss-surface-overlay: rgb(255 255 255 / 0.98);
+  --ss-focus-offset-color: #ffffff;
+  --ss-action-gradient: linear-gradient(135deg, var(--ss-blue-600), var(--ss-cyan-500));
   --ss-gradient-module: linear-gradient(
     120deg,
     var(--ss-navy-900) 0%,
@@ -150,6 +155,8 @@
   --ss-shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.06);
   --ss-shadow-xl: 0 20px 25px -5px rgb(15 23 42 / 0.1), 0 8px 10px -6px rgb(15 23 42 / 0.08);
   --ss-shadow-glow: 0 0 24px rgb(37 99 235 / 0.18);
+  --ss-shadow-card: 0 8px 24px rgb(15 23 42 / 0.08);
+  --ss-shadow-floating: 0 16px 36px rgb(15 23 42 / 0.14);
 }
 
 /* --------------------------------------------------------------------------
@@ -164,6 +171,11 @@
   --ss-bg-brand: var(--ss-blue-900);
   --ss-bg-brand-hover: var(--ss-blue-800);
   --ss-bg-accent: var(--ss-gold-500);
+  --ss-surface-solid: #111f3a;
+  --ss-surface-muted: rgb(24 42 74 / 0.96);
+  --ss-surface-overlay: rgb(17 31 58 / 0.98);
+  --ss-focus-offset-color: #111f3a;
+  --ss-action-gradient: linear-gradient(135deg, var(--ss-blue-600), var(--ss-cyan-600));
   --ss-gradient-module: linear-gradient(
     120deg,
     #102a56 0%,
@@ -220,6 +232,8 @@
   --ss-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.45), 0 4px 6px -4px rgb(0 0 0 / 0.35);
   --ss-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
   --ss-shadow-glow: 0 0 32px rgb(37 99 235 / 0.28);
+  --ss-shadow-card: 0 8px 24px rgb(0 0 0 / 0.28);
+  --ss-shadow-floating: 0 16px 36px rgb(0 0 0 / 0.4);
 }
 
 /* --------------------------------------------------------------------------
@@ -287,6 +301,20 @@
   --ss-transition-base: 180ms ease;
   --ss-transition-slow: 280ms ease;
   --ss-transition-bounce: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --------------------------------------------------------------------------
+   Interaction et mise en page
+   -------------------------------------------------------------------------- */
+:root {
+  --ss-control-height: 48px;
+  --ss-control-height-lg: 52px;
+  --ss-touch-target: 44px;
+  --ss-focus-outline: 2px solid transparent;
+  --ss-focus-ring: 0 0 0 2px var(--ss-focus-offset-color), 0 0 0 5px var(--ss-blue-600);
+  --ss-content-narrow: 40rem;
+  --ss-content-standard: 64rem;
+  --ss-content-wide: 90rem;
 }
 
 /* --------------------------------------------------------------------------

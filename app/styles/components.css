@@ -19,8 +19,8 @@
 }
 
 .ss-focus-ring:focus-visible {
-  outline: 3px solid var(--ss-blue-300);
-  outline-offset: 2px;
+  outline: var(--ss-focus-outline);
+  box-shadow: var(--ss-focus-ring);
 }
 
 /* --------------------------------------------------------------------------
@@ -31,7 +31,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--ss-space-2);
-  min-height: 44px;
+  min-height: var(--ss-control-height);
   padding: var(--ss-space-2) var(--ss-space-4);
   border: 1px solid transparent;
   border-radius: var(--ss-radius);
@@ -40,7 +40,7 @@
   font-weight: var(--ss-font-semibold);
   line-height: var(--ss-leading-tight);
   color: var(--ss-text-inverse);
-  background: var(--ss-bg-brand);
+  background: var(--ss-action-gradient);
   cursor: pointer;
   transition: background var(--ss-transition-fast), border-color var(--ss-transition-fast), box-shadow var(--ss-transition-fast), transform var(--ss-transition-fast);
 }
@@ -57,6 +57,8 @@
 .ss-button[aria-disabled="true"] {
   opacity: 0.55;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .ss-button svg {
@@ -140,13 +142,13 @@
 }
 
 .ss-button--sm {
-  min-height: 36px;
+  min-height: var(--ss-touch-target);
   padding: var(--ss-space-1) var(--ss-space-3);
   font-size: var(--ss-text-sm);
 }
 
 .ss-button--lg {
-  min-height: 52px;
+  min-height: var(--ss-control-height-lg);
   padding: var(--ss-space-3) var(--ss-space-6);
   font-size: var(--ss-text-lg);
 }
@@ -162,8 +164,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: var(--ss-touch-target);
+  height: var(--ss-touch-target);
   padding: 0;
   border: 1px solid transparent;
   border-radius: var(--ss-radius);
@@ -215,18 +217,18 @@
 
 .ss-button:focus-visible,
 .ss-icon-button:focus-visible {
-  outline: 3px solid var(--ss-blue-300);
-  outline-offset: 2px;
+  outline: var(--ss-focus-outline);
+  box-shadow: var(--ss-focus-ring);
 }
 
 /* --------------------------------------------------------------------------
    Card
    -------------------------------------------------------------------------- */
 .ss-card {
-  background: var(--ss-bg-primary);
+  background: var(--ss-surface-solid);
   border: 1px solid var(--ss-border-default);
   border-radius: var(--ss-radius-lg);
-  box-shadow: var(--ss-shadow-sm);
+  box-shadow: var(--ss-shadow-card);
   transition: box-shadow var(--ss-transition-base), transform var(--ss-transition-base);
 }
 
@@ -481,7 +483,7 @@
 .ss-input {
   box-sizing: border-box;
   width: 100%;
-  min-height: 48px;
+  min-height: var(--ss-control-height);
   padding: var(--ss-space-3) var(--ss-space-4);
   border: 1px solid var(--ss-border-strong);
   border-radius: var(--ss-radius);
@@ -502,13 +504,9 @@
 }
 
 .ss-input:focus {
-  outline: none;
+  outline: var(--ss-focus-outline);
   border-color: var(--ss-blue-500);
-  box-shadow: 0 0 0 3px var(--ss-blue-100);
-}
-
-[data-theme="dark"] .ss-input:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  box-shadow: var(--ss-focus-ring);
 }
 
 .ss-input:disabled {
@@ -539,16 +537,12 @@
 
 .ss-input-shell:focus-within {
   border-color: var(--ss-blue-500);
-  box-shadow: 0 0 0 3px var(--ss-blue-100);
-}
-
-[data-theme="dark"] .ss-input-shell:focus-within {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  box-shadow: var(--ss-focus-ring);
 }
 
 .ss-input-shell .ss-input {
   flex: 1;
-  min-height: 48px;
+  min-height: var(--ss-control-height);
   padding: var(--ss-space-3) 0;
   border: 0;
   background: transparent;
@@ -572,7 +566,7 @@
 .ss-select {
   box-sizing: border-box;
   width: 100%;
-  min-height: 48px;
+  min-height: var(--ss-control-height);
   padding: var(--ss-space-3) calc(var(--ss-space-4) + 20px) var(--ss-space-3) var(--ss-space-4);
   border: 1px solid var(--ss-border-strong);
   border-radius: var(--ss-radius);
@@ -590,13 +584,9 @@
 }
 
 .ss-select:focus {
-  outline: none;
+  outline: var(--ss-focus-outline);
   border-color: var(--ss-blue-500);
-  box-shadow: 0 0 0 3px var(--ss-blue-100);
-}
-
-[data-theme="dark"] .ss-select:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  box-shadow: var(--ss-focus-ring);
 }
 
 .ss-select:disabled {
@@ -633,13 +623,9 @@
 }
 
 .ss-textarea:focus {
-  outline: none;
+  outline: var(--ss-focus-outline);
   border-color: var(--ss-blue-500);
-  box-shadow: 0 0 0 3px var(--ss-blue-100);
-}
-
-[data-theme="dark"] .ss-textarea:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  box-shadow: var(--ss-focus-ring);
 }
 
 .ss-textarea:disabled,
@@ -837,6 +823,7 @@
   font-weight: var(--ss-font-bold);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  border: 1px solid transparent;
   background: var(--ss-bg-secondary);
   color: var(--ss-text-secondary);
 }

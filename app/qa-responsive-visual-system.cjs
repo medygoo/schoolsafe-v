@@ -1,0 +1,60 @@
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+
+const root = path.resolve(__dirname, "..");
+const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
+
+const pkg = JSON.parse(read("package.json"));
+const html = read("app/index.html");
+read("app/app.js");
+const tokens = read("app/styles/design-tokens.css");
+const designSystem = read("app/styles/design-system.css");
+const components = read("app/styles/components.css");
+const dashboard = read("app/styles/dashboard.css");
+const auth = read("app/styles/screens/auth.css");
+const authCompanion = read("app/styles/modules/auth-companion.css");
+const authModels = read("app/styles/modules/auth-models.css");
+const combinedCss = [tokens, designSystem, components, dashboard, auth, authCompanion, authModels].join("\n");
+
+assert.equal(pkg.dependencies?.react, undefined, "React doit rester absent des dépendances");
+assert.equal(pkg.dependencies?.antd, undefined, "Ant Design doit rester absent des dépendances");
+
+for (const id of [
+  "loginForm",
+  "otpIdentity",
+  "workspaceSidebar",
+  "workspaceTopbar",
+  "dashboardDesktop",
+  "dashboardMobile",
+  "workspaceBottomNav",
+]) {
+  assert.match(html, new RegExp(`id=["']${id}["']`), `Identifiant critique manquant : #${id}`);
+}
+
+assert.match(html, /schoolsafe-logo\.png/, "Le logo SchoolSafe officiel doit rester utilisé");
+assert.match(tokens, /--ss-focus-ring\s*:/, "Le token d'anneau de focus SchoolSafe est requis");
+assert.match(components, /:focus-visible/, "Les composants partagés doivent exposer un focus clavier visible");
+assert.match(combinedCss, /prefers-reduced-motion/, "Le système visuel doit respecter les mouvements réduits");
+assert.doesNotMatch(combinedCss, /\.guardian(?:\W|$)/, "L'ancien écran guardian ne doit pas revenir");
+assert.doesNotMatch(designSystem, /backdrop-filter:\s*blur\(20px\)/, "Le flou global de 20 px doit rester supprimé");
+assert.doesNotMatch(designSystem, /body::(?:before|after)/, "Les halos fixes du body doivent rester supprimés");
+assert.doesNotMatch(designSystem, /\.ss-button--(?:primary|secondary)::after/, "Les flèches automatiques ne doivent pas revenir");
+assert.doesNotMatch(designSystem, /\[class\*=["']screen-/, "Les écrans ne doivent pas recevoir une surcharge globale");
+assert.doesNotMatch(designSystem, /@import\s+url\(["']https:/i, "La CSP SchoolSafe interdit les feuilles CSS externes");
+
+const stylesheetOrder = [
+  "styles/design-tokens.css",
+  "styles/design-system.css",
+  "styles/components.css",
+  "styles/dashboard.css",
+  "styles/screens/auth.css",
+];
+let previousIndex = -1;
+for (const stylesheet of stylesheetOrder) {
+  const currentIndex = html.indexOf(stylesheet);
+  assert.ok(currentIndex > previousIndex, `Ordre de feuille invalide ou feuille absente : ${stylesheet}`);
+  previousIndex = currentIndex;
+}
+
+console.log("SchoolSafe responsive visual system contract: PASS");

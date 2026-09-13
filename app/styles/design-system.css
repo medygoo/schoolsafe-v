@@ -1,702 +1,271 @@
 /* ============================================================
-   SchoolSafe V2 — Design System
-   Surcharge le style existant (design-tokens / components).
-   Applique la charte "premium rassurant" : verre dépoli,
-   coins arrondis, dégradés doux, police Poppins.
+   SchoolSafe V2 — couche d'application des tokens
+   Les alias --ds-* sont temporaires et pointent vers --ss-*.
+   Les modules seront migrés progressivement avant leur retrait.
    ============================================================ */
 
-/* --------------------------------------------------------------------------
-   Polices
-   -------------------------------------------------------------------------- */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
-
-/* --------------------------------------------------------------------------
-   Nouvelles variables du Design System
-   -------------------------------------------------------------------------- */
 :root {
-  /* Fond */
-  --ds-bg-top: #F5FAFF;
-  --ds-bg-bottom: #DCEFFB;
-  --ds-decor-color: rgba(207, 230, 247, 0.4);
-
-  /* Cartes Glassmorphism */
-  --ds-glass-bg: rgba(255, 255, 255, 0.75);
-  --ds-glass-blur: blur(20px);
-  --ds-glass-border: 1px solid rgba(255, 255, 255, 0.8);
-  --ds-glass-shadow: 0 8px 32px rgba(31, 76, 135, 0.10);
-
-  /* Coins */
-  --ds-radius-card: 20px;
-  --ds-radius-card-lg: 24px;
-  --ds-radius-card-sm: 16px;
-  --ds-radius-pill: 9999px;
-
-  /* Bouton primaire */
-  --ds-btn-primary-start: #2196F3;
-  --ds-btn-primary-end: #00C6FB;
-  --ds-btn-primary-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-
-  /* Bouton secondaire */
-  --ds-btn-secondary-bg: #ffffff;
-  --ds-btn-secondary-text: #0B1F3A;
-  --ds-btn-secondary-shadow: 0 4px 15px rgba(33, 150, 243, 0.15);
-
-  /* Typographie */
-  --ds-font-family: "Poppins", "Nunito", system-ui, sans-serif;
-  --ds-title-color: #0B1F3A;
-  --ds-body-color: #4A5A6A;
-
-  /* Positif / Alerte */
-  --ds-positive: #34C759;
-  --ds-alert: #FF3B30;
-
-  /* Couleurs modules (vive / fond pastel) */
-  --ds-mod-blue: #2196F3;
-  --ds-mod-blue-bg: #E3F2FD;
-  --ds-mod-green: #34C759;
-  --ds-mod-green-bg: #E8F9EE;
-  --ds-mod-orange: #FF9500;
-  --ds-mod-orange-bg: #FFF3E0;
-  --ds-mod-violet: #AF52DE;
-  --ds-mod-violet-bg: #F3E8FB;
-  --ds-mod-pink: #FF2D55;
-  --ds-mod-pink-bg: #FDE8EC;
-  --ds-mod-turquoise: #00C6FB;
-  --ds-mod-turquoise-bg: #E0F7FF;
-  --ds-mod-yellow: #FFC300;
-  --ds-mod-yellow-bg: #FFF8DB;
-  --ds-mod-slate: #5A6B7B;
-  --ds-mod-slate-bg: #EEF1F4;
-
-  /* Bordures de champ */
-  --ds-field-border: #E3ECF5;
+  --ds-bg-top: var(--ss-blue-50);
+  --ds-bg-bottom: var(--ss-slate-50);
+  --ds-decor-color: var(--ss-blue-100);
+  --ds-glass-bg: var(--ss-surface-solid);
+  --ds-glass-blur: none;
+  --ds-glass-border: 1px solid var(--ss-border-default);
+  --ds-glass-shadow: var(--ss-shadow-card);
+  --ds-radius-card: var(--ss-radius-xl);
+  --ds-radius-card-lg: var(--ss-radius-xl);
+  --ds-radius-card-sm: var(--ss-radius-lg);
+  --ds-radius-pill: var(--ss-radius-full);
+  --ds-btn-primary-start: var(--ss-blue-600);
+  --ds-btn-primary-end: var(--ss-cyan-500);
+  --ds-btn-primary-shadow: var(--ss-shadow-sm);
+  --ds-btn-secondary-bg: var(--ss-surface-solid);
+  --ds-btn-secondary-text: var(--ss-text-primary);
+  --ds-btn-secondary-shadow: var(--ss-shadow-xs);
+  --ds-font-family: "Poppins", var(--ss-font-sans);
+  --ds-title-color: var(--ss-text-primary);
+  --ds-body-color: var(--ss-text-secondary);
+  --ds-positive: var(--ss-emerald-600);
+  --ds-alert: var(--ss-coral-600);
+  --ds-mod-blue: var(--ss-blue-600);
+  --ds-mod-blue-bg: var(--ss-blue-50);
+  --ds-mod-green: var(--ss-emerald-600);
+  --ds-mod-green-bg: var(--ss-emerald-50);
+  --ds-mod-orange: var(--ss-orange-500);
+  --ds-mod-orange-bg: var(--ss-orange-50);
+  --ds-mod-violet: var(--ss-violet-600);
+  --ds-mod-violet-bg: var(--ss-violet-50);
+  --ds-mod-pink: var(--ss-pink-600);
+  --ds-mod-pink-bg: var(--ss-pink-50);
+  --ds-mod-turquoise: var(--ss-cyan-600);
+  --ds-mod-turquoise-bg: var(--ss-cyan-50);
+  --ds-mod-yellow: var(--ss-gold-500);
+  --ds-mod-yellow-bg: var(--ss-amber-50);
+  --ds-mod-slate: var(--ss-slate-600);
+  --ds-mod-slate-bg: var(--ss-slate-100);
+  --ds-field-border: var(--ss-border-strong);
 }
 
-/* Appliquer la police globalement */
-body, input, textarea, select, button {
+body,
+input,
+textarea,
+select,
+button {
   font-family: var(--ds-font-family);
 }
 
-/* --------------------------------------------------------------------------
-   1. FOND GLOBAL
-   -------------------------------------------------------------------------- */
-body, .app-shell, [class*="screen-"] {
-  background: linear-gradient(180deg, var(--ds-bg-top) 0%, var(--ds-bg-bottom) 100%) !important;
-  background-attachment: fixed !important;
+body {
+  color: var(--ss-text-primary);
+  background: linear-gradient(180deg, var(--ds-bg-top), var(--ds-bg-bottom));
 }
 
-/* --------------------------------------------------------------------------
-   2. CARTES GLASSMORPHISM
-   -------------------------------------------------------------------------- */
 .ss-card,
-[class*="setup-"] .ss-card,
-.setup-screen,
 .ss-modal,
-[class*="student-record"],
+.setup-screen,
+.student-record,
 .record-card,
 .profile-card {
-  background: var(--ds-glass-bg) !important;
-  backdrop-filter: var(--ds-glass-blur) !important;
-  -webkit-backdrop-filter: var(--ds-glass-blur) !important;
-  border: var(--ds-glass-border) !important;
-  border-radius: var(--ds-radius-card) !important;
-  box-shadow: var(--ds-glass-shadow) !important;
+  background: var(--ss-surface-solid);
+  border: 1px solid var(--ss-border-default);
+  border-radius: var(--ss-radius-xl);
+  box-shadow: var(--ss-shadow-card);
 }
 
-/* Grandes cartes */
-.ss-card--lg,
-.setup-screen.setup-main > section {
-  border-radius: var(--ds-radius-card-lg) !important;
-}
-
-/* Petites cartes */
 .ss-card--sm,
 .badge-card,
 .student-record {
-  border-radius: var(--ds-radius-card-sm) !important;
+  border-radius: var(--ss-radius-lg);
 }
 
-/* --------------------------------------------------------------------------
-   3. BOUTONS
-   -------------------------------------------------------------------------- */
-/* Primaire : dégradé + pill + flèche */
-.ss-button--primary,
-.ss-button[class*="primary"],
 button.ss-primary,
 a.ss-primary {
-  background: linear-gradient(135deg, var(--ds-btn-primary-start), var(--ds-btn-primary-end)) !important;
-  border-radius: var(--ds-radius-pill) !important;
-  border: none !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
-  box-shadow: var(--ds-btn-primary-shadow) !important;
-  padding: 10px 24px !important;
-  position: relative !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
+  min-height: var(--ss-control-height);
+  color: var(--ss-text-on-brand);
+  background: var(--ss-action-gradient);
+  border: 1px solid transparent;
+  border-radius: var(--ss-radius);
+  box-shadow: var(--ss-shadow-sm);
 }
 
-/* Flèche ">" dans un petit cercle blanc semi-transparent à droite */
-.ss-button--primary::after,
-.ss-button[class*="primary"]::after,
-button.ss-primary::after,
-a.ss-primary::after {
-  content: ">";
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 50%;
-  font-size: 12px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 20px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-/* Secondaire : blanc, pill, flèche */
-.ss-button--secondary,
 button.ss-secondary,
 a.ss-secondary {
-  background: var(--ds-btn-secondary-bg) !important;
-  border-radius: var(--ds-radius-pill) !important;
-  border: none !important;
-  color: var(--ds-btn-secondary-text) !important;
-  font-weight: 600 !important;
-  box-shadow: var(--ds-btn-secondary-shadow) !important;
-  padding: 10px 24px !important;
-  position: relative !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
+  min-height: var(--ss-control-height);
+  color: var(--ss-text-primary);
+  background: var(--ss-surface-solid);
+  border: 1px solid var(--ss-border-strong);
+  border-radius: var(--ss-radius);
+  box-shadow: none;
 }
 
-.ss-button--secondary::after,
-button.ss-secondary::after,
-a.ss-secondary::after {
-  content: ">";
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  background: rgba(33, 150, 243, 0.1);
-  border-radius: 50%;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--ds-btn-primary-start);
-  line-height: 20px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-/* --------------------------------------------------------------------------
-   4. FORMULAIRES — CHAMPS PILL
-   -------------------------------------------------------------------------- */
 .ss-input,
 .ss-input-shell,
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="tel"],
-input[type="search"],
-select,
-textarea {
-  border-radius: var(--ds-radius-pill) !important;
-  border: 1px solid var(--ds-field-border) !important;
-  background: #ffffff !important;
+.ss-select,
+.ss-textarea,
+.workspace-screen .topbar-search {
+  background-color: var(--ss-surface-solid);
+  border-color: var(--ss-border-strong);
+  border-radius: var(--ss-radius);
 }
 
-.ss-input-shell {
-  border-radius: var(--ds-radius-pill) !important;
-  padding-left: 12px !important;
-}
-
-.ss-input-shell svg {
-  color: #94a3b8 !important;
-}
-
-/* --------------------------------------------------------------------------
-   5. BARRE DE NAVIGATION LATÉRALE (élément actif)
-   -------------------------------------------------------------------------- */
-/* Item actif : pill + dégradé bleu */
 .nav-item.active,
-[class*="sidebar"] .active a,
-.menu-item--active {
-  background: linear-gradient(135deg, var(--ds-btn-primary-start), var(--ds-btn-primary-end)) !important;
-  border-radius: var(--ds-radius-pill) !important;
-  color: #ffffff !important;
+.menu-item--active,
+.workspace-screen .workspace-nav button.active {
+  color: var(--ss-text-on-brand);
+  background: var(--ss-action-gradient);
+  border-radius: var(--ss-radius);
+  box-shadow: var(--ss-shadow-sm);
 }
 
-.nav-item.active svg,
-[class*="sidebar"] .active a svg {
-  color: #ffffff !important;
+.nav-item:not(.active),
+.workspace-screen .workspace-nav button:not(.active) {
+  background: transparent;
 }
 
-/* Items inactifs */
-.nav-item:not(.active) {
-  background: transparent !important;
+.workspace-screen .workspace-nav button:not(.active):hover {
+  background: var(--ss-blue-50);
 }
 
-.nav-item:not(.active) svg {
-  color: #64748b !important;
-}
-
-.nav-item:not(.active) span {
-  color: var(--ds-body-color) !important;
-}
-
-/* --------------------------------------------------------------------------
-   6. BADGE MODULE — pastille carrée arrondie
-   -------------------------------------------------------------------------- */
 .module-badge,
-[class*="domain-"] .badge,
-.sidebar-icon-wrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+.sidebar-icon-wrapper,
+.kpi-icon,
+.module-card__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: var(--ss-touch-target);
+  height: var(--ss-touch-target);
+  border-radius: var(--ss-radius);
 }
 
-.module-badge svg,
-[class*="domain-"] .badge svg,
-.sidebar-icon-wrapper svg {
-  width: 22px;
-  height: 22px;
-  color: #ffffff !important;
-}
-
-/* --------------------------------------------------------------------------
-   7. COULEURS PAR MODULE (pastille + fond)
-   -------------------------------------------------------------------------- */
 .module--blue .module-badge,
-.domain-pilotage .sidebar-icon-wrapper {
+.domain-pilotage .sidebar-icon-wrapper,
+.kpi-icon.blue,
+.module-card--pilotage .module-card__icon,
+.module-card--rapports .module-card__icon {
   background: var(--ds-mod-blue);
-}
-.module--blue .module-card,
-.domain-pilotage .modele-card {
-  background: var(--ds-mod-blue-bg);
 }
 
 .module--green .module-badge,
-.domain-ecole .sidebar-icon-wrapper {
+.domain-ecole .sidebar-icon-wrapper,
+.kpi-icon.green,
+.module-card--ecole .module-card__icon {
   background: var(--ds-mod-green);
-}
-.module--green .module-card {
-  background: var(--ds-mod-green-bg);
 }
 
 .module--orange .module-badge,
-.domain-finance .sidebar-icon-wrapper {
+.domain-finance .sidebar-icon-wrapper,
+.kpi-icon.gold,
+.module-card--finance .module-card__icon {
   background: var(--ds-mod-orange);
-}
-.module--orange .module-card {
-  background: var(--ds-mod-orange-bg);
 }
 
 .module--violet .module-badge,
-.domain-pedagogie .sidebar-icon-wrapper {
+.domain-pedagogie .sidebar-icon-wrapper,
+.kpi-icon.purple,
+.module-card--personnel .module-card__icon,
+.module-card--pedagogie .module-card__icon {
   background: var(--ds-mod-violet);
-}
-.module--violet .module-card {
-  background: var(--ds-mod-violet-bg);
 }
 
 .module--pink .module-badge,
-.domain-securite .sidebar-icon-wrapper {
+.domain-securite .sidebar-icon-wrapper,
+.kpi-icon.coral {
   background: var(--ds-mod-pink);
-}
-.module--pink .module-card {
-  background: var(--ds-mod-pink-bg);
 }
 
 .module--turquoise .module-badge,
-.domain-communication .sidebar-icon-wrapper {
+.domain-communication .sidebar-icon-wrapper,
+.kpi-icon.cyan,
+.module-card--communication .module-card__icon {
   background: var(--ds-mod-turquoise);
-}
-.module--turquoise .module-card {
-  background: var(--ds-mod-turquoise-bg);
 }
 
 .module--yellow .module-badge,
 .domain-stock .sidebar-icon-wrapper {
   background: var(--ds-mod-yellow);
 }
-.module--yellow .module-card {
-  background: var(--ds-mod-yellow-bg);
-}
 
 .module--slate .module-badge,
-.domain-administration .sidebar-icon-wrapper {
+.domain-administration .sidebar-icon-wrapper,
+.module-card--comptabilite .module-card__icon {
   background: var(--ds-mod-slate);
 }
-.module--slate .module-card {
-  background: var(--ds-mod-slate-bg);
+
+.module-badge svg,
+.sidebar-icon-wrapper svg,
+.kpi-icon svg,
+.module-card__icon svg {
+  width: 22px;
+  height: 22px;
+  color: var(--ss-text-on-brand);
 }
 
-/* --------------------------------------------------------------------------
-   8. CHIFFRES CLÉS / POSITIF / ALERTE
-   -------------------------------------------------------------------------- */
-.kpi-value,
-.stat-value,
-.number-large {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--ds-title-color);
+.workspace-screen .workspace-sidebar,
+.workspace-screen .workspace-topbar,
+.dashboard-kpi .kpi-card,
+.module-card,
+.auth-screen .login-panel,
+#notification-container > div {
+  background: var(--ss-surface-solid);
+  border-color: var(--ss-border-default);
+  box-shadow: var(--ss-shadow-card);
 }
 
-.text-positive,
-.stat-up {
-  color: var(--ds-positive);
-}
-.text-positive::after {
-  content: " \2197";
-}
-
-.text-alert,
-.stat-down,
-.badge-notification {
-  color: #ffffff;
-  background: var(--ds-alert);
-  border-radius: 50%;
-  min-width: 20px;
-  height: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* --------------------------------------------------------------------------
-   9. ESPACEMENT GLOBAL
-   -------------------------------------------------------------------------- */
-.ss-card,
-[class*="setup-"] section,
-.student-record,
-.record-card {
-  padding: 24px !important;
-}
-
-.section-gap,
-.module-grid,
-.dashboard-grid {
-  gap: 20px !important;
-}
-
-/* --------------------------------------------------------------------------
-   10. DÉCOR FLOTTÉ (cercles / formes géométriques)
-   -------------------------------------------------------------------------- */
-/* Fond subtil optionnel — seulement si un conteneur parent l'active */
-.ds-decor::before,
-.ds-decor::after {
-  content: "";
-  position: fixed;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 50%;
-  background: var(--ds-decor-color);
-  filter: blur(60px);
-}
-.ds-decor::before {
-  width: 300px;
-  height: 300px;
-  top: -80px;
-  right: -60px;
-}
-.ds-decor::after {
-  width: 400px;
-  height: 400px;
-  bottom: -120px;
-  left: -100px;
-}
-
-/* Appliquer le décor sur le fond automatiquement */
-body::before,
-body::after {
-  content: "";
-  position: fixed;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 50%;
-  background: var(--ds-decor-color);
-  filter: blur(60px);
-}
-body::before {
-  width: 300px;
-  height: 300px;
-  top: -80px;
-  right: -60px;
-}
-body::after {
-  width: 400px;
-  height: 400px;
-  bottom: -120px;
-  left: -100px;
-}
-
-/* S'assurer que le contenu est au-dessus du décor */
-#app, .app-shell, .screen-splash, .screen-auth, .screen-setup, .screen-workspace {
-  position: relative;
-  z-index: 1;
-}
-
-/* ====================================================================
-   DASHBOARD — Surcharges design system
-   ==================================================================== */
-
-/* Sidebar workspace : glass + coins arrondis */
-.workspace-screen .workspace-sidebar {
-  background: var(--ds-glass-bg) !important;
-  backdrop-filter: var(--ds-glass-blur) !important;
-  -webkit-backdrop-filter: var(--ds-glass-blur) !important;
-  border-right: var(--ds-glass-border) !important;
-}
-
-/* Navigation dans sidebar : pill pour actif */
-.workspace-screen .workspace-nav button {
-  border-radius: var(--ds-radius-pill) !important;
-  padding: 10px 16px !important;
-  margin: 2px 8px !important;
-  transition: all 0.2s ease !important;
-}
-
-.workspace-screen .workspace-nav button.active {
-  background: linear-gradient(135deg, var(--ds-btn-primary-start), var(--ds-btn-primary-end)) !important;
-  color: #ffffff !important;
-  box-shadow: var(--ds-btn-primary-shadow) !important;
-}
-
-.workspace-screen .workspace-nav button.active svg {
-  color: #ffffff !important;
-}
-
-.workspace-screen .workspace-nav button:not(.active):hover {
-  background: rgba(33, 150, 243, 0.08) !important;
-}
-
-/* Topbar : glass */
-.workspace-screen .workspace-topbar {
-  background: var(--ds-glass-bg) !important;
-  backdrop-filter: var(--ds-glass-blur) !important;
-  -webkit-backdrop-filter: var(--ds-glass-blur) !important;
-  border-bottom: var(--ds-glass-border) !important;
-}
-
-/* Barre de recherche dans topbar : pill */
-.workspace-screen .topbar-search {
-  border-radius: var(--ds-radius-pill) !important;
-  background: rgba(255, 255, 255, 0.6) !important;
-  border: 1px solid var(--ds-field-border) !important;
-}
-
-.workspace-screen .topbar-search input {
-  background: transparent !important;
-}
-
-/* Hero dashboard (carte de bienvenue) */
 .dashboard-hero,
 .dashboard-hero--mobile {
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(0, 198, 251, 0.05)) !important;
-  border-radius: var(--ds-radius-card-lg) !important;
-  border: var(--ds-glass-border) !important;
-  backdrop-filter: var(--ds-glass-blur) !important;
+  background: linear-gradient(135deg, var(--ss-blue-50), var(--ss-cyan-50));
+  border: 1px solid var(--ss-border-default);
+  border-radius: var(--ss-radius-xl);
 }
 
-.dashboard-hero h1,
-.dashboard-hero--mobile h1 {
-  color: var(--ds-title-color) !important;
-  font-weight: 700 !important;
+.workspace-screen .sidebar-user,
+.setup-sidebar {
+  background: var(--ss-surface-muted);
+  border: 1px solid var(--ss-border-default);
+  border-radius: var(--ss-radius-lg);
 }
 
-/* KPI Cards : glass */
-.dashboard-kpi .kpi-card {
-  background: var(--ds-glass-bg) !important;
-  backdrop-filter: var(--ds-glass-blur) !important;
-  -webkit-backdrop-filter: var(--ds-glass-blur) !important;
-  border: var(--ds-glass-border) !important;
-  border-radius: var(--ds-radius-card) !important;
-  box-shadow: var(--ds-glass-shadow) !important;
-  padding: 20px !important;
-}
-
-.kpi-card b {
-  font-size: 1.75rem !important;
-  font-weight: 800 !important;
-  color: var(--ds-title-color) !important;
-}
-
-/* Icône KPI : pastille carrée arrondie */
-.kpi-icon {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 12px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.kpi-icon svg {
-  width: 22px !important;
-  height: 22px !important;
-  color: #ffffff !important;
-}
-
-/* Couleurs KPI (surcharge les fonds pastel existants par les vives) */
-.kpi-icon.blue { background: var(--ds-mod-blue) !important; }
-.kpi-icon.green { background: var(--ds-mod-green) !important; }
-.kpi-icon.gold { background: var(--ds-mod-orange) !important; }
-.kpi-icon.purple { background: var(--ds-mod-violet) !important; }
-.kpi-icon.cyan { background: var(--ds-mod-turquoise) !important; }
-.kpi-icon.coral { background: var(--ds-mod-pink) !important; }
-
-/* Module cards : glass + pastille */
-.module-card {
-  background: var(--ds-glass-bg) !important;
-  backdrop-filter: var(--ds-glass-blur) !important;
-  -webkit-backdrop-filter: var(--ds-glass-blur) !important;
-  border: var(--ds-glass-border) !important;
-  border-radius: var(--ds-radius-card) !important;
-  box-shadow: var(--ds-glass-shadow) !important;
-  padding: 24px !important;
-}
-
-.module-card__icon {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 12px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.module-card__icon svg {
-  width: 22px !important;
-  height: 22px !important;
-  color: #ffffff !important;
-}
-
-/* Couleurs des pastilles module-card (surcharge les fonds pastel par les couleurs vives) */
-.module-card--pilotage .module-card__icon { background: var(--ds-mod-blue) !important; }
-.module-card--ecole .module-card__icon { background: var(--ds-mod-green) !important; }
-.module-card--personnel .module-card__icon { background: var(--ds-mod-violet) !important; }
-.module-card--pedagogie .module-card__icon { background: var(--ds-mod-violet) !important; }
-.module-card--finance .module-card__icon { background: var(--ds-mod-orange) !important; }
-.module-card--comptabilite .module-card__icon { background: var(--ds-mod-slate) !important; }
-.module-card--communication .module-card__icon { background: var(--ds-mod-turquoise) !important; }
-.module-card--rapports .module-card__icon { background: var(--ds-mod-blue) !important; }
-
-.module-card__title {
-  color: var(--ds-title-color) !important;
-  font-weight: 700 !important;
-}
-
-.module-card__desc {
-  color: var(--ds-body-color) !important;
-}
-
-/* Breadcrumb : pill */
 .workspace-breadcrumb button,
-.workspace-breadcrumb__back {
-  border-radius: var(--ds-radius-pill) !important;
-  padding: 6px 14px !important;
+.workspace-breadcrumb__back,
+.ss-button--danger,
+.ss-button--ghost {
+  border-radius: var(--ss-radius);
 }
 
 .workspace-breadcrumb li[aria-current="page"] button {
-  background: rgba(33, 150, 243, 0.1) !important;
-  color: var(--ds-btn-primary-start) !important;
-  font-weight: 600 !important;
+  color: var(--ss-blue-700);
+  background: var(--ss-blue-50);
+  font-weight: var(--ss-font-semibold);
 }
 
-/* Bouton retour dans le workspace : cercle */
-.workspace-screen .workspace-back {
-  border-radius: 50% !important;
-  background: var(--ds-glass-bg) !important;
-  border: var(--ds-glass-border) !important;
-}
-
-/* Profil utilisateur dans sidebar */
-.workspace-screen .sidebar-user {
-  background: rgba(255, 255, 255, 0.4) !important;
-  border-radius: var(--ds-radius-card-sm) !important;
-  padding: 12px !important;
-}
-
-/* ====================================================================
-   SCREEN AUTH (connexion) — Surcharges design system
-   ==================================================================== */
-.auth-screen {
-  background: linear-gradient(180deg, var(--ds-bg-top) 0%, var(--ds-bg-bottom) 100%) !important;
-}
-
-.auth-screen .login-panel {
-  background: var(--ds-glass-bg) !important;
-  backdrop-filter: var(--ds-glass-blur) !important;
-  -webkit-backdrop-filter: var(--ds-glass-blur) !important;
-  border: var(--ds-glass-border) !important;
-  border-radius: var(--ds-radius-card-lg) !important;
-  box-shadow: var(--ds-glass-shadow) !important;
-  padding: 32px !important;
-}
-
-/* ====================================================================
-   SCREEN SETUP — Surcharges design system
-   ==================================================================== */
-.setup-screen {
-  background: var(--ds-glass-bg) !important;
-  backdrop-filter: var(--ds-glass-blur) !important;
-  -webkit-backdrop-filter: var(--ds-glass-blur) !important;
-  border: var(--ds-glass-border) !important;
-  border-radius: var(--ds-radius-card) !important;
-  box-shadow: var(--ds-glass-shadow) !important;
-}
-
-.setup-sidebar {
-  background: rgba(255, 255, 255, 0.5) !important;
-  border-radius: var(--ds-radius-card) !important;
-}
-
-/* ====================================================================
-   SCREENS SPLASH & ENTRY — Fond cohérent
-   ==================================================================== */
-.screen-splash {
-  background: linear-gradient(180deg, var(--ds-bg-top) 0%, var(--ds-bg-bottom) 100%) !important;
-}
-
-/* ====================================================================
-   BOUTONS DANGER / GHOST — Pill aussi
-   ==================================================================== */
-.ss-button--danger,
-.ss-button--ghost {
-  border-radius: var(--ds-radius-pill) !important;
-}
-
-/* ====================================================================
-   NOTIFICATIONS / TOAST — Glass
-   ==================================================================== */
-#notification-container > div {
-  background: var(--ds-glass-bg) !important;
-  backdrop-filter: var(--ds-glass-blur) !important;
-  -webkit-backdrop-filter: var(--ds-glass-blur) !important;
-  border: var(--ds-glass-border) !important;
-  border-radius: var(--ds-radius-card-sm) !important;
-  box-shadow: var(--ds-glass-shadow) !important;
-}
-
-/* ====================================================================
-   TITRES GLOBAUX — Police Poppins
-   ==================================================================== */
-h1, h2, h3, h4, h5, h6,
-.dashboard-greeting h2,
 .module-card__title,
 .kpi-card b,
+.kpi-value,
+.stat-value,
+.number-large {
+  color: var(--ss-text-primary);
+  font-weight: var(--ss-font-bold);
+}
+
+.module-card__desc {
+  color: var(--ss-text-secondary);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.dashboard-greeting h2,
 .workspace-screen .workspace-brand strong {
-  font-family: var(--ds-font-family) !important;
-  color: var(--ds-title-color) !important;
+  font-family: var(--ds-font-family);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto;
+  }
 }

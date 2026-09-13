@@ -4,7 +4,7 @@ Dernière mise à jour : 13 septembre 2026.
 
 ## Objectif actif
 
-Exécuter le lot 1 des fondations visuelles responsive sur la baseline verte, sans React, Ant Design, 3D ou Docker. Le rapport de clôture technique est dans `docs/BASELINE_REPORT.md`.
+Exécuter le lot 2 consacré à la connexion, à l'OTP et à l'espace JASPE responsive sur les fondations visuelles vertes, sans React, Ant Design, 3D ou Docker.
 
 ## Source de vérité
 
@@ -15,6 +15,21 @@ Exécuter le lot 1 des fondations visuelles responsive sur la baseline verte, sa
 - Le port `4175` sert une ancienne copie distincte et ne doit pas servir à valider le dépôt courant.
 
 ## Dernier lot terminé
+
+### Lot 1 — fondations visuelles responsive
+
+- contrat statique `test:visual-system` ajouté : dépendances, identifiants DOM, logo, ordre CSS, focus, mouvements réduits et absence de l'ancien écran `guardian` ;
+- tokens `--ss-*` complétés pour les surfaces, contrôles de 48 px, cibles tactiles de 44 px, focus visible, largeurs et ombres mesurées ;
+- anciens alias `--ds-*` centralisés comme transition vers les tokens `--ss-*` ;
+- glassmorphism global, halos fixes, surcharges `!important` et flèches automatiques retirés ;
+- composants partagés harmonisés sans cibler globalement tous les champs et boutons ;
+- import Google Fonts retiré après détection par le navigateur : la CSP reste fermée aux styles externes et la pile locale prend immédiatement le relais ;
+- tableaux de bord administrateur, parent, enseignant, caisse et contrôle vérifiés en 1440 px et 390 px ; aucune régression de navigation ni débordement horizontal ;
+- SchoolSafe Control, JASPE 2D/2,5D, routes et logique métier inchangés.
+
+Plan suivi : `docs/superpowers/plans/2026-09-13-schoolsafe-responsive-visual-system.md` (tâches 1 et 2 cochées).
+
+## Lots précédents
 
 ### Lot 0A — baseline critique réparée
 
@@ -28,8 +43,6 @@ Exécuter le lot 1 des fondations visuelles responsive sur la baseline verte, sa
 - 57 tests statiques/contrats SQL et multi-plateformes réussis.
 
 Rapport : `docs/BASELINE_REPORT.md`.
-
-## Lots précédents
 
 ### Contrôleur physique JASPE
 
@@ -58,6 +71,8 @@ Rapport : `docs/BASELINE_REPORT.md`.
 - `npm run test:jaspe-physical` : 5 tests réussis, 0 échec ; contrat physique v12/façade affiché `PASS`.
 - `node app/qa-safe-assistant-access.cjs` : `FE-SEC-A3A4 access law + safe assistant gate: PASS`.
 - `npm run test:no-guardian-screen` : `Legacy guardian screen removal: PASS`.
+- `npm run test:visual-system` : contrat visuel et suppression de l'ancien écran `guardian` PASS.
+- contrôle grand écran/téléphone : 5 profils ouverts en démonstration sur 1440 × 1000 et 390 × 844, captures relues, aucun débordement mobile.
 - contrôles de syntaxe Node des scripts modifiés : code 0.
 - navigateur sur `4176` : bouton `Commencer` vers `#auth.active`, formulaire visible et aucun élément `#guardian`.
 - navigateur sur `4176` : JASPE v12 visible ; `listen` observé en `attentive`, `explain` en `guide` et la soumission en `deepThink`.
@@ -70,6 +85,7 @@ Rapport : `docs/BASELINE_REPORT.md`.
 - L'émulation navigateur de `prefers-reduced-motion` et le blocage réseau du manifeste v12 n'ont pas été rejoués manuellement avec l'outil de navigateur disponible.
 - L'assistant flottant de l'espace de travail n'est toujours pas activé.
 - La voix, GLM et la synchronisation labiale ne sont pas implémentés dans ce lot.
+- Le contrôle navigateur multi-profils termine ses assertions fonctionnelles et ses captures, mais son collecteur de console signale `ERR_CONNECTION_REFUSED` tant que l'API locale sur le port 8787 n'est pas démarrée ; ce n'est pas une erreur CSS.
 
 ## Direction visuelle verrouillée
 
@@ -83,9 +99,10 @@ Feuille de route complète : `docs/superpowers/plans/2026-09-13-schoolsafe-compl
 
 ## Prochaine action exacte
 
-1. Exécuter le lot 1 visuel : contrat QA responsive, consolidation des tokens et réduction des effets globaux excessifs.
-2. Vérifier les écrans sur mobile, tablette et bureau au port `4176`, sans toucher au port obsolète `4175`.
-3. Continuer dans l'ordre de la feuille de route ; le VPS reste le dernier lot et se fait directement, sans Docker.
+1. Exécuter la tâche 3 du plan visuel : recomposer la connexion et l'OTP autour du DOM existant.
+2. Réserver à JASPE une zone non superposée sur mobile, tablette et bureau, puis vérifier le contrôleur physique existant.
+3. Exécuter `npm run test:visual-system` et `npm run test:jaspe-physical`, puis synchroniser le lot vert sur `origin/main`.
+4. Continuer dans l'ordre de la feuille de route ; le VPS reste le dernier lot et se fait directement, sans Docker.
 
 ## Procédure de reprise depuis l'autre compte
 
