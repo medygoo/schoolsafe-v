@@ -79,9 +79,9 @@ Le contrôleur traduit chaque intention en action v12 autorisée, intensité, ex
 
 ## Prochaine action exacte
 
-1. Présenter et faire valider le contrat final du contrôleur physique JASPE : intentions, priorités, surfaces et cycle de vie.
-2. Écrire ensuite la spécification d'architecture et le plan d'implémentation du premier lot.
-3. Implémenter le contrôleur et ses tests essentiels seulement après cette validation.
+1. Faire relire et valider par le propriétaire la spécification `docs/superpowers/specs/2026-09-13-jaspe-physical-controller-design.md`.
+2. Après cette validation, écrire le plan d'implémentation détaillé du premier lot.
+3. Implémenter ensuite le contrôleur et ses tests essentiels conformément au plan validé.
 4. Ne pas inclure la voix, les lèvres, le déploiement VPS ni le durcissement du Worker dans ce premier lot physique.
 
 ## Procédure de reprise depuis l'autre compte
