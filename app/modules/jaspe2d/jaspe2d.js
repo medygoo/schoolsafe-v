@@ -176,6 +176,14 @@
   // Pause automatique : onglet caché, saisie (auth-is-typing), reduced-motion = statique.
   // Variantes avec rotate:false = poses de réaction uniquement (via handle.react).
   var showcases = [];
+  var FALLBACK_REF = {
+    IDLE: { pack: "pack1", key: "idle" },
+    LISTENING: { pack: "pack2", key: "listening" },
+    THINKING: { pack: "pack2", key: "thinking" },
+    SPEAKING: { pack: "pack2", key: "speaking" },
+    ERROR: { pack: "pack4", key: "worried" },
+    CONGRATULATE: { pack: "pack3", key: "congratulate" }
+  };
 
   function imageUrlByRef(ref) {
     if (!manifest) return null;
@@ -257,7 +265,7 @@
     }
     el.appendChild(box);
 
-    var sc = { box: box, imgs: imgs, bubble: bubble, variants: opts.variants, index: 0, host: el, holdUntil: 0, holdTimer: 0, transparent: opts.transparent === true, portraits: {}, request: 0 };
+    var sc = { box: box, imgs: imgs, bubble: bubble, variants: opts.variants, index: 0, host: el, holdUntil: 0, holdTimer: 0, rotationTimer: 0, transparent: opts.transparent === true, portraits: {}, request: 0, cleanup: [], destroyed: false };
     // The docked layout keeps its complete image. A restrained CSS idle sway
     // supplies presence without deforming anatomy or reviving rejected clips.
     sc.photoOnly = opts.photoOnly === true;
@@ -268,42 +276,121 @@
       };
       syncPortraitVisibility();
       document.addEventListener("visibilitychange", syncPortraitVisibility);
+      sc.cleanup.push(function () { document.removeEventListener("visibilitychange", syncPortraitVisibility); });
     }
     showcases.push(sc);
     paintShowcase(sc);
-    if (sc.transparent && !sc.photoOnly) {
-      sc.enginePending = true;
-      import("./live-companion.js?v=attente-joueuse-11").then(function (module) {
-        return module.mountLiveCompanion(box, el);
-      }).then(function (engine) {
-        sc.engine = engine;
-        if (sc.queuedReaction) { engine.react(sc.queuedReaction); sc.queuedReaction = null; }
-      })
-        .catch(function () { box.dataset.motion = "unavailable"; })
-        .finally(function () { sc.enginePending = false; });
-    }
+    sc.presentationReady = import("./presentation-controller.js").then(function (module) {
+      if (sc.destroyed) return false;
+      sc.presentation = module.createPresentationController({
+        createFallback: function () {
+          return {
+            play: function (command) {
+              var ref = FALLBACK_REF[command.fallback] || FALLBACK_REF.IDLE;
+              var idx = sc.variants.findIndex(function (v) { return v.pack === ref.pack && v.key === ref.key; });
+              if (idx >= 0) showVariant(sc, idx, sc.pendingBubble);
+              sc.pendingBubble = undefined;
+              return true;
+            },
+            stop: function () { return true; },
+            destroy: function () {},
+            getState: function () { return { engine: "webp" }; }
+          };
+        },
+        createPrimary: function (context) {
+          if (!sc.transparent || sc.photoOnly) return null;
+          sc.enginePending = true;
+          return import("./live-companion.js?v=physical-controller-01").then(function (live) {
+            return live.mountLiveCompanion(box, el, {
+              isVisible: context.isVisible,
+              isTyping: function () {
+                var auth = el.closest && el.closest(".auth-screen");
+                return !!auth && auth.classList.contains("auth-is-typing");
+              },
+              isBust: function () {
+                var auth = el.closest && el.closest(".auth-screen");
+                return !!auth && auth.dataset.loginLayout === "welcome" && matchMedia("(max-width: 760px)").matches;
+              },
+              activityTarget: el.closest && el.closest(".auth-screen") || el
+            });
+          }).then(function (engine) {
+            if (!engine) return null;
+            sc.engine = engine;
+            return {
+              play: function (command) {
+                if (command.action === "idle") return engine.stop("intent-idle");
+                return engine.play(command.action, { intensity: command.intensity, source: command.source });
+              },
+              stop: function (reason) { return engine.stop(reason); },
+              destroy: function () {
+                var result = engine.destroy();
+                if (sc.engine === engine) sc.engine = null;
+                return result;
+              },
+              getState: function () { return engine.getState(); }
+            };
+          }).finally(function () { sc.enginePending = false; });
+        }
+      });
+      return sc.presentation.mount({
+        host: box,
+        surface: opts.surface || "auth",
+        isVisible: function () {
+          var screen = el.closest && el.closest(".auth-screen");
+          return !document.hidden && (!screen || screen.classList.contains("active")) && (!screen || !screen.classList.contains("auth-jaspe-withdrawn"));
+        }
+      }).then(function (mounted) {
+        if (mounted && sc.queuedIntent) {
+          var intent = sc.queuedIntent;
+          var queuedBubble = sc.queuedBubble;
+          sc.queuedIntent = null;
+          sc.queuedBubble = undefined;
+          sc.dispatch(intent, queuedBubble);
+        }
+        return mounted;
+      });
+    }).catch(function () {
+      if (!sc.destroyed) box.dataset.motion = "unavailable";
+      return false;
+    });
 
-    // Réaction ponctuelle : montre une pose (même hors rotation), puis la rotation reprend.
-    sc.react = function (ref, bubbleText, holdMs) {
-      if (sc.photoOnly) return;
-      var idx = -1;
-      for (var i = 0; i < sc.variants.length; i++) {
-        if (sc.variants[i].pack === ref.pack && sc.variants[i].key === ref.key) { idx = i; break; }
+    sc.dispatch = function (intent, bubbleText) {
+      if (sc.destroyed) return false;
+      sc.pendingBubble = bubbleText;
+      if (!sc.presentation) {
+        sc.queuedIntent = intent;
+        sc.queuedBubble = bubbleText;
+        return true;
       }
-      if (idx < 0) return;
-      var hold = holdMs || 3500;
+      return sc.presentation.dispatch(intent);
+    };
+    sc.stop = function () { return !sc.destroyed && sc.presentation ? sc.presentation.stop("showcase") : false; };
+    sc.destroy = function () {
+      if (sc.destroyed) return false;
+      sc.destroyed = true;
+      ++sc.request;
+      window.clearInterval(sc.rotationTimer);
       window.clearTimeout(sc.holdTimer);
-      sc.holdUntil = Date.now() + hold;
-      if (sc.engine) {
-        sc.engine.react(ref);
-        showVariant(sc, idx, bubbleText, true);
-      } else if (sc.transparent) {
-        // Do not substitute unrelated stills while the animation is loading.
-        // Keep the latest intention; its text can be displayed immediately.
-        sc.queuedReaction = ref;
-        if (sc.bubble) sc.bubble.textContent = bubbleText === undefined ? sc.variants[idx].bubble : bubbleText;
-      } else showVariant(sc, idx, bubbleText);
-      sc.holdTimer = setTimeout(function () { sc.holdUntil = 0; }, hold);
+      sc.cleanup.splice(0).forEach(function (remove) { remove(); });
+      if (sc.presentation) sc.presentation.destroy();
+      showcases = showcases.filter(function (item) { return item !== sc; });
+      box.remove();
+      return true;
+    };
+    sc.getState = function () { return sc.presentation ? sc.presentation.getState() : null; };
+
+    // Compatibilité temporaire des pages de revue historiques ; l'application utilise dispatch().
+    sc.react = function (ref, bubbleText, holdMs) {
+      var intents = {
+        listening: "listen",
+        thinking: "think",
+        speaking: "speak",
+        explain: "explain",
+        worried: "error",
+        congratulate: "success"
+      };
+      var kind = ref && intents[ref.key];
+      return kind ? sc.dispatch({ kind: kind, holdMs: holdMs, source: "legacy-review" }, bubbleText) : false;
     };
 
     var rotation = [];
@@ -311,7 +398,7 @@
 
     if (!reduced && !sc.photoOnly && rotation.length > 1) {
       var cursor = 0;
-      setInterval(function () {
+      sc.rotationTimer = setInterval(function () {
         if (sc.transparent || sc.engine || sc.enginePending) return;
         if (document.hidden) return;
         if (Date.now() < sc.holdUntil) return; // une réaction est en cours

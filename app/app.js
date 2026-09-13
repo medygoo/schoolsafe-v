@@ -3187,7 +3187,7 @@
         // doit se terminer avant toute réduction de la présentation.
         if (!event.target.matches(authTextFields)) return;
         setAuthView(true);
-        if (showcase) showcase.react({ pack: "pack2", key: "listening" }, undefined, 4000);
+        if (showcase) showcase.dispatch({ kind: "listen", holdMs: 4000, source: "auth-focus" });
       });
       loginForm.addEventListener("input", function (event) {
         if (event.target.matches(authTextFields)) setAuthView(true);
@@ -3216,16 +3216,16 @@
               : control.dataset.loginMode === "phone"
                 ? (english ? "Enter your phone number to continue." : "Entrez votre numéro de téléphone pour continuer.")
                 : (english ? "Enter your e-mail address to continue." : "Entrez votre adresse e-mail pour continuer.");
-          showcase.react({ pack: "pack3", key: "explain" }, message, 4500);
+          showcase.dispatch({ kind: "explain", holdMs: 4500, source: "auth-control" }, message);
         });
         loginForm.addEventListener("submit", function () {
-          showcase.react({ pack: "pack2", key: "thinking" }, undefined, 6000);
+          showcase.dispatch({ kind: "think", holdMs: 6000, source: "auth-submit" });
         });
         // Réactions passives : le toast applicatif émet déjà safe:event (aucune logique touchée)
         window.addEventListener("safe:event", function (event) {
           var type = event && event.detail && event.detail.type;
-          if (type === "action:error") showcase.react({ pack: "pack4", key: "worried" }, undefined, 4200);
-          else if (type === "action:big_success") showcase.react({ pack: "pack3", key: "congratulate" }, undefined, 3600);
+          if (type === "action:error") showcase.dispatch({ kind: "error", holdMs: 4200, source: "auth-result" });
+          else if (type === "action:big_success") showcase.dispatch({ kind: "success", holdMs: 3600, source: "auth-result" });
         });
       }
     }
