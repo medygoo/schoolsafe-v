@@ -33,6 +33,12 @@ for (const id of [
 }
 
 assert.match(html, /schoolsafe-logo\.png/, "Le logo SchoolSafe officiel doit rester utilisé");
+assert.match(
+  html,
+  /id=["']workspaceDemoBanner["'][^>]*role=["']status["'][^>]*>.*Mode aperçu\s*—\s*données fictives\./,
+  "Le mode aperçu doit rester identifié sans message promotionnel"
+);
+assert.doesNotMatch(html, /Mode démonstration\s*·\s*connectez-vous pour accéder aux données réelles\./, "L'ancien bandeau démonstration ne doit pas revenir");
 assert.match(tokens, /--ss-focus-ring\s*:/, "Le token d'anneau de focus SchoolSafe est requis");
 assert.match(components, /:focus-visible/, "Les composants partagés doivent exposer un focus clavier visible");
 assert.match(combinedCss, /prefers-reduced-motion/, "Le système visuel doit respecter les mouvements réduits");
@@ -42,6 +48,11 @@ assert.doesNotMatch(designSystem, /body::(?:before|after)/, "Les halos fixes du 
 assert.doesNotMatch(designSystem, /\.ss-button--(?:primary|secondary)::after/, "Les flèches automatiques ne doivent pas revenir");
 assert.doesNotMatch(designSystem, /\[class\*=["']screen-/, "Les écrans ne doivent pas recevoir une surcharge globale");
 assert.doesNotMatch(designSystem, /@import\s+url\(["']https:/i, "La CSP SchoolSafe interdit les feuilles CSS externes");
+
+const demoBannerRule = dashboard.match(/\.workspace-demo-banner\s*\{([\s\S]*?)\}/)?.[1] || "";
+assert.match(demoBannerRule, /background:\s*var\(--ss-surface-muted\)/, "Le mode aperçu doit utiliser une surface neutre");
+assert.match(demoBannerRule, /color:\s*var\(--ss-text-secondary\)/, "Le mode aperçu doit garder un texte secondaire lisible");
+assert.doesNotMatch(demoBannerRule, /--ss-warning-/, "Le mode aperçu ne doit pas ressembler à une alerte");
 
 const stylesheetOrder = [
   "styles/design-tokens.css",

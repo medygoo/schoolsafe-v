@@ -24,6 +24,7 @@ Exécuter le lot 2 consacré à la connexion, à l'OTP et à l'espace JASPE resp
 - glassmorphism global, halos fixes, surcharges `!important` et flèches automatiques retirés ;
 - composants partagés harmonisés sans cibler globalement tous les champs et boutons ;
 - import Google Fonts retiré après détection par le navigateur : la CSP reste fermée aux styles externes et la pile locale prend immédiatement le relais ;
+- bandeau de démonstration ramené à l'étiquette neutre `Mode aperçu — données fictives.` ; il reste visible en session fictive et disparaît avec un vrai jeton API ;
 - tableaux de bord administrateur, parent, enseignant, caisse et contrôle vérifiés en 1440 px et 390 px ; aucune régression de navigation ni débordement horizontal ;
 - SchoolSafe Control, JASPE 2D/2,5D, routes et logique métier inchangés.
 

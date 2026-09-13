@@ -437,15 +437,15 @@ body.screen-workspace {
 .workspace-demo-banner {
   display: flex;
   align-items: center;
-  gap: var(--ss-space-3);
-  margin-bottom: var(--ss-space-5);
-  padding: var(--ss-space-3) var(--ss-space-4);
-  background: var(--ss-warning-bg);
-  color: var(--ss-warning-text);
-  border: 1px solid var(--ss-warning-border);
+  gap: var(--ss-space-2);
+  margin-bottom: var(--ss-space-3);
+  padding: var(--ss-space-2) var(--ss-space-4);
+  background: var(--ss-surface-muted);
+  color: var(--ss-text-secondary);
+  border: 1px solid var(--ss-border-default);
   border-radius: var(--ss-radius);
   font-size: var(--ss-text-sm);
-  font-weight: var(--ss-font-semibold);
+  font-weight: var(--ss-font-medium);
 }
 
 .workspace-demo-banner svg {
