@@ -4,7 +4,7 @@ Dernière mise à jour : 13 septembre 2026.
 
 ## Objectif actif
 
-Exécuter le lot 2 consacré à la connexion, à l'OTP et à l'espace JASPE responsive sur les fondations visuelles vertes, sans React, Ant Design, 3D ou Docker.
+Faire relire puis planifier l'harmonisation validée des expériences, postes, accès, tableaux de bord, services d'écosystème et capacités JASPE. La connexion, l'OTP et l'espace JASPE responsive restent le prochain lot visuel à exécuter après cette clarification d'architecture.
 
 ## Source de vérité
 
@@ -101,10 +101,10 @@ Feuille de route complète : `docs/superpowers/plans/2026-09-13-schoolsafe-compl
 
 ## Prochaine action exacte
 
-1. Exécuter la tâche 3 du plan visuel : recomposer la connexion et l'OTP autour du DOM existant.
-2. Réserver à JASPE une zone non superposée sur mobile, tablette et bureau, puis vérifier le contrôleur physique existant.
-3. Exécuter `npm run test:visual-system` et `npm run test:jaspe-physical`, puis synchroniser le lot vert sur `origin/main`.
-4. Continuer dans l'ordre de la feuille de route ; le VPS reste le dernier lot et se fait directement, sans Docker.
+1. Faire relire par le propriétaire `docs/superpowers/specs/2026-09-13-schoolsafe-access-experience-harmonization-design.md`.
+2. Après validation du document, produire les plans d'implémentation par lots, en commençant par le catalogue et le chemin Access Law canoniques.
+3. Reprendre ensuite la tâche 3 du plan visuel en l'alignant sur le contrat de session validé.
+4. Continuer dans l'ordre des lots ; le VPS reste le dernier lot et se fait directement, sans Docker.
 
 ## Procédure de reprise depuis l'autre compte
 
