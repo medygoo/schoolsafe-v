@@ -59,11 +59,13 @@ Spécification : `docs/superpowers/specs/2026-09-13-schoolsafe-responsive-visual
 
 Plan : `docs/superpowers/plans/2026-09-13-schoolsafe-responsive-visual-system.md`.
 
+Feuille de route complète : `docs/superpowers/plans/2026-09-13-schoolsafe-complete-delivery-roadmap.md`.
+
 ## Prochaine action exacte
 
-1. Exécuter le lot 1 du plan visuel : contrat QA, consolidation des tokens et réduction des effets globaux excessifs.
-2. Valider ce socle aux trois largeurs de référence avant de modifier la connexion/OTP.
-3. Continuer ensuite lot par lot sans mélanger la voix, GLM, le VPS ni l'assistant de tableau de bord.
+1. Exécuter le lot 0 de la feuille de route complète : baseline reproductible et inventaire des écarts démonstration/réel.
+2. Exécuter ensuite le lot 1 visuel : contrat QA, consolidation des tokens et réduction des effets globaux excessifs.
+3. Continuer dans l'ordre de la feuille de route ; le VPS reste le dernier lot et se fait directement, sans Docker.
 
 ## Procédure de reprise depuis l'autre compte
 
