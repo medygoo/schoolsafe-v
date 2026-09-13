@@ -1,15 +1,22 @@
 import Fastify from "fastify";
 import { describe, expect, it, vi } from "vitest";
-import { registerSetupRoutes, type SetupRouteDependencies } from "../src/setup/routes.js";
+import {
+  registerSetupRoutes,
+  type SetupRouteDependencies,
+} from "../src/setup/routes.js";
 import type { SetupService } from "../src/setup/service.js";
 
-function createMockService(overrides: Partial<SetupService> = {}): SetupService {
+function createMockService(
+  overrides: Partial<SetupService> = {},
+): SetupService {
   return {
     getConfig: vi.fn().mockReturnValue({
       supabase_url: "https://test.supabase.co",
       supabase_anon_key: "test-anon-key",
     }),
-    validateToken: vi.fn().mockImplementation((token) => token === "valid-setup-token"),
+    validateToken: vi
+      .fn()
+      .mockImplementation((token) => token === "valid-setup-token"),
     createSchool: vi.fn().mockResolvedValue({
       school_id: "school-1",
       academic_year_id: "year-1",
@@ -18,7 +25,6 @@ function createMockService(overrides: Partial<SetupService> = {}): SetupService 
       user_id: "user-1",
       profile_id: "profile-1",
     }),
-    findEmailByPhone: vi.fn().mockResolvedValue(null),
     ...overrides,
   };
 }
@@ -82,7 +88,6 @@ describe("GET /config", () => {
     await app.close();
   });
 });
-
 describe("POST /setup/validate-token", () => {
   it("accepts a valid setup token", async () => {
     const service = createMockService();
@@ -127,7 +132,10 @@ describe("POST /setup/school", () => {
     });
 
     expect(response.statusCode).toBe(201);
-    expect(response.json()).toEqual({ school_id: "school-1", academic_year_id: "year-1" });
+    expect(response.json()).toEqual({
+      school_id: "school-1",
+      academic_year_id: "year-1",
+    });
     expect(service.createSchool).toHaveBeenCalledTimes(1);
     await app.close();
   });
@@ -176,7 +184,10 @@ describe("POST /setup/admin", () => {
     });
 
     expect(response.statusCode).toBe(201);
-    expect(response.json()).toEqual({ user_id: "user-1", profile_id: "profile-1" });
+    expect(response.json()).toEqual({
+      user_id: "user-1",
+      profile_id: "profile-1",
+    });
     expect(service.createAdmin).toHaveBeenCalledTimes(1);
     await app.close();
   });
@@ -194,40 +205,6 @@ describe("POST /setup/admin", () => {
     expect(response.statusCode).toBe(403);
     expect(response.json()).toMatchObject({ code: "SETUP_TOKEN_INVALID" });
     expect(service.createAdmin).not.toHaveBeenCalled();
-    await app.close();
-  });
-});
-
-describe("POST /auth/lookup-phone", () => {
-  it("returns email for known phone", async () => {
-    const service = createMockService({
-      findEmailByPhone: vi.fn().mockResolvedValue("parent@ecole.cd"),
-    });
-    const app = buildTestApp(service);
-
-    const response = await app.inject({
-      method: "POST",
-      url: "/auth/lookup-phone",
-      payload: { phone: "+243 81 000 00 00" },
-    });
-
-    expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({ email: "parent@ecole.cd" });
-    await app.close();
-  });
-
-  it("returns 404 for unknown phone", async () => {
-    const service = createMockService();
-    const app = buildTestApp(service);
-
-    const response = await app.inject({
-      method: "POST",
-      url: "/auth/lookup-phone",
-      payload: { phone: "+243 99 999 99 99" },
-    });
-
-    expect(response.statusCode).toBe(404);
-    expect(response.json()).toMatchObject({ code: "PHONE_NOT_FOUND" });
     await app.close();
   });
 });

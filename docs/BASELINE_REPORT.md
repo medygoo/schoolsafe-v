@@ -1,15 +1,29 @@
 # Baseline de livraison SchoolSafe
 
 Date : 13 septembre 2026
-Commit audité : `4b864ef5f96456ec4169c361c991748999602878`
+Commit audité initialement : `4b864ef5f96456ec4169c361c991748999602878`
+Lot 0A démarré depuis : `9bba2f13a4aa09df512db1d726d51bd055155a58`
 Branche : `main`
 Port local de référence : `http://127.0.0.1:4176/`
 
 ## Résultat exécutif
 
-Le dépôt est installable et le serveur TypeScript compile, mais la baseline n'est pas encore entièrement verte. Les tests confirment que la majorité des fonctions serveur sont déjà présentes : 49 fichiers de tests passent et 274 tests sur 276 réussissent. Les écarts restants sont concentrés dans le catalogue de permissions, le contrôle des migrations, deux contrats de l'application VPS native, la reproductibilité des manifestes SQL sous Windows et les dépendances signalées par NPM.
+Le lot 0A a remis la baseline au vert. La CI exécute désormais le contrôle en lecture seule des six ensembles de migrations, le typecheck et les 276 tests serveur sans échec. Les 60 permissions canoniques sont partagées, les manifestes sont reproductibles entre LF et CRLF, les anciennes routes natives sont absentes, les uploads de test sont isolés et l'audit NPM ne signale plus de vulnérabilité.
 
-Le chantier visuel peut être préparé, mais son exécution doit commencer seulement après le lot 0A de réparation de baseline défini dans la feuille de route.
+Le lot 1 visuel peut maintenant commencer sur cette base vérifiée.
+
+## Clôture du lot 0A
+
+| Contrôle final | Résultat | Preuve synthétique |
+|---|---|---|
+| `npm run ci` | PASS | 6 ensembles/21 unités de migrations, TypeScript valide, 51 fichiers et 276 tests serveur réussis. |
+| Tests statiques SQL et test multi-plateforme | PASS | 57 tests réussis, dont les 60 permissions canoniques et l'équivalence LF/CRLF. |
+| `npm run test:jaspe-physical` | PASS | 5 tests réussis ; contrat physique v12 PASS. |
+| `npm run test:no-guardian-screen` | PASS | ancien écran `guardian` absent ; références métier `school.guardian` conservées. |
+| `npm audit --json` | PASS | 0 vulnérabilité après Fastify `5.12.4`, Vitest `4.1.11` et résolutions sûres de `fast-uri`. |
+| Résidus d'upload | PASS | test isolé dans le répertoire temporaire du système, nettoyé dans `finally`; anciens faux logos retirés. |
+
+Vitest `5.0.0` a été évalué comme prévu, mais son paquet publié a cassé le typecheck du harnais (`@vitest/expect` absent et types navigateur incompatibles). Vitest `4.1.11`, qui contient le correctif de sécurité et reste compatible avec Node 22/24, a donc été retenu et vérifié par la suite complète.
 
 ## Environnement observé
 
@@ -29,7 +43,7 @@ Le chantier visuel peut être préparé, mais son exécution doit commencer seul
 - Le dépôt était propre avant les commandes.
 - Les manifestes réécrits par les générateurs et le logo temporaire créé par les tests ont été identifiés comme artefacts du lot, puis retirés pour restaurer l'état propre avant documentation.
 
-## Résultats des commandes
+## Résultats initiaux avant le lot 0A
 
 | Contrôle | Résultat | Preuve synthétique |
 |---|---|---|
@@ -42,7 +56,7 @@ Le chantier visuel peut être préparé, mais son exécution doit commencer seul
 | Vérification directe des empreintes | ÉCHEC PARTIEL | `baseline` passe ; `auth`, `access`, `license`, `trial` et `projections` divergent. |
 | `npm audit --json` | ÉCHEC | 4 vulnérabilités : 3 modérées, 1 élevée. |
 
-## Écarts bloquants confirmés
+## Écarts bloquants confirmés lors de l'audit initial
 
 ### B0-1 — Catalogue de permissions absent
 
@@ -135,7 +149,7 @@ Les marqueurs `BACKEND_LATER` rendent honnêtement ces limites visibles aujourd'
 - `app/modules/document-engine/frontend-renderer.js` produit actuellement un contenu de type CSV présenté comme un placeholder XLSX ; une release ne doit jamais fournir ce contenu avec l'extension `.xlsx`.
 - plusieurs surfaces sécurité, finance, pédagogie et communication restent frontend uniquement malgré l'existence de services serveur partiels.
 
-## Lot 0A obligatoire avant le design
+## Lot 0A exécuté avant le design
 
 Ordre de réparation :
 
@@ -146,4 +160,4 @@ Ordre de réparation :
 5. mettre à jour Fastify/fast-uri sans version majeure, puis traiter Vitest séparément si la migration 5 reste compatible ;
 6. relancer typecheck, suite serveur, tests statiques SQL, JASPE et absence de `guardian`.
 
-Le lot 1 visuel commence seulement lorsque la baseline repasse au vert ou lorsqu'une limite explicitement non bloquante est consignée et acceptée.
+Ces six étapes sont terminées. La limite non bloquante restante est l'avertissement NPM sur la politique `allowScripts` d'Esbuild, à décider avant la release VPS ; aucun script inconnu n'a été approuvé pendant ce lot.

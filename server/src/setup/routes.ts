@@ -1,9 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { SchoolSafeError } from "../http/errors.js";
-import { newRequestId } from "../http/request-id.js";
 import type { SetupService } from "./service.js";
 import {
-  phoneLookupPayloadSchema,
   setupAdminPayloadSchema,
   setupSchoolPayloadSchema,
   validateTokenPayloadSchema,
@@ -74,24 +72,5 @@ export function registerSetupRoutes(app: FastifyInstance, dependencies: SetupRou
         false,
       );
     }
-  });
-
-  app.post("/auth/lookup-phone", async (request, reply) => {
-    const body = phoneLookupPayloadSchema.safeParse(request.body);
-    if (!body.success) {
-      throw new SchoolSafeError(400, "VALIDATION_INVALID", "Numéro invalide", false);
-    }
-
-    const email = await dependencies.service.findEmailByPhone(body.data.phone);
-    if (!email) {
-      return reply.status(404).send({
-        code: "PHONE_NOT_FOUND",
-        message: "Aucun compte associé à ce numéro",
-        request_id: newRequestId(),
-        retryable: false,
-      });
-    }
-
-    return reply.status(200).send({ email });
   });
 }

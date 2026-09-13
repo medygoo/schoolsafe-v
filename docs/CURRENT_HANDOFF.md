@@ -4,7 +4,7 @@ Dernière mise à jour : 13 septembre 2026.
 
 ## Objectif actif
 
-Réparer les blocages révélés par la baseline avant de commencer le système visuel responsive : catalogue de permissions absent, contrôle de migrations absent, manifestes non reproductibles sous Windows, contrats VPS natifs divergents, upload de test résiduel et dépendances vulnérables. Le rapport détaillé est dans `docs/BASELINE_REPORT.md`.
+Exécuter le lot 1 des fondations visuelles responsive sur la baseline verte, sans React, Ant Design, 3D ou Docker. Le rapport de clôture technique est dans `docs/BASELINE_REPORT.md`.
 
 ## Source de vérité
 
@@ -16,15 +16,16 @@ Réparer les blocages révélés par la baseline avant de commencer le système 
 
 ## Dernier lot terminé
 
-### Lot 0 — baseline et inventaire
+### Lot 0A — baseline critique réparée
 
-- dépendances verrouillées installées avec succès ;
-- TypeScript valide ;
-- 49 fichiers de tests serveur passent, 2 échouent ; 274 tests passent sur 276 ;
-- 54 tests statiques SQL passent sur 55 ;
-- tests JASPE physique et suppression `guardian` réussis ;
-- 1 111 marqueurs démonstration/placeholder/BACKEND_LATER classés dans 68 fichiers ;
-- écarts techniques et dette de dépendances documentés sans correction métier dans ce lot.
+- catalogue partagé des 60 permissions restauré et vérifié contre le seed SQL ;
+- contrôle de migrations en lecture seule ajouté pour 6 ensembles et 21 unités ;
+- hashes SQL normalisés et prouvés identiques sous LF/CRLF ;
+- `/config.setup_available` dépend du vrai token setup ; anciennes routes `/session/bootstrap` et `/auth/lookup-phone` absentes ;
+- upload de test isolé et nettoyé, anciens faux logos retirés ;
+- Fastify `5.12.4`, Vitest `4.1.11` et `fast-uri` corrigés ; audit NPM à zéro vulnérabilité ;
+- CI verte : 51 fichiers, 276 tests serveur, typecheck et contrôle migrations réussis ;
+- 57 tests statiques/contrats SQL et multi-plateformes réussis.
 
 Rapport : `docs/BASELINE_REPORT.md`.
 
@@ -51,6 +52,9 @@ Rapport : `docs/BASELINE_REPORT.md`.
 
 ## Vérifications exécutées
 
+- `npm run ci` : migrations PASS, typecheck PASS, 51 fichiers/276 tests serveur PASS.
+- tests statiques SQL + contrôle LF/CRLF : 57 tests PASS.
+- `npm audit --json` : 0 vulnérabilité.
 - `npm run test:jaspe-physical` : 5 tests réussis, 0 échec ; contrat physique v12/façade affiché `PASS`.
 - `node app/qa-safe-assistant-access.cjs` : `FE-SEC-A3A4 access law + safe assistant gate: PASS`.
 - `npm run test:no-guardian-screen` : `Legacy guardian screen removal: PASS`.
@@ -60,6 +64,8 @@ Rapport : `docs/BASELINE_REPORT.md`.
 
 ## Limites vérifiées honnêtement
 
+- NPM avertit encore que la politique `allowScripts` n'autorise pas explicitement les postinstall Esbuild ; ce choix doit être fixé avant la release VPS.
+- L'upload de logo filtre aujourd'hui par type MIME déclaré et taille ; la vérification des octets/signatures d'image reste à durcir avant l'exposition publique.
 - La priorité `error/refuse` et le repli lors d'un refus du moteur sont couverts par les tests automatisés.
 - L'émulation navigateur de `prefers-reduced-motion` et le blocage réseau du manifeste v12 n'ont pas été rejoués manuellement avec l'outil de navigateur disponible.
 - L'assistant flottant de l'espace de travail n'est toujours pas activé.
@@ -77,8 +83,8 @@ Feuille de route complète : `docs/superpowers/plans/2026-09-13-schoolsafe-compl
 
 ## Prochaine action exacte
 
-1. Exécuter le lot 0A de la feuille de route : restaurer les contrats critiques et obtenir une baseline verte.
-2. Exécuter ensuite le lot 1 visuel : contrat QA, consolidation des tokens et réduction des effets globaux excessifs.
+1. Exécuter le lot 1 visuel : contrat QA responsive, consolidation des tokens et réduction des effets globaux excessifs.
+2. Vérifier les écrans sur mobile, tablette et bureau au port `4176`, sans toucher au port obsolète `4175`.
 3. Continuer dans l'ordre de la feuille de route ; le VPS reste le dernier lot et se fait directement, sans Docker.
 
 ## Procédure de reprise depuis l'autre compte

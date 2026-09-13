@@ -60,14 +60,9 @@ export const validateTokenPayloadSchema = z.object({
   token: z.string().min(1),
 });
 
-export const phoneLookupPayloadSchema = z.object({
-  phone: z.string().min(1),
-});
-
 export type SetupSchoolPayload = z.infer<typeof setupSchoolPayloadSchema>;
 export type SetupAdminPayload = z.infer<typeof setupAdminPayloadSchema>;
 export type ValidateTokenPayload = z.infer<typeof validateTokenPayloadSchema>;
-export type PhoneLookupPayload = z.infer<typeof phoneLookupPayloadSchema>;
 
 export type SetupResult = {
   school_id: string;

@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { buildApp } from "../src/app.js";
 import type { AccessService } from "../src/access/service.js";
 import type { SchoolService } from "../src/school/service.js";
@@ -139,12 +142,13 @@ function createMockService(): MockSchoolService {
   } as MockSchoolService;
 }
 
-function buildTestApp(service: SchoolService, access: AccessService) {
+function buildTestApp(service: SchoolService, access: AccessService, logoUploadDir?: string) {
   return buildApp({
     school: {
       service,
       resolveProfileAndSchool: vi.fn().mockResolvedValue({ profileId: "profile-1", schoolId: "school-1" }),
       access,
+      logoUploadDir,
     },
     access,
   });
@@ -422,25 +426,59 @@ describe("School & Staff routes", () => {
 
   it("POST /school/logo uploads a logo", async () => {
     const service = createMockService();
-    const app = buildTestApp(service, accessService());
+    const logoUploadDir = mkdtempSync(path.join(tmpdir(), "schoolsafe-logo-test-"));
+    const app = buildTestApp(service, accessService(), logoUploadDir);
     const boundary = "----formdata-test";
     const body = buildMultipartBody(boundary, [
       { name: "logo", filename: "logo.png", contentType: "image/png", value: Buffer.from("fake-png-bytes") },
     ]);
-    const response = await app.inject({
-      method: "POST",
-      url: "/school/logo",
-      headers: {
-        authorization: "Bearer valid-token",
-        "content-type": `multipart/form-data; boundary=${boundary}`,
-      },
-      payload: body,
-    });
-    expect(response.statusCode).toBe(200);
-    const json = response.json();
-    expect(json.logo_path).toMatch(/^\/uploads\/logos\/.+\.png$/);
-    expect(service.saveLogoPath).toHaveBeenCalledWith("school-1", json.logo_path);
-    await app.close();
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/school/logo",
+        headers: {
+          authorization: "Bearer valid-token",
+          "content-type": `multipart/form-data; boundary=${boundary}`,
+        },
+        payload: body,
+      });
+      expect(response.statusCode).toBe(200);
+      const json = response.json();
+      expect(json.logo_path).toMatch(/^\/uploads\/logos\/.+\.png$/);
+      expect(service.saveLogoPath).toHaveBeenCalledWith("school-1", json.logo_path);
+      expect(readdirSync(logoUploadDir)).toHaveLength(1);
+    } finally {
+      await app.close();
+      rmSync(logoUploadDir, { recursive: true, force: true });
+    }
+  });
+
+  it("POST /school/logo removes the file when persistence fails", async () => {
+    const service = createMockService();
+    vi.mocked(service.saveLogoPath).mockRejectedValueOnce(new Error("database unavailable"));
+    const logoUploadDir = mkdtempSync(path.join(tmpdir(), "schoolsafe-logo-test-"));
+    const app = buildTestApp(service, accessService(), logoUploadDir);
+    const boundary = "----formdata-test";
+    const body = buildMultipartBody(boundary, [
+      { name: "logo", filename: "logo.png", contentType: "image/png", value: Buffer.from("fake-png-bytes") },
+    ]);
+
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/school/logo",
+        headers: {
+          authorization: "Bearer valid-token",
+          "content-type": `multipart/form-data; boundary=${boundary}`,
+        },
+        payload: body,
+      });
+      expect(response.statusCode).toBe(500);
+      expect(readdirSync(logoUploadDir)).toEqual([]);
+    } finally {
+      await app.close();
+      rmSync(logoUploadDir, { recursive: true, force: true });
+    }
   });
 
   it("POST /school/staff/invite records staff.invited audit event", async () => {

@@ -17,7 +17,6 @@ export interface SetupService {
   validateToken(token: string): boolean;
   createSchool(payload: SetupSchoolPayload): Promise<SetupResult>;
   createAdmin(payload: SetupAdminPayload): Promise<AdminSetupResult>;
-  findEmailByPhone(phone: string): Promise<string | null>;
 }
 
 export function createSetupNativeService(
@@ -28,7 +27,7 @@ export function createSetupNativeService(
   return {
     getConfig(): ConfigResponse {
       return {
-        setup_available: true,
+        setup_available: Boolean(setupToken),
         auth_mode: "native",
       };
     },
@@ -115,14 +114,6 @@ export function createSetupNativeService(
       } finally {
         client.release();
       }
-    },
-
-    async findEmailByPhone(phone: string): Promise<string | null> {
-      const result = await businessPool.query<{ email: string }>(
-        "select email from iam.profiles where phone = $1 and is_active = true limit 1",
-        [phone],
-      );
-      return result.rows[0]?.email ?? null;
     },
   };
 }

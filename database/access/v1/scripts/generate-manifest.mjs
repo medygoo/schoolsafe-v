@@ -1,7 +1,7 @@
-import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { sha256Sql } from "../../../../scripts/migration-manifest.mjs";
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const accessDir = path.resolve(scriptsDir, "..");
@@ -15,7 +15,7 @@ for (const [index, file] of units.entries()) {
     order: index + 1,
     name: path.basename(file, ".sql").slice(3),
     file,
-    sha256: createHash("sha256").update(bytes).digest("hex"),
+    sha256: sha256Sql(bytes),
   });
 }
 

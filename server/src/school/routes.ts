@@ -22,10 +22,12 @@ export interface SchoolRouteDependencies {
   service: SchoolService;
   resolveProfileAndSchool: (token: string) => Promise<{ profileId: string | null; schoolId: string | null }>;
   access: AccessService;
+  logoUploadDir?: string;
 }
 
 export function registerSchoolRoutes(app: FastifyInstance, deps: SchoolRouteDependencies): void {
   const { service, resolveProfileAndSchool, access } = deps;
+  const logoUploadDir = deps.logoUploadDir ?? path.resolve(process.cwd(), "server/uploads/logos");
 
   app.get(
     "/school/settings",
@@ -267,9 +269,8 @@ export function registerSchoolRoutes(app: FastifyInstance, deps: SchoolRouteDepe
       };
       const ext = mimeToExt[file.mimetype] ?? "png";
       const filename = `${randomUUID()}.${ext}`;
-      const uploadDir = path.resolve(process.cwd(), "server/uploads/logos");
-      mkdirSync(uploadDir, { recursive: true });
-      const filepath = path.join(uploadDir, filename);
+      mkdirSync(logoUploadDir, { recursive: true });
+      const filepath = path.join(logoUploadDir, filename);
       await pipeline(file.file, createWriteStream(filepath));
 
       const stats = statSync(filepath);
@@ -279,7 +280,12 @@ export function registerSchoolRoutes(app: FastifyInstance, deps: SchoolRouteDepe
       }
 
       const logoPath = `/uploads/logos/${filename}`;
-      await service.saveLogoPath(schoolId, logoPath);
+      try {
+        await service.saveLogoPath(schoolId, logoPath);
+      } catch (error) {
+        unlinkSync(filepath);
+        throw error;
+      }
       reply.send({ logo_path: logoPath });
     },
   );
