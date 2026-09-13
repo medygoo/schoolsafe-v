@@ -8,6 +8,7 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "u
 const pkg = JSON.parse(read("package.json"));
 const html = read("app/index.html");
 read("app/app.js");
+const serviceWorker = read("app/sw.js");
 const tokens = read("app/styles/design-tokens.css");
 const designSystem = read("app/styles/design-system.css");
 const components = read("app/styles/components.css");
@@ -39,6 +40,7 @@ assert.match(
   "Le mode aperçu doit rester identifié sans message promotionnel"
 );
 assert.doesNotMatch(html, /Mode démonstration\s*·\s*connectez-vous pour accéder aux données réelles\./, "L'ancien bandeau démonstration ne doit pas revenir");
+assert.match(serviceWorker, /CACHE_NAME\s*=\s*CACHE_PREFIX\s*\+\s*["']visual-system-2026-09-13["']/, "La version du cache doit publier le nouveau système visuel");
 assert.match(tokens, /--ss-focus-ring\s*:/, "Le token d'anneau de focus SchoolSafe est requis");
 assert.match(components, /:focus-visible/, "Les composants partagés doivent exposer un focus clavier visible");
 assert.match(combinedCss, /prefers-reduced-motion/, "Le système visuel doit respecter les mouvements réduits");

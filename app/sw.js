@@ -1,5 +1,5 @@
 var CACHE_PREFIX = "schoolsafe-v2-";
-var CACHE_NAME = CACHE_PREFIX + "vps-native-2026-09-09";
+var CACHE_NAME = CACHE_PREFIX + "visual-system-2026-09-13";
 var CORE_PATHS = [
   "./",
   "./index.html",

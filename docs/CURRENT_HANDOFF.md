@@ -24,7 +24,7 @@ Exécuter le lot 2 consacré à la connexion, à l'OTP et à l'espace JASPE resp
 - glassmorphism global, halos fixes, surcharges `!important` et flèches automatiques retirés ;
 - composants partagés harmonisés sans cibler globalement tous les champs et boutons ;
 - import Google Fonts retiré après détection par le navigateur : la CSP reste fermée aux styles externes et la pile locale prend immédiatement le relais ;
-- bandeau de démonstration ramené à l'étiquette neutre `Mode aperçu — données fictives.` ; il reste visible en session fictive et disparaît avec un vrai jeton API ;
+- bandeau de démonstration ramené à l'étiquette neutre `Mode aperçu — données fictives.` ; il reste visible en session fictive et disparaît avec un vrai jeton API ; le cache PWA a été versionné pour livrer immédiatement le nouveau CSS ;
 - tableaux de bord administrateur, parent, enseignant, caisse et contrôle vérifiés en 1440 px et 390 px ; aucune régression de navigation ni débordement horizontal ;
 - SchoolSafe Control, JASPE 2D/2,5D, routes et logique métier inchangés.
 
@@ -87,6 +87,7 @@ Rapport : `docs/BASELINE_REPORT.md`.
 - L'assistant flottant de l'espace de travail n'est toujours pas activé.
 - La voix, GLM et la synchronisation labiale ne sont pas implémentés dans ce lot.
 - Le contrôle navigateur multi-profils termine ses assertions fonctionnelles et ses captures, mais son collecteur de console signale `ERR_CONNECTION_REFUSED` tant que l'API locale sur le port 8787 n'est pas démarrée ; ce n'est pas une erreur CSS.
+- `app/qa-pwa.cjs` confirme le contrôle du service worker et la disponibilité des assets en ligne/hors ligne, puis s'arrête sur son ancien scénario qui tente encore de mettre une opération sensible `administration` en file sans session serveur ; la loi d'accès actuelle la refuse correctement.
 
 ## Direction visuelle verrouillée
 
