@@ -15,7 +15,19 @@ const makeCanvas=()=>Object.assign(document.createElement('canvas'),{width:W,hei
 const assetBase=new URL('../../assets/jaspe2d/v12/',import.meta.url);
 const reactionActions={wave:'wave',idle:'joySway',explain:'guide',listening:'attentive',thinking:'deepThink',worried:'worried',congratulate:'thumbsUp'};
 
-export async function mountLiveCompanion(box,host,{review=false}={}) {
+export async function mountLiveCompanion(box,host,{
+  review=false,
+  isVisible=()=>!document.hidden,
+  isTyping=()=>false,
+  isBust=()=>false,
+  activityTarget=host,
+}={}) {
+  const bindings=[];
+  const listen=(target,type,handler,options)=>{
+    if(!target?.addEventListener)return;
+    target.addEventListener(type,handler,options);
+    bindings.push(()=>target.removeEventListener(type,handler,options));
+  };
   const response=await fetch(new URL('manifest.json',assetBase));
   if(!response.ok)throw new Error('V12 library unavailable');
   const library=await response.json(), allowed=new Set(library.actions);
@@ -26,7 +38,7 @@ export async function mountLiveCompanion(box,host,{review=false}={}) {
   const loaded={},pending=new Map(),faces={},nativeEyes={};
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const planner=new IdlePlanner();
-  let closed,renderer,body,last=0,lastDraw=0,frameId=0,failed=false,requestId=0,pendingAction=false;
+  let closed=false,closedEyes,renderer,body,last=0,lastDraw=0,frameId=0,failed=false,requestId=0,pendingAction=false;
   let faceBlend=0,wasTyping=false,snapshot=null,dirty=true;
   const scene=makeCanvas(),context=scene.getContext('2d');
   const faceLayer=document.createElement('canvas');faceLayer.width=208;faceLayer.height=180;
@@ -55,7 +67,7 @@ export async function mountLiveCompanion(box,host,{review=false}={}) {
       const matte=displayMatte(asset,W,H,pose.holes,pose.face,pose);
       retainPortrait(matte.image);
       loaded[key]=matte;
-      if(pose.nativeEyes&&closed){const aligned=alignPortrait(asset,pose.eyes,W,H);nativeEyes[key]=createEyeRenderer(aligned.pixels,closed.pixels,W);}
+      if(pose.nativeEyes&&closedEyes){const aligned=alignPortrait(asset,pose.eyes,W,H);nativeEyes[key]=createEyeRenderer(aligned.pixels,closedEyes.pixels,W);}
     })().catch(error=>{pending.delete(key);throw error;}));
     return pending.get(key);
   }
@@ -72,19 +84,19 @@ export async function mountLiveCompanion(box,host,{review=false}={}) {
   }
   async function loadFace(key,file) {
     const asset=await loadFile(file);
-    faces[key]={image:facePatch(asset.image),eyes:createEyeRenderer(asset.pixels,closed.pixels,W)};
+    faces[key]={image:facePatch(asset.image),eyes:createEyeRenderer(asset.pixels,closedEyes.pixels,W)};
   }
   async function ensureAction(action) {
     // Limit concurrent photo decodes. Photos for later gestures are requested only when needed.
     for(const key of new Set(['rest','mid1',...actions[action].path.map(item=>item[0])]))await loadPose(key);
   }
-  async function play(action) {
-    if(!allowed.has(action)||reduced.matches||failed)return false;
+  async function play(action,metadata={}) {
+    if(closed||!allowed.has(action)||reduced.matches||failed)return false;
     const id=++requestId;pendingAction=true;
     try {
       await ensureAction(action);
-      if(id!==requestId||failed)return false;
-      controller.request(action,{intensity:.9});
+      if(closed||id!==requestId||failed)return false;
+      controller.request(action,{...metadata,intensity:metadata.intensity??.9});
       controller.idleBlockedUntil=Infinity;
       dirty=true;
       return true;
@@ -92,6 +104,7 @@ export async function mountLiveCompanion(box,host,{review=false}={}) {
     finally {if(id===requestId)pendingAction=false;}
   }
   function fail() {
+    if(closed)return;
     failed=true;cancelAnimationFrame(frameId);
     box.classList.remove('jaspe2d--live');box.dataset.motion='unavailable';
     if(renderer)renderer.canvas.remove();
@@ -126,21 +139,21 @@ export async function mountLiveCompanion(box,host,{review=false}={}) {
     box.dataset.motion=state.action;
   }
   function tick(now) {
-    if(failed)return;
+    if(closed||failed)return;
     frameId=requestAnimationFrame(tick);
-    const auth=host.closest('.auth-screen'),visible=auth?.classList.contains('active')&&!auth.classList.contains('auth-jaspe-withdrawn')&&!document.hidden;
+    const visible=isVisible()&&!document.hidden;
     if(!visible){last=0;return;}
     const interval=1000/24;
     if(now-lastDraw<interval)return;
     const dt=last?Math.min(50,now-last):interval;last=now;lastDraw=now;
-    const typing=auth.classList.contains('auth-is-typing');
+    const typing=isTyping();
     if(typing&&!wasTyping){++requestId;pendingAction=false;controller.request('idle');controller.idleBlockedUntil=Infinity;}
     if(typing||wasTyping)planner.activity(controller.clock);
     wasTyping=typing;
     controller.liveliness=typing?.4:1.2;
     if(!reduced.matches)controller.advance(dt);
     if(!review&&!reduced.matches&&!pendingAction) {
-      const bust=auth.dataset.loginLayout==='welcome'&&matchMedia('(max-width: 760px)').matches;
+      const bust=isBust();
       // In the upper-body dock, use welcoming gestures that remain readable.
       // Walking/jumping belongs to the full-body presentation.
       const next=planner.next({clock:controller.clock,typing,bust,idle:controller.action==='idle',
@@ -150,7 +163,7 @@ export async function mountLiveCompanion(box,host,{review=false}={}) {
     if(reduced.matches&&!dirty)return;
     try {draw(controller.sample(),dt);dirty=false;}catch{fail();}
   }
-  closed=await loadFile('references/paupières-fermées.png');
+  closedEyes=await loadFile('references/paupières-fermées.png');
   await Promise.all([loadPose('rest'),loadFace('smile','images/smileMid.png'),loadFace('joy','images/grand-sourire.png')]);
   renderer=createPhotoRenderer(loaded,poses,W,H);
   body=createBodyRenderer(W,H);
@@ -164,14 +177,27 @@ export async function mountLiveCompanion(box,host,{review=false}={}) {
     ++requestId;pendingAction=false;
     if(['walk','joySway','attentive'].includes(controller.action)){controller.request('idle');controller.idleBlockedUntil=Infinity;}
   };
-  const auth=host.closest('.auth-screen');
-  if(!review)for(const event of ['pointerdown','keydown','input'])auth?.addEventListener(event,activity,{passive:true});
-  const handle={play,react:ref=>{planner.activity(controller.clock);return play(reactionActions[ref.key]||'wave');},
+  if(!review)for(const event of ['pointerdown','keydown','input'])listen(activityTarget,event,activity,{passive:true});
+  const stop=()=>{
+    if(closed)return false;
+    ++requestId;pendingAction=false;
+    controller.request('idle');controller.idleBlockedUntil=Infinity;dirty=true;
+    return true;
+  };
+  const destroy=()=>{
+    if(closed)return false;
+    closed=true;++requestId;pendingAction=false;
+    cancelAnimationFrame(frameId);bindings.splice(0).forEach(remove=>remove());
+    renderer?.canvas.remove();box.classList.remove('jaspe2d--live');
+    if(host.jaspePresentation===handle)delete host.jaspePresentation;
+    return true;
+  };
+  const handle={play:play,stop:stop,destroy:destroy,react:ref=>{planner.activity(controller.clock);return play(reactionActions[ref.key]||'wave');},
     setPlaybackRate:rate=>{if(review&&[.5,1].includes(rate)){controller.speed=rate;return true;}return false;},
     getState:()=>snapshot?structuredClone(snapshot):null};
   host.jaspePresentation=handle;
-  reduced.addEventListener('change',()=>{dirty=true;last=0;});
-  renderer.canvas.addEventListener('webglcontextlost',fail);
+  listen(reduced,'change',()=>{dirty=true;last=0;});
+  listen(renderer.canvas,'webglcontextlost',fail);
   frameId=requestAnimationFrame(tick);
   return handle;
 }
