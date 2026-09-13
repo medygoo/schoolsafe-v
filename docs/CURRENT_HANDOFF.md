@@ -101,10 +101,10 @@ Feuille de route complète : `docs/superpowers/plans/2026-09-13-schoolsafe-compl
 
 ## Prochaine action exacte
 
-1. Faire relire par le propriétaire `docs/superpowers/specs/2026-09-13-schoolsafe-access-experience-harmonization-design.md`.
-2. Après validation du document, produire les plans d'implémentation par lots, en commençant par le catalogue et le chemin Access Law canoniques.
+1. Faire valider puis exécuter `docs/superpowers/plans/2026-09-13-schoolsafe-canonical-access-law.md`, produit comme premier plan après la spécification d'harmonisation.
+2. Vérifier et synchroniser chacun de ses sept lots techniques avant de commencer l'éditeur de postes personnalisés.
 3. Reprendre ensuite la tâche 3 du plan visuel en l'alignant sur le contrat de session validé.
-4. Continuer dans l'ordre des lots ; le VPS reste le dernier lot et se fait directement, sans Docker.
+4. Continuer dans l'ordre des plans séparés ; le VPS reste le dernier lot et se fait directement, sans Docker.
 
 ## Procédure de reprise depuis l'autre compte
 
