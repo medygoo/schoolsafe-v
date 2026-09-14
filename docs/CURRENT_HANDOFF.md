@@ -67,6 +67,12 @@ Ne commencer **aucune** fonctionnalité Écosystème, JASPE, Watch ou Control av
 
 ## RÈGLE OPÉRATIONNELLE ACTUELLE (répartition des agents)
 
+**Règle de vérification avant travail (ordre permanent, 14/09)** : avant toute
+action sur un point, **vérifier d'abord ce qui est déjà fait sur ce point**
+(preuve fraîche dans le code/tests, pas une supposition ni un document),
+**corriger si nécessaire**, et **travailler ensuite**. Chaque lot/tâche
+commence par ce point de vérification, dans l'ordre verrouillé.
+
 ```text
 Claude :
 - frontend ;
