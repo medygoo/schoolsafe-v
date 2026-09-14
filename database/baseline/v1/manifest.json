@@ -76,7 +76,7 @@
       "order": 12,
       "name": "seed_permissions",
       "file": "12_seed_permissions.sql",
-      "sha256": "8a347abde67b8efb91625346f0177be36445dd331f3c5450b40c945c252c79d2"
+      "sha256": "d65d615ce4af41ac5c984d358f71342943c833cbcc083b0180cb543ed1870f78"
     },
     {
       "order": 13,

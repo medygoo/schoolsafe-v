@@ -58,5 +58,9 @@
   { "code": "file.upload", "label": "Téléverser un fichier", "scope": "own" },
   { "code": "file.download", "label": "Télécharger un fichier", "scope": "own" },
   { "code": "cards.request.print", "label": "Demander l'impression d'une carte", "scope": "school" },
-  { "code": "notification.subscribe", "label": "S'abonner aux notifications", "scope": "own" }
+  { "code": "notification.subscribe", "label": "S'abonner aux notifications", "scope": "own" },
+  { "code": "school.structure.manage", "label": "Gérer la structure académique", "scope": "school" },
+  { "code": "finance.cash_register.open", "label": "Ouvrir une caisse", "scope": "school" },
+  { "code": "cards.print.read", "label": "Consulter les travaux d'impression", "scope": "school" },
+  { "code": "cards.print.manage", "label": "Gérer les travaux d'impression", "scope": "school", "authority": "control" }
 ]

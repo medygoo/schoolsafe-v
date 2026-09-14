@@ -28,6 +28,7 @@ insert into iam.permissions (code, default_scope_code, label) values
   ('school.guardian.read', 'own_children', 'Lire les tuteurs'),
   ('school.guardian.manage', 'school', 'Gérer les tuteurs'),
   ('school.manage', 'school', 'Gérer l''école'),
+  ('school.structure.manage', 'school', 'Gérer la structure académique'),
   ('staff.manage', 'school', 'Gérer le personnel'),
   ('roles.manage', 'school', 'Gérer les rôles et permissions'),
   ('security.pickup.read', 'own_children', 'Lire les autorisations de pick-up'),
@@ -49,6 +50,7 @@ insert into iam.permissions (code, default_scope_code, label) values
   ('finance.receipt.read', 'own_children', 'Lire les reçus'),
   ('finance.report.read', 'school', 'Lire les rapports financiers'),
   ('finance.cash_register.close', 'school', 'Clôturer la caisse'),
+  ('finance.cash_register.open', 'school', 'Ouvrir une caisse'),
   ('finance.control.read', 'school', 'Lire les campagnes de contrôle'),
   ('finance.control.manage', 'school', 'Gérer les campagnes de contrôle'),
   ('finance.control.scan', 'assigned_classes', 'Scanner un contrôle de frais'),
@@ -80,6 +82,8 @@ insert into iam.permissions (code, default_scope_code, label) values
   ('file.upload', 'own', 'Téléverser un fichier'),
   ('file.download', 'own', 'Télécharger un fichier'),
   ('cards.request.print', 'school', 'Demander l''impression d''une carte'),
+  ('cards.print.read', 'school', 'Consulter les travaux d''impression'),
+  ('cards.print.manage', 'school', 'Gérer les travaux d''impression'),
   ('notification.subscribe', 'own', 'S''abonner aux notifications')
 on conflict (code) do update set
   default_scope_code = excluded.default_scope_code,

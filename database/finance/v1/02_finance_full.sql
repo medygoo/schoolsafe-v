@@ -20,7 +20,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('finance.fees.read', null, null, null);
+  perform iam.require_access('finance.fee.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object(
@@ -58,7 +58,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_id uuid;
 begin
-  perform iam.require_access('finance.fees.create', null, null, null);
+  perform iam.require_access('finance.fee.manage', null, null, null);
   insert into app.fee_structures (school_id, academic_year_id, cycle_key, label, amount, currency, due_date)
   values (v_school_id, p_academic_year_id, p_cycle_key, p_label, p_amount, p_currency, p_due_date)
   returning id into v_id;
@@ -82,7 +82,7 @@ declare
   v_profile_id uuid := iam.current_profile_id();
   v_id uuid;
 begin
-  perform iam.require_access('finance.cashier.manage', null, null, null);
+  perform iam.require_access('finance.cash_register.open', null, null, null);
   insert into app.cash_registers (school_id, status, opened_by)
   values (v_school_id, 'open', v_profile_id)
   returning id into v_id;
@@ -101,7 +101,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_profile_id uuid := iam.current_profile_id();
 begin
-  perform iam.require_access('finance.cashier.manage', null, null, null);
+  perform iam.require_access('finance.cash_register.close', null, null, null);
   update app.cash_registers
   set status = 'closed', closed_by = v_profile_id, closed_at = pg_catalog.now()
   where id = p_register_id and school_id = v_school_id and status = 'open';
@@ -127,7 +127,7 @@ declare
   v_count int;
   v_result jsonb;
 begin
-  perform iam.require_access('finance.reports.read', null, null, null);
+  perform iam.require_access('finance.report.read', null, null, null);
 
   select coalesce(sum(fp.amount), 0), count(fp.id)
   into v_total_paid, v_count
@@ -164,7 +164,7 @@ declare
   v_profile_id uuid := iam.current_profile_id();
   v_payment app.fee_payments%rowtype;
 begin
-  perform iam.require_access('finance.payments.cancel', null, null, null);
+  perform iam.require_access('finance.payment.cancel', null, null, null);
 
   select * into v_payment
   from app.fee_payments
@@ -212,7 +212,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_result jsonb;
 begin
-  perform iam.require_access('finance.payments.read', null, null, null);
+  perform iam.require_access('finance.receipt.read', null, null, null);
 
   select jsonb_build_object(
     'payment_id', fp.id,
@@ -252,7 +252,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('finance.fee_control.read', null, null, null);
+  perform iam.require_access('finance.control.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object(
@@ -293,7 +293,7 @@ declare
   v_profile_id uuid := iam.current_profile_id();
   v_id uuid;
 begin
-  perform iam.require_access('finance.fee_control.create', null, null, null);
+  perform iam.require_access('finance.control.manage', null, null, null);
   insert into app.fee_control_campaigns (school_id, fee_structure_id, label, description, classes, starts_at, ends_at, created_by)
   values (v_school_id, p_fee_structure_id, p_label, p_description, p_classes, p_starts_at, p_ends_at, v_profile_id)
   returning id into v_id;
@@ -324,7 +324,7 @@ declare
   v_student_fee_status text := p_student_fee_status;
   v_id uuid;
 begin
-  perform iam.require_access('finance.fee_control.scan', null, null, null);
+  perform iam.require_access('finance.control.scan', null, null, null);
 
   -- Si pas de stat fourni, résoudre depuis student_fees
   if v_student_fee_status is null then

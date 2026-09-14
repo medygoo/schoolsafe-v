@@ -15,7 +15,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.classes.read', null, null, null);
+  perform iam.require_access('school.class.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object(

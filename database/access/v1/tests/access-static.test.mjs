@@ -73,11 +73,11 @@ test("direction et pedagogy: aucune portée own_children accidentelle", async ()
   }
 });
 
-test("admin: snapshot figé des 60 codes explicites, aucune jointure aveugle", async () => {
+test("admin: snapshot figé des 63 codes explicites, aucune jointure aveugle", async () => {
   const sql = await readUnit("01_role_templates.sql");
   assert.doesNotMatch(sql, /cross join iam\.permissions/i);
   const m = await matrix();
-  assert.equal(m.admin.length, 60, "admin doit figer exactement 60 permissions explicites");
+  assert.equal(m.admin.length, 63, "admin doit figer exactement 63 permissions explicites");
   assert.ok(m.admin.some((r) => r[0] === "school.student.create"));
 });
 
@@ -146,4 +146,19 @@ test("les grants pédagogiques reçoivent la paire classe+matière (règle Ensei
   const sql = await readUnit("02_provision_bridge.sql");
   assert.match(sql, /'assigned_subjects', null/);
   assert.match(sql, /like 'pedagogy\.%'/);
+});
+
+test("native SQL uses only canonical finance, pedagogy and cards codes", async () => {
+  const files = [
+    "../../../finance/v1/01_finance_native.sql",
+    "../../../finance/v1/02_finance_full.sql",
+    "../../../pedagogy/v1/01_pedagogy_native.sql",
+    "../../../cards/v1/01_cards_native.sql",
+    "../../../cards/v1/02_cards_classes.sql",
+  ];
+  const legacy = /'(finance\.(?:fees|payments|reports|cashier|fee_control)|pedagogy\.(?:classes|subjects|assignments|grades|lessons|rankings)|cards\.print\.request)(?:\.[a-z_]+)?'/;
+  for (const relative of files) {
+    const sql = await readFile(new URL(relative, import.meta.url), "utf8");
+    assert.doesNotMatch(sql, legacy, relative);
+  }
 });

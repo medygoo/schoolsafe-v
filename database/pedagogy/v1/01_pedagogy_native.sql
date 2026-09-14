@@ -20,7 +20,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.classes.read', null, null, null);
+  perform iam.require_access('school.class.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', c.id, 'name', c.name, 'cycle_key', c.cycle_key, 'option', c.option, 'academic_year_id', c.academic_year_id, 'is_active', c.is_active)
@@ -46,7 +46,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.subjects.read', null, null, null);
+  perform iam.require_access('pedagogy.subject.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', s.id, 'code', s.code, 'name', s.name, 'cycle_key', s.cycle_key, 'coefficient', s.coefficient, 'is_active', s.is_active)
@@ -68,7 +68,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_id uuid;
 begin
-  perform iam.require_access('pedagogy.subjects.create', null, null, null);
+  perform iam.require_access('pedagogy.subject.manage', null, null, null);
   insert into app.subjects (school_id, code, name, cycle_key, coefficient)
   values (v_school_id, p_code, p_name, p_cycle_key, p_coefficient)
   returning id into v_id;
@@ -91,7 +91,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.assignments.read', null, null, null);
+  perform iam.require_access('school.structure.manage', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', ta.id, 'profile_id', ta.profile_id, 'subject_id', ta.subject_id, 'class_id', ta.class_id, 'academic_year_id', ta.academic_year_id,
@@ -118,7 +118,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_id uuid;
 begin
-  perform iam.require_access('pedagogy.assignments.create', null, null, null);
+  perform iam.require_access('school.structure.manage', null, null, null);
   insert into app.teacher_assignments (school_id, profile_id, subject_id, class_id, academic_year_id)
   values (v_school_id, p_profile_id, p_subject_id, p_class_id, p_academic_year_id)
   returning id into v_id;
@@ -136,7 +136,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.assignments.delete', null, null, null);
+  perform iam.require_access('school.structure.manage', null, null, null);
   delete from app.teacher_assignments where id = p_id and school_id = v_school_id;
   return found;
 end
@@ -157,7 +157,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.grades.read', null, null, null);
+  perform iam.require_access('pedagogy.assignment.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', a.id, 'class_id', a.class_id, 'subject_id', a.subject_id, 'title', a.title, 'type', a.type, 'max_score', a.max_score,
@@ -188,7 +188,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_id uuid;
 begin
-  perform iam.require_access('pedagogy.grades.create', null, null, null);
+  perform iam.require_access('pedagogy.assignment.manage', null, null, null);
   insert into app.assignments (school_id, class_id, subject_id, title, type, max_score, coefficient, due_at)
   values (v_school_id, p_class_id, p_subject_id, p_title, p_type, p_max_score, p_coefficient, p_due_at)
   returning id into v_id;
@@ -206,7 +206,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.grades.update', null, null, null);
+  perform iam.require_access('pedagogy.assignment.manage', null, null, null);
   update app.assignments set
     title = coalesce(p_title, title),
     max_score = coalesce(p_max_score, max_score),
@@ -227,7 +227,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.grades.publish', null, null, null);
+  perform iam.require_access('pedagogy.assignment.manage', null, null, null);
   update app.assignments set published = true where id = p_id and school_id = v_school_id;
   return found;
 end
@@ -248,7 +248,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.grades.read', null, null, null);
+  perform iam.require_access('pedagogy.grade.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', g.id, 'student_id', g.student_id, 'score', g.score, 'comment', g.comment,
@@ -274,7 +274,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_grade jsonb;
 begin
-  perform iam.require_access('pedagogy.grades.create', null, null, null);
+  perform iam.require_access('pedagogy.grade.manage', null, null, null);
   for v_grade in select * from pg_catalog.jsonb_array_elements(p_grades)
   loop
     insert into app.grades (school_id, assignment_id, student_id, score, comment)
@@ -296,7 +296,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.grades.publish', null, null, null);
+  perform iam.require_access('pedagogy.grade.manage', null, null, null);
   update app.grades set published = true
   where assignment_id = p_assignment_id and school_id = v_school_id;
   return true;
@@ -318,7 +318,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.lessons.read', null, null, null);
+  perform iam.require_access('pedagogy.lesson-plan.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', lp.id, 'class_id', lp.class_id, 'subject_id', lp.subject_id, 'title', lp.title, 'week_start', lp.week_start,
@@ -347,7 +347,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_id uuid;
 begin
-  perform iam.require_access('pedagogy.lessons.create', null, null, null);
+  perform iam.require_access('pedagogy.lesson-plan.manage', null, null, null);
   insert into app.lesson_plans (school_id, class_id, subject_id, title, week_start, objectives, content)
   values (v_school_id, p_class_id, p_subject_id, p_title, p_week_start, p_objectives, p_content)
   returning id into v_id;
@@ -365,7 +365,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.lessons.update', null, null, null);
+  perform iam.require_access('pedagogy.lesson-plan.manage', null, null, null);
   update app.lesson_plans set
     title = coalesce(p_title, title),
     objectives = coalesce(p_objectives, objectives),
@@ -385,7 +385,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.lessons.delete', null, null, null);
+  perform iam.require_access('pedagogy.lesson-plan.manage', null, null, null);
   delete from app.lesson_plans where id = p_id and school_id = v_school_id;
   return found;
 end
@@ -501,7 +501,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.rankings.read', null, null, null);
+  perform iam.require_access('palmarques.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', r.id, 'class_id', r.class_id, 'month', r.month, 'status', r.status,
@@ -528,7 +528,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_result jsonb;
 begin
-  perform iam.require_access('pedagogy.rankings.read', null, null, null);
+  perform iam.require_access('palmarques.read', null, null, null);
   select jsonb_build_object(
     'id', r.id, 'class_id', r.class_id, 'month', r.month, 'status', r.status, 'class_name', c.name, 'data', r.data
   ) into v_result
@@ -554,7 +554,7 @@ declare
   v_weighted_avg numeric;
   v_entry record;
 begin
-  perform iam.require_access('pedagogy.rankings.compute', null, null, null);
+  perform iam.require_access('palmarques.manage', null, null, null);
   -- Prendre l'année académique active
   select id into v_academic_year_id from app.academic_years where school_id = v_school_id and is_active = true limit 1;
   if v_academic_year_id is null then return null; end if;
@@ -594,7 +594,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.rankings.publish', null, null, null);
+  perform iam.require_access('palmarques.manage', null, null, null);
   update app.rankings set status = 'published' where id = p_id and school_id = v_school_id;
   return found;
 end
@@ -641,7 +641,7 @@ declare
   v_profile_id uuid := iam.current_profile_id();
   v_id uuid;
 begin
-  perform iam.require_access('pedagogy.rankings.edit', null, null, null);
+  perform iam.require_access('palmarques.manage', null, null, null);
   insert into app.stars (school_id, ranking_id, student_id, awarded_by)
   values (v_school_id, p_ranking_id, p_student_id, v_profile_id)
   returning id into v_id;
@@ -659,7 +659,7 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.rankings.edit', null, null, null);
+  perform iam.require_access('palmarques.manage', null, null, null);
   delete from app.stars where ranking_id = p_ranking_id and student_id = p_student_id and school_id = v_school_id;
   return found;
 end

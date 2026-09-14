@@ -7,7 +7,7 @@
       "order": 1,
       "name": "role_templates",
       "file": "01_role_templates.sql",
-      "sha256": "c3c03e6c0866e6010d877590d9adc089174287b1a1dccb16c8906d02e8ae6fe7"
+      "sha256": "ced0935d0ee562c1cd636dc6d8856d13d54338b9a976488fc71b428648e2e9c8"
     },
     {
       "order": 2,

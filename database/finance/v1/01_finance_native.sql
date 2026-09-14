@@ -20,7 +20,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_result jsonb;
 begin
-  perform iam.require_access('finance.fees.read', null, p_student_id, null);
+  perform iam.require_access('finance.fee.read', null, p_student_id, null);
 
   select jsonb_agg(
     jsonb_build_object(
@@ -60,7 +60,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_result jsonb;
 begin
-  perform iam.require_access('finance.payments.read', null, p_student_id, null);
+  perform iam.require_access('finance.receipt.read', null, p_student_id, null);
 
   select jsonb_agg(
     jsonb_build_object(
@@ -102,7 +102,7 @@ declare
   v_fee_structure app.fee_structures%rowtype;
   v_fee_id uuid;
 begin
-  perform iam.require_access('finance.fees.create', null, p_student_id, null);
+  perform iam.require_access('finance.fee.manage', null, p_student_id, null);
 
   select * into v_fee_structure
   from app.fee_structures
@@ -147,7 +147,7 @@ declare
   v_fee app.student_fees%rowtype;
   v_payment_id uuid;
 begin
-  perform iam.require_access('finance.payments.create', null, null, null);
+  perform iam.require_access('finance.payment.record', null, null, null);
 
   select * into v_fee
   from app.student_fees

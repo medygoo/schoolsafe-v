@@ -113,17 +113,17 @@ test("only migrator, API and worker are LOGIN roles and no password is embedded"
   assert.match(runner, /postgres_bootstrap_password/);
 });
 
-test("seed matches the canonical 60 permissions and seven scopes", async () => {
+test("seed matches the canonical 64 permissions and seven scopes", async () => {
   const catalog = JSON.parse(
     await readFile(path.join(repoRoot, "shared", "permissions.json"), "utf8"),
   );
-  assert.equal(catalog.length, 60);
+  assert.equal(catalog.length, 64);
 
   const seedSql = await readFile(path.join(baselineDir, "12_seed_permissions.sql"), "utf8");
   const seededPermissions = extractValues(seedSql, "-- BEGIN CANONICAL PERMISSIONS");
   const seededScopes = extractValues(seedSql, "-- BEGIN CANONICAL SCOPES");
 
-  assert.equal(new Set(seededPermissions).size, 60);
+  assert.equal(new Set(seededPermissions).size, 64);
   assert.deepEqual(seededPermissions.sort(), catalog.map(({ code }) => code).sort());
   assert.deepEqual([...new Set(seededScopes)].sort(), canonicalScopes);
 });

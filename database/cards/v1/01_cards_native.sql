@@ -33,7 +33,7 @@ declare
   v_academic_year_id uuid;
   v_id uuid;
 begin
-  perform iam.require_access('cards.print.request', null, p_student_id, null);
+  perform iam.require_access('cards.request.print', null, p_student_id, null);
 
   -- Récupérer l'élève
   select * into v_student
