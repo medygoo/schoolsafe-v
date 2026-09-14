@@ -7,15 +7,45 @@ Dernière mise à jour : 14 septembre 2026 — Étape 0 (cohérence documentaire
 Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS**. Références visuelles officielles versionnées dans `docs/design/references/`. Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE**. Références design validées et versionnées (`a6d6b8f`).
 
 ```
-ÉTAT ACTUEL            Lot 1 — Phase A : tâches 1-4 TERMINÉES
-                       (8446fa5 · eace2e2 · 05e75e9 · 0ae7ef6)
-DERNIÈRE ÉTAPE         Phase A Tâche 4 — services natifs contextualisés (284/284)
-ÉTAPE EN COURS         transition vers la tâche 5
-PROCHAINE ÉTAPE        Phase A — Tâche 5 : autorité machine Control séparée
-                       (withControlAuthority : callbacks signés HMAC, zéro SQL si
-                       non signé, jamais de profileId humain fabriqué)
-ORDRE À SUIVRE         P1 Phase A (tâches 5-7) · P2 fuites inter-écoles ·
-                       P3 enforcement licence · P4 cœur Le Sage · P5 backup · P6 extensions
+ÉTAT ACTUEL            Lot 1 — Phase A : tâches 1-5 TERMINÉES
+                       (8446fa5 · eace2e2 · 05e75e9 · 0ae7ef6 · 07f0508)
+DERNIÈRE ÉTAPE         Phase A Tâche 5 — autorité machine Control (287/287)
+ÉTAPE EN COURS         transition vers la tâche 6
+PROCHAINE ÉTAPE        Phase A — Tâche 6 : manifestes finance/pedagogy/cards
+                       (9 sets enregistrés, contrats statiques par module)
+                       puis Tâche 7 : gate de régression active-path
+ORDRE À SUIVRE         P1 Phase A (tâches 6-7) · P2 fuites inter-écoles (re-vérif) ·
+                       P3 enforcement licence · P4 cœur Le Sage (frontend) · P5 backup · P6 extensions
+```
+
+### Rapport — Lot 1, Tâche 5 (autorité machine Control)
+
+```text
+PRÉVU :    séparer l'autorité machine Control de l'accès humain (plan,
+           étapes 1-6) : callbacks signés HMAC, zéro SQL si non signé,
+           jamais de profileId humain fabriqué.
+FAIT :     SQL api.set_control_context (unité access 03, manifeste
+           régénéré 3 unités, compteur 22) ; db/control-authority.ts
+           (vérification HMAC fenêtre 300 s + exécuteur machine) ;
+           controlprintnative réorganisé (requêtes des routes déplacées
+           dans le service ; liste d'impression ENFIN filtrée par école —
+           fuite P2 corrigée au passage) ; nouveau callback machine
+           POST /native/control/print/status (401 + zéro SQL si non
+           signé) ; controlConfig câblé dans les dépendances de routes ;
+           code erreur ACCESS_DENIED (union ApiErrorCode existante).
+TESTS :    typecheck PASS · 55 fichiers / 287 tests PASS (+3) · gate
+           permissions 3/3 · migrations 6 sets/22 units PASS.
+MODIFIÉ :  1 SQL + manifeste, 2 fichiers src controlprintnative, 1 nouveau
+           db/control-authority.ts, native-app.ts (câblage), 1 test
+           nouveau, compteur de migration.
+NON TOUCHÉ: cardsnative (callbacks carte restent côté Control minimal),
+           frontend, G0-B (enforcement licence = P3).
+COMMIT :   07f0508.
+RISQUES :  1) sémantique du contexte machine dans iam.* (les RPC Control
+           appellent require_access qui exige un profil) — à valider sur
+           base réelle en P5 ; 2) signature HMAC porte sur JSON.stringify
+           (re-sérialisation) — vérification octet exact à durcir avant
+           exposition publique (même chantier que l'upload logo).
 ```
 
 ### Rapport — Lot 1, Tâche 4 (contextualisation des services natifs)
