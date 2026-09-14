@@ -7,15 +7,43 @@ Dernière mise à jour : 14 septembre 2026 — Étape 0 (cohérence documentaire
 Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS**. Références visuelles officielles versionnées dans `docs/design/references/`. Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE**. Références design validées et versionnées (`a6d6b8f`).
 
 ```
-ÉTAT ACTUEL            Lot 1 — Phase A en cours : tâches 1, 2 ET 3 TERMINÉES
-                       (8446fa5 scanner · eace2e2 vocabulaire · 05e75e9 cibles RPC)
-DERNIÈRE ÉTAPE         Phase A Tâche 3 — cibles exactes des RPC (test 3/3 vert)
-ÉTAPE EN COURS         transition vers la tâche 4
-PROCHAINE ÉTAPE        Phase A — Tâche 4 : contextualiser les services natifs
-                       humains (businessPool.query direct → withRequestContext
-                       dans students/finance/pedagogy/cards + tests d'ordre transaction)
-ORDRE À SUIVRE         P1 Phase A (tâches 4-7) · P2 fuites inter-écoles ·
+ÉTAT ACTUEL            Lot 1 — Phase A : tâches 1-4 TERMINÉES
+                       (8446fa5 · eace2e2 · 05e75e9 · 0ae7ef6)
+DERNIÈRE ÉTAPE         Phase A Tâche 4 — services natifs contextualisés (284/284)
+ÉTAPE EN COURS         transition vers la tâche 5
+PROCHAINE ÉTAPE        Phase A — Tâche 5 : autorité machine Control séparée
+                       (withControlAuthority : callbacks signés HMAC, zéro SQL si
+                       non signé, jamais de profileId humain fabriqué)
+ORDRE À SUIVRE         P1 Phase A (tâches 5-7) · P2 fuites inter-écoles ·
                        P3 enforcement licence · P4 cœur Le Sage · P5 backup · P6 extensions
+```
+
+### Rapport — Lot 1, Tâche 4 (contextualisation des services natifs)
+
+```text
+PRÉVU :    toute requête humaine s'exécute dans withRequestContext
+           (plan, étapes 1-8) : students (2 méthodes), finance (14),
+           pedagogy (30), cards (méthodes DB) ; routes construisant le
+           contexte uniquement depuis la session.
+FAIT :     test élève étendu d'abord (ordre exact liste + ROLLBACK
+           brouillon refusé) ; 3 fichiers de test nouveaux (paires
+           lecture/écriture du plan) ; services réécrits méthode par
+           méthode (aucune requête pool directe restante côté humain,
+           vérifié par les tests d'ordre transactionnel) ; routes avec
+           helper contextFrom(request) — aucun identifiant accepté du
+           navigateur ; type de vérification : import manquant
+           withRequestContext corrigé.
+TESTS :    typecheck PASS · 54 fichiers / 284 tests PASS (était 51/276,
+           +8 nouveaux, zéro régression) · gate permissions 3/3 ·
+           migrations PASS · native-app + integration PASS.
+MODIFIÉ :  7 fichiers src (students/finance/pedagogy/cards services+routes)
+           + 4 fichiers de test.
+NON TOUCHÉ: controlprintnative (tâche 5), licensenative/sessionnative/
+           trialnative (déjà contextualisés), SQL, frontend.
+COMMIT :   0ae7ef6.
+RISQUES :  getStudentFee lit encore app.student_fees en direct DANS la
+           transaction contextualisée (même rôle, comportement conservé —
+           à reprendre en RPC dédié dans un lot futur si souhaité).
 ```
 
 ### Rapport — Lot 1, Tâche 3 (cibles exactes des RPC)
