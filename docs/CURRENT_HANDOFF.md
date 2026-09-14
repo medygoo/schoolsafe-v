@@ -8,11 +8,9 @@ Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écol
 
 ```
 ÉTAT ACTUEL            Phase A complète + P2 complété + **P3 complété**
-DERNIÈRE ÉTAPE         P3 — enforcement backend licence : gate onRequest,
-                       error code LICENSE_INACTIVE, câblage native-app,
-                       5 tests gate + 15 tests service (20/20 PASS)
-ÉTAPE EN COURS         clôture du lot P3 (push)
-PROCHAINE ÉTAPE        P4 — cœur quotidien Le Sage (FRONTEND Lots 4-5
+DERNIÈRE ÉTAPE         fix(ui) nom école générique 'Toutes les écoles'
+                       avant sélection contexte (6a2177c)
+ÉTAPE EN COURS         P4 — cœur quotidien Le Sage (FRONTEND Lots 4-5
                        visuels, personnes autorisées, photo sortie,
                        validation humaine gardien)
 ORDRE À SUIVRE         P4 cœur Le Sage · P5 backup + rejeu base réelle
