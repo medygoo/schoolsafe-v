@@ -4,16 +4,35 @@ Dernière mise à jour : 14 septembre 2026 — Étape 0 (cohérence documentaire
 
 ## ÉTAT ACTUEL
 
-Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS** (règles dans `DECISIONS.md` du 14/09 et `ops/deployment/README.md`). Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE** — aucune nouvelle grande fonctionnalité tant que le parcours quotidien de la première école (Le Sage) n'est pas stable, sécurisé, sauvegardable et restaurable.
+Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS**. Références visuelles officielles versionnées dans `docs/design/references/`. Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE**. Références design validées et versionnées (`a6d6b8f`).
 
 ```
-ÉTAT ACTUEL            Étape 0 terminée et commitée
-DERNIÈRE ÉTAPE         Étape 0 — cohérence documentaire (décisions, charte, G0, handoff)
-ÉTAPE EN COURS         aucune (transition)
-PROCHAINE ÉTAPE        Phase A — Tâche 1 : scanner du contrat de permissions
-ORDRE À SUIVRE         P1 Phase A · P2 fuites inter-écoles · P3 enforcement licence
-                       · P4 cœur Le Sage (+ personnes autorisées, photo sortie,
-                       validation humaine) · P5 sauvegarde/restauration · P6 extensions
+ÉTAT ACTUEL            Lot 1 — Phase A en cours : tâche 1 TERMINÉE (commit 8446fa5)
+DERNIÈRE ÉTAPE         Phase A Tâche 1 — scanner du contrat de permissions
+ÉTAPE EN COURS         transition vers la tâche 2
+PROCHAINE ÉTAPE        Phase A — Tâche 2 : vocabulaire canonique SQL
+                       (mapping exact des 41 littéraux legacy listés par le gate)
+ORDRE À SUIVRE         P1 Phase A (tâches 2-7) · P2 fuites inter-écoles ·
+                       P3 enforcement licence · P4 cœur Le Sage · P5 backup · P6 extensions
+```
+
+### Rapport — Lot 1, Tâche 1 (scanner du contrat de permissions)
+
+```text
+PRÉVU :    scanner + tests + gate check:permissions dans ci (plan canonique tâche 1)
+FAIT :     test écrit d'abord → échec ERR_MODULE_NOT_FOUND constaté → scanner
+           implémenté (code exact du plan) → 2/2 tests unitaires PASS → gate de
+           dépôt ajouté → échec attendu capturé : 41 littéraux legacy hors
+           catalogue (finance/pedagogy/cards au pluriel) → commit.
+TESTS :    node --test scripts/permission-contract.test.mjs → 2 pass / 0 fail ;
+           npm run check:permissions → ROUGE VOLONTAIRE (41 littéraux, liste
+           complète dans la sortie du gate) — résolu par la tâche 2, ne pas
+           affaiblir le scanner.
+MODIFIÉ :  scripts/permission-contract.mjs (nouveau), scripts/permission-contract.test.mjs
+           (nouveau), package.json (script + ci).
+NON TOUCHÉ: tout le reste (aucun SQL, aucun service).
+COMMIT :   8446fa5 (+ a6d6b8f références design).
+RISQUES :  ci globale rouge jusqu'à la tâche 2 — fenêtre courte, documentée.
 ```
 
 ## CE QUI ÉTAIT PRÉVU
