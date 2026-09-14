@@ -1,4 +1,4 @@
-const assert = require("node:assert/strict");
+﻿const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -50,6 +50,20 @@ assert.doesNotMatch(designSystem, /body::(?:before|after)/, "Les halos fixes du 
 assert.doesNotMatch(designSystem, /\.ss-button--(?:primary|secondary)::after/, "Les flèches automatiques ne doivent pas revenir");
 assert.doesNotMatch(designSystem, /\[class\*=["']screen-/, "Les écrans ne doivent pas recevoir une surcharge globale");
 assert.doesNotMatch(designSystem, /@import\s+url\(["']https:/i, "La CSP SchoolSafe interdit les feuilles CSS externes");
+// Task 3 — connexion/OTP responsive : identifiants et labels OTP conservés
+assert.match(html, /id=[""']otpIdentifier[""']/, "Le champ OTP #otpIdentifier doit rester présent");
+assert.match(html, /for=[""']otpIdentifier[""']/, "Le label du champ OTP doit rester associé");
+
+// Task 3 — JASPE ne chevauche pas le panneau actif à largeur mobile
+assert.match(
+  authModels,
+  /\.auth-jaspe-withdrawn\s+\.auth-layout\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/,
+  "À l'état withdrawn, JASPE doit libérer l'espace du formulaire sans chevauchement"
+);
+assert.ok(
+  authModels.includes('.auth-jaspe-withdrawn .auth-jaspe') && authModels.includes('display:none'),
+  "À l'état withdrawn, la zone JASPE doit être masquée (display:none)"
+);
 
 const demoBannerRule = dashboard.match(/\.workspace-demo-banner\s*\{([\s\S]*?)\}/)?.[1] || "";
 assert.match(demoBannerRule, /background:\s*var\(--ss-surface-muted\)/, "Le mode aperçu doit utiliser une surface neutre");
