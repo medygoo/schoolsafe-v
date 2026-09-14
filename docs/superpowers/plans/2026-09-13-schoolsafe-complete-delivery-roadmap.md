@@ -1,5 +1,16 @@
 # SchoolSafe Complete Delivery Roadmap
 
+> **STATUT AU 2026-09-14** — Ce plan reste la référence des lots de finition, avec
+> deux points remplacés par les décisions du 14/09 (voir `docs/DECISIONS.md` et la
+> spec G0) : **(1)** « déploiement sans Docker » → Docker + Coolify organisent les
+> services techniques du VPS central (pas de conteneur par école ; isolation par
+> `school_id` + PostgreSQL + ACCESS_LAW) ; **(2)** le modèle « 1 école = 1 VPS » →
+> un VPS central héberge plusieurs écoles isolées (Control co-hébergé, séparation
+> par privilèges). Le lot 12 garde sa logique de release, à traduire en
+> exploitation Docker/Coolify lors de son exécution. Règle de conduite ajoutée le
+> 14/09 : **VISION LARGE, LIVRAISON ÉTROITE** — le cœur quotidien de la première
+> école (Le Sage) prime sur toute extension.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Terminer SchoolSafe par lots utilisables, du socle local/GitHub jusqu'au déploiement direct sur VPS, tout en remplaçant les surfaces de démonstration par des données réelles sans affaiblir les permissions ni la protection des enfants.

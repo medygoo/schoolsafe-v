@@ -12,7 +12,7 @@ SchoolSafe est un écosystème scolaire centré sur la gestion des écoles, des 
 - JASPE assiste l'utilisateur sans remplacer l'application ni l'autorité humaine.
 - SchoolSafe Control est conservé comme couche centrale protégée de gestion des écoles inscrites, licences, supervision et impression contrôlée.
 - Le dépôt local et GitHub doivent être identiques après chaque lot terminé.
-- Le déploiement final se fera directement sur VPS, sans Docker.
+- ~~Le déploiement final se fera directement sur VPS, sans Docker.~~ **OBSOLÈTE le 2026-09-14** : Docker + Coolify sont l'architecture d'exploitation du VPS central multi-écoles (voir `docs/DECISIONS.md` du 14/09 et la spec G0).
 - Le VPS ne doit être modifié qu'après stabilisation et synchronisation du travail sur GitHub.
 
 ## JASPE

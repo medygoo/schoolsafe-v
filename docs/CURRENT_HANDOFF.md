@@ -1,114 +1,112 @@
 # Handoff courant SchoolSafe
 
-Dernière mise à jour : 13 septembre 2026.
+Dernière mise à jour : 14 septembre 2026 — Étape 0 (cohérence documentaire).
 
-## Objectif actif
+## ÉTAT ACTUEL
 
-Faire relire puis planifier l'harmonisation validée des expériences, postes, accès, tableaux de bord, services d'écosystème et capacités JASPE. La connexion, l'OTP et l'espace JASPE responsive restent le prochain lot visuel à exécuter après cette clarification d'architecture.
+Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS** (règles dans `DECISIONS.md` du 14/09 et `ops/deployment/README.md`). Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE** — aucune nouvelle grande fonctionnalité tant que le parcours quotidien de la première école (Le Sage) n'est pas stable, sécurisé, sauvegardable et restaurable.
+
+```
+ÉTAT ACTUEL            Étape 0 terminée et commitée
+DERNIÈRE ÉTAPE         Étape 0 — cohérence documentaire (décisions, charte, G0, handoff)
+ÉTAPE EN COURS         aucune (transition)
+PROCHAINE ÉTAPE        Phase A — Tâche 1 : scanner du contrat de permissions
+ORDRE À SUIVRE         P1 Phase A · P2 fuites inter-écoles · P3 enforcement licence
+                       · P4 cœur Le Sage (+ personnes autorisées, photo sortie,
+                       validation humaine) · P5 sauvegarde/restauration · P6 extensions
+```
+
+## CE QUI ÉTAIT PRÉVU
+
+Étape 0 : corriger `DECISIONS.md`, `V2_CHARTER.md`, finaliser la spec G0, mettre à jour le handoff, vérifier l'absence de décisions obsolètes présentées comme actives, vérifier le diff, committer, donner le SHA — avec les 11 corrections du propriétaire et la règle permanente de continuité (ajout, jamais suppression d'historique).
+
+## CE QUI A ÉTÉ FAIT
+
+- `docs/DECISIONS.md` : décision Docker 12/09 marquée **OBSOLÈTE — remplacée** (conservée) ; 15 décisions du 14/09 ajoutées avec statuts (Docker/Coolify + chaîne Git→Coolify→Docker→VPS et ses 10 règles, VPS central multi-écoles, school_id UUID + school_code, identité globale + memberships avec résolution de contexte corrigée, OTP abstrait, PostgreSQL souverain + retrait progressif Supabase, Control minimal, VISION LARGE/LIVRAISON ÉTROITE, priorités P1-P6 avec distinction cœur/Guardian avancé, sauvegarde/restauration testée, dépôt = vérité opérationnelle, License Contract V2, règle de continuité permanente). La répartition Claude/ChatGPT **n'y figure pas** (règle opérationnelle, voir plus bas).
+- `app/docs/V2_CHARTER.md` : § Modèle de déploiement remplacé par la formulation validée (VPS central multi-écoles, school_id/school_code, memberships avec résolution automatique ou sélection tenant-aware, serveur seul arbitre du contexte école) ; § Frontières de sécurité : « Supabase » → « PostgreSQL, ses rôles » ; note d'historique ajoutée (rien de supprimé).
+- `docs/PROJECT_CONTEXT.md` : puce « sans Docker » marquée OBSOLÈTE (historique conservé).
+- Roadmap 13/09 : bannière de statut ajoutée (points Docker et VPS remplacés, lot 12 à traduire en exploitation Git→Coolify→Docker→VPS ; aucune tâche modifiée).
+- Spec G0 (`docs/superpowers/specs/2026-09-14-schoolsafe-license-service-entitlements-design.md`) : finalisée et validée — architecture cible, identités (school_id/school_code, memberships), License Contract V2, migration V1, cycle de vie école, stockage R2 par `school_id`, ordre d'exécution Étape 0→6.
+- `ops/deployment/README.md` : créé — chaîne de déploiement officielle et les 10 règles opérationnelles (anciennes méthodes marquées REMPLACÉES, pas supprimées).
+- `docs/CURRENT_HANDOFF.md` : ce document, historique des lots précédents conservé ci-dessous.
+
+## CE QUI A ÉTÉ MODIFIÉ vs NON MODIFIÉ
+
+Modifié : uniquement des documents (décisions, charte, contexte, roadmap, spec G0, handoff, ops/deployment/README.md). **Aucun code modifié** — signature et vérification de licence en production inchangées, conformément à la consigne.
+
+## TESTS / VÉRIFICATIONS EXÉCUTÉES
+
+- Recherche des contradictions actives : occurrences de « sans Docker », « propre VPS », « 1 école = 1 VPS » toutes traitées (statut obsolète ou bannière).
+- `git diff` relu avant commit (documents uniquement, diff sémantique lisible).
+- Fins de ligne des deux fichiers serveur pré-existants isolées dans un commit séparé.
+
+## PROBLÈMES RENCONTRÉS
+
+- Aucun bloquant. Deux fichiers serveur (`server/src/financenative/routes.ts`, `server/src/studentsnative/routes.ts`) portaient des changements de fin de ligne antérieurs à l'Étape 0 : isolés dans un commit séparé pour ne pas polluer le diff documentaire.
+
+## DÉCISIONS PRISES DANS CE LOT
+
+Voir les 15 lignes du 14/09 dans `docs/DECISIONS.md` (toutes « Validées »), la spec G0 validée et `ops/deployment/README.md`.
+
+## COMMIT(S)
+
+- COMMIT A (documentation / Étape 0) : `docs(architecture): etape 0 coherence documentaire et contrat g0` — SHA inscrit dans `git log` (résumé en fin de message agent).
+- COMMIT B (fins de ligne) : `chore: normalize line endings` — SHA inscrit dans `git log`.
+
+## CE QUI RESTE À FAIRE / PROCHAINE ÉTAPE EXACTE
+
+**Phase A — Tâche 1 : scanner du contrat de permissions** (`scripts/permission-contract.mjs` + tests + gate `check:permissions`), selon le plan canonique `docs/superpowers/plans/2026-09-13-schoolsafe-canonical-access-law.md`. Compatibilité vérifiée : le plan est compatible avec le modèle multi-écoles et le `school_id` UUID — la tâche 1 est un scanner statique de littéraux de permissions (sans rapport avec le tenant) ; les tâches 2-3 ciblent déjà des RPC scopés par école via `iam.require_access`. **Exécuter le plan tel quel, sans le réécrire.**
+
+Ne commencer **aucune** fonctionnalité Écosystème, JASPE, Watch ou Control avancé entre les deux.
+
+## RISQUES / POINTS À SURVEILLER
+
+- Les trois failles prioritaires restent ouvertes : contexte de requête contourné dans 5 services natifs (Phase A), liste d'impression sans filtre `school_id` (P2), licence non appliquée par hook backend (P3).
+- Supabase encore présent dans le dépôt (SDK, scripts, tests) : retrait uniquement via inventaire → migration → tests.
+- Points résiduels G0 §11 : canal de provisionnement, supervision de l'activation, catalogue permission→service, fournisseur OTP.
+
+## RÈGLE OPÉRATIONNELLE ACTUELLE (répartition des agents)
+
+```text
+Claude :
+- frontend ;
+- serveur applicatif ;
+- backend ;
+- corrections du dépôt.
+
+ChatGPT :
+- architecture/exploitation VPS ;
+- Docker/Coolify ;
+- procédures ops ;
+- cohérence infrastructure.
+
+Toute modification d'exploitation produisant une configuration, un script
+ou une procédure durable doit être répercutée dans le dépôt (dossier ops/).
+
+Les zones de propriété doivent être explicites afin d'éviter que deux
+agents modifient simultanément les mêmes fichiers critiques
+(app/app.js, app/index.html : propriété exclusive Claude par lot).
+```
+
+## TRAÇABILITÉ
+
+> Artifact Server indisponible dans l'environnement d'exécution de ce lot ; traçabilité assurée par les artefacts versionnés du dépôt (Git, DECISIONS.md, spec G0, handoff, historique des commits).
 
 ## Source de vérité
 
-- Dépôt : `https://github.com/medygoo/schoolsafe-v`
-- Branche : `main`
-- Toujours vérifier le commit réel et `git status` avant de reprendre.
-- Le serveur local correct sert le dépôt courant sur `http://127.0.0.1:4176/`.
-- Le port `4175` sert une ancienne copie distincte et ne doit pas servir à valider le dépôt courant.
+- Dépôt : `https://github.com/medygoo/schoolsafe-v` — branche `main`. Vérifier `git status`, `HEAD` vs `origin/main` avant reprise.
+- Le serveur local correct sert le dépôt courant sur `http://127.0.0.1:4176/` ; le port `4175` sert une ancienne copie distincte.
 
-## Dernier lot terminé
+---
 
-### Lot 1 — fondations visuelles responsive
+# Historique — lots précédents (avant le 2026-09-14, conservé)
 
-- contrat statique `test:visual-system` ajouté : dépendances, identifiants DOM, logo, ordre CSS, focus, mouvements réduits et absence de l'ancien écran `guardian` ;
-- tokens `--ss-*` complétés pour les surfaces, contrôles de 48 px, cibles tactiles de 44 px, focus visible, largeurs et ombres mesurées ;
-- anciens alias `--ds-*` centralisés comme transition vers les tokens `--ss-*` ;
-- glassmorphism global, halos fixes, surcharges `!important` et flèches automatiques retirés ;
-- composants partagés harmonisés sans cibler globalement tous les champs et boutons ;
-- import Google Fonts retiré après détection par le navigateur : la CSP reste fermée aux styles externes et la pile locale prend immédiatement le relais ;
-- bandeau de démonstration ramené à l'étiquette neutre `Mode aperçu — données fictives.` ; il reste visible en session fictive et disparaît avec un vrai jeton API ; le cache PWA a été versionné pour livrer immédiatement le nouveau CSS ;
-- tableaux de bord administrateur, parent, enseignant, caisse et contrôle vérifiés en 1440 px et 390 px ; aucune régression de navigation ni débordement horizontal ;
-- SchoolSafe Control, JASPE 2D/2,5D, routes et logique métier inchangés.
+## Lots 2026-09-13 — fondations visuelles, baseline, JASPE
 
-Plan suivi : `docs/superpowers/plans/2026-09-13-schoolsafe-responsive-visual-system.md` (tâches 1 et 2 cochées).
-
-## Lots précédents
-
-### Lot 0A — baseline critique réparée
-
-- catalogue partagé des 60 permissions restauré et vérifié contre le seed SQL ;
-- contrôle de migrations en lecture seule ajouté pour 6 ensembles et 21 unités ;
-- hashes SQL normalisés et prouvés identiques sous LF/CRLF ;
-- `/config.setup_available` dépend du vrai token setup ; anciennes routes `/session/bootstrap` et `/auth/lookup-phone` absentes ;
-- upload de test isolé et nettoyé, anciens faux logos retirés ;
-- Fastify `5.12.4`, Vitest `4.1.11` et `fast-uri` corrigés ; audit NPM à zéro vulnérabilité ;
-- CI verte : 51 fichiers, 276 tests serveur, typecheck et contrôle migrations réussis ;
-- 57 tests statiques/contrats SQL et multi-plateformes réussis.
-
-Rapport : `docs/BASELINE_REPORT.md`.
-
-### Contrôleur physique JASPE
-
-- ajout de neuf intentions fermées : `idle`, `listen`, `think`, `speak`, `explain`, `reassure`, `refuse`, `success`, `error` ;
-- traduction déterministe vers le moteur v12 et le repli WebP ;
-- arbitrage par priorité, minuterie, arrêt et destruction ;
-- cycle de vie v12 indépendant de `.auth-screen` ;
-- nettoyage des écouteurs et de la boucle d'animation à la destruction ;
-- raccordement de la connexion par intentions au lieu des références directes de packs ;
-- correction du conflit qui annulait `listen` pendant la saisie ;
-- ajout du repli `SPEAKING` et contournement ciblé de l'ancien cache des scripts.
-
-### Suppression de l'ancien écran `guardian`
-
-- le splash ouvre directement la connexion ;
-- suppression des styles `.guardian`, `.guardian-copy`, `.children-line`, `.overlay-brand` et `.gallery-source` ;
-- retrait de `guardian` de la détection de surface de l'ancien assistant ;
-- correction des scénarios QA qui attendaient encore la galerie intermédiaire ;
-- conservation explicite des permissions et données métier `school.guardian` relatives aux tuteurs d'élèves.
-
-## Vérifications exécutées
-
-- `npm run ci` : migrations PASS, typecheck PASS, 51 fichiers/276 tests serveur PASS.
-- tests statiques SQL + contrôle LF/CRLF : 57 tests PASS.
-- `npm audit --json` : 0 vulnérabilité.
-- `npm run test:jaspe-physical` : 5 tests réussis, 0 échec ; contrat physique v12/façade affiché `PASS`.
-- `node app/qa-safe-assistant-access.cjs` : `FE-SEC-A3A4 access law + safe assistant gate: PASS`.
-- `npm run test:no-guardian-screen` : `Legacy guardian screen removal: PASS`.
-- `npm run test:visual-system` : contrat visuel et suppression de l'ancien écran `guardian` PASS.
-- contrôle grand écran/téléphone : 5 profils ouverts en démonstration sur 1440 × 1000 et 390 × 844, captures relues, aucun débordement mobile.
-- contrôles de syntaxe Node des scripts modifiés : code 0.
-- navigateur sur `4176` : bouton `Commencer` vers `#auth.active`, formulaire visible et aucun élément `#guardian`.
-- navigateur sur `4176` : JASPE v12 visible ; `listen` observé en `attentive`, `explain` en `guide` et la soumission en `deepThink`.
-
-## Limites vérifiées honnêtement
-
-- NPM avertit encore que la politique `allowScripts` n'autorise pas explicitement les postinstall Esbuild ; ce choix doit être fixé avant la release VPS.
-- L'upload de logo filtre aujourd'hui par type MIME déclaré et taille ; la vérification des octets/signatures d'image reste à durcir avant l'exposition publique.
-- La priorité `error/refuse` et le repli lors d'un refus du moteur sont couverts par les tests automatisés.
-- L'émulation navigateur de `prefers-reduced-motion` et le blocage réseau du manifeste v12 n'ont pas été rejoués manuellement avec l'outil de navigateur disponible.
-- L'assistant flottant de l'espace de travail n'est toujours pas activé.
-- La voix, GLM et la synchronisation labiale ne sont pas implémentés dans ce lot.
-- Le contrôle navigateur multi-profils termine ses assertions fonctionnelles et ses captures, mais son collecteur de console signale `ERR_CONNECTION_REFUSED` tant que l'API locale sur le port 8787 n'est pas démarrée ; ce n'est pas une erreur CSS.
-- `app/qa-pwa.cjs` confirme le contrôle du service worker et la disponibilité des assets en ligne/hors ligne, puis s'arrête sur son ancien scénario qui tente encore de mettre une opération sensible `administration` en file sans session serveur ; la loi d'accès actuelle la refuse correctement.
-
-## Direction visuelle verrouillée
-
-Le propriétaire a validé le 13 septembre 2026 les références SchoolSafe mobile et bureau avec les corrections proposées : moins de verre, de lueurs et d'ombres, meilleure lisibilité, accessibilité et performance. L'implémentation reste en HTML/CSS/JavaScript, utilise `app/schoolsafe-logo.png`, conserve JASPE 2D/2,5D et n'introduit ni React, ni Ant Design, ni 3D.
-
-Spécification : `docs/superpowers/specs/2026-09-13-schoolsafe-responsive-visual-system-design.md`.
-
-Plan : `docs/superpowers/plans/2026-09-13-schoolsafe-responsive-visual-system.md`.
-
-Feuille de route complète : `docs/superpowers/plans/2026-09-13-schoolsafe-complete-delivery-roadmap.md`.
-
-## Prochaine action exacte
-
-1. Faire valider puis exécuter `docs/superpowers/plans/2026-09-13-schoolsafe-canonical-access-law.md`, produit comme premier plan après la spécification d'harmonisation.
-2. Vérifier et synchroniser chacun de ses sept lots techniques avant de commencer l'éditeur de postes personnalisés.
-3. Reprendre ensuite la tâche 3 du plan visuel en l'alignant sur le contrat de session validé.
-4. Continuer dans l'ordre des plans séparés ; le VPS reste le dernier lot et se fait directement, sans Docker.
-
-## Procédure de reprise depuis l'autre compte
-
-1. Ouvrir ou cloner le dépôt GitHub.
-2. Lire `AGENTS.md`, puis `docs/PROJECT_CONTEXT.md`, `docs/DECISIONS.md` et ce fichier.
-3. Vérifier `git status`, la branche active et la correspondance avec `origin/main`.
-4. Reprendre la section « Prochaine action exacte » sans réinventer les décisions validées.
+- **Lot 0A** : catalogue 60 permissions restauré, contrôle de migrations (6 sets/21 unités), hashes SQL LF/CRLF normalisés, `/config.setup_available` token-réel, CI verte (51 fichiers, 276 tests serveur), audit NPM 0 vulnérabilité. Rapport : `docs/BASELINE_REPORT.md`.
+- **Lot 1** : contrat `test:visual-system`, tokens `--ss-*`, retrait glassmorphism/halos/`!important`, bandeau démo neutre, dashboards vérifiés 1440/390 px. Plan : `2026-09-13-schoolsafe-responsive-visual-system.md` (tâches 1-2).
+- **Contrôleur physique JASPE** : neuf intentions fermées, traduction déterministe v12/WebP, arbitrage priorité, cycle de vie indépendant `.auth-screen`, raccordement connexion par intentions, repli `SPEAKING`.
+- **Suppression écran `guardian`** : splash → connexion directe, styles retirés, permissions métier `school.guardian` conservées.
+- Vérifications d'alors : `npm run ci` PASS, 57 tests statiques SQL PASS, `test:jaspe-physical` PASS, `qa-safe-assistant-access` PASS, `test:no-guardian-screen` PASS, navigateur 4176 (JASPE v12 visible, intentions observées), 5 profils sans débordement.
+- Limites d'alors (toujours valides sauf mention contraire) : postinstall Esbuild à autoriser avant release ; upload logo à durcir (octets/signatures) ; assistant flottant non activé ; voix/GLM non implémentés ; `qa-pwa.cjs` s'arrête sur son ancien scénario hors session.
+- Ancienne « Prochaine action » du 13/09 (remplacée par l'ordre P1-P6 du 14/09) : faire valider puis exécuter le plan canonique Access Law, puis la tâche 3 du plan visuel — cette séquence est maintenant intégrée aux étapes du 14/09.
