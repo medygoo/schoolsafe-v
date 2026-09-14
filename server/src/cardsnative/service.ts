@@ -1,7 +1,11 @@
 // SchoolSafe Cartes v1 — service natif PostgreSQL (VPS).
 // Remplace l'ancien service Supabase cards/service.ts.
 // Gère la création des demandes d'impression, upload R2 et envoi à Control App.
+// Toute requête humaine s'exécute dans withRequestContext : BEGIN → api.set_request_context
+// → api.* → COMMIT. Le serveur transporte la session, il ne recalcule jamais les permissions.
+import type { PoolClient } from "pg";
 import type { BusinessPool } from "../db/pool.js";
+import { withRequestContext, type RequestContext } from "../db/context.js";
 import { randomUUID } from "node:crypto";
 import type { ControlAppConfig } from "../control-app/client.js";
 import { pushCardPrintRequest } from "../control-app/client.js";
@@ -60,27 +64,31 @@ export function createCardsNativeService(
 
   return {
     /** Récupérer les infos d'un élève pour l'impression */
-    async getStudentInfo(studentId: string): Promise<StudentInfo | null> {
-      const r = await businessPool.query(
-        `select s.id, s.school_id, s.matricule, s.first_name, s.last_name, s.class_id, c.name as class_name
-         from app.students s
-         left join app.classes c on c.id = s.class_id
-         where s.id = $1`,
-        [studentId],
-      );
-      return (r.rows[0] as StudentInfo) ?? null;
+    async getStudentInfo(context: RequestContext, studentId: string): Promise<StudentInfo | null> {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query(
+          `select s.id, s.school_id, s.matricule, s.first_name, s.last_name, s.class_id, c.name as class_name
+           from app.students s
+           left join app.classes c on c.id = s.class_id
+           where s.id = $1`,
+          [studentId],
+        );
+        return (r.rows[0] as StudentInfo) ?? null;
+      });
     },
 
     /** Récupérer le label de l'année académique active */
-    async getAcademicYearLabel(): Promise<string | null> {
-      const r = await businessPool.query(
-        "select name from app.academic_years where is_active = true limit 1",
-      );
-      return r.rows[0]?.name ?? null;
+    async getAcademicYearLabel(context: RequestContext): Promise<string | null> {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query(
+          "select name from app.academic_years where is_active = true limit 1",
+        );
+        return r.rows[0]?.name ?? null;
+      });
     },
 
     /** Générer une demande d'impression (RPC native) */
-    async createPrintRequest(input: {
+    async createPrintRequest(context: RequestContext, input: {
       student_id: string;
       format: string;
       front_image_base64?: string;
@@ -91,19 +99,21 @@ export function createCardsNativeService(
       back_r2_key?: string;
       metadata?: Record<string, unknown>;
     }): Promise<{ id: string; version: number; is_duplicate: boolean }> {
-      const r = await businessPool.query<{ card_print_request_create: { id: string; version: number; is_duplicate: boolean } }>(
-        `select api.card_print_request_create($1, $2, $3, $4, $5, $6, $7::jsonb) as card_print_request_create`,
-        [
-          input.student_id,
-          input.format,
-          input.front_image_url ?? null,
-          input.back_image_url ?? null,
-          input.front_r2_key ?? null,
-          input.back_r2_key ?? null,
-          JSON.stringify(input.metadata ?? {}),
-        ],
-      );
-      return r.rows[0].card_print_request_create;
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query<{ card_print_request_create: { id: string; version: number; is_duplicate: boolean } }>(
+          `select api.card_print_request_create($1, $2, $3, $4, $5, $6, $7::jsonb) as card_print_request_create`,
+          [
+            input.student_id,
+            input.format,
+            input.front_image_url ?? null,
+            input.back_image_url ?? null,
+            input.front_r2_key ?? null,
+            input.back_r2_key ?? null,
+            JSON.stringify(input.metadata ?? {}),
+          ],
+        );
+        return r.rows[0].card_print_request_create;
+      });
     },
 
     /** Upload des images vers R2 */
@@ -185,20 +195,24 @@ export function createCardsNativeService(
 
     /** Marquer le statut d'une demande */
     async updatePrintRequestStatus(
+      context: RequestContext,
       id: string,
       status: string,
       controlAppRef?: string,
       errorMessage?: string,
     ): Promise<boolean> {
-      const r = await businessPool.query<{ card_print_request_update_status: boolean }>(
-        "select api.card_print_request_update_status($1, $2, $3, $4) as card_print_request_update_status",
-        [id, status, controlAppRef ?? null, errorMessage ?? null],
-      );
-      return r.rows[0]?.card_print_request_update_status === true;
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query<{ card_print_request_update_status: boolean }>(
+          "select api.card_print_request_update_status($1, $2, $3, $4) as card_print_request_update_status",
+          [id, status, controlAppRef ?? null, errorMessage ?? null],
+        );
+        return r.rows[0]?.card_print_request_update_status === true;
+      });
     },
 
     /** Traitement complet d'une demande d'impression (appelé depuis la route) */
     async submitFullPrintRequest(
+      context: RequestContext,
       input: {
         student_id: string;
         format: "badge" | "carte";
@@ -209,14 +223,14 @@ export function createCardsNativeService(
     ): Promise<CardPrintSubmitResult> {
       const requestId = randomUUID();
       try {
-        const student = await this.getStudentInfo(input.student_id);
+        const student = await this.getStudentInfo(context, input.student_id);
         if (!student) return { studentId: input.student_id, requestId, version: 0, status: "failed", error: "Élève introuvable" };
 
-        const yearLabel = (await this.getAcademicYearLabel()) ?? new Date().getFullYear().toString();
+        const yearLabel = (await this.getAcademicYearLabel(context)) ?? new Date().getFullYear().toString();
         const schoolSlug = student.school_id.slice(0, 8);
 
         // Création de la demande dans la BDD
-        const created = await this.createPrintRequest({
+        const created = await this.createPrintRequest(context, {
           student_id: input.student_id,
           format: input.format,
           metadata: input.metadata,
@@ -230,13 +244,15 @@ export function createCardsNativeService(
           input.front_image_base64, input.back_image_base64,
         );
 
-        // Mise à jour avec les URLs
-        await businessPool.query(
-          `update app.card_print_requests
-           set front_image_url = $2, back_image_url = $3, front_r2_key = $4, back_r2_key = $5
-           where id = $1`,
-          [created.id, frontUrl, backUrl, frontKey, backKey],
-        );
+        // Mise à jour avec les URLs (transaction contextualisée)
+        await withRequestContext(businessPool, context, async (client: PoolClient) => {
+          await client.query(
+            `update app.card_print_requests
+             set front_image_url = $2, back_image_url = $3, front_r2_key = $4, back_r2_key = $5
+             where id = $1`,
+            [created.id, frontUrl, backUrl, frontKey, backKey],
+          );
+        });
 
         // Envoi à Control App
         let controlAppId: string | undefined;
@@ -260,11 +276,11 @@ export function createCardsNativeService(
             }) ?? undefined;
 
             if (controlAppId) {
-              await this.updatePrintRequestStatus(created.id, "submitted", controlAppId);
+              await this.updatePrintRequestStatus(context, created.id, "submitted", controlAppId);
             }
           } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
-            await this.updatePrintRequestStatus(created.id, "failed", undefined, message);
+            await this.updatePrintRequestStatus(context, created.id, "failed", undefined, message);
             return { studentId: input.student_id, requestId: created.id, version: created.version, status: "failed", error: message };
           }
         }
@@ -277,28 +293,34 @@ export function createCardsNativeService(
     },
 
     /** Liste des demandes d'impression */
-    async listPrintRequests(status?: string, limit = 50, offset = 0): Promise<CardPrintRequestProjection[]> {
-      const r = await businessPool.query<{ card_print_request_list: CardPrintRequestProjection[] }>(
-        "select api.card_print_request_list($1, $2, $3) as card_print_request_list",
-        [status ?? null, limit, offset],
-      );
-      return r.rows[0]?.card_print_request_list ?? [];
+    async listPrintRequests(context: RequestContext, status?: string, limit = 50, offset = 0): Promise<CardPrintRequestProjection[]> {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query<{ card_print_request_list: CardPrintRequestProjection[] }>(
+          "select api.card_print_request_list($1, $2, $3) as card_print_request_list",
+          [status ?? null, limit, offset],
+        );
+        return r.rows[0]?.card_print_request_list ?? [];
+      });
     },
 
     /** Config de design des classes pour les cartes */
-    async classCardConfigList() {
-      const r = await businessPool.query<{ class_card_config_list: unknown }>(
-        "select api.class_card_config_list() as class_card_config_list",
-      );
-      return r.rows[0]?.class_card_config_list ?? [];
+    async classCardConfigList(context: RequestContext) {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query<{ class_card_config_list: unknown }>(
+          "select api.class_card_config_list() as class_card_config_list",
+        );
+        return r.rows[0]?.class_card_config_list ?? [];
+      });
     },
 
     /** Compteurs */
-    async getCounts(): Promise<{ pending: number; submitted: number; printed: number; failed: number; total: number }> {
-      const r = await businessPool.query<{ card_print_request_counts: { pending: number; submitted: number; printed: number; failed: number; total: number } }>(
-        "select api.card_print_request_counts() as card_print_request_counts",
-      );
-      return r.rows[0]?.card_print_request_counts ?? { pending: 0, submitted: 0, printed: 0, failed: 0, total: 0 };
+    async getCounts(context: RequestContext): Promise<{ pending: number; submitted: number; printed: number; failed: number; total: number }> {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query<{ card_print_request_counts: { pending: number; submitted: number; printed: number; failed: number; total: number } }>(
+          "select api.card_print_request_counts() as card_print_request_counts",
+        );
+        return r.rows[0]?.card_print_request_counts ?? { pending: 0, submitted: 0, printed: 0, failed: 0, total: 0 };
+      });
     },
   };
 }

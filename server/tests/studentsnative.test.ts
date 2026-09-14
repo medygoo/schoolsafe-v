@@ -138,6 +138,48 @@ describe("GET /native/students/:id — première route métier réelle", () => {
   });
 });
 
+describe("contexte de requête — liste et brouillon (phase A tâche 4)", () => {
+  it("liste : BEGIN → set_request_context → api.student_list → COMMIT", async () => {
+    const log: QueryCall[] = [];
+    const app = makeApp(true, log);
+    const response = await app.inject({
+      method: "GET",
+      url: "/native/students",
+      headers: { cookie: "schoolsafe_session=token-valide" },
+    });
+    expect(response.statusCode).toBe(200);
+    const statements = log.map((c) => c.sql);
+    expect(statements.slice(0, 3)).toEqual([
+      "BEGIN",
+      expect.stringContaining("api.set_request_context"),
+      expect.stringContaining("api.student_list"),
+    ]);
+    expect(statements.at(-1)).toBe("COMMIT");
+  });
+
+  it("brouillon refusé par Access_Law : ROLLBACK, jamais COMMIT", async () => {
+    const log: QueryCall[] = [];
+    const app = makeApp(false, log);
+    const response = await app.inject({
+      method: "POST",
+      url: "/native/students/drafts",
+      headers: { cookie: "schoolsafe_session=token-valide" },
+      payload: {
+        matricule: "STU-002",
+        first_name: "Bertrand",
+        last_name: "Ilunga",
+        academic_year_id: "88888888-0000-4000-8000-000000000001",
+        planned_class_id: STUDENT.class_id,
+        enrollment_starts_on: "2026-09-14",
+      },
+    });
+    expect(response.statusCode).toBe(403);
+    const statements = log.map((c) => c.sql);
+    expect(statements.at(-1)).toBe("ROLLBACK");
+    expect(statements).not.toContain("COMMIT");
+  });
+});
+
 describe("studentsnative service", () => {
   it("passe la cible élève à Access_Law", async () => {
     const log: QueryCall[] = [];

@@ -4,7 +4,7 @@
 import type { PoolClient } from "pg";
 import type { BusinessPool } from "../db/pool.js";
 import { withAuthorizedContext, type AccessTarget } from "../db/access.js";
-import type { RequestContext } from "../db/context.js";
+import { withRequestContext, type RequestContext } from "../db/context.js";
 
 export type StudentProjection = {
   id: string;
@@ -50,11 +50,13 @@ export function createStudentsNativeService(businessPool: BusinessPool) {
       limit: number,
       offset: number,
     ): Promise<StudentListResult> {
-      const result = await businessPool.query<{ student_list: StudentListResult }>(
-        "select api.student_list($1, $2, $3, $4, $5) as student_list",
-        [status, query, classId, limit, offset],
-      );
-      return result.rows[0]?.student_list ?? { total: 0, rows: [], limit, offset };
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const result = await client.query<{ student_list: StudentListResult }>(
+          "select api.student_list($1, $2, $3, $4, $5) as student_list",
+          [status, query, classId, limit, offset],
+        );
+        return result.rows[0]?.student_list ?? { total: 0, rows: [], limit, offset };
+      });
     },
 
     async createStudentDraft(
@@ -72,22 +74,30 @@ export function createStudentsNativeService(businessPool: BusinessPool) {
         schoolId: string;
       },
     ): Promise<string> {
-      const result = await businessPool.query<{ student_create_draft: string }>(
-        "select api.student_create_draft($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) as student_create_draft",
-        [
-          input.schoolId ?? context.schoolId,
-          input.matricule,
-          input.first_name,
-          input.middle_name ?? null,
-          input.last_name,
-          input.date_of_birth ?? null,
-          input.gender ?? null,
-          input.academic_year_id,
-          input.planned_class_id,
-          input.enrollment_starts_on,
-        ],
+      return withAuthorizedContext(
+        businessPool,
+        context,
+        "school.student.create",
+        { classId: input.planned_class_id } as AccessTarget,
+        async (client: PoolClient) => {
+          const result = await client.query<{ student_create_draft: string }>(
+            "select api.student_create_draft($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) as student_create_draft",
+            [
+              input.schoolId ?? context.schoolId,
+              input.matricule,
+              input.first_name,
+              input.middle_name ?? null,
+              input.last_name,
+              input.date_of_birth ?? null,
+              input.gender ?? null,
+              input.academic_year_id,
+              input.planned_class_id,
+              input.enrollment_starts_on,
+            ],
+          );
+          return result.rows[0].student_create_draft;
+        },
       );
-      return result.rows[0].student_create_draft;
     },
   };
 }

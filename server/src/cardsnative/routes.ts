@@ -1,10 +1,13 @@
 // SchoolSafe Cartes v1 — routes HTTP natives pour l'impression de cartes.
+// Le contexte de requête est construit UNIQUEMENT depuis la session résolue
+// côté serveur (jamais depuis le navigateur) et passé en premier argument.
 import type { FastifyInstance } from "fastify";
 import { SchoolSafeError } from "../http/errors.js";
 import { newRequestId } from "../http/request-id.js";
 import { requireAuthSession } from "../authnative/middleware.js";
 import type { AuthNativeService } from "../authnative/service.js";
 import type { CardsNativeService } from "./service.js";
+import type { RequestContext } from "../db/context.js";
 import { z } from "zod";
 
 export type CardsNativeRouteDependencies = {
@@ -18,6 +21,17 @@ export function registerCardsNativeRoutes(
 ): void {
   const requireSession = requireAuthSession(dependencies.authService);
 
+  // Contexte serveur : identité + école résolues depuis la session, jamais du client.
+  function contextFrom(request: { authSession?: { userId: string; profileId: string; schoolId: string } }): RequestContext {
+    const session = request.authSession!;
+    return {
+      userId: session.userId,
+      profileId: session.profileId,
+      schoolId: session.schoolId,
+      requestId: newRequestId(),
+    };
+  }
+
   // Soumettre une demande d'impression complète (avec images base64)
   app.post("/native/cards/print-request", { preHandler: requireSession }, async (request) => {
     const body = z.object({
@@ -28,7 +42,7 @@ export function registerCardsNativeRoutes(
       metadata: z.record(z.unknown()).optional(),
     }).parse(request.body);
 
-    const result = await dependencies.service.submitFullPrintRequest(body);
+    const result = await dependencies.service.submitFullPrintRequest(contextFrom(request), body);
     return { data: result, request_id: newRequestId() };
   });
 
@@ -42,7 +56,7 @@ export function registerCardsNativeRoutes(
       metadata: z.record(z.unknown()).optional(),
     }).parse(request.body);
 
-    const result = await dependencies.service.submitFullPrintRequest({
+    const result = await dependencies.service.submitFullPrintRequest(contextFrom(request), {
       student_id: studentId,
       format: body.format,
       front_image_base64: body.front_image_base64,
@@ -61,19 +75,19 @@ export function registerCardsNativeRoutes(
       offset: z.coerce.number().int().min(0).default(0),
     }).parse(request.query ?? {});
 
-    const data = await dependencies.service.listPrintRequests(q.status, q.limit, q.offset);
+    const data = await dependencies.service.listPrintRequests(contextFrom(request), q.status, q.limit, q.offset);
     return { data, request_id: newRequestId() };
   });
 
   // Config de design des classes pour les cartes
-  app.get("/native/cards/class-card-config", { preHandler: requireSession }, async () => {
-    const data = await dependencies.service.classCardConfigList();
+  app.get("/native/cards/class-card-config", { preHandler: requireSession }, async (request) => {
+    const data = await dependencies.service.classCardConfigList(contextFrom(request));
     return { data, request_id: newRequestId() };
   });
 
   // Compteurs
-  app.get("/native/cards/print-requests/counts", { preHandler: requireSession }, async () => {
-    const data = await dependencies.service.getCounts();
+  app.get("/native/cards/print-requests/counts", { preHandler: requireSession }, async (request) => {
+    const data = await dependencies.service.getCounts(contextFrom(request));
     return { data, request_id: newRequestId() };
   });
 
@@ -87,6 +101,7 @@ export function registerCardsNativeRoutes(
     }).parse(request.body);
 
     const ok = await dependencies.service.updatePrintRequestStatus(
+      contextFrom(request),
       id, body.status, body.control_app_reference, body.error_message,
     );
     if (!ok) throw new SchoolSafeError(404, "NOT_FOUND", "Demande introuvable", false);
