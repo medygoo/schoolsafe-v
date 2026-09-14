@@ -24,6 +24,10 @@ export function createSetupNativeService(
   businessPool: BusinessPool,
   setupToken: string | undefined,
 ): SetupService {
+  // Lier l'administrateur à l'école créée dans CE flux de setup — jamais
+  // « la dernière école » globale (ambiguïté inter-écoles en multi-tenant).
+  let setupSchoolId: string | null = null;
+
   return {
     getConfig(): ConfigResponse {
       return {
@@ -74,6 +78,7 @@ export function createSetupNativeService(
         if (!row || !row.school_id) {
           throw new Error("La création de l'école a échoué sans erreur.");
         }
+        setupSchoolId = row.school_id;
         return row;
       } finally {
         client.release();
@@ -83,11 +88,17 @@ export function createSetupNativeService(
     async createAdmin(payload: SetupAdminPayload): Promise<AdminSetupResult> {
       const passwordHash = await hashPassword(payload.password);
 
-      // Récupérer la dernière école créée (le token de setup
-      // garantit qu'il n'y a pas de concurrence malveillante).
-      const schoolResult = await businessPool.query<{ id: string }>(
-        "select id from app.schools order by created_at desc limit 1",
-      );
+      // École du flux de setup en priorité ; repli documenté uniquement si
+      // le service a été rechargé entre les deux appels (setup = flux unique
+      // protégé par token, jamais un chemin métier runtime).
+      const schoolResult = setupSchoolId
+        ? await businessPool.query<{ id: string }>(
+            "select id from app.schools where id = $1",
+            [setupSchoolId],
+          )
+        : await businessPool.query<{ id: string }>(
+            "select id from app.schools order by created_at desc limit 1",
+          );
       const school = schoolResult.rows[0];
       if (!school) {
         throw new Error("Aucune école trouvée. Créez l'école avant l'administrateur.");

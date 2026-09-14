@@ -284,7 +284,7 @@ begin
   select coalesce(pg_catalog.sum(p.amount), 0)::numeric(12,2)
   into v_new_paid
   from app.fee_payments p
-  where p.student_fee_id = p_student_fee_id and p.status = 'valid';
+  where p.student_fee_id = p_student_fee_id and p.school_id = v_school_id and p.status = 'valid';
 
   v_new_remaining := greatest(v_student_fee.amount_expected - v_new_paid, 0);
   v_new_status := case
@@ -401,7 +401,7 @@ begin
   select coalesce(pg_catalog.sum(p.amount), 0)::numeric(12,2)
   into v_new_paid
   from app.fee_payments p
-  where p.student_fee_id = v_student_fee.id and p.status = 'valid';
+  where p.student_fee_id = v_student_fee.id and p.school_id = v_school_id and p.status = 'valid';
 
   v_new_remaining := greatest(v_student_fee.amount_expected - v_new_paid, 0);
   v_new_status := case
