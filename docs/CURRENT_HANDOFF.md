@@ -8,11 +8,10 @@ Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écol
 
 ```
 ÉTAT ACTUEL            Phase A complète + P2 complété + **P3 complété**
-DERNIÈRE ÉTAPE         fix(ui) nom école générique 'Toutes les écoles'
-                       avant sélection contexte (6a2177c)
-ÉTAPE EN COURS         P4 — cœur quotidien Le Sage (FRONTEND Lots 4-5
-                       visuels, personnes autorisées, photo sortie,
-                       validation humaine gardien)
+DERNIÈRE ÉTAPE         test(ui) extension contrat visuel Task 3 auth/OTP/JASPE
+                       (af93567) — contrat PASS, Step 1 complet
+ÉTAPE EN COURS         P4 Task 3 Step 4 (vérification visuelle navigateur)
+                       puis Task 4 shell/navigation responsive
 ORDRE À SUIVRE         P4 cœur Le Sage · P5 backup + rejeu base réelle
                        · P6 extensions
 ```
