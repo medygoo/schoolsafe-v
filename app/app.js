@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   var screens = {
@@ -202,7 +202,7 @@
     }
     setText("workspaceProfileName", bootstrap.profile.display_name || "");
     setText("workspaceInitials", initialsFromName(bootstrap.profile.display_name || "SchoolSafe"));
-    setText("workspaceSchoolName", bootstrap.school ? bootstrap.school.name : "Configuration en cours");
+    setText("workspaceSchoolName", bootstrap.school ? bootstrap.school.name : "Toutes les écoles");
     setText("workspaceRole", roleCatalog[activeRole] ? roleCatalog[activeRole].label : activeRole);
     setText("statusRole", roleCatalog[activeRole] ? roleCatalog[activeRole].label : activeRole);
     setText("statusScope", scopeSummary(session));
@@ -2370,7 +2370,7 @@
     // Nom de l’établissement (source réelle : currentSession.school.name)
     var workspaceSchoolName = document.getElementById("workspaceSchoolName");
     if (workspaceSchoolName) {
-      var schoolName = (currentSession && currentSession.school && currentSession.school.name) || "Configuration en cours";
+      var schoolName = (currentSession && currentSession.school && currentSession.school.name) || "Toutes les écoles";
       workspaceSchoolName.textContent = schoolName;
     }
     renderSchoolBranding();
