@@ -51,6 +51,7 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
     controlPrintNative: {
       authService,
       businessPool: pools.businessPool,
+      controlConfig,
       service: createControlPrintNativeService(pools.businessPool, controlConfig),
     },
     cardsNative: {
