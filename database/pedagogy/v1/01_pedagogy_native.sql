@@ -483,7 +483,9 @@ begin
     ), '[]'::jsonb)
     from app.student_guardians sg
     join app.students s on s.id = sg.student_id and s.school_id = v_school_id
-    where sg.guardian_profile_id = v_profile_id and sg.relationship in ('pere', 'mere', 'tuteur')
+    where sg.school_id = v_school_id
+      and sg.profile_id = v_profile_id
+      and sg.is_active = true
   );
 end
 $schoolsafe$;
@@ -501,8 +503,14 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_class_id uuid;
 begin
-  -- Vérifier que le parent est bien lié à cet élève
-  if not exists (select 1 from app.student_guardians where guardian_profile_id = v_profile_id and student_id = p_student_id) then
+  -- Vérifier que le parent est bien lié à cet élève (dans son école)
+  if not exists (
+    select 1 from app.student_guardians
+    where school_id = v_school_id
+      and profile_id = v_profile_id
+      and student_id = p_student_id
+      and is_active = true
+  ) then
     return '[]'::jsonb;
   end if;
 

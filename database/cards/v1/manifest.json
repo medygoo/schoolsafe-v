@@ -1,0 +1,18 @@
+{
+  "cards_version": "schoolsafe-cards-v1",
+  "requires_baseline": "schoolsafe-vps-v1",
+  "units": [
+    {
+      "order": 1,
+      "name": "cards_native",
+      "file": "01_cards_native.sql",
+      "sha256": "6cebebcf736b9f2b75968688b666ed18f07349dc4beb3153e020d616994d6a64"
+    },
+    {
+      "order": 2,
+      "name": "cards_classes",
+      "file": "02_cards_classes.sql",
+      "sha256": "bf05067d5689239bf39132e27497797db4436ddfd342c263de191e399a6395c0"
+    }
+  ]
+}
