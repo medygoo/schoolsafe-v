@@ -23,6 +23,7 @@ export type ApiErrorCode =
   | "PARENT_SEARCH_FAILED"
   | "FILE_MISSING"
   | "FILE_INVALID"
+  | "LICENSE_INACTIVE"
   | "FILE_TOO_LARGE"
   | "NOT_FOUND"
   | "TRIAL_EXPIRED"

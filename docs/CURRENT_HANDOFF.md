@@ -7,17 +7,43 @@ Dernière mise à jour : 14 septembre 2026 — Étape 0 (cohérence documentaire
 Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS**. Références visuelles officielles versionnées dans `docs/design/references/`. Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE**. Références design validées et versionnées (`a6d6b8f`).
 
 ```
-ÉTAT ACTUEL            Phase A complète + **P2 complété** (7a7f9e8)
-DERNIÈRE ÉTAPE         P2 — balayage inter-écoles : 2 corrections + verrou
-                       sweep dépôt (56 fichiers / 292 tests, tout vert)
-ÉTAPE EN COURS         clôture du lot P2 (push)
-PROCHAINE ÉTAPE        P3 — enforcement de la licence côté backend :
-                       hook d'application (statut licence → blocage réel
-                       des routes métier, mode dégradé défini), tests
-                       licence expirée = accès refusé côté serveur
-ORDRE À SUIVRE         P3 enforcement licence · P4 cœur Le Sage
-                       (FRONTEND — Lots 4-5 visuels) · P5 backup + rejeu
-                       base réelle · P6 extensions
+ÉTAT ACTUEL            Phase A complète + P2 complété + **P3 complété**
+DERNIÈRE ÉTAPE         P3 — enforcement backend licence : gate onRequest,
+                       error code LICENSE_INACTIVE, câblage native-app,
+                       5 tests gate + 15 tests service (20/20 PASS)
+ÉTAPE EN COURS         clôture du lot P3 (push)
+PROCHAINE ÉTAPE        P4 — cœur quotidien Le Sage (FRONTEND Lots 4-5
+                       visuels, personnes autorisées, photo sortie,
+                       validation humaine gardien)
+ORDRE À SUIVRE         P4 cœur Le Sage · P5 backup + rejeu base réelle
+                       · P6 extensions
+```
+
+### Rapport — Lot P3 (enforcement backend licence)
+
+```text
+PRÉVU :    hook d'application backend bloquant les routes /native/* quand
+           la licence n'est pas active ou en grâce ; error code dédié ;
+           tests d'enforcement (blocage, exception CORE, grâce, isolation).
+FAIT :     server/src/licensenative/gate.ts (nouveau) : hook Fastify
+           onRequest avec cache TTL 60s par schoolId, exclusion explicite
+           /native/license et /native/trial (CORE non licenciable), lecture
+           état via licenseService.readState. server/src/http/errors.ts :
+           ajout ApiErrorCode LICENSE_INACTIVE. server/src/native-app.ts :
+           création licenseService conditionnelle + registerLicenseGate
+           après buildApp. Tests : server/tests/licensenative-gate.test.ts
+           (5 scénarios : blocage inactive, exception license, exception
+           trial, autorisation grâce, isolation inter-écoles).
+TESTS :    licensenative 15/15 PASS · licensenative-gate 5/5 PASS ·
+           typecheck PASS · total 20/20 tests licence verts.
+MODIFIÉ :  server/src/http/errors.ts (+1 error code) ·
+           server/src/native-app.ts (câblage gate + service) ·
+           server/src/licensenative/gate.ts (nouveau) ·
+           server/tests/licensenative-gate.test.ts (nouveau).
+NON TOUCHÉ: frontend, SQL, permissions.json, spec G0, DECISIONS.md.
+RISQUES :  cache TTL 60s = révocation prend effet au plus tard après 60s
+           (acceptable V1, documenté) ; HMAC octet-exact reste à durcir
+           avant exposition publique (même chantier que upload logo).
 ```
 
 ### Rapport — Lot P2 (isolation inter-écoles)

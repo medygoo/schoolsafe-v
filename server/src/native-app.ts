@@ -9,6 +9,7 @@ import { createSessionNativeService } from "./sessionnative/service.js";
 import { createJaspeNativeService } from "./jaspenative/service.js";
 import { createLicenseNativeService } from "./licensenative/service.js";
 import { createControlLicenseClient } from "./licensenative/control-client.js";
+import { registerLicenseGate } from "./licensenative/gate.js";
 import { createSetupNativeService } from "./setup/service.js";
 import { createFinanceNativeService } from "./financenative/service.js";
 import { createPedagogyNativeService } from "./pedagogynative/service.js";
@@ -20,6 +21,13 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
   const authService = createAuthNativeService(createPgAuthDatabase(pools.authPool));
   const controlConfig = env.CONTROL_APP_URL && env.CONTROL_APP_INSTANCE_ID && env.CONTROL_APP_HMAC_SECRET
     ? { url: env.CONTROL_APP_URL, instanceId: env.CONTROL_APP_INSTANCE_ID, hmacSecret: env.CONTROL_APP_HMAC_SECRET }
+    : undefined;
+  const licenseService = env.CONTROL_LICENSE_PUBLIC_KEY
+    ? createLicenseNativeService(
+        pools.businessPool,
+        controlConfig ? createControlLicenseClient(controlConfig) : undefined,
+        env.CONTROL_LICENSE_PUBLIC_KEY,
+      )
     : undefined;
   const app = buildApp({
     readinessProbe: async () => {
@@ -39,12 +47,7 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
       timeoutMs: env.JASPE_CHAT_TIMEOUT_MS,
       ratePerMinute: env.JASPE_RATE_PER_MINUTE,
     }) },
-    licenseNative: env.CONTROL_LICENSE_PUBLIC_KEY ? {
-      authService,
-      service: createLicenseNativeService(pools.businessPool,
-        controlConfig ? createControlLicenseClient(controlConfig) : undefined,
-        env.CONTROL_LICENSE_PUBLIC_KEY),
-    } : undefined,
+    licenseNative: licenseService ? { authService, service: licenseService } : undefined,
     setup: { service: createSetupNativeService(pools.authPool, pools.businessPool, env.SETUP_TOKEN) },
     financeNative: { authService, service: createFinanceNativeService(pools.businessPool) },
     pedagogyNative: { authService, service: createPedagogyNativeService(pools.businessPool) },
@@ -64,6 +67,9 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
       } : undefined, controlConfig),
     },
   });
+  if (licenseService) {
+    registerLicenseGate(app, { authService, licenseService });
+  }
   app.addHook("onClose", async () => {
     await Promise.allSettled([pools.authPool.end(), pools.businessPool.end()]);
   });
