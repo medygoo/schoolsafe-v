@@ -7,15 +7,39 @@ Dernière mise à jour : 14 septembre 2026 — Étape 0 (cohérence documentaire
 Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS**. Références visuelles officielles versionnées dans `docs/design/references/`. Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE**. Références design validées et versionnées (`a6d6b8f`).
 
 ```
-ÉTAT ACTUEL            Lot 1 — Phase A : tâches 1-5 TERMINÉES
-                       (8446fa5 · eace2e2 · 05e75e9 · 0ae7ef6 · 07f0508)
-DERNIÈRE ÉTAPE         Phase A Tâche 5 — autorité machine Control (287/287)
-ÉTAPE EN COURS         transition vers la tâche 6
-PROCHAINE ÉTAPE        Phase A — Tâche 6 : manifestes finance/pedagogy/cards
-                       (9 sets enregistrés, contrats statiques par module)
-                       puis Tâche 7 : gate de régression active-path
-ORDRE À SUIVRE         P1 Phase A (tâches 6-7) · P2 fuites inter-écoles (re-vérif) ·
-                       P3 enforcement licence · P4 cœur Le Sage (frontend) · P5 backup · P6 extensions
+ÉTAT ACTUEL            Lot 1 — Phase A : tâches 1-6 TERMINÉES
+                       (… · 07f0508 tâche 5 · b5d24b6 tâche 6)
+DERNIÈRE ÉTAPE         Phase A Tâche 6 — finance/pedagogy/cards enregistrés
+                       (9 sets / 27 units, 15 contrats statiques nouveaux)
+ÉTAPE EN COURS         transition vers la tâche 7 (DERNIÈRE de la Phase A)
+PROCHAINE ÉTAPE        Phase A — Tâche 7 : gate de régression active-path
+                       (native-access-contract.test.ts : aucun service humain
+                       n'exécute de RPC hors withRequestContext) + clôture du lot
+ORDRE À SUIVRE         fin Phase A · P2 fuites (re-vérif après T5/T6) ·
+                       P3 enforcement licence · P4 cœur Le Sage (FRONTEND — Lots 4-5) ·
+                       P5 backup/rejeu base réelle · P6 extensions
+```
+
+### Rapport — Lot 1, Tâche 6 (manifestes + contrats statiques modules)
+
+```text
+PRÉVU :    enregistrer finance/pedagogy/cards dans l'intégrité des
+           migrations + contrats statiques par module (plan, étapes 1-6).
+FAIT :     attente étendue 9 sets (échec constaté) ; 3 générateurs + 3
+           manifestes (finance 2, pedagogy 1, cards 2 unités) ; contrôleur
+           étendu après access ; compteur 27 (26 plan + unité access 03 de
+           la tâche 5 — écart documenté) ; 15 tests de contrats nouveaux ;
+           BUG RÉEL trouvé par le contrat school_id et corrigé :
+           parent_children_list/parent_student_grades utilisaient
+           guardian_profile_id/relationship (colonnes inexistantes —
+           profile_id/guardian_type), ce qui aurait planté à l'exécution ;
+           contraintes school_id ajoutées ; manifeste pedagogy régénéré.
+TESTS :    statiques modules 15/15 · access+cibles+baseline 35/35 ·
+           migrations 9 sets/27 units PASS (×2 contrôles) · gate
+           permissions 3/3 · typecheck PASS · 55 fichiers/287 tests PASS.
+MODIFIÉ :  15 fichiers (3 SQL manifestes + 3 générateurs + 3 tests statiques
+           + contrôleur + compteur + 1 SQL pedagogy corrigé).
+COMMIT :   b5d24b6.
 ```
 
 ### Rapport — Lot 1, Tâche 5 (autorité machine Control)
