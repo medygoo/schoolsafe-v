@@ -161,3 +161,38 @@ Ordre de réparation :
 6. relancer typecheck, suite serveur, tests statiques SQL, JASPE et absence de `guardian`.
 
 Ces six étapes sont terminées. La limite non bloquante restante est l'avertissement NPM sur la politique `allowScripts` d'Esbuild, à décider avant la release VPS ; aucun script inconnu n'a été approuvé pendant ce lot.
+
+## Phase A — Access Law canonique (2026-09-14, terminée)
+
+Sept tâches exécutées selon le plan canonique, par ordre, chacune avec
+contrats écrits avant correction :
+
+1. scanner du contrat de permissions (`check:permissions` en CI) ;
+2. vocabulaire canonique SQL — 33 littéraux legacy remplacés, 4
+   permissions ajoutées (catalogue et seed à 64 codes), grants admin 63 /
+   cashier +caisse ouverte, `cards.print.manage` réservée à Control ;
+3. cibles exactes des RPC — élève+classe avant toute autorisation finance,
+   paire classe+matière en pédagogie, contexte campagne pour
+   `assigned_fee_classes`, projections parent bornées (notes publiées) ;
+4. contextualisation des services natifs humains — 46 méthodes sous
+   `withRequestContext` (BEGIN → set_request_context → api.* → COMMIT) ;
+5. autorité machine Control séparée — `api.set_control_context` (unité
+   access 03), HMAC vérifié avant tout SQL, callback signé
+   `/native/control/print/status`, zéro SQL si non signé, jamais de
+   profileId ;
+6. finance/pedagogy/cards enregistrés dans l'intégrité des migrations
+   (9 ensembles, 27 unités) + 15 contrats statiques par module ;
+7. gate de régression active-path — aucun service humain ne peut
+   régresser vers `businessPool.query`.
+
+Bugs réels trouvés et corrigés en route : colonnes inexistantes
+(`guardian_profile_id`/`relationship`) dans les projections parent ;
+liste d'impression sans filtre école ; RPC sans aucune vérification
+(`student_averages`).
+
+Preuves fraîches à la clôture : gate permissions 3/3 · migrations
+9 sets/27 unités · statiques 52/52 · typecheck PASS · 56 fichiers /
+292 tests serveur PASS. Limites inchangées : rejeu sur base réelle
+planifié en P5 ; sémantique du contexte machine dans `iam.*` à valider
+au rejeu ; signature HMAC sur re-sérialisation JSON (octet exact à
+durcir avant exposition publique).

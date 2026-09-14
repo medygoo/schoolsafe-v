@@ -7,17 +7,42 @@ Dernière mise à jour : 14 septembre 2026 — Étape 0 (cohérence documentaire
 Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS**. Références visuelles officielles versionnées dans `docs/design/references/`. Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE**. Références design validées et versionnées (`a6d6b8f`).
 
 ```
-ÉTAT ACTUEL            Lot 1 — Phase A : tâches 1-6 TERMINÉES
-                       (… · 07f0508 tâche 5 · b5d24b6 tâche 6)
-DERNIÈRE ÉTAPE         Phase A Tâche 6 — finance/pedagogy/cards enregistrés
-                       (9 sets / 27 units, 15 contrats statiques nouveaux)
-ÉTAPE EN COURS         transition vers la tâche 7 (DERNIÈRE de la Phase A)
-PROCHAINE ÉTAPE        Phase A — Tâche 7 : gate de régression active-path
-                       (native-access-contract.test.ts : aucun service humain
-                       n'exécute de RPC hors withRequestContext) + clôture du lot
-ORDRE À SUIVRE         fin Phase A · P2 fuites (re-vérif après T5/T6) ·
-                       P3 enforcement licence · P4 cœur Le Sage (FRONTEND — Lots 4-5) ·
-                       P5 backup/rejeu base réelle · P6 extensions
+ÉTAT ACTUEL            **PHASE A COMPLÈTE** — tâches 1-7 terminées et poussées
+                       (8446fa5 · eace2e2 · 05e75e9 · 0ae7ef6 · 07f0508 ·
+                        b5d24b6 · clôture tâche 7 = ce lot)
+DERNIÈRE ÉTAPE         Phase A Tâche 7 — gate active-path (5/5) + clôture :
+                       56 fichiers / 292 tests · statiques 52/52 ·
+                       migrations 9 sets/27 units · permissions 3/3 ·
+                       typecheck PASS — CI entièrement verte
+ÉTAPE EN COURS         clôture du lot (handoff + push)
+PROCHAINE ÉTAPE        P2 — isolation critique : balayage complet des requêtes
+                       métier pour traquer toute fuite inter-écoles restante
+                       (l'impression est déjà corrigée en T5) + test SQL
+                       d'isolation si environnement disponible
+ORDRE À SUIVRE         P2 fuites inter-écoles · P3 enforcement licence ·
+                       P4 cœur Le Sage (FRONTEND — Lots 4-5 visuels) ·
+                       P5 backup + rejeu base réelle (valide iam machine) · P6 extensions
+```
+
+### Rapport — Lot 1, Tâche 7 (gate active-path + clôture Phase A)
+
+```text
+PRÉVU :    gate de régression statique + suite critique ciblée + clôture
+           documentaire (plan, étapes 1-6).
+FAIT :     native-access-contract.test.ts (code exact du plan) — les 5
+           services humains ne contiennent aucun businessPool.query< et
+           contiennent withRequestContext ; suite critique ciblée 9
+           fichiers/37 tests ; batterie complète : permissions 3/3,
+           migrations 9 sets/27 units, statiques 52/52 (access, cibles,
+           baseline, finance, pedagogy, cards, versions), typecheck,
+           56 fichiers/292 tests serveur. BASELINE_REPORT : section
+           « Phase A » ajoutée (résumé, bugs trouvés, preuves, limites).
+           DECISIONS.md non modifié (aucune décision architecturale
+           nouvelle dans ce lot).
+TESTS :    tous exécutés, tous verts — voir ci-dessus.
+COMMIT :   ce lot (code + docs).
+RISQUES :  inchangés et documentés — rejeu base réelle (P5), iam machine,
+           HMAC octet-exact, allowScripts Esbuild.
 ```
 
 ### Rapport — Lot 1, Tâche 6 (manifestes + contrats statiques modules)
