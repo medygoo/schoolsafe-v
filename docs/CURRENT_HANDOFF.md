@@ -7,13 +7,41 @@ Dernière mise à jour : 14 septembre 2026 — Étape 0 (cohérence documentaire
 Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS**. Références visuelles officielles versionnées dans `docs/design/references/`. Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE**. Références design validées et versionnées (`a6d6b8f`).
 
 ```
-ÉTAT ACTUEL            Lot 1 — Phase A en cours : tâches 1 ET 2 TERMINÉES (8446fa5, eace2e2)
-DERNIÈRE ÉTAPE         Phase A Tâche 2 — vocabulaire canonique SQL (gate au vert)
-ÉTAPE EN COURS         transition vers la tâche 3
-PROCHAINE ÉTAPE        Phase A — Tâche 3 : cibles exactes des RPC
-                       (student_id/class_id/subject_id/campaign_id avant require_access)
-ORDRE À SUIVRE         P1 Phase A (tâches 3-7) · P2 fuites inter-écoles ·
+ÉTAT ACTUEL            Lot 1 — Phase A en cours : tâches 1, 2 ET 3 TERMINÉES
+                       (8446fa5 scanner · eace2e2 vocabulaire · 05e75e9 cibles RPC)
+DERNIÈRE ÉTAPE         Phase A Tâche 3 — cibles exactes des RPC (test 3/3 vert)
+ÉTAPE EN COURS         transition vers la tâche 4
+PROCHAINE ÉTAPE        Phase A — Tâche 4 : contextualiser les services natifs
+                       humains (businessPool.query direct → withRequestContext
+                       dans students/finance/pedagogy/cards + tests d'ordre transaction)
+ORDRE À SUIVRE         P1 Phase A (tâches 4-7) · P2 fuites inter-écoles ·
                        P3 enforcement licence · P4 cœur Le Sage · P5 backup · P6 extensions
+```
+
+### Rapport — Lot 1, Tâche 3 (cibles exactes des RPC)
+
+```text
+PRÉVU :    chaque opération métier fournit student_id/class_id/subject_id/
+           contexte campagne à iam.require_access (plan, étapes 3-5).
+FAIT :     test statique des cibles écrit d'abord → 3/3 échecs constatés →
+           finance (frais/paiements/reçu : résolution élève+classe avant
+           autorisation ; scan de contrôle : classe + contexte campagne
+           jsonb pour assigned_fee_classes) ; pédagogie (listes filtrées
+           par ligne iam.can_access ; écritures avec paire classe+matière
+           exacte ; update/publish/delete résolvent la cible depuis la ligne) ;
+           projections parent (grade.read + classe résolue, notes publiées
+           uniquement) ; student_averages qui n'avait AUCUNE vérification
+           est désormais autorisé ; cartes (classe résolue avant
+           cards.request.print ; fonctions Control déjà contraintes
+           school_id — vérifié, inchangées).
+TESTS :    cibles 3/3 · access+baseline 32/32 · gate permissions 3/3 ·
+           migrations PASS · typecheck PASS · 276/276 tests serveur.
+MODIFIÉ :  4 SQL natifs + 1 test statique nouveau.
+NON TOUCHÉ: services TypeScript (tâche 4), frontend, manifestes (ensembles
+           non encore enregistrés — tâche 6).
+COMMIT :   05e75e9.
+RISQUES :  RPC prouvés par contrats statiques ; rejeu sur base réelle
+           planifié avant VPS (P5) — inchangé.
 ```
 
 ### Rapport — Lot 1, Tâche 2 (vocabulaire canonique)
