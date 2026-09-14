@@ -7,32 +7,37 @@ Dernière mise à jour : 14 septembre 2026 — Étape 0 (cohérence documentaire
 Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS**. Références visuelles officielles versionnées dans `docs/design/references/`. Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE**. Références design validées et versionnées (`a6d6b8f`).
 
 ```
-ÉTAT ACTUEL            Lot 1 — Phase A en cours : tâche 1 TERMINÉE (commit 8446fa5)
-DERNIÈRE ÉTAPE         Phase A Tâche 1 — scanner du contrat de permissions
-ÉTAPE EN COURS         transition vers la tâche 2
-PROCHAINE ÉTAPE        Phase A — Tâche 2 : vocabulaire canonique SQL
-                       (mapping exact des 41 littéraux legacy listés par le gate)
-ORDRE À SUIVRE         P1 Phase A (tâches 2-7) · P2 fuites inter-écoles ·
+ÉTAT ACTUEL            Lot 1 — Phase A en cours : tâches 1 ET 2 TERMINÉES (8446fa5, eace2e2)
+DERNIÈRE ÉTAPE         Phase A Tâche 2 — vocabulaire canonique SQL (gate au vert)
+ÉTAPE EN COURS         transition vers la tâche 3
+PROCHAINE ÉTAPE        Phase A — Tâche 3 : cibles exactes des RPC
+                       (student_id/class_id/subject_id/campaign_id avant require_access)
+ORDRE À SUIVRE         P1 Phase A (tâches 3-7) · P2 fuites inter-écoles ·
                        P3 enforcement licence · P4 cœur Le Sage · P5 backup · P6 extensions
 ```
 
-### Rapport — Lot 1, Tâche 1 (scanner du contrat de permissions)
+### Rapport — Lot 1, Tâche 2 (vocabulaire canonique)
 
 ```text
-PRÉVU :    scanner + tests + gate check:permissions dans ci (plan canonique tâche 1)
-FAIT :     test écrit d'abord → échec ERR_MODULE_NOT_FOUND constaté → scanner
-           implémenté (code exact du plan) → 2/2 tests unitaires PASS → gate de
-           dépôt ajouté → échec attendu capturé : 41 littéraux legacy hors
-           catalogue (finance/pedagogy/cards au pluriel) → commit.
-TESTS :    node --test scripts/permission-contract.test.mjs → 2 pass / 0 fail ;
-           npm run check:permissions → ROUGE VOLONTAIRE (41 littéraux, liste
-           complète dans la sortie du gate) — résolu par la tâche 2, ne pas
-           affaiblir le scanner.
-MODIFIÉ :  scripts/permission-contract.mjs (nouveau), scripts/permission-contract.test.mjs
-           (nouveau), package.json (script + ci).
-NON TOUCHÉ: tout le reste (aucun SQL, aucun service).
-COMMIT :   8446fa5 (+ a6d6b8f références design).
-RISQUES :  ci globale rouge jusqu'à la tâche 2 — fenêtre courte, documentée.
+PRÉVU :    mapping exact des codes legacy SQL vers le catalogue canonique
+           (table du plan) + 4 permissions ajoutées + grants rôles.
+FAIT :     test échouant écrit d'abord (doesNotMatch legacy) → échec constaté ;
+           33 littéraux remplacés ligne par ligne selon le contexte fonction
+           (devoirs→pedagogy.assignment.*, notes→pedagogy.grade.*, affectations
+           enseignants→school.structure.manage, palmarès→palmarques.*,
+           caisse ouverte/fermée séparées) ; +4 codes au catalogue et au seed
+           (64 total) ; admin 60→63, cashier +caisse.open ; cards.print.manage
+           à autorité control, non attribuée aux rôles école ; manifestes
+           baseline/access régénérés ; compteurs figés mis à jour.
+TESTS :    access-static + baseline static 32 pass/0 fail · gate
+           check:permissions 3/3 VERT (était 41 littéraux) · migrations
+           6 sets/21 PASS · typecheck PASS · 276/276 tests serveur.
+MODIFIÉ :  5 SQL natifs, permissions.json, seed, role_templates, 2 tests
+           statiques, 2 manifestes.
+NON TOUCHÉ: services TypeScript, frontend, seed des données (ordre SQL préservé).
+COMMIT :   eace2e2.
+RISQUES :  RPC SQL modifiés non rejoués contre une base réelle dans ce lot
+           (contrats statiques uniquement) — rejeu prévu avant VPS, lot P5.
 ```
 
 ## CE QUI ÉTAIT PRÉVU
