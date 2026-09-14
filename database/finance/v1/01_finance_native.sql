@@ -18,9 +18,20 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
   v_result jsonb;
 begin
-  perform iam.require_access('finance.fee.read', null, p_student_id, null);
+  select s.class_id
+  into v_class_id
+  from app.students s
+  where s.school_id = v_school_id
+    and s.id = p_student_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Student not found in school';
+  end if;
+
+  perform iam.require_access('finance.fee.read', null, p_student_id, v_class_id);
 
   select jsonb_agg(
     jsonb_build_object(
@@ -58,9 +69,20 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
   v_result jsonb;
 begin
-  perform iam.require_access('finance.receipt.read', null, p_student_id, null);
+  select s.class_id
+  into v_class_id
+  from app.students s
+  where s.school_id = v_school_id
+    and s.id = p_student_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Student not found in school';
+  end if;
+
+  perform iam.require_access('finance.receipt.read', null, p_student_id, v_class_id);
 
   select jsonb_agg(
     jsonb_build_object(
@@ -99,10 +121,21 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
   v_fee_structure app.fee_structures%rowtype;
   v_fee_id uuid;
 begin
-  perform iam.require_access('finance.fee.manage', null, p_student_id, null);
+  select s.class_id
+  into v_class_id
+  from app.students s
+  where s.school_id = v_school_id
+    and s.id = p_student_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Student not found in school';
+  end if;
+
+  perform iam.require_access('finance.fee.manage', null, p_student_id, v_class_id);
 
   select * into v_fee_structure
   from app.fee_structures
@@ -144,10 +177,22 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_student_id uuid;
+  v_class_id uuid;
   v_fee app.student_fees%rowtype;
   v_payment_id uuid;
 begin
-  perform iam.require_access('finance.payment.record', null, null, null);
+  select sf.student_id, s.class_id
+  into v_student_id, v_class_id
+  from app.student_fees sf
+  join app.students s on s.id = sf.student_id and s.school_id = sf.school_id
+  where sf.id = p_student_fee_id and sf.school_id = v_school_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Student fee not found';
+  end if;
+
+  perform iam.require_access('finance.payment.record', null, v_student_id, v_class_id);
 
   select * into v_fee
   from app.student_fees

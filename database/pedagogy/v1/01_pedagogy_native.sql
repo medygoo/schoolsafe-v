@@ -20,13 +20,14 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('school.class.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', c.id, 'name', c.name, 'cycle_key', c.cycle_key, 'option', c.option, 'academic_year_id', c.academic_year_id, 'is_active', c.is_active)
       order by c.name
     ), '[]'::jsonb)
-    from app.classes c where c.school_id = v_school_id
+    from app.classes c
+    where c.school_id = v_school_id
+      and iam.can_access('school.class.read', null, null, c.id, null)
   );
 end
 $schoolsafe$;
@@ -46,13 +47,14 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.subject.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', s.id, 'code', s.code, 'name', s.name, 'cycle_key', s.cycle_key, 'coefficient', s.coefficient, 'is_active', s.is_active)
       order by s.name
     ), '[]'::jsonb)
-    from app.subjects s where s.school_id = v_school_id
+    from app.subjects s
+    where s.school_id = v_school_id
+      and iam.can_access('pedagogy.subject.read', null, null, null, s.id)
   );
 end
 $schoolsafe$;
@@ -157,7 +159,6 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.assignment.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', a.id, 'class_id', a.class_id, 'subject_id', a.subject_id, 'title', a.title, 'type', a.type, 'max_score', a.max_score,
@@ -171,6 +172,7 @@ begin
     where a.school_id = v_school_id
       and (p_class_id is null or a.class_id = p_class_id)
       and (p_subject_id is null or a.subject_id = p_subject_id)
+      and iam.can_access('pedagogy.assignment.read', null, null, a.class_id, a.subject_id)
   );
 end
 $schoolsafe$;
@@ -188,7 +190,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_id uuid;
 begin
-  perform iam.require_access('pedagogy.assignment.manage', null, null, null);
+  perform iam.require_access('pedagogy.assignment.manage', null, null, p_class_id, p_subject_id);
   insert into app.assignments (school_id, class_id, subject_id, title, type, max_score, coefficient, due_at)
   values (v_school_id, p_class_id, p_subject_id, p_title, p_type, p_max_score, p_coefficient, p_due_at)
   returning id into v_id;
@@ -205,8 +207,19 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
+  v_subject_id uuid;
 begin
-  perform iam.require_access('pedagogy.assignment.manage', null, null, null);
+  select a.class_id, a.subject_id
+  into v_class_id, v_subject_id
+  from app.assignments a
+  where a.id = p_id and a.school_id = v_school_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Assignment not found in school';
+  end if;
+
+  perform iam.require_access('pedagogy.assignment.manage', null, null, v_class_id, v_subject_id);
   update app.assignments set
     title = coalesce(p_title, title),
     max_score = coalesce(p_max_score, max_score),
@@ -226,8 +239,19 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
+  v_subject_id uuid;
 begin
-  perform iam.require_access('pedagogy.assignment.manage', null, null, null);
+  select a.class_id, a.subject_id
+  into v_class_id, v_subject_id
+  from app.assignments a
+  where a.id = p_id and a.school_id = v_school_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Assignment not found in school';
+  end if;
+
+  perform iam.require_access('pedagogy.assignment.manage', null, null, v_class_id, v_subject_id);
   update app.assignments set published = true where id = p_id and school_id = v_school_id;
   return found;
 end
@@ -248,7 +272,6 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.grade.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', g.id, 'student_id', g.student_id, 'score', g.score, 'comment', g.comment,
@@ -259,6 +282,7 @@ begin
     join app.students s on s.id = g.student_id and s.school_id = v_school_id
     join app.assignments a on a.id = g.assignment_id and a.school_id = v_school_id
     where g.assignment_id = p_assignment_id
+      and iam.can_access('pedagogy.grade.read', null, null, a.class_id, a.subject_id)
   );
 end
 $schoolsafe$;
@@ -272,9 +296,20 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
+  v_subject_id uuid;
   v_grade jsonb;
 begin
-  perform iam.require_access('pedagogy.grade.manage', null, null, null);
+  select a.class_id, a.subject_id
+  into v_class_id, v_subject_id
+  from app.assignments a
+  where a.id = p_assignment_id and a.school_id = v_school_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Assignment not found in school';
+  end if;
+
+  perform iam.require_access('pedagogy.grade.manage', null, null, v_class_id, v_subject_id);
   for v_grade in select * from pg_catalog.jsonb_array_elements(p_grades)
   loop
     insert into app.grades (school_id, assignment_id, student_id, score, comment)
@@ -295,8 +330,19 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
+  v_subject_id uuid;
 begin
-  perform iam.require_access('pedagogy.grade.manage', null, null, null);
+  select a.class_id, a.subject_id
+  into v_class_id, v_subject_id
+  from app.assignments a
+  where a.id = p_assignment_id and a.school_id = v_school_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Assignment not found in school';
+  end if;
+
+  perform iam.require_access('pedagogy.grade.manage', null, null, v_class_id, v_subject_id);
   update app.grades set published = true
   where assignment_id = p_assignment_id and school_id = v_school_id;
   return true;
@@ -318,7 +364,6 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
 begin
-  perform iam.require_access('pedagogy.lesson-plan.read', null, null, null);
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', lp.id, 'class_id', lp.class_id, 'subject_id', lp.subject_id, 'title', lp.title, 'week_start', lp.week_start,
@@ -332,6 +377,7 @@ begin
     where lp.school_id = v_school_id
       and (p_class_id is null or lp.class_id = p_class_id)
       and (p_subject_id is null or lp.subject_id = p_subject_id)
+      and iam.can_access('pedagogy.lesson-plan.read', null, null, lp.class_id, lp.subject_id)
   );
 end
 $schoolsafe$;
@@ -347,7 +393,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_id uuid;
 begin
-  perform iam.require_access('pedagogy.lesson-plan.manage', null, null, null);
+  perform iam.require_access('pedagogy.lesson-plan.manage', null, null, p_class_id, p_subject_id);
   insert into app.lesson_plans (school_id, class_id, subject_id, title, week_start, objectives, content)
   values (v_school_id, p_class_id, p_subject_id, p_title, p_week_start, p_objectives, p_content)
   returning id into v_id;
@@ -364,8 +410,19 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
+  v_subject_id uuid;
 begin
-  perform iam.require_access('pedagogy.lesson-plan.manage', null, null, null);
+  select lp.class_id, lp.subject_id
+  into v_class_id, v_subject_id
+  from app.lesson_plans lp
+  where lp.id = p_id and lp.school_id = v_school_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Lesson plan not found in school';
+  end if;
+
+  perform iam.require_access('pedagogy.lesson-plan.manage', null, null, v_class_id, v_subject_id);
   update app.lesson_plans set
     title = coalesce(p_title, title),
     objectives = coalesce(p_objectives, objectives),
@@ -384,8 +441,19 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
+  v_subject_id uuid;
 begin
-  perform iam.require_access('pedagogy.lesson-plan.manage', null, null, null);
+  select lp.class_id, lp.subject_id
+  into v_class_id, v_subject_id
+  from app.lesson_plans lp
+  where lp.id = p_id and lp.school_id = v_school_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Lesson plan not found in school';
+  end if;
+
+  perform iam.require_access('pedagogy.lesson-plan.manage', null, null, v_class_id, v_subject_id);
   delete from app.lesson_plans where id = p_id and school_id = v_school_id;
   return found;
 end
@@ -431,11 +499,24 @@ as $schoolsafe$
 declare
   v_profile_id uuid := iam.current_profile_id();
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
 begin
   -- Vérifier que le parent est bien lié à cet élève
   if not exists (select 1 from app.student_guardians where guardian_profile_id = v_profile_id and student_id = p_student_id) then
     return '[]'::jsonb;
   end if;
+
+  select s.class_id
+  into v_class_id
+  from app.students s
+  where s.id = p_student_id and s.school_id = v_school_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Student not found in school';
+  end if;
+
+  perform iam.require_access('pedagogy.grade.read', null, p_student_id, v_class_id);
+
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('id', g.id, 'assignment_id', g.assignment_id, 'title', a.title, 'subject_name', s.name,
@@ -446,6 +527,7 @@ begin
     join app.assignments a on a.id = g.assignment_id and a.school_id = v_school_id
     join app.subjects s on s.id = a.subject_id and s.school_id = v_school_id
     where g.student_id = p_student_id and g.school_id = v_school_id
+      and g.published = true
   );
 end
 $schoolsafe$;
@@ -464,7 +546,19 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_class_id uuid;
 begin
+  select s.class_id
+  into v_class_id
+  from app.students s
+  where s.id = p_student_id and s.school_id = v_school_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Student not found in school';
+  end if;
+
+  perform iam.require_access('pedagogy.grade.read', null, p_student_id, v_class_id);
+
   return (
     select coalesce(jsonb_agg(
       jsonb_build_object('subject_id', agg.subject_id, 'subject_name', agg.subject_name,

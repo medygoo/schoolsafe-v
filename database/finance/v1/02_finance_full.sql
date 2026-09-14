@@ -210,9 +210,22 @@ set search_path = pg_catalog
 as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
+  v_student_id uuid;
+  v_class_id uuid;
   v_result jsonb;
 begin
-  perform iam.require_access('finance.receipt.read', null, null, null);
+  select sf.student_id, s.class_id
+  into v_student_id, v_class_id
+  from app.fee_payments fp
+  join app.student_fees sf on sf.id = fp.student_fee_id and sf.school_id = fp.school_id
+  join app.students s on s.id = sf.student_id and s.school_id = sf.school_id
+  where fp.id = p_payment_id and fp.school_id = v_school_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Payment not found in school';
+  end if;
+
+  perform iam.require_access('finance.receipt.read', null, v_student_id, v_class_id);
 
   select jsonb_build_object(
     'payment_id', fp.id,
@@ -322,9 +335,23 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_profile_id uuid := iam.current_profile_id();
   v_student_fee_status text := p_student_fee_status;
+  v_class_id uuid;
+  v_runtime_context jsonb;
   v_id uuid;
 begin
-  perform iam.require_access('finance.control.scan', null, null, null);
+  select s.class_id
+  into v_class_id
+  from app.students s
+  where s.school_id = v_school_id
+    and s.id = p_student_id;
+
+  if not found then
+    raise foreign_key_violation using message = 'Student not found in school';
+  end if;
+
+  v_runtime_context := jsonb_build_object('campaign_id', p_campaign_id::text);
+
+  perform iam.require_access('finance.control.scan', null, p_student_id, v_class_id, null, null, v_runtime_context);
 
   -- Si pas de stat fourni, résoudre depuis student_fees
   if v_student_fee_status is null then

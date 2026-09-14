@@ -27,15 +27,14 @@ as $schoolsafe$
 declare
   v_school_id uuid := iam.current_school_id();
   v_profile_id uuid := iam.current_profile_id();
+  v_class_id uuid;
   v_student mat app.students%rowtype;
   v_current_version int;
   v_next_version int;
   v_academic_year_id uuid;
   v_id uuid;
 begin
-  perform iam.require_access('cards.request.print', null, p_student_id, null);
-
-  -- Récupérer l'élève
+  -- Résoudre l'élève et sa classe avant autorisation (cible exacte)
   select * into v_student
   from app.students
   where id = p_student_id and school_id = v_school_id;
@@ -43,6 +42,10 @@ begin
   if not found then
     raise foreign_key_violation using message = 'Élève introuvable';
   end if;
+
+  v_class_id := v_student.class_id;
+
+  perform iam.require_access('cards.request.print', null, p_student_id, v_class_id);
 
   -- Récupérer la version actuelle
   select max(version) into v_current_version
