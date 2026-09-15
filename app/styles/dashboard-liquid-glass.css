@@ -610,3 +610,140 @@ body.screen-workspace .quick-access-item:active {
 [data-theme="dark"] .module-card:focus-visible {
   outline-color: #93c5fd;
 }
+
+/* --------------------------------------------------------------------------
+   JASPE P4-ter — chat fixe du dashboard + personnage 2.5D
+   Sections [data-jaspe-chat] : log de conversation, saisie, miroir bulle.
+   -------------------------------------------------------------------------- */
+[data-jaspe-chat] .safe-chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 4px 2px;
+  scroll-behavior: smooth;
+}
+
+[data-jaspe-chat] .safe-chat-log--mobile {
+  max-height: 280px;
+}
+
+[data-jaspe-chat] .safe-chat-empty {
+  margin: 0;
+  padding: 12px 4px;
+  color: var(--ss-ink-soft, #475569);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.safe-history-line {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  max-width: 92%;
+}
+
+.safe-history-line b {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-bottom: 2px;
+}
+
+.safe-history-line--jaspe {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--ss-bg-brand, #1d4ed8) 8%, transparent);
+  border: 1px solid var(--ss-glass-border);
+  color: var(--ss-ink, #0f172a);
+}
+
+.safe-history-line--user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ss-bg-brand, #1d4ed8) 85%, transparent), color-mix(in srgb, var(--ss-blue-700, #1e40af) 80%, transparent));
+  border: 1px solid var(--ss-glass-border);
+  color: #ffffff;
+}
+
+[data-jaspe-chat] .safe-chat-input-row {
+  display: flex;
+  margin-top: 10px;
+}
+
+[data-jaspe-chat] .safe-chat-input-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ss-glass-border);
+  background: var(--ss-glass-surface);
+  box-shadow:
+    var(--ss-neu-inset-light),
+    var(--ss-neu-inset-dark);
+  color: var(--ss-ink, #0f172a);
+  font-size: 0.92rem;
+}
+
+[data-jaspe-chat] .safe-chat-input-row input:focus-visible {
+  outline: 2px solid var(--ss-blue-500, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* JASPE 2.5D — personnage réel dans l'avatar flottant */
+.safe-avatar-stage .safe-avatar-visual {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Bulle flottante — lignes historique compactes */
+.safe-bubble .safe-history-line {
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  max-width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Mode sombre — contre-poids lisibilité chat JASPE
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] .safe-history-line--jaspe {
+  background: rgba(24, 42, 74, 0.85);
+  border-color: #263c60;
+  color: #eaf1ff;
+}
+
+[data-theme="dark"] .safe-history-line--jaspe b { color: #93c5fd; }
+
+[data-theme="dark"] .safe-history-line--user {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.92), rgba(30, 58, 138, 0.92));
+  border-color: #2c4a80;
+  color: #f4f8ff;
+}
+
+[data-theme="dark"] .safe-history-line--user b { color: #bfd4f8; }
+
+[data-theme="dark"] [data-jaspe-chat] .safe-chat-input-row input {
+  background: rgba(15, 26, 46, 0.9);
+  border-color: #263c60;
+  color: #eaf1ff;
+}
+
+[data-theme="dark"] [data-jaspe-chat] .safe-chat-empty {
+  color: #a9bcd9;
+}
+
+[data-theme="dark"] [data-jaspe-chat] .safe-chat-input-row input:focus-visible {
+  outline-color: #93c5fd;
+}
+
+/* Réduit le mouvement si l'utilisateur le demande */
+@media (prefers-reduced-motion: reduce) {
+  [data-jaspe-chat] .safe-chat-log { scroll-behavior: auto; }
+}

@@ -502,6 +502,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               </div>
 
               <aside class="dashboard-right-column">
+                <section class="dashboard-section" data-jaspe-chat aria-label="Conversation Jaspe">
+                  <header><h3>Jaspe — votre assistante</h3><span class="ecosystem-hint">Discussion en direct</span></header>
+                  <div class="safe-chat-log" data-jaspe-chat-log role="log" aria-live="polite" aria-label="Historique de conversation Jaspe"></div>
+                  <div class="safe-chat-input-row">
+                    <input type="text" data-jaspe-chat-input aria-label="Votre question à Jaspe" autocomplete="off" placeholder="Posez votre question à Jaspe…">
+                  </div>
+                </section>
                 <section class="dashboard-section">
                   <header><h3>Alertes importantes</h3><button class="section-link" type="button">Tout voir <i data-lucide="chevron-right"></i></button></header>
                   <div class="alert-list compact" id="importantAlerts">
@@ -558,6 +565,14 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               <header><h3>Alertes importantes</h3><button class="section-link" type="button">Tout voir <i data-lucide="chevron-right"></i></button></header>
               <div class="alert-list" id="mobileImportantAlerts">
                 <div class="alert-empty"><i data-lucide="inbox"></i><span>Aucune alerte importante.</span></div>
+              </div>
+            </section>
+
+            <section class="mobile-section" data-jaspe-chat aria-label="Conversation Jaspe">
+              <header><h3>Jaspe — votre assistante</h3><span class="ecosystem-hint">Discussion en direct</span></header>
+              <div class="safe-chat-log safe-chat-log--mobile" data-jaspe-chat-log role="log" aria-live="polite" aria-label="Historique de conversation Jaspe"></div>
+              <div class="safe-chat-input-row">
+                <input type="text" data-jaspe-chat-input aria-label="Votre question à Jaspe" autocomplete="off" placeholder="Posez votre question à Jaspe…">
               </div>
             </section>
 

@@ -91,8 +91,10 @@
     inputDraft: "",
     lastTopic: "",
     discreet: readDiscreetPreference(),
+    history: [],
   };
 
+  
   var container = null;
   var floatingPosition = null;
   var customPosition = false;
@@ -122,6 +124,7 @@
     state.currentMessage = "";
     state.inputDraft = "";
     state.lastTopic = "";
+    state.history = [];
     state.animation = "Idle";
     state.open = false;
     state.suggestions = defaultSuggestions();
@@ -140,6 +143,7 @@
     initialized = true;
     listenToAppEvents();
     listenToLaunchers();
+    listenToEscape();
     listenToViewport();
     listenToAuthFocus();
     setSurface(detectSurface());
@@ -320,9 +324,12 @@
     bubbleHeight = bubble.offsetHeight;
     var leftSpace = avatarRect.left - VIEWPORT_MARGIN;
     var rightSpace = global.innerWidth - VIEWPORT_MARGIN - avatarRect.right;
-    var placement = leftSpace >= bubbleWidth + BUBBLE_GAP
-      ? "left"
-      : (rightSpace >= bubbleWidth + BUBBLE_GAP ? "right" : "top");
+    var topSpace = avatarRect.top - usableTop;
+    // La bulle de dialogue se place AU-DESSUS de la tête de Jaspe par défaut ;
+    // repli latéral uniquement si l'espace au-dessus est insuffisant.
+    var placement = topSpace >= bubbleHeight + BUBBLE_GAP
+      ? "top"
+      : (leftSpace >= rightSpace ? "left" : "right");
     var left;
     var top;
 
@@ -425,8 +432,59 @@
     return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  // Historique borné : la conversation reste lisible sans croître sans limite.
+  var HISTORY_LIMIT = 30;
+  function pushHistory(from, text) {
+    var value = String(text || "").trim();
+    if (!value) return;
+    state.history.push({ from: from, text: value.slice(0, 600) });
+    if (state.history.length > HISTORY_LIMIT) state.history.splice(0, state.history.length - HISTORY_LIMIT);
+  }
+
+  // Miroir dashboard : sections chat fixes (desktop + mobile) synchronisées
+  // depuis l'état de la conversation Jaspe, sans duplication de logique.
+  function mirrorDashboardChats() {
+    var mirrors = document.querySelectorAll("[data-jaspe-chat]");
+    for (var index = 0; index < mirrors.length; index += 1) {
+      var output = mirrors[index].querySelector("[data-jaspe-chat-log]");
+      var input = mirrors[index].querySelector("input[data-jaspe-chat-input]");
+      if (!output) continue;
+      var html = "";
+      if (state.history.length) {
+        state.history.forEach(function (entry) {
+          html += '<p class="safe-history-line safe-history-line--' + (entry.from === "user" ? "user" : "jaspe") + '"><b>' + (entry.from === "user" ? "Vous" : "Jaspe") + '</b> ' + escape(entry.text) + '</p>';
+        });
+      } else if (state.currentMessage) {
+        html += '<p class="safe-history-line safe-history-line--jaspe"><b>Jaspe</b> ' + escape(state.currentMessage) + '</p>';
+      } else {
+        html += '<p class="safe-chat-empty">Posez votre question à Jaspe — elle répond ici et dans sa bulle flottante.</p>';
+      }
+      output.innerHTML = html;
+      output.scrollTop = output.scrollHeight;
+      if (input && input.dataset.bound !== "true") {
+        input.dataset.bound = "true";
+        input.addEventListener("keydown", function (event) {
+          if (event.key !== "Enter") return;
+          var value = event.target.value;
+          if (!value.trim()) return;
+          event.target.value = "";
+          if (global.SafeAssistant && typeof global.SafeAssistant.openWithQuery === "function") {
+            global.SafeAssistant.openWithQuery(value);
+          }
+        });
+      }
+    }
+  }
+
   function render() {
     if (!container || !surfaceSupportsJaspe(currentSurface)) return;
+    // Enregistrer la réponse Jaspe dans l'historique (une seule fois par réponse).
+    if (state.currentMessage) {
+      var lastEntry = state.history[state.history.length - 1];
+      if (!lastEntry || lastEntry.from !== "jaspe" || lastEntry.text !== state.currentMessage) {
+        pushHistory("jaspe", state.currentMessage);
+      }
+    }
     if (!isAllowed()) { // session devenue réelle sans safe.assistant.use : masquer Jaspe
       container.innerHTML = "";
       container.hidden = true;
@@ -443,7 +501,14 @@
     if (state.open && !state.userHidden) {
       html += '<div class="safe-bubble" id="safeJaspeBubble" role="dialog" aria-label="Dialogue Jaspe">';
       html += '<div class="safe-bubble-header"><strong>Jaspe</strong><span class="safe-bubble-tools"><button class="safe-position-reset" type="button" aria-label="Réinitialiser la position de Jaspe" title="Réinitialiser la position de Jaspe">↺</button><button class="safe-bubble-close" aria-label="Fermer">✕</button></span></div>';
-      html += '<div class="safe-bubble-body"><p role="status" aria-live="polite">' + escape(state.currentMessage) + '</p>';
+      html += '<div class="safe-bubble-body" role="log" aria-live="polite">';
+      if (state.history.length) {
+        state.history.forEach(function (entry) {
+          html += '<p class="safe-history-line safe-history-line--' + (entry.from === "user" ? "user" : "jaspe") + '"><b>' + (entry.from === "user" ? "Vous" : "Jaspe") + '</b> ' + escape(entry.text) + '</p>';
+        });
+      } else {
+        html += '<p role="status" aria-live="polite">' + escape(state.currentMessage) + '</p>';
+      }
       if (state.suggestions.length) {
         html += '<div class="safe-suggestions">';
         state.suggestions.forEach(function (s) {
@@ -474,6 +539,7 @@
     }
     bindEvents();
     mountJaspe2D();
+    mirrorDashboardChats();
     scheduleLayout(false);
   }
 
@@ -482,7 +548,18 @@
     if (!stage) return;
     stage.classList.remove("is-loading");
     stage.classList.add("is-ready");
-    stage.innerHTML = '<span class="safe-avatar-fallback-label">Jaspe</span>';
+    // JASPE 2.5D : personnage réel (asset attente-v13), repli libellé si l'image manque.
+    var visual = document.createElement("img");
+    visual.src = "./assets/jaspe2d/attente-v13/adossee-detouree.png";
+    visual.alt = "";
+    visual.className = "safe-avatar-visual";
+    visual.draggable = false;
+    visual.addEventListener("error", function () {
+      stage.innerHTML = '<span class="safe-avatar-fallback-label">Jaspe</span>';
+      if (container) container.classList.add("has-avatar-fallback");
+    });
+    stage.innerHTML = "";
+    stage.appendChild(visual);
     if (container) container.classList.remove("has-avatar-fallback");
     if (currentSurface === "auth") startAuthGreeting();
     else playVisual(state.animation, { once: state.animation !== "Idle" && state.animation !== "Listening" });
@@ -645,6 +722,16 @@
     avatar.addEventListener("pointercancel", finishDrag);
   }
 
+  function listenToEscape() {
+    if (!document || typeof document.addEventListener !== "function") return;
+    document.addEventListener("keydown", function (event) {
+      if (event.key !== "Escape" || !state.open || state.userHidden) return;
+      // Sortie totale de la conversation : la bulle se referme complètement,
+      // seul l'avatar flottant reste visible.
+      closeBubble();
+    });
+  }
+
   function listenToLaunchers() {
     if (!document || typeof document.addEventListener !== "function") return;
     document.addEventListener("click", function (event) {
@@ -739,6 +826,7 @@
     var text = raw.toLowerCase();
     if (!text) return;
     state.inputDraft = "";
+    pushHistory("user", raw);
     var input = container && container.querySelector("#safeInput");
     if (input) input.value = "";
     playVisual("Listening", { once: false });
