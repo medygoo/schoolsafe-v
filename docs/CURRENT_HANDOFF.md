@@ -1,18 +1,51 @@
 # Handoff courant SchoolSafe
 
-Dernière mise à jour : 14 septembre 2026 — Étape 0 (cohérence documentaire).
+Dernière mise à jour : 15 septembre 2026 — Lot JASPE P4-ter (chat fixe + 2.5D).
 
 ## ÉTAT ACTUEL
 
 Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écoles isolées** sur un VPS central (Hostinger, Docker + Coolify), SchoolSafe Control co-hébergé mais logiquement séparé (séparation par privilèges, pas de conteneur par école ; isolation multi-écoles = `school_id` + PostgreSQL + ACCESS_LAW). License Contract V2 validé (spec G0). Déploiement officiel : **Git → Coolify → Docker → VPS**. Références visuelles officielles versionnées dans `docs/design/references/`. Règle de conduite : **VISION LARGE, LIVRAISON ÉTROITE**. Références design validées et versionnées (`a6d6b8f`).
 
 ```
-ÉTAT ACTUEL            Phase A complète + P2 complété + **P3 complété**
-DERNIÈRE ÉTAPE         P4 Task 6 clôturée — vérification finale + miroir synchronisé
-                       Tous contrôles PASS, aucune dépendance interdite, HEAD = origin/main
-ÉTAPE EN COURS         P4 COMPLÈTÉ — prêt pour P5 backup + rejeu base réelle
-ORDRE À SUIVRE         P4 cœur Le Sage · P5 backup + rejeu base réelle
-                       · P6 extensions
+ÉTAT ACTUEL            Phase A + P2 + P3 + P4 complétés + P4-ter JASPE clôturé
+DERNIÈRE ÉTAPE         P4-ter JASPE (commit b809149) : bulle de dialogue
+                       AU-DESSUS de la tête, historique borné 30 entrées,
+                       sections chat fixes dashboard desktop+mobile, JASPE
+                       2.5D réel (attente-v13), sortie totale Échap. QA verts.
+                       Commit séparé 5de51f9 : rangée Écosystème + Liquid Glass.
+ÉTAPE EN COURS         P4-ter clôturé — prêt pour P5 backup + rejeu base réelle
+ORDRE À SUIVRE         P5 backup + rejeu base réelle · P6 extensions
+```
+
+### Rapport — Lot P4-ter (JASPE : chat fixe dashboard + bulle + 2.5D)
+
+```text
+PRÉVU :    bulle de dialogue AU-DESSUS de la tête de Jaspe quand elle flotte ;
+           section chat FIXE du dashboard « comme un ChatGPT » (desktop +
+           mobile) ; personnage JASPE 2.5D réel ; sortie dans sa totalité.
+FAIT :     safe-assistant.js : placement bulle prioritaire "top" (repli
+           latéral si espace insuffisant) ; historique de conversation borné
+           30 entrées (Vous/Jaspe) rendu dans la bulle ; mirrorDashboardChats()
+           synchronise les sections [data-jaspe-chat] (desktop + mobile) avec
+           saisie Enter câblée sur openWithQuery() ; fermeture totale par
+           Échap en plus du ✕ et du toggle compagnon ; mountJaspe2D() charge
+           le personnage réel attente-v13/adossee-detouree.png (repli libellé
+           si image manquante). index.html : section chat Jaspe en tête de la
+           colonne droite dashboard + section mobile après les alertes.
+           dashboard-liquid-glass.css : styles Liquid Glass modérés (log,
+           lignes historique, champ pilule) + contre-poids mode sombre +
+           prefers-reduced-motion. Commit séparé préalable 5de51f9 : rangée
+           Écosystème SchoolSafe + extension Liquid Glass (travail en attente
+           isolé pour ne pas mélanger les lots).
+TESTS :    node --check safe-assistant.js OK · qa-safe-assistant-access PASS
+           (FE-SEC-A3A4) · qa-no-guardian-screen PASS · test:visual-system
+           PASS (contrat responsive + suppression guardian).
+COMMIT :   5de51f9 (écosystème + liquid glass) · b809149 (JASPE P4-ter).
+NON TOUCHÉ: serveur, SQL, permissions.json, spec G0, DECISIONS.md, modules
+           métier — lot frontend pur, API SafeAssistant publique inchangée.
+RISQUES :  la bulle au-dessus peut recouvrir du contenu si Jaspe est placée
+           tout en haut (le clamp existant préserve la lisibilité) ;
+           validation visuelle navigateur sur 4176 à refaire avant push.
 ```
 
 ### Rapport — Lot P3 (enforcement backend licence)
