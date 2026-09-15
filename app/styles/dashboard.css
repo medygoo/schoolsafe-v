@@ -1521,6 +1521,17 @@ body.screen-workspace {
   }
 }
 
+@media (min-width: 769px) and (max-width: 1024px) {
+  .workspace-screen .workspace-sidebar {
+    width: 64px;
+    overflow: hidden;
+  }
+
+  .workspace-screen .workspace-sidebar .nav-label,
+  .workspace-screen .workspace-sidebar .workspace-brand span {
+    display: none;
+  }
+}
 @media (max-width: 1024px) {
   .workspace-screen .workspace-topbar {
     gap: var(--ss-space-2);
@@ -2180,6 +2191,17 @@ body.screen-workspace {
   font-size: var(--ss-text-sm);
 }
 
+@media (min-width: 769px) and (max-width: 1024px) {
+  .workspace-screen .workspace-sidebar {
+    width: 64px;
+    overflow: hidden;
+  }
+
+  .workspace-screen .workspace-sidebar .nav-label,
+  .workspace-screen .workspace-sidebar .workspace-brand span {
+    display: none;
+  }
+}
 @media (max-width: 1024px) {
   .access-layout {
     grid-template-columns: 180px minmax(0, 1fr);
