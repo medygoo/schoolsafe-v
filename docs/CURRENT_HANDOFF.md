@@ -8,9 +8,9 @@ Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écol
 
 ```
 ÉTAT ACTUEL            Phase A complète + P2 complété + **P3 complété**
-DERNIÈRE ÉTAPE         style(shell) retrait flou permanent topbar Task 4 Step 2
-                       (e13758c) — contrat PASS, aucun backdrop-filter restant
-ÉTAPE EN COURS         P4 Task 4 Steps 3-5 (shell mobile/tablette, dashboard)
+DERNIÈRE ÉTAPE         style(shell) sidebar compacte tablette Task 4 Step 3
+                       (300099b) — contrat PASS, règle 769-1024px ajoutée
+ÉTAPE EN COURS         P4 Task 4 Steps 4-5 (focus/clavier mobile, dashboard)
                        puis Task 5 tableaux de bord mobile/bureau
 ORDRE À SUIVRE         P4 cœur Le Sage · P5 backup + rejeu base réelle
                        · P6 extensions
