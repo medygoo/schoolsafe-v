@@ -64,6 +64,19 @@ assert.ok(
   authModels.includes('.auth-jaspe-withdrawn .auth-jaspe') && authModels.includes('display:none'),
   "À l'état withdrawn, la zone JASPE doit être masquée (display:none)"
 );
+// Task 4 — shell/navigation responsive : identifiants critiques conservés
+assert.match(html, /id=[""']workspaceSidebar[""']/, "Le sidebar #workspaceSidebar doit rester présent");
+assert.match(html, /id=[""']workspaceTopbar[""']/, "La topbar #workspaceTopbar doit rester présente");
+assert.match(html, /id=[""']workspaceBottomNav[""']/, "La bottom nav #workspaceBottomNav doit rester présente");
+// Task 4 — bouton menu expose aria-expanded
+assert.match(html, /aria-expanded=[""'](true|false)[""']/, "Le bouton menu doit exposer aria-expanded");
+// Task 4 — navigation active identifiable autrement que par couleur seule
+assert.match(dashboard, /\.ss-bottom-nav__item\.active\s*\{[^}]*font-weight|border|background/, "La navigation active doit être identifiable par font-weight, border ou background");
+// Task 5 — tableaux de bord mobile/bureau : compositions exclusives
+assert.match(html, /id=[""']dashboardDesktop[""']/, "La composition #dashboardDesktop doit rester présente");
+assert.match(html, /id=[""']dashboardMobile[""']/, "La composition #dashboardMobile doit rester présente");
+assert.match(dashboard, /\.ss-dashboard-desktop\[hidden\][^}]*display:\s*none/, "Le dashboard desktop masqué doit utiliser display:none");
+assert.match(dashboard, /\.ss-dashboard-mobile\[hidden\][^}]*display:\s*none/, "Le dashboard mobile masqué doit utiliser display:none");
 
 const demoBannerRule = dashboard.match(/\.workspace-demo-banner\s*\{([\s\S]*?)\}/)?.[1] || "";
 assert.match(demoBannerRule, /background:\s*var\(--ss-surface-muted\)/, "Le mode aperçu doit utiliser une surface neutre");
