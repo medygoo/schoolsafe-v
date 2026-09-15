@@ -8,10 +8,9 @@ Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écol
 
 ```
 ÉTAT ACTUEL            Phase A complète + P2 complété + **P3 complété**
-DERNIÈRE ÉTAPE         test(ui) extension contrat visuel Task 5 dashboard
-                       compositions (cd3eaa5) — contrat PASS, Step 1 complet
-ÉTAPE EN COURS         P4 Task 5 Steps 2-3 (finition mobile/bureau CSS)
-                       puis Task 6 vérification finale + miroir
+DERNIÈRE ÉTAPE         P4 Task 5 clôturée — tableaux de bord mobile/bureau complets
+                       Steps 1-5 PASS (contrat visuel + guardian removal + diff check)
+ÉTAPE EN COURS         P4 Task 6 vérification finale + miroir GitHub/local
 ORDRE À SUIVRE         P4 cœur Le Sage · P5 backup + rejeu base réelle
                        · P6 extensions
 ```
