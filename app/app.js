@@ -2530,6 +2530,23 @@
       });
     });
 
+    // Clics sur les cartes écosystème (services SchoolSafe)
+    document.querySelectorAll("#ecosystemGrid .ecosystem-card").forEach(function (card) {
+      card.addEventListener("click", function () {
+        var eco = card.getAttribute("data-ecosystem") || "";
+        var statusEl = card.querySelector(".ecosystem-card__status");
+        if (statusEl && statusEl.getAttribute("data-status") === "soon") {
+          notify("Service à venir — roadmap SchoolSafe.");
+          return;
+        }
+        if (eco === "security" || eco === "guardian" || eco === "cards") {
+          openModuleByBranch("security");
+          return;
+        }
+        notify("Écosystème SchoolSafe — service connecté.");
+      });
+    });
+
     // Clics sur les accès rapides mobile
     document.querySelectorAll("#mobileQuickAccess .quick-access-item").forEach(function (item) {
       item.addEventListener("click", function () {
