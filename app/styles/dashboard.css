@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SchoolSafe V2 — Dashboard Phase 2
    Mise en page desktop + mobile selon les maquettes officielles.
    S'appuie sur le Design System --ss-*.
@@ -277,7 +277,6 @@ body.screen-workspace {
   padding: var(--ss-space-2) var(--ss-space-6);
   background: color-mix(in srgb, var(--ss-bg-canvas) 96%, transparent);
   border-bottom: 1px solid var(--ss-border-default);
-  backdrop-filter: blur(12px);
   z-index: 30;
 }
 
