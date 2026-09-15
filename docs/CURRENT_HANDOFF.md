@@ -8,10 +8,10 @@ Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écol
 
 ```
 ÉTAT ACTUEL            Phase A complète + P2 complété + **P3 complété**
-DERNIÈRE ÉTAPE         test(ui) extension contrat visuel Task 3 auth/OTP/JASPE
-                       (af93567) — contrat PASS, Step 1 complet
-ÉTAPE EN COURS         P4 Task 3 Step 4 (vérification visuelle navigateur)
-                       puis Task 4 shell/navigation responsive
+DERNIÈRE ÉTAPE         style(shell) retrait flou permanent topbar Task 4 Step 2
+                       (e13758c) — contrat PASS, aucun backdrop-filter restant
+ÉTAPE EN COURS         P4 Task 4 Steps 3-5 (shell mobile/tablette, dashboard)
+                       puis Task 5 tableaux de bord mobile/bureau
 ORDRE À SUIVRE         P4 cœur Le Sage · P5 backup + rejeu base réelle
                        · P6 extensions
 ```
