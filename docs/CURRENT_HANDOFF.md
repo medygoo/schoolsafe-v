@@ -8,9 +8,9 @@ Architecture verrouillée le 14/09 : **1 plateforme SchoolSafe = plusieurs écol
 
 ```
 ÉTAT ACTUEL            Phase A complète + P2 complété + **P3 complété**
-DERNIÈRE ÉTAPE         P4 Task 5 clôturée — tableaux de bord mobile/bureau complets
-                       Steps 1-5 PASS (contrat visuel + guardian removal + diff check)
-ÉTAPE EN COURS         P4 Task 6 vérification finale + miroir GitHub/local
+DERNIÈRE ÉTAPE         P4 Task 6 clôturée — vérification finale + miroir synchronisé
+                       Tous contrôles PASS, aucune dépendance interdite, HEAD = origin/main
+ÉTAPE EN COURS         P4 COMPLÈTÉ — prêt pour P5 backup + rejeu base réelle
 ORDRE À SUIVRE         P4 cœur Le Sage · P5 backup + rejeu base réelle
                        · P6 extensions
 ```
