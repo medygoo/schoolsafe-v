@@ -896,5 +896,27 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     </footer>
   </aside>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- BLOC 2 — Panneau conversation JASPE plein écran (appel de Jaspe) -->
+  <div class="jaspe-panel-overlay" id="jaspePanelOverlay" aria-hidden="true">
+    <aside class="jaspe-panel" id="jaspePanel" role="dialog" aria-modal="true" aria-labelledby="jaspePanelTitle">
+      <header class="jaspe-panel__header">
+        <span class="jaspe-panel__avatar"><img src="./assets/jaspe2d/attente-v13/adossee-detouree.png" alt="" draggable="false"></span>
+        <span class="jaspe-panel__title" id="jaspePanelTitle">Jaspe — votre assistante</span>
+        <span class="jaspe-panel__modes">
+          <button class="jaspe-panel__mode-btn is-active" type="button" data-jaspe-mode="text" aria-pressed="true">💬 Écrit</button>
+          <button class="jaspe-panel__mode-btn" type="button" data-jaspe-mode="audio" aria-pressed="false">🎤 Audio</button>
+        </span>
+        <button class="jaspe-panel__close" type="button" id="jaspePanelClose" aria-label="Fermer la conversation">✕</button>
+      </header>
+      <div class="jaspe-panel__body" id="jaspePanelBody" role="log" aria-live="polite" aria-label="Historique de conversation Jaspe"></div>
+      <footer class="jaspe-panel__footer">
+        <input class="jaspe-panel__input" type="text" id="jaspePanelInput" aria-label="Votre question à Jaspe" autocomplete="off" placeholder="Posez votre question à Jaspe…">
+        <button class="jaspe-panel__mic" type="button" id="jaspePanelMic" aria-label="Parler à Jaspe" title="Mode audio — parler à Jaspe"><i data-lucide="mic"></i></button>
+        <button class="jaspe-panel__send" type="button" id="jaspePanelSend" aria-label="Envoyer"><i data-lucide="send"></i></button>
+      </footer>
+    </aside>
+  </div>
+
 </body>
 </html>

@@ -540,6 +540,7 @@
     bindEvents();
     mountJaspe2D();
     mirrorDashboardChats();
+    notifyHistoryListeners();
     scheduleLayout(false);
   }
 
@@ -1090,7 +1091,29 @@
     });
   }
 
-  global.SafeAssistant = { init: init, isAllowed: isAllowed, openWithQuery: openWithQuery, refreshAccess: refreshAccess, setSurface: setSurface, setDashboardVisible: setDashboardVisible };
+  // Callbacks abonnés aux changements d'historique (panneau conversation plein écran).
+ var historyListeners = [];
+ function notifyHistoryListeners() {
+ for (var i = 0; i < historyListeners.length; i++) {
+ try { historyListeners[i](); } catch (e) {}
+ }
+ }
+
+ global.SafeAssistant = {
+ init: init,
+ isAllowed: isAllowed,
+ openWithQuery: openWithQuery,
+ refreshAccess: refreshAccess,
+ setSurface: setSurface,
+ setDashboardVisible: setDashboardVisible,
+ getHistory: function () { return state.history.slice(); },
+ getCurrentMessage: function () { return state.currentMessage || ""; },
+ onHistoryChange: function (fn) {
+ if (typeof fn === "function" && historyListeners.indexOf(fn) < 0) {
+ historyListeners.push(fn);
+ }
+ }
+ };
   if (global.document && (global.document.readyState === "complete" || global.document.readyState === "interactive")) {
     init();
   } else if (global.addEventListener) {

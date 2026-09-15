@@ -2594,11 +2594,7 @@
             return;
           }
           if (target === "jaspe") {
-            if (window.SafeAssistant && typeof window.SafeAssistant.openWithQuery === "function") {
-              window.SafeAssistant.openWithQuery("");
-            } else {
-              notify("Jaspe est momentanément indisponible.");
-            }
+            openJaspePanel();
             return;
           }
           if (target === "menu") {
@@ -2714,6 +2710,196 @@
     });
     icons();
     if (window.SchoolSafeCards) window.SchoolSafeCards.init();
+
+    // =====================================================================
+    // BLOC 2 + 3 — Panneau conversation JASPE plein écran + mode audio
+    // =====================================================================
+    var jaspePanelOpen = false;
+    var jaspeAudioMode = false;
+    var jaspeRecognition = null;
+    var jaspeListening = false;
+
+    function openJaspePanel() {
+      var overlay = document.getElementById("jaspePanelOverlay");
+      if (!overlay) return;
+      jaspePanelOpen = true;
+      overlay.classList.add("is-open");
+      overlay.setAttribute("aria-hidden", "false");
+      syncJaspePanelHistory();
+      var input = document.getElementById("jaspePanelInput");
+      if (input) setTimeout(function () { input.focus(); }, 320);
+      // S'abonner aux mises à jour SafeAssistant pour synchroniser l'historique
+      if (window.SafeAssistant && typeof window.SafeAssistant.onHistoryChange === "function") {
+        window.SafeAssistant.onHistoryChange(syncJaspePanelHistory);
+      }
+    }
+
+    function closeJaspePanel() {
+      var overlay = document.getElementById("jaspePanelOverlay");
+      if (!overlay) return;
+      jaspePanelOpen = false;
+      overlay.classList.remove("is-open");
+      overlay.setAttribute("aria-hidden", "true");
+      stopJaspeListening();
+    }
+
+    function syncJaspePanelHistory() {
+      var body = document.getElementById("jaspePanelBody");
+      if (!body) return;
+      var history = (window.SafeAssistant && window.SafeAssistant.getHistory) ? window.SafeAssistant.getHistory() : [];
+      var currentMsg = (window.SafeAssistant && window.SafeAssistant.getCurrentMessage) ? window.SafeAssistant.getCurrentMessage() : "";
+      var html = "";
+      if (history.length) {
+        history.forEach(function (entry) {
+          var cls = entry.from === "user" ? "safe-history-line--user" : "safe-history-line--jaspe";
+          var label = entry.from === "user" ? "Vous" : "Jaspe";
+          html += '<p class="safe-history-line ' + cls + '"><b>' + label + '</b> ' + escapeMarkup(entry.text) + '</p>';
+        });
+      } else if (currentMsg) {
+        html += '<p class="safe-history-line safe-history-line--jaspe"><b>Jaspe</b> ' + escapeMarkup(currentMsg) + '</p>';
+      } else {
+        html += '<p class="safe-chat-empty">Posez votre question à Jaspe — elle répond ici.</p>';
+      }
+      body.innerHTML = html;
+      body.scrollTop = body.scrollHeight;
+      // Si mode audio actif et dernière réponse Jaspe → la lire à voix haute
+      if (jaspeAudioMode && history.length) {
+        var last = history[history.length - 1];
+        if (last && last.from === "jaspe" && last.text !== body.dataset.lastSpoken) {
+          body.dataset.lastSpoken = last.text;
+          speakJaspeReply(last.text);
+        }
+      }
+    }
+
+    function sendJaspePanelMessage() {
+      var input = document.getElementById("jaspePanelInput");
+      if (!input) return;
+      var text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      if (window.SafeAssistant && typeof window.SafeAssistant.openWithQuery === "function") {
+        window.SafeAssistant.openWithQuery(text);
+      }
+      setTimeout(syncJaspePanelHistory, 600);
+      setTimeout(syncJaspePanelHistory, 1800);
+    }
+
+    // --- Mode audio : Web Speech API (reconnaissance + synthèse) ---
+    function isSpeechRecognitionSupported() {
+      return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    }
+
+    function startJaspeListening() {
+      if (!isSpeechRecognitionSupported()) {
+        notify("Reconnaissance vocale non disponible dans ce navigateur.");
+        return;
+      }
+      var micBtn = document.getElementById("jaspePanelMic");
+      var RecClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+      jaspeRecognition = new RecClass();
+      jaspeRecognition.lang = "fr-FR";
+      jaspeRecognition.interimResults = false;
+      jaspeRecognition.maxAlternatives = 1;
+      jaspeListening = true;
+      if (micBtn) micBtn.classList.add("is-listening");
+      jaspeRecognition.onresult = function (event) {
+        var transcript = event.results[0][0].transcript;
+        var input = document.getElementById("jaspePanelInput");
+        if (input) input.value = transcript;
+        sendJaspePanelMessage();
+      };
+      jaspeRecognition.onerror = function () {
+        stopJaspeListening();
+      };
+      jaspeRecognition.onend = function () {
+        stopJaspeListening();
+      };
+      jaspeRecognition.start();
+    }
+
+    function stopJaspeListening() {
+      jaspeListening = false;
+      var micBtn = document.getElementById("jaspePanelMic");
+      if (micBtn) micBtn.classList.remove("is-listening");
+      if (jaspeRecognition) {
+        try { jaspeRecognition.stop(); } catch (e) {}
+        jaspeRecognition = null;
+      }
+    }
+
+    function speakJaspeReply(text) {
+      if (!window.speechSynthesis || !text) return;
+      window.speechSynthesis.cancel();
+      var utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "fr-FR";
+      utterance.rate = 1;
+      utterance.pitch = 1.05;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Câblage des boutons du panneau JASPE
+    var jaspePanelClose = document.getElementById("jaspePanelClose");
+    if (jaspePanelClose) {
+      jaspePanelClose.addEventListener("click", closeJaspePanel);
+    }
+    var jaspePanelOverlay = document.getElementById("jaspePanelOverlay");
+    if (jaspePanelOverlay) {
+      jaspePanelOverlay.addEventListener("click", function (event) {
+        if (event.target === jaspePanelOverlay) closeJaspePanel();
+      });
+    }
+    var jaspePanelSend = document.getElementById("jaspePanelSend");
+    if (jaspePanelSend) {
+      jaspePanelSend.addEventListener("click", sendJaspePanelMessage);
+    }
+    var jaspePanelInput = document.getElementById("jaspePanelInput");
+    if (jaspePanelInput) {
+      jaspePanelInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") sendJaspePanelMessage();
+      });
+    }
+    var jaspePanelMic = document.getElementById("jaspePanelMic");
+    if (jaspePanelMic) {
+      if (!isSpeechRecognitionSupported()) {
+        jaspePanelMic.disabled = true;
+        jaspePanelMic.title = "Reconnaissance vocale non disponible dans ce navigateur.";
+      } else {
+        jaspePanelMic.addEventListener("click", function () {
+          if (jaspeListening) {
+            stopJaspeListening();
+          } else {
+            startJaspeListening();
+          }
+        });
+      }
+    }
+    // Boutons mode Écrit / Audio
+    document.querySelectorAll("[data-jaspe-mode]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll("[data-jaspe-mode]").forEach(function (b) {
+          b.classList.remove("is-active");
+          b.setAttribute("aria-pressed", "false");
+        });
+        btn.classList.add("is-active");
+        btn.setAttribute("aria-pressed", "true");
+        jaspeAudioMode = btn.getAttribute("data-jaspe-mode") === "audio";
+        var micBtn = document.getElementById("jaspePanelMic");
+        if (micBtn) micBtn.style.display = jaspeAudioMode ? "flex" : "none";
+        if (!jaspeAudioMode) {
+          stopJaspeListening();
+          if (window.speechSynthesis) window.speechSynthesis.cancel();
+        }
+      });
+    });
+    // Échap ferme le panneau
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && jaspePanelOpen) closeJaspePanel();
+    });
+    // Polling léger pour synchroniser l'historique du panneau avec SafeAssistant
+    setInterval(function () {
+      if (jaspePanelOpen) syncJaspePanelHistory();
+    }, 2000);
   }
 
   function renderModuleCard(branchItem) {
