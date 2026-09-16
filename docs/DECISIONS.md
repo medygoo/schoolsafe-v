@@ -100,6 +100,29 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
   immédiat. Mouvements réduits : pose fixe. Assets indisponibles : repli sur
   la parole assise. Pas de synchronisation phonétique ajoutée dans ce lot.
 
+## Mission du 16 septembre — Device Hub, identité et présences
+
+- **VALIDÉE, instruction directe du propriétaire** : préparer l'intégration
+  native des terminaux autour de SchoolSafe comme source de vérité. Une identité
+  de personne, plusieurs moyens d'identification et plusieurs appareils possibles.
+- **VALIDÉE** : Device Hub indépendant des règles de présence, adaptateurs par
+  marque, première cible Hikvision DS-K1T808MFWX ; ne pas inventer ses commandes
+  ni supposer la lecture QR. QR téléphone indépendant du terminal.
+- **VALIDÉE** : personnel et élèves créés dans SchoolSafe ; mappings techniques,
+  isolation par école, credentials révocables, événements idempotents, corrections
+  auditées, reprise après panne ; gabarits biométriques conservés sur équipement.
+- **VALIDÉE** : biométrie élèves configurable, enfant lié aux droits parent/tuteur,
+  remise physique soumise à la photo de la personne autorisée et au gardien.
+  Watch reste hors de ce lot. Les UUID scolaires existants sont conservés ; les
+  codes lisibles des exemples ne remplacent pas les clés techniques.
+- **ACTIVE — ARRÊT AVANT CODAGE STRUCTUREL** : le §56 exige un audit/projet en
+  24 points puis validation. Le dossier
+  `docs/superpowers/specs/2026-09-16-schoolsafe-device-hub-audit-design.md`
+  est livré comme **PROPOSITION À VALIDER**, pas comme architecture déjà acceptée.
+- Ce cadrage reprend la priorité demandée par le propriétaire ; il ne déclare
+  pas les parcours Le Sage/P5 terminés et ne retire aucune condition de sécurité
+  ou de sauvegarde avant exploitation réelle.
+
 ## Décisions restant à préciser
 
 - Technologie exacte de synthèse vocale Cloudflare lorsque le lot voix commencera.

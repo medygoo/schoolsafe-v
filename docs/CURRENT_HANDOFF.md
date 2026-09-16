@@ -1,6 +1,64 @@
 # Handoff courant SchoolSafe
 
-## Lot courant — 16 septembre 2026 : se lever, expliquer, se rasseoir
+## Lot courant — 16 septembre 2026 : audit Device Hub avant codage
+
+**PHASE 0 LIVRÉE — VALIDATION DU PROPRIÉTAIRE ATTENDUE.** La nouvelle mission
+Device Hub/identités/biométrie/QR/présences demande au §56 un premier livrable
+en 24 points puis un arrêt avant toute modification structurelle.
+
+### Livré et vérifié
+
+- Dossier unique :
+  `docs/superpowers/specs/2026-09-16-schoolsafe-device-hub-audit-design.md`.
+  Il couvre état Git, existant, preuves, écarts, architecture, données, matériel,
+  QR/PIN/empreinte, personnes, événements/présences, offline, tests, risques,
+  fichiers, migrations et les phases 0–19. Architecture marquée **À VALIDER**.
+- Départ `main` = `origin/main` = `464996ed5e70957b199de5120b30f4cd6058aad8`,
+  fetch effectué. Aucune modification suivie préexistante ; fichiers utilisateur
+  non suivis préservés (`.claude/` et deux PNG de référence à la racine).
+- Schémas versionnés inspectés : écoles, élèves, tuteurs, cartes, événements et
+  audit réutilisables. `iam.devices` concerne les appareils des comptes, pas les
+  terminaux. RH/biométrie/présences encore démonstratifs ; pas de tables métier
+  staff/attendance ni Device Hub natif trouvés.
+- Ancien QR lisible et payload journalisé ; ancien scan Supabase non câblé par
+  `buildNativeApp`, contexte scolaire à refaire avant réutilisation. Guardian
+  avec photo/confirmation réelle encore à raccorder. Caméra interdite par la
+  politique du serveur de prévisualisation.
+- Incohérence vérifiée : `api.student_create_draft` dans la projection écrit
+  `student_enrollments.status='planned'`, absent du CHECK canonique. Sa signature
+  comporte aussi des paramètres avec défaut avant d'autres requis. Revue et
+  rejeu SQL requis avant de réutiliser ce flux ; **aucun correctif codé** ici.
+- Documentation officielle indexée du DS-K1T808MFWX : empreinte/carte/PIN,
+  ISAPI/ISUP 5.0. Sources et limites d'accès dans le dossier. Aucun endpoint
+  supposé, aucune interrogation du matériel, aucune capacité distante déclarée
+  validée. Le firmware réel et le poste Bridge restent à qualifier.
+
+### Tests réellement exécutés
+
+- Permissions + sweep SQL inter-écoles : **4/4 PASS**.
+- Manifestes migrations : **9 ensembles / 27 unités PASS** (hashes, pas rejeu SQL).
+- Sept fichiers serveur (`db-context`, `native-access-contract`, `studentsnative`,
+  `security`, `security-service`, `control-authority`, `licensenative-gate`) :
+  **41/41 PASS**. Dépendances substituées ; aucune preuve de base/terminal réels.
+- Relecture documentaire et `git diff --check`. Pas de changement applicatif,
+  SQL, appareil, données, secrets ni déploiement.
+
+### Prochaine action exacte
+
+Présenter le dossier et **attendre l'accord demandé par le §56 de la mission**.
+Après validation : phase 1 (contrats et architecture), puis fondations phase 2
+par petits lots. Ne pas lancer les phases structurelles sur la seule base du
+présent handoff. P5/restauration, Guardian réel et qualification matériel restent
+des prérequis au pilote. Le désaccord historique Docker/AGENTS reste signalé,
+sans modification d'exploitation dans ce lot.
+
+Fichiers du lot : dossier d'audit, `docs/DECISIONS.md`, ce handoff.
+Lot Git : `docs(device-hub): audit et architecture avant validation` ; SHA dans
+l'historique, synchronisation annoncée après comparaison local/distant.
+
+---
+
+## Historique — 16 septembre 2026 : se lever, expliquer, se rasseoir
 
 **TERMINÉ.** Le propriétaire a autorisé la suite du plan assise/debout. Le lot
 vocal précédent et ses réserves restent dans l'historique ci-dessous.
