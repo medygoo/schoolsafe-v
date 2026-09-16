@@ -136,6 +136,24 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
   `docs/superpowers/plans/2026-09-16-schoolsafe-functional-integration.md`.
 - Cette priorité ne valide pas implicitement l'architecture Device Hub en attente.
 
+## Continuité du 16 septembre — plan exécutable par tout agent
+
+- **VALIDÉE, demande directe du propriétaire** : formaliser un plan de travail
+  que tout agent peut suivre pour poursuivre les fonctionnalités, Rôles et accès
+  en premier. Le document existant
+  `docs/superpowers/plans/2026-09-16-schoolsafe-functional-integration.md`
+  devient le plan actif détaillé, référencé dans `AGENTS.md` et le contexte.
+- Le plan comporte des identifiants de tâches stables, prérequis, fichiers,
+  résultats attendus, contrôles, états et format de passation. Le handoff conserve
+  le responsable, la branche et la prochaine action concrète.
+- **REMPLACÉE pour ce chantier fonctionnel** : l'ancienne répartition par nom
+  d'assistant conservée dans l'historique. Tout agent peut reprendre un lot ;
+  un seul rédacteur possède les fichiers du lot à un instant donné. Aucun travail
+  concurrent implicite, aucun effacement de l'historique.
+- Le niveau de preuve est explicite : tests avec substituts, parcours SQL/UI
+  réel de test, puis production. La rédaction du plan ne valide ni les tâches
+  futures, ni leurs choix produit encore ouverts, ni l'architecture Device Hub.
+
 ## Décisions restant à préciser
 
 - Technologie exacte de synthèse vocale Cloudflare lorsque le lot voix commencera.

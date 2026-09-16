@@ -9,6 +9,15 @@ Ce dépôt est la source de vérité commune pour tous les comptes ChatGPT/Codex
 3. Si le dépôt contient des changements non documentés, ne pas les écraser et déterminer à qui ils appartiennent.
 4. Vérifier les affirmations importantes dans le code ou les tests. Les documents de continuité donnent le contexte, mais ne remplacent pas le dépôt.
 5. Ne jamais copier une conversation complète dans le dépôt. Ne conserver que les décisions et informations nécessaires à la reprise.
+6. Lire le plan de travail actif : [`docs/superpowers/plans/2026-09-16-schoolsafe-functional-integration.md`](docs/superpowers/plans/2026-09-16-schoolsafe-functional-integration.md). Commencer par son tableau de suivi et la prochaine tâche indiquée en tête du handoff, sans reprendre une ancienne « prochaine action » de l'historique.
+
+## Plan commun à tous les agents — actif depuis le 16 septembre 2026
+
+- Priorité du propriétaire : **Rôles et accès**, puis les autres fonctionnalités ; corriger et compléter sans supprimer l'existant.
+- Tout agent peut reprendre le travail selon le même plan. La responsabilité porte sur un lot et ses fichiers, pas sur le nom du fournisseur d'IA.
+- Inscrire dans le handoff la tâche prise, l'agent, la branche, le commit de départ et les fichiers concernés. Un seul agent modifie un même lot à la fois ; ne pas lancer de travail concurrent sans coordination explicite.
+- En clôture, actualiser le statut de la tâche dans le plan et la prochaine action du handoff. Distinguer code testé avec substituts, parcours vérifié sur PostgreSQL réel et validation de production.
+- Les résumés historiques sont conservés, mais leurs ordres et anciennes répartitions entre agents ne remplacent pas le plan actif ni une instruction récente du propriétaire.
 
 ## Règles permanentes
 

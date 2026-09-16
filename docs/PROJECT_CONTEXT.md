@@ -1,6 +1,20 @@
 # Contexte durable du projet SchoolSafe
 
-Dernière mise à jour : 13 septembre 2026.
+Dernière mise à jour de la continuité : 16 septembre 2026.
+
+## Point d'entrée pour la reprise
+
+- Plan actif pour tous les agents :
+  [fonctionnalités et Rôles et accès](superpowers/plans/2026-09-16-schoolsafe-functional-integration.md).
+- Priorité : terminer Rôles et accès progressivement, puis raccorder les autres
+  rubriques. A1 (contexte natif et consultation du compte connecté) est livré au
+  commit `7b2896a`, avec API/base substituées dans les tests ; A2.0 est à faire.
+- Consulter le haut de `CURRENT_HANDOFF.md` pour la tâche courante et les preuves.
+  Les observations techniques datées du 13/09 ci-dessous sont historiques : les
+  lots JASPE et accès du 16/09 les complètent, sans constituer une preuve de production.
+- Divergence d'exploitation conservée à signaler au lot VPS : `AGENTS.md` interdit
+  l'ajout de Docker, les décisions du 14/09 décrivent Docker/Coolify. Aucun ajout
+  Docker ni changement de déploiement ne fait partie du chantier Rôles et accès.
 
 ## Mission
 
@@ -35,7 +49,7 @@ SchoolSafe est un écosystème scolaire centré sur la gestion des écoles, des 
 - Une défaillance de JASPE ne doit jamais bloquer l'authentification ni une fonction métier.
 - Le mode mouvements réduits, la pause en onglet caché et un rendu statique de secours doivent être conservés.
 
-### État technique observé
+### État technique observé le 13 septembre — historique
 
 - `app/modules/jaspe2d/jaspe2d.js` fournit un moteur léger par états et images WebP.
 - `app/modules/jaspe2d/live-companion.js` monte le moteur v12 enrichi sur l'écran de connexion.

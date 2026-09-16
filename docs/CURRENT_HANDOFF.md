@@ -1,6 +1,51 @@
 # Handoff courant SchoolSafe
 
-## Lot courant — 16 septembre 2026 : Rôles et accès, A1
+## Lot courant — 16 septembre 2026 : plan commun aux agents
+
+**PLAN LIVRÉ — PROCHAINE TÂCHE APPLICATIVE A2.0.** Le propriétaire a demandé
+« GO » avec un plan de travail que tout agent puisse suivre. Le plan existant
+est détaillé ; aucun nouveau développement fonctionnel n'est annoncé par ce lot.
+
+### Travail et état vérifiés
+
+- Départ/fetch : `main` = `origin/main` =
+  `7b2896ad5e6ea03377ee5ca3cf858939e7a45278`. A1 est conservé. Aucun changement
+  suivi préexistant ; `.claude/` et les deux PNG de référence restent hors lot.
+- Plan actif : `docs/superpowers/plans/2026-09-16-schoolsafe-functional-integration.md`.
+  Tableau de suivi, reprise, fiches A2.0–A7, ordre B–K pour les 16 rubriques,
+  fichiers existants/proposés, critères de fin, tests et modèle de passation.
+- Points vérifiés dans le code : IAM et audit réutilisables ; garde/contextes natifs
+  existants ; anciens runners SQL dépendants de Docker ; `02_student_list.sql`
+  absent du manifeste des projections. Le plan distingue les preuves statiques
+  d'un rejeu réel et interdit de considérer une API substituée comme une base validée.
+- `AGENTS.md` pointe explicitement vers le plan. Le contexte, les décisions et
+  le présent handoff décrivent la même reprise. L'ancienne répartition par nom
+  d'assistant est historique ; la propriété d'un lot reste exclusive et explicite.
+- Fichiers du lot : `AGENTS.md`, `docs/PROJECT_CONTEXT.md`, `docs/DECISIONS.md`,
+  ce handoff et le plan actif. Aucun code applicatif, SQL, compte ou droit modifié.
+- Vérifications de ce lot documentaire : cohérence des tâches et des liens,
+  présence des sources citées, `git diff --check`. Aucune suite applicative
+  relancée ; les tests d'A1 ci-dessous sont des résultats antérieurs, pas nouveaux.
+
+### Prochaine action exacte
+
+**A2.0 — contrat de lecture IAM et préparation SQL.** Aucun agent applicatif
+n'a réservé cette tâche pendant la rédaction du plan. À la prise : inscrire
+responsable/branche/SHA/fichiers, relire `database/baseline/v1/05_iam.sql` et
+`server/src/db/access.ts`, puis suivre la fiche A2.0. Livrable : contrat exact des
+listes/détails de profils/rôles et protocole de test PostgreSQL isolé ; ensuite A2.1
+projections/API et A2.2 interface. Ne pas réimplémenter A1 ou démarrer les appareils.
+
+Reste ouvert : preuve PostgreSQL réelle, attribution/révocation persistante,
+composition de postes, exceptions et audit consultable. La validation Device Hub
+et le désaccord d'exploitation restent hors de ce lot et ne bloquent pas A2.0.
+
+Lot Git : `docs(plan): parcours commun des agents pour roles et acces` ; SHA dans
+Git. Annoncer le miroir uniquement après comparaison HEAD et branche GitHub réelle.
+
+---
+
+## Historique — 16 septembre 2026 : Rôles et accès, A1
 
 **A1 LIVRÉ — CONTEXTE NATIF ET CONSULTATION.** Le propriétaire demande de traiter
 les 16 rubriques frontend/backend/écosystème, puis impose Rôles et accès en premier,
@@ -781,7 +826,11 @@ Ne commencer **aucune** fonctionnalité Écosystème, JASPE, Watch ou Control av
 - Supabase encore présent dans le dépôt (SDK, scripts, tests) : retrait uniquement via inventaire → migration → tests.
 - Points résiduels G0 §11 : canal de provisionnement, supervision de l'activation, catalogue permission→service, fournisseur OTP.
 
-## RÈGLE OPÉRATIONNELLE ACTUELLE (répartition des agents)
+## Historique — répartition des agents du 14/09
+
+**REMPLACÉE le 16/09 pour le chantier fonctionnel par le plan commun à tous les
+agents.** La répartition ci-dessous reste conservée comme historique. La règle
+de vérification préalable et l'exclusivité des fichiers par lot restent applicables.
 
 **Règle de vérification avant travail (ordre permanent, 14/09)** : avant toute
 action sur un point, **vérifier d'abord ce qui est déjà fait sur ce point**
