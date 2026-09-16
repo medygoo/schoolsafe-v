@@ -1,5 +1,54 @@
 # Handoff courant SchoolSafe
 
+## Lot terminé — A5.0, validité temporelle du paquet de session
+
+Codex, `main`, base/mirror `a5037ce8b9aa8333c4b6101a490d6baba632b817`.
+**CORRECTION TEMPORELLE VALIDÉE. A5 complet reste en cours ; prochaine tâche A5.1.**
+
+- Défaut reproduit sur vraie base : Access Law refusait un rôle/grant/portée
+  expiré mais le bootstrap pouvait encore l'afficher. Même défaut pour DENY
+  futurs/expirés, rôles désactivés et exceptions sans portée courante.
+- Projection additive `database/projections/v1/05_session_validity.sql` : filtre
+  commun des dates/états, périmètres et exceptions actifs ; rôle et permission
+  actifs exigés ; attributions enseignantes datées ; enfants opérationnels ;
+  portails actifs depuis grants ou exceptions ALLOW courants. Aucune table modifiée.
+  Le snapshot reste descriptif ; l'autorisation métier demeure `api.check_access`.
+- Unité historique 02 inchangée. Générateur/manifestes, runner d'installation,
+  `scripts/test-session-validity-postgres.mjs`, contrat statique et continuité modifiés.
+- **47/47 scénarios PostgreSQL réels PASS**, dont comparaison bootstrap/Access Law
+  pour dates et états ; **44/44 contrôles statiques PASS**, 9 ensembles / 32 unités.
+  Base fraîche `_9` : 25 unités, rejeu de projection, SQL A2/A3 PASS. Mise à niveau
+  base A4 `_7` : neuf tables IAM/école/audit intégralement inchangées.
+- Régression navigateur réel A3/A4 PASS sur cette nouvelle projection :
+  attributions/postes persistants, concurrence, conflit, mobile sombre et
+  révocation JASPE sur une session déjà ouverte. Aucun nouvel appel fournisseur.
+- Les contrôles ne couvrent pas encore les DENY conditionnels/ciblés : leur
+  projection historique reste trop globale. Ce lot ne prétend pas régler A5.1.
+
+### Prochaine action exacte — A5.1
+
+1. Définir une projection des règles qui conserve provenance, cible, condition
+   et dates ; ne plus aplatir un DENY d'une cible en refus global. Réutiliser
+   `iam.can_access`, `iam.grant_scopes_match`, `iam.exception_scopes_match` et
+   `iam.condition_matches`, sans deuxième moteur serveur ou contournement client.
+2. Adapter bootstrap/normalisation/Mon compte et gates de navigation/JASPE sans
+   confondre permission attribuée et autorisation d'une action sur une cible.
+   Les contrôles effectifs restent obligatoires à chaque requête métier.
+3. Composer les restrictions de grants et exceptions individuelles depuis la
+   console existante, avec délégation A3, dates/conditions/cibles bornées,
+   confirmation et audit. Ne pas modifier un poste partagé pour une seule personne.
+4. Recette parent/enfant non rattaché, enseignant hors classe/matière, gardien hors
+   portail, plusieurs portées, refus conditionnel et exception expirée. Ensuite A6/A7.
+
+La suite des fonctions B–K, Device Hub et production reste à traiter selon le plan.
+Les seules bases touchées sont synthétiques et locales. Fichiers utilisateur
+`.claude/` et deux PNG conservés hors Git. Le SHA du lot est dans l'historique.
+Cluster temporaire arrêté après recette ; données conservées dans
+`%TEMP%/schoolsafe-access-a2-pg/data`, PostgreSQL 17.11 sur port 55432 lors du
+redémarrage avec son `pgsql/bin/pg_ctl.exe`. Aucun service Windows installé.
+
+---
+
 ## Lot terminé — A4, postes personnalisés
 
 Codex, `main`, départ `e62529b6808b85d5ce430501bbdffc86f903142c`.

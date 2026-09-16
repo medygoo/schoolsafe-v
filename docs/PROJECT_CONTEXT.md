@@ -14,7 +14,10 @@ Dernière mise à jour de la continuité : 16 septembre 2026.
   retrait, délégation, dernier administrateur, concurrence, audit et révocation
   JASPE. **A4 livré sur base de test réelle** : postes personnalisés, copies de
   modèles, composition, impact partagé, audit et refus effectifs.
-  **Prochaine tâche : A5, périmètres, conditions et exceptions individuelles.**
+  A5.0 corrige maintenant les dates/états du bootstrap sur base réelle : les
+  droits expirés/futurs et rattachements inactifs ne sont plus présentés comme
+  courants. **Prochaine tâche : A5.1, règles ciblées/conditionnelles et restrictions
+  individuelles dans la console.** La projection des DENY ciblés reste à préciser.
   Le module complet A5–A7 et la production ne sont pas encore validés.
 - Consulter le haut de `CURRENT_HANDOFF.md` pour la tâche courante et les preuves.
   Les observations techniques datées du 13/09 ci-dessous sont historiques : les

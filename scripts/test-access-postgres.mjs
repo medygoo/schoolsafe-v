@@ -47,6 +47,7 @@ try {
   }
   const projection = path.join(root, 'database/projections/v1/04_access_assignment_views.sql');
   runFile(projection); // CREATE OR REPLACE is replayable without changing assignments.
+  runFile(path.join(root, 'database/projections/v1/05_session_validity.sql'));
   runFile(path.join(root, 'database/projections/v1/tests/access-read.test.sql'));
   runFile(path.join(root, 'database/access/v1/04_role_assignments.sql'));
   runFile(path.join(root, 'database/access/v1/05_custom_roles.sql'));

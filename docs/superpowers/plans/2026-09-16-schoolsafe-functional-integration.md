@@ -47,13 +47,13 @@ parcours réel terminé. Aucune estimation de pourcentage ne remplace ces preuve
 | A3.0 | Contrat de modification et limites de délégation | A2.2 | PARCOURS VALIDÉ · contrat et migrations additives |
 | A3.1 | Attribution/révocation de rôles existants, persistantes | A3.0 | PARCOURS VALIDÉ · SQL/API/UI réels, concurrence, audit et JASPE |
 | A4 | Création de postes et composition des permissions | A3.1 | PARCOURS VALIDÉ · création/copie/composition/attribution, DENY, audit, SQL/API/UI réels |
-| A5 | Périmètres, conditions et exceptions individuelles | A4 | À FAIRE |
+| A5 | Périmètres, conditions et exceptions individuelles | A4 | EN COURS · A5.0 temporel validé (47 scénarios SQL) ; A5.1 ciblage/conditions/éditeur à faire |
 | A6 | Journal d'accès et révocation effective des droits | A3.1, A5 | À FAIRE |
 | A7 | Recette complète Rôles et accès, sans régression | A2 à A6 | À FAIRE |
 | B à K | Autres fonctions et raccordements, voir séquence finale | A7 puis dépendances | À FAIRE |
 
-Responsable du dernier lot : Codex, A4 sur `main`, base applicative `e62529b` ; lot clôturé.
-A5 est la prochaine tâche à réserver dans le handoff. La source du
+Responsable du dernier lot : Codex, A5.0 sur `main`, base applicative `a5037ce` ; lot clôturé.
+A5.1 est la prochaine tâche à réserver dans le handoff. La source du
 SHA d'un lot est Git ; ne pas essayer d'inscrire un commit dans son propre contenu.
 
 ## Mandat et état
@@ -394,6 +394,13 @@ restent protégés. Upgrade A3 sans changement des données, 90 tests serveur,
 
 **Réutiliser :** `iam.grant_scopes`, `iam.permission_conditions`,
 `iam.profile_permission_exceptions`, `iam.exception_scopes` et l'évaluateur IAM.
+
+A5.0 livré le 16/09 : migration additive `projections/v1/05_session_validity.sql`,
+ancienne unité 02 intacte. Dates/états rôle/grant/portée/exception et rattachements
+enseignants/enfants/portails corrigés. 47 scénarios réels, 44 contrats statiques,
+installation de 25 unités et upgrade sans changement de données PASS.
+**A5.1 reste à faire** : projection exacte des DENY ciblés/conditions puis édition
+des restrictions/conditions/exceptions. Ne pas cocher A5 grâce au seul correctif temporel.
 
 - [ ] Supporter les portées prévues par le catalogue avec cibles multiples
   (école, soi, enfants rattachés, classes, matières, portail, appareils gérés).

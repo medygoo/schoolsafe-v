@@ -26,6 +26,12 @@
       "name": "access_assignment_views",
       "file": "04_access_assignment_views.sql",
       "sha256": "4ce603d95511cbf16b19a7833487ba6b94114087626571986bfcbc83e812c55e"
+    },
+    {
+      "order": 5,
+      "name": "session_validity",
+      "file": "05_session_validity.sql",
+      "sha256": "132062f3bcdb6dafe306bf88db078152b7ac0e2e293804abab3439b17cd00d8b"
     }
   ]
 }
