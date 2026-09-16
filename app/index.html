@@ -62,6 +62,7 @@
 <link rel="stylesheet" href="./styles/modules/deep-governance-harmony.css">
 <link rel="stylesheet" href="./styles/dashboard-liquid-glass.css">
   <link rel="stylesheet" href="./styles/modules/jaspe-dashboard.css">
+  <link rel="stylesheet" href="./styles/modules/jaspe-seated.css">
 <script src="./lucide.min.js" defer></script>
   <script src="./jspdf.umd.min.js" defer></script>
   <script src="./vendor/qrcode.min.js" defer></script>
@@ -115,6 +116,7 @@
   <script src="./modules/jaspe2d/auth-layouts.js?v=connexion-responsive-10-final" defer></script>
   <script src="./modules/jaspe2d/jaspe2d.js?v=jaspe-dashboard-01" defer></script>
   <script src="./modules/safe/safe-assistant.js" defer></script>
+  <script src="./modules/jaspe2d/seated-companion.js" defer></script>
   <script src="./modules/jaspe2d/dashboard-companion.js" defer></script>
   <script src="./app.js?v=jaspe-dashboard-01" defer></script>
 </head>
@@ -393,6 +395,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
           <section id="jaspeDashboardWelcome" class="dashboard-hero jaspe-hero" aria-label="Votre assistante Jaspe">
             <button type="button" class="jaspe-hero__character" id="jaspeHeroLauncher" data-jaspe-open aria-label="Ouvrir Jaspe en entier et discuter" aria-haspopup="dialog" aria-controls="jaspePanelOverlay">
+              <span id="jaspeSeatedCharacter" class="jaspe-seated" aria-hidden="true"></span>
               <span class="jaspe-character-host" id="jaspeDashboardCharacter">
                 <img class="jaspe-character-fallback" src="./assets/jaspe2d/attente-v13/adossee-detouree.png" alt="" decoding="async">
               </span>

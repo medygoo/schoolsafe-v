@@ -1,0 +1,32 @@
+.jaspe-seated { display: block; position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden; background: #eaf4fc; isolation: isolate; pointer-events: none; }
+.jaspe-seated[data-theme="dark"] { background: #19334f; }
+.jaspe-seated:not([data-ready="true"]) { background-image: url("../../assets/jaspe2d/assise-v1/sourire-clair.png"); background-size: 200% 200%; }
+[data-theme="dark"] .jaspe-seated:not([data-ready="true"]):not([data-theme="light"]), .jaspe-seated[data-theme="dark"]:not([data-ready="true"]) { background-image: url("../../assets/jaspe2d/assise-v1/sourire-sombre.png"); }
+.jaspe-seated__frame, .jaspe-seated__desk { display: block; position: absolute; inset: 0; background-size: 200% 200%; background-repeat: no-repeat; background-position: 0 0; }
+.jaspe-seated__frame { opacity: 0; transition: opacity 65ms linear; }
+.jaspe-seated__desk { clip-path: inset(89% 0 0); z-index: 2; }
+.jaspe-seated--still .jaspe-seated__frame { transition: none; }
+#jaspeHeroLauncher > #jaspeDashboardCharacter { display: none; }
+body.screen-workspace .jaspe-hero { grid-template-columns: minmax(320px, 1.35fr) minmax(280px, 1fr) minmax(190px, .7fr); background: #eaf4fc; }
+body.screen-workspace .jaspe-hero__character { display: flex; align-items: center; min-height: 260px; }
+.jaspe-hero__character .jaspe-seated { flex: 0 0 100%; }
+.jaspe-hero__open-hint { z-index: 3; bottom: 14px; }
+.jaspe-is-out .jaspe-hero__character .jaspe-seated { visibility: hidden; }
+[data-theme="dark"] body.screen-workspace .jaspe-hero { background: #19334f; }
+@media (max-width: 1250px) {
+  body.screen-workspace .jaspe-hero { grid-template-columns: minmax(290px, 1fr) minmax(260px, 1fr); }
+  .jaspe-hero__about { display: none; }
+}
+@media (max-width: 768px) {
+  body.screen-workspace .jaspe-hero { grid-template-columns: minmax(0, 1fr); gap: 15px; padding: 18px; }
+  body.screen-workspace .jaspe-hero__character { grid-column: 1; grid-row: 1; min-height: 0; margin: -18px -18px 0; }
+  .jaspe-hero__speech { grid-column: 1; grid-row: 2; }
+  .jaspe-hero__identity { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .jaspe-hero__identity > span { font-size: 10px; }
+  .jaspe-hero__identity h1 { margin: 0; font-size: 26px; }
+  .jaspe-hero__bubble::before { display: none; }
+  .jaspe-hero__badges span { font-size: 10px; }
+  .jaspe-hero__chat { grid-column: 1; grid-row: 3; }
+  .jaspe-hero__open-hint { bottom: 9px; }
+}
+@media (prefers-reduced-motion: reduce) { .jaspe-seated__frame { transition: none; } }

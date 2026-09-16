@@ -1,10 +1,70 @@
 # Handoff courant SchoolSafe
 
-## État actif — 16 septembre 2026 : JASPE en buste et sortie entière
+## État actif — 16 septembre 2026 : JASPE assise, planches animées
 
-Cette section remplace les indications de prochaine action des rapports historiques
-ci-dessous. Leurs textes restent conservés pour la continuité. La demande directe du
-propriétaire autorise la reprise du chantier frontend dans ce compte.
+### Demande et livraison
+
+- Le propriétaire a demandé de remplacer la coupure du buste par une JASPE
+  réellement assise à son bureau, puis des images regroupées par mouvement.
+- **8 planches / 32 vignettes** : parole avec geste de main, réflexion/main dans
+  les cheveux, sourire/clignement, lecture souriante ; chaque action en clair et
+  sombre. La dernière correction ajoute le sourire pendant la lecture.
+- Sources générées avec l'outil intégré, à partir de JASPE v12 ; les deux poses
+  statiques initiales sont conservées dans `docs/design/jaspe-assise-v1/`.
+- `app/assets/jaspe2d/assise-v1/` : PNG 1536×1024, grille 2×2, cadres 768×512,
+  13,01 Mio pour les 8 planches, prompts et manifeste SHA-256.
+- `seated-companion.js` : séquences temporisées, chargement à la demande,
+  transitions courtes, façade avant du bureau fixe, thèmes, repos/clignement et
+  lecture occasionnelle. Pause hors écran/onglet caché, mouvements réduits,
+  conservation de la pose précédente si une planche ne charge pas.
+- `dashboard-companion.js` raccorde les intentions fiables et les événements
+  début/fin de synthèse vocale. Le moteur v12 existant sert toujours la sortie
+  entière ; sa surface enregistrée reste `workspace-bust`, avec `isBust=false`.
+- Mise en page assise bureau/mobile, scripts/styles chargés et cache renouvelé.
+- Aperçu rejouable : **http://127.0.0.1:4176/jaspe-assise-preview.html**.
+  Ancien aperçu statique sur 4180, application principale sur 4176.
+
+### Contrôles et limites
+
+- Contrôles de géométrie : 8 PNG, grille/dimensions conformes, hashes sauvegardés.
+- `qa-jaspe-seated.cjs` : PASS pour les quatre actions/deux thèmes, changement
+  d'images, audio simulé début/fin, pause, pause hors écran, mouvements réduits,
+  largeurs 390/320, aucune erreur JavaScript.
+- `test:jaspe-physical` (5 tests + contrat), `qa-responsive-visual-system`,
+  `qa-safe-assistant-access`, permissions (3 tests) : PASS.
+- `qa-jaspe-dashboard.cjs` : PASS bureau/mobile/paysage, appui prolongé,
+  moteur entier conservé, fermeture/retour, réponse unique, audio simulé pilotant
+  les poses, refus de permission, changement de compte, sombre/mouvements réduits.
+  Le test attend maintenant la visibilité après la transition de compte.
+- Aucun test SQL/argent/migration relancé : aucune modification de ces couches.
+- Les essais de transparence ont produit un damier opaque et ont été écartés.
+  Les planches retenues ont un **fond intégré**, pas d'alpha. Petites variations
+  génératives possibles entre cadres ; animation de poses, pas vidéo interpolée.
+- La voix navigateur est testée par adaptateur simulé ; microphone réel et
+  synchronisation phonétique non validés. GLM/Cloudflare reste non raccordé ici.
+- Aucun nouveau stockage de conversation, aucune extension de permissions,
+  aucune modification du moteur v12 ou de ses assets verrouillés.
+
+### Prochaine action exacte
+
+1. Rejouer les actions dans l'aperçu animé avec le propriétaire et vérifier la
+   voix réelle du navigateur. Tester ensuite le bandeau clair/sombre et la sortie
+   entière dans l'application principale.
+2. Affiner uniquement les gestes ou transitions signalés ; une animation plus
+   fine demandera davantage d'intermédiaires ou des calques réellement séparés.
+3. Les réserves métier du lot précédent (Le Sage, P5, base réelle) restent valides.
+4. `.claude/` et les deux références originales non suivies restent hors du lot.
+
+Lot à identifier par `feat(jaspe): poses assises animees par action` dans Git.
+Synchronisation à annoncer après comparaison directe HEAD/GitHub.
+
+---
+
+## Historique — 16 septembre 2026 : buste initial et sortie entière
+
+Cette section conserve le premier lot du 16 septembre. Son cadrage en buste et
+sa prochaine action visuelle sont remplacés par l'état actif ci-dessus. La demande
+directe du propriétaire autorise la reprise du chantier frontend dans ce compte.
 
 ### Demande et résultat
 

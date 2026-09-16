@@ -40,7 +40,7 @@ assert.match(
   "Le mode aperçu doit rester identifié sans message promotionnel"
 );
 assert.doesNotMatch(html, /Mode démonstration\s*·\s*connectez-vous pour accéder aux données réelles\./, "L'ancien bandeau démonstration ne doit pas revenir");
-assert.match(serviceWorker, /CACHE_NAME\s*=\s*CACHE_PREFIX\s*\+\s*["']jaspe-dashboard-2026-09-16["']/, "La version du cache doit publier le nouveau système visuel");
+assert.match(serviceWorker, /CACHE_NAME\s*=\s*CACHE_PREFIX\s*\+\s*["']jaspe-assise-2026-09-16["']/, "La version du cache doit publier les poses assises");
 assert.match(tokens, /--ss-focus-ring\s*:/, "Le token d'anneau de focus SchoolSafe est requis");
 assert.match(components, /:focus-visible/, "Les composants partagés doivent exposer un focus clavier visible");
 assert.match(combinedCss, /prefers-reduced-motion/, "Le système visuel doit respecter les mouvements réduits");

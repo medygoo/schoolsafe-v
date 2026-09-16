@@ -1,9 +1,11 @@
-/* One existing JASPE renderer, moved between its bust and full-body hosts.
+/* Seated pose sequences in the dashboard; existing renderer for the full body.
  * Conversation and authorization remain owned by SafeAssistant / Access Law. */
 (function (global) {
   "use strict";
   var initialized = false;
   var showcase = null;
+  var seated = null;
+  var voiceUtterance = null;
   var dialog, character, launcher, fullStage, input, log, mic, status;
   var audioMode = false;
   var recognition = null;
@@ -17,8 +19,20 @@
       !!global.SafeAssistant && global.SafeAssistant.isAllowed();
   }
 
-  function intent(kind) {
-    if (showcase && allowed()) showcase.dispatch({ kind: kind, source: "dashboard-ui" });
+  function intent(kind, settings) {
+    if (!allowed()) return;
+    if (showcase) showcase.dispatch({ kind: kind, source: "dashboard-ui" });
+    if (seated && !dialog.open) {
+      var actions = { idle: "idle", listen: "listen", think: "think", speak: "speak", explain: "speak", success: "smile", refuse: "neutral", error: "neutral" };
+      var duration = { speak: 4800, explain: 3500, success: 3400, think: 6000 };
+      seated.setAction(actions[kind] || "neutral", settings || { duration: duration[kind] || 0 });
+    }
+  }
+
+  function stopSpeaking() {
+    if (voiceUtterance) voiceUtterance.onstart = voiceUtterance.onend = voiceUtterance.onerror = null;
+    voiceUtterance = null;
+    if (global.speechSynthesis) global.speechSynthesis.cancel();
   }
 
   function setStatus(message) {
@@ -39,12 +53,14 @@
     mic.setAttribute("aria-pressed", "false");
     mic.setAttribute("aria-label", "Démarrer l’écoute");
     document.getElementById("jaspeHeroMic").setAttribute("aria-pressed", "false");
+    if (previous) intent("idle");
   }
 
   function setMode(audio) {
     audioMode = audio;
     stopListening();
-    if (global.speechSynthesis) global.speechSynthesis.cancel();
+    stopSpeaking();
+    intent("idle");
     document.querySelectorAll("[data-jaspe-mode]").forEach(function (button) {
       button.setAttribute("aria-pressed", String((button.dataset.jaspeMode === "audio") === audio));
     });
@@ -70,7 +86,7 @@
     if (recognition) { stopListening(); setStatus("Écoute arrêtée."); return; }
     var Recognition = global.SpeechRecognition || global.webkitSpeechRecognition;
     if (!Recognition || !allowed()) return;
-    if (global.speechSynthesis) global.speechSynthesis.cancel();
+    stopSpeaking();
     recognition = new Recognition();
     recognition.lang = "fr-FR";
     recognition.interimResults = false;
@@ -99,6 +115,7 @@
   function syncAccess() {
     if (!initialized) return;
     var canUse = allowed();
+    if (seated) seated.setActive(canUse && !dialog.open);
     document.querySelectorAll("[data-jaspe-open], [data-jaspe-audio], [data-jaspe-chat-input], [data-jaspe-chat-send], [data-bottom-nav='jaspe']").forEach(function (element) {
       element.disabled = !canUse;
     });
@@ -106,9 +123,10 @@
     if (!canUse) {
       close();
       stopListening();
-      if (global.speechSynthesis) global.speechSynthesis.cancel();
+      stopSpeaking();
       renderedResponse = "";
       lastSpoken = "";
+      lastAnimation = "";
       log.replaceChildren();
       document.querySelectorAll("[data-jaspe-chat-log]").forEach(function (element) { element.replaceChildren(); });
       document.querySelectorAll("[data-jaspe-chat-input]").forEach(function (element) { element.value = ""; });
@@ -122,6 +140,7 @@
     if (!allowed()) return;
     var response = global.SafeAssistant.getCurrentMessage();
     var signature = response;
+    var responseChanged = signature !== renderedResponse;
     if (signature !== renderedResponse) {
       renderedResponse = signature;
       log.replaceChildren();
@@ -144,17 +163,26 @@
       log.scrollTop = log.scrollHeight;
     }
     var animation = global.SafeAssistant.getAnimation();
-    if (audioMode && response && response !== lastSpoken && animation !== "Listening" && animation !== "Thinking" && global.speechSynthesis) {
-      lastSpoken = response;
-      global.speechSynthesis.cancel();
-      var utterance = new SpeechSynthesisUtterance(response);
-      utterance.lang = "fr-FR";
-      global.speechSynthesis.speak(utterance);
-    }
-    if (animation !== lastAnimation) {
+    if (animation !== lastAnimation || responseChanged) {
       lastAnimation = animation;
       var mapping = { Idle: "idle", Listening: "listen", Thinking: "think", Wave: "explain", Agree: "success", Shrug: "refuse", TalkHandsOpen: "speak", TalkPassionately: "speak" };
       intent(mapping[animation] || "speak");
+    }
+    if (audioMode && response && response !== lastSpoken && animation !== "Listening" && animation !== "Thinking" && global.speechSynthesis) {
+      lastSpoken = response;
+      stopSpeaking();
+      var utterance = new SpeechSynthesisUtterance(response);
+      utterance.lang = "fr-FR";
+      voiceUtterance = utterance;
+      utterance.onstart = function () {
+        if (voiceUtterance === utterance && allowed()) intent("speak", { duration: 0 });
+      };
+      utterance.onend = utterance.onerror = function () {
+        if (voiceUtterance !== utterance) return;
+        voiceUtterance = null;
+        intent("idle");
+      };
+      global.speechSynthesis.speak(utterance);
     }
   }
 
@@ -162,10 +190,10 @@
     if (showcase || !global.SchoolSafeJaspe2d || !allowed()) return;
     showcase = global.SchoolSafeJaspe2d.mountShowcase(character, {
       transparent: true,
-      surface: "workspace-bust",
+      surface: "workspace-bust", // Existing registered dashboard surface; framing is injected below.
       label: "Jaspe, votre assistante SchoolSafe",
-      isBust: function () { return !dialog.open; },
-      isVisible: function () { return allowed() && character.getClientRects().length > 0; },
+      isBust: function () { return false; },
+      isVisible: function () { return allowed() && dialog.open && character.getClientRects().length > 0; },
       variants: [
         { pack: "pack1", key: "idle" }, { pack: "pack1", key: "wave" },
         { pack: "pack2", key: "listening", rotate: false },
@@ -175,7 +203,6 @@
         { pack: "pack4", key: "worried", rotate: false }
       ]
     });
-    if (showcase) showcase.presentationReady.then(function () { intent("explain"); });
   }
 
   function open(trigger, audio) {
@@ -195,9 +222,10 @@
 
   function returned() {
     stopListening();
-    if (global.speechSynthesis) global.speechSynthesis.cancel();
+    stopSpeaking();
     launcher.prepend(character);
     document.body.classList.remove("jaspe-is-out");
+    if (seated) seated.setActive(allowed());
     input.value = "";
     intent("idle");
     if (returnFocus && returnFocus.isConnected && !returnFocus.disabled && returnFocus.getClientRects().length) returnFocus.focus({ preventScroll: true });
@@ -220,6 +248,7 @@
     log = document.getElementById("jaspePanelBody");
     mic = document.getElementById("jaspePanelMic");
     status = document.getElementById("jaspePanelStatus");
+    if (global.SchoolSafeJaspeSeated) seated = global.SchoolSafeJaspeSeated.mount(document.getElementById("jaspeSeatedCharacter"));
     global.SafeAssistant.setEmbeddedPresentation(true);
     global.SafeAssistant.onHistoryChange(syncConversation);
     document.getElementById("jaspeHeroMic").addEventListener("click", function () {
@@ -252,8 +281,11 @@
     mic.addEventListener("click", startListening);
     document.querySelectorAll("[data-jaspe-chat-input], #jaspePanelInput").forEach(function (field) {
       field.addEventListener("focus", function () { intent("listen"); });
+      field.addEventListener("blur", function () { if (!recognition && !voiceUtterance) intent("idle"); });
     });
-    document.addEventListener("visibilitychange", function () { if (document.hidden) stopListening(); });
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) { stopListening(); stopSpeaking(); intent("idle"); }
+    });
   }
 
   global.SchoolSafeJaspeDashboard = {

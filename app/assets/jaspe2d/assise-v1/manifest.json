@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "date": "2026-09-16",
+  "grid": {
+    "columns": 2,
+    "rows": 2,
+    "frameWidth": 768,
+    "frameHeight": 512
+  },
+  "background": "opaque, theme-specific",
+  "files": [
+    {
+      "file": "lecture-clair.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1773855,
+      "sha256": "b97cf2fd60f00b634b45d1a58e3aab397a2c1e864567629d6ac8617c463e5418"
+    },
+    {
+      "file": "lecture-sombre.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1674942,
+      "sha256": "2c6bbde2f066049b81a5b311a65cd1492c4cacfddc0e32e8009ff30b2a4b9efa"
+    },
+    {
+      "file": "parole-clair.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1747743,
+      "sha256": "17c2043f9b3ca6b2aca800183ef4b13ffd7c07f4c79966b01adec2d4f20322e9"
+    },
+    {
+      "file": "parole-sombre.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1671561,
+      "sha256": "c0b0719c100f0f6ff24062ba9930d5618c505f59bead1adecf0e89bb44939ad8"
+    },
+    {
+      "file": "reflexion-clair.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1737950,
+      "sha256": "f1e460e12272e525c771018dfbb500446aecca6293996eb40a6a94b6298d682f"
+    },
+    {
+      "file": "reflexion-sombre.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1645252,
+      "sha256": "f093b67ffe103071a780cf86c42f763a501eff445212c74d7f7d703be2b8b387"
+    },
+    {
+      "file": "sourire-clair.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1723108,
+      "sha256": "0f8a54c8a0666f19e6fe3602a1f05537a05dbffb0447051811f67de46f318bd4"
+    },
+    {
+      "file": "sourire-sombre.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1663026,
+      "sha256": "e5bcf1db00af144a57c89329211f6f00fdb69cb615fe30234b947c5d0048d3cb"
+    }
+  ]
+}

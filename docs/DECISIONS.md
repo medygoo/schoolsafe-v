@@ -39,7 +39,8 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
 
 - **VALIDÉE, instruction directe du propriétaire le 16/09** : reprendre les références
   bureau/mobile avec le personnage JASPE déjà conçu et son moteur v12 2D/2,5D.
-  JASPE reste en buste dans le bandeau et peut discuter par écrit ou audio sur place.
+  JASPE peut discuter par écrit ou audio sur place. Le cadrage en buste initial
+  est **REMPLACÉ** par la décision de pose assise ci-dessous.
 - **VALIDÉE** : un appui prolongé sur le bouton JASPE fait sortir le personnage
   en corps entier, animé et adapté à l'écran, avec une boîte de dialogue flottante
   aux couleurs pâles. L'application reste utilisable autour. Clic et clavier
@@ -50,6 +51,21 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
 - Les réponses et les actions restent soumises à Access Law et au routeur existant.
   L'audio navigateur ne constitue pas un raccordement GLM/Cloudflare ni une
   synchronisation labiale ; ces capacités ne sont pas livrées par ce lot.
+
+## Complément validé le 16 septembre — poses assises par action
+
+- **VALIDÉE, demande directe du propriétaire** : dans le bandeau, JASPE est
+  réellement assise derrière un bureau pour éviter la coupure du personnage
+  debout. Conserver son identité v12, sa tenue et le corps entier flottant existant.
+- **VALIDÉE** : créer des planches regroupées par action pour maintenir le cadrage
+  et la cohérence des gestes : parole avec la main, réflexion/main aux cheveux,
+  sourire/clignement, lecture. Ajouter un sourire pendant la lecture.
+- Décliner chaque action en clair et sombre. Le lot initial utilise quatre images
+  par planche, affichées en séquence 2D. Les fonds sont intégrés aux images :
+  aucun détourage alpha ni calques séparés n'est annoncé comme livré.
+- La lecture vocale pilote le début/la fin de la séquence de parole ; il ne s'agit
+  pas d'une synchronisation phonétique. Permissions et réponse courante sans
+  historique restent régies par le contrat du lot précédent.
 
 ## Décisions restant à préciser
 
