@@ -4,6 +4,11 @@ Dernière mise à jour de la continuité : 16 septembre 2026.
 
 ## Point d'entrée pour la reprise
 
+- **Priorité immédiate demandée ensuite par le propriétaire : bandeau JASPE**
+  compact, bureau occasionnel, cartable et logo de l’école à côté. Ce changement
+  n’est pas encore intégré. Reprise précise dans le premier bloc du handoff et
+  `docs/design/jaspe-cartable-v1/REPRISE.md`. Reprendre A5.1 après ce lot visuel.
+
 - Plan actif pour tous les agents :
   [fonctionnalités et Rôles et accès](superpowers/plans/2026-09-16-schoolsafe-functional-integration.md).
 - Priorité : terminer Rôles et accès progressivement, puis raccorder les autres

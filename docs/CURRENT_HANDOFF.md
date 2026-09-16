@@ -1,5 +1,41 @@
 # Handoff courant SchoolSafe
 
+## Reprise immédiate — JASPE latérale, visage fidèle et logo de l’école
+
+Codex, `main`, base applicative `9d8654246e4622cf4485de551effa93c5a0fa03a`.
+**Transmission demandée par le propriétaire avant épuisement du quota.**
+Ce lot ne contient que documentation et images de préparation ; **aucun code
+applicatif, SQL, droit ou déploiement modifié. Nouveau bandeau NON LIVRÉ.**
+
+- Demande validée : bureau occasionnel, JASPE compacte sur le côté, cartable,
+  logo réel de l’école à côté, saisie en bas ; animations/voix/accès conservés.
+- **Cadrage final : jusqu’aux hanches, bras et mains visibles pour expliquer.**
+  Garder le personnage flottant en pied ; ce cadrage concerne le bandeau.
+- Dernière correction : le propriétaire signale un visage déformé. La maquette
+  mobile sert à montrer le **placement** ; garder notre JASPE existante. Aucune
+  nouvelle planche n’est validée. Ne pas remplacer les assets utilisés actuellement.
+- Reprise technique détaillée : [JASPE/cartable](design/jaspe-cartable-v1/REPRISE.md).
+  Ce document localise le moteur, la grille mobile, le rendu du logo et le champ
+  manquant dans le bootstrap natif, puis précise les preuves à exécuter.
+- Images : `docs/design/jaspe-cartable-v1/reference-placement-mobile.png` (copie
+  de la référence utilisateur) et `cartable-clair-non-valide.png` (candidat écarté
+  de l’intégration). Prompts exacts/mode intégré dans `prompts.json`. La première
+  tentative au faux damier est rejetée et n’est pas copiée dans le dépôt.
+- **Prochaine action exacte :** corriger la fidélité des poses cartable depuis
+  l’identité originale v12, puis intégrer la scène latérale et le bureau ponctuel,
+  connecter le logo de l’école et sa projection native additive, tester et livrer.
+  **Ensuite revenir à A5.1**, et non recommencer les lots accès déjà validés.
+- Contrôles de ce lot documentaire : `git diff --check` PASS, prompts JSON valides,
+  dimensions PNG vérifiées, référence copiée à l’identique et SHA256 consignés
+  dans `REPRISE.md` ; aucun fichier de code applicatif modifié.
+  Aucun test fonctionnel nouveau n’a été exécuté ; les preuves A5.0 ci-dessous
+  portent sur le commit applicatif précédent et ne valident pas ce nouveau bandeau.
+- `.claude/` et les deux PNG utilisateur à la racine restent non suivis. Bases de
+  test conservées ; cluster temporaire toujours arrêté. Aucun travail en arrière-plan
+  à attendre. Prévisualisation existante sur 4176 inchangée.
+
+---
+
 ## Lot terminé — A5.0, validité temporelle du paquet de session
 
 Codex, `main`, base/mirror `a5037ce8b9aa8333c4b6101a490d6baba632b817`.

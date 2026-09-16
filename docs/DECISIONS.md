@@ -211,6 +211,23 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
 - Décision produit à implémenter dans Guardian/Device Hub ; aucun raccordement
   matériel ou parcours natif de remise n'est déclaré livré par cette validation.
 
+## Présentation JASPE et logo de l’école — validée le 16 septembre
+
+- Le bureau devient occasionnel : scènes de lecture/explication, puis retour à
+  JASPE debout avec son cartable. Conserver son visage, sa coiffure et son uniforme
+  v12 ; animation 2D/2,5D, aucune nouvelle 3D.
+- Sur téléphone, réduire sa place et réserver à côté un espace stable au logo
+  de l’école courante, chargé depuis l’identité enregistrée à la création.
+  Sans logo, afficher le nom de l’école ; ne pas inventer de logo partenaire.
+- La saisie reste sous le bandeau, sans historique. Voix, sortie complète et
+  permissions existantes sont conservées. Le logo reste fixe pendant les gestes.
+- Précision ultérieure du propriétaire : les nouvelles images déforment le
+  visage ; ne pas les intégrer. La maquette mobile réenvoyée montre le placement.
+  Conserver l’identité de notre JASPE existante et corriger la fidélité des poses.
+- Cadrage final précisé : **vue jusqu’aux hanches, bras et mains visibles pour
+  expliquer**, placée sur le côté. Ce cadrage concerne le bandeau ; la sortie
+  flottante complète reste disponible.
+
 ## Décisions restant à préciser — inchangées
 
 - Technologie exacte de synthèse vocale Cloudflare lorsque le lot voix commencera.

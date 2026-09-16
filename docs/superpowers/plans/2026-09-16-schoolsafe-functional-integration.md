@@ -7,6 +7,11 @@ exécution. Les choix techniques proposés restent distincts des règles produit
 
 ## Reprise en cinq minutes
 
+**Interruption produit validée le 16/09 :** le propriétaire demande d’abord le
+bandeau JASPE compact avec bureau occasionnel, cartable et logo réel de l’école.
+Travail préparatoire uniquement, non intégré. Suivre le bloc courant du handoff
+et `docs/design/jaspe-cartable-v1/REPRISE.md`, puis revenir à **A5.1** ci-dessous.
+
 1. Lire `AGENTS.md`, `docs/PROJECT_CONTEXT.md`, `docs/DECISIONS.md`, puis tout le
    handoff. Seul le bloc en tête de `docs/CURRENT_HANDOFF.md` décrit la reprise
    active ; les anciens « prochaine action » appartiennent à l'historique.
