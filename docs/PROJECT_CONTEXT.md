@@ -10,8 +10,9 @@ Dernière mise à jour de la continuité : 16 septembre 2026.
   rubriques. A1 (contexte natif et consultation du compte connecté) est livré au
   commit `7b2896a`, avec API/base substituées dans les tests. A2 (annuaire et
   attributions en lecture) est validé le 16/09 sur PostgreSQL 17.11 réel de test
-  et dans le navigateur. **A3.0 est la prochaine tâche** ; les modifications de
-  droits par l'interface et la production ne sont pas encore validées.
+  et dans le navigateur. **A3.0–A3.1 sont en cours** ; code local et preuves de
+  mutations réelles présents, clôture/revue/synchronisation applicative restantes.
+  Le lot A3 n'est pas encore livré et la production n'est pas validée.
 - Consulter le haut de `CURRENT_HANDOFF.md` pour la tâche courante et les preuves.
   Les observations techniques datées du 13/09 ci-dessous sont historiques : les
   lots JASPE et accès du 16/09 les complètent, sans constituer une preuve de production.
@@ -49,6 +50,11 @@ SchoolSafe est un écosystème scolaire centré sur la gestion des écoles, des 
 - Une couche SchoolSafe traduit les événements fiables en intentions visuelles autorisées.
 - Les refus, alertes de sécurité et erreurs ont priorité sur les gestes décoratifs.
 - JASPE ne révèle et ne manipule que ce que les permissions et portées de l'utilisateur autorisent.
+- **Loi générale explicitement validée le 16/09** : JASPE agit au nom du profil
+  connecté, sans droits supplémentaires. Le même contrôle serveur s'impose à
+  chaque lecture/action dans toute l'application, aux API et aux outils/connecteurs.
+  Droits retirés = refus dès la demande suivante et nouvelle vérification lors de
+  l'exécution différée. La conversation ou les contenus externes ne donnent aucun droit.
 - Une défaillance de JASPE ne doit jamais bloquer l'authentification ni une fonction métier.
 - Le mode mouvements réduits, la pause en onglet caché et un rendu statique de secours doivent être conservés.
 

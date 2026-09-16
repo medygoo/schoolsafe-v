@@ -1,5 +1,45 @@
 # Handoff courant SchoolSafe
 
+## Point courant — validation de la loi JASPE et résumé Device Hub
+
+Le propriétaire valide explicitement la loi générale : JASPE agit avec les droits
+effectifs du profil connecté, jamais davantage, pour toute consultation/action et
+tout module/connecteur. Décision durable inscrite dans `DECISIONS.md` et le contexte.
+Il demande également un résumé de la proposition Device Hub ; son architecture
+reste **À VALIDER**, sans nouveau codage Device Hub dans ce lot documentaire.
+
+Code A3 du bloc suivant conservé localement, non committé à ce stade. Ne pas
+l'écraser. Base applicative `0f23979`, propriétaire Codex. Preuves terminées :
+suite SQL `role-assignments.test.sql` PASS (isolation, délégation, Control, dernier
+admin, audit/rollback) ; `qa-access-mutations-live.mjs` PASS avec deux connexions
+API réelles (concurrence/réautorisation), puis navigateur/cookie/API/PostgreSQL
+(confirmation, attribution, persistance, retrait, audit, conflit, mobile sombre,
+révocation immédiate du droit JASPE). 39 tests serveur antérieurs PASS ; nouveaux
+cas API ajoutés ensuite encore à exécuter. Typecheck précédemment PASS.
+
+**Prochaine action applicative exacte :** reprendre la clôture A3 : revoir le diff,
+exécuter les nouveaux cas API/contrats et les régressions A1/A2, inspecter les deux
+captures A3 dans `%TEMP%`, mettre à jour cache/plan/preuves, puis committer/pousser
+le code validé. Ne pas annoncer A4–A7 ou les autres modules terminés. La base
+temporaire `schoolsafe_access_test_4` contient uniquement les fixtures synthétiques
+de ce parcours. Aucun appareil, VPS ni base de production modifié.
+
+---
+
+## Lot en cours — 16 septembre 2026 : A3.0–A3.1
+
+Responsable : Codex, `main`, base/fetch `0f23979efbcc3f3151ec5a60b70f65b05957a051`.
+Mandat renouvelé : terminer le plan fonctionnel, par lots vérifiables. A3 réservé :
+contrat de délégation, attribution/retrait natifs, concurrence, dernier administrateur,
+confirmation et audit. Fichiers réservés : access SQL/manifeste/tests, projections
+IAM, service/routes/tests accessnative, console/client/CSS accès, QA et continuité.
+Les fichiers `.claude/` et les deux images utilisateur restent exclus du lot.
+Précision du propriétaire : JASPE suit les droits attribués par l'administrateur ;
+l'accès Finance d'un parent n'autorise jamais la consultation des salaires du personnel.
+Cette séparation doit être vérifiée par permission, cible et école côté serveur.
+
+---
+
 ## Lot courant — 16 septembre 2026 : A2, consultation des accès de l'école
 
 **A2.0–A2.2 LIVRÉS ET VALIDÉS SUR BASE DE TEST RÉELLE. PROCHAINE TÂCHE : A3.0.**

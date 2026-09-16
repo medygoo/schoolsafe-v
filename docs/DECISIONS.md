@@ -168,6 +168,28 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
 - Preuve de test uniquement, pas de déploiement ni nouvelle décision produit.
   Contrat : `docs/superpowers/specs/2026-09-16-access-directory-contract.md`.
 
+## Loi générale validée le 16 septembre — JASPE et autorité du profil
+
+- **VALIDÉE EXPLICITEMENT PAR LE PROPRIÉTAIRE** : JASPE agit au nom du profil
+  connecté et ne possède jamais plus de droits que lui. Cette loi s'applique à
+  toute l'application et à tout outil/connecteur, pas seulement à la pédagogie.
+- L'administrateur humain attribue les permissions et limites. Le serveur commun
+  contrôle chaque lecture/action de l'interface, des API et de JASPE : acteur,
+  école, permission, ressource, portée, conditions et refus explicites. Aucun rôle
+  implicite, prompt, voix, site ou connecteur ne remplace cette autorisation.
+- Une révocation s'applique à la demande suivante, même dans une session ou un
+  dialogue déjà ouvert. Les tâches différées doivent revérifier les droits à leur
+  exécution ; elles ne conservent pas une délégation devenue invalide.
+- JASPE peut exécuter les tâches autorisées dans cette enveloppe. Les confirmations
+  humaines des opérations sensibles, déjà validées, restent obligatoires.
+- Exemples non exhaustifs : un parent peut consulter les frais/devoirs accessibles
+  à ses enfants, pas les salaires des enseignants, leurs brouillons ou cahiers
+  internes ; un enseignant reste limité à ses attributions et ressources autorisées.
+- Cette validation porte sur une loi à faire respecter et tester transversalement.
+  Elle ne signifie pas que tous les outils JASPE ou modules sont déjà raccordés.
+  L'accord Device Hub reste distinct : le propriétaire demande ici son résumé,
+  sans valider encore son architecture structurelle.
+
 ## Décisions restant à préciser — inchangées
 
 - Technologie exacte de synthèse vocale Cloudflare lorsque le lot voix commencera.
