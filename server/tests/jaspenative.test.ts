@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { buildApp } from "../src/app.js";
 import { createJaspeNativeService } from "../src/jaspenative/service.js";
 import type { AuthNativeService, AuthSessionInfo } from "../src/authnative/service.js";
+import type { BusinessPool } from "../src/db/pool.js";
 
 const SESSION: AuthSessionInfo = {
   sessionId: "44444444-0000-4000-8000-000000000001",
@@ -26,10 +27,19 @@ function fakeAuth(): AuthNativeService {
   } as unknown as AuthNativeService;
 }
 
-function app(opts: { workerUrl?: string; fetchImpl?: typeof fetch; ratePerMinute?: number; withAuth?: boolean }) {
+function app(opts: { workerUrl?: string; fetchImpl?: typeof fetch; ratePerMinute?: number; withAuth?: boolean; allowed?: boolean }) {
   return buildApp({
     jaspeNative: {
       authService: opts.withAuth === false ? undefined : fakeAuth(),
+      businessPool: { async connect() { return {
+        async query(sql: string, values?: unknown[]) {
+          if (sql.includes("api.check_access")) {
+            expect(values?.slice(0, 2)).toEqual(["safe.assistant.use", SESSION.profileId]);
+            return { rows: [{ allowed: opts.allowed !== false }] };
+          }
+          return { rows: [] };
+        }, release() {},
+      }; } } as unknown as BusinessPool,
       service: createJaspeNativeService({
         workerUrl: opts.workerUrl,
         timeoutMs: 1500,
@@ -44,6 +54,26 @@ const payload = { message: "Bonjour Jaspe" };
 const headers = { "content-type": "application/json", cookie: "schoolsafe_session=token-valide" };
 
 describe("jaspenative", () => {
+  it("refuse le droit retiré par un humain avant tout appel au fournisseur", async () => {
+    let calls = 0;
+    const a = app({ allowed: false, workerUrl: "https://worker.example/chat", fetchImpl: (async () => {
+      calls++; return new Response('{}');
+    }) as typeof fetch });
+    const res = await a.inject({ method: "POST", url: "/native/jaspe/chat", headers, payload });
+    expect(res.statusCode).toBe(403);
+    expect(calls).toBe(0);
+    await a.close();
+  });
+  it("aucun mode anonyme si l'authentification est absente", async () => {
+    const a = app({ withAuth: false });
+    expect((await a.inject({ method: "POST", url: "/native/jaspe/chat", headers, payload })).statusCode).toBe(503);
+    await a.close();
+  });
+  it("ignore aucune autorité forgée : corps strict", async () => {
+    const a = app({});
+    expect((await a.inject({ method: "POST", url: "/native/jaspe/chat", headers, payload: { ...payload, role: 'admin', schoolId: SESSION.schoolId } })).statusCode).toBe(400);
+    await a.close();
+  });
   it("succès : relaie la réponse du worker", async () => {
     const fakeFetch = (async () => new Response(JSON.stringify({ reply: "Bonjour !" }), { status: 200 })) as typeof fetch;
     const a = app({ workerUrl: "https://worker.example/chat", fetchImpl: fakeFetch });

@@ -12,6 +12,11 @@ const pageSchema = z.object({
   offset: z.coerce.number().int().min(0).max(1000000).default(0),
 }).strict();
 const profileSchema = z.object({ profileId: z.string().uuid() }).strict();
+const roleChangeSchema = z.object({
+  roleId: z.string().uuid(), action: z.enum(["assign", "revoke"]),
+  revision: z.string().regex(/^(0|[1-9][0-9]{0,17})$/),
+  reason: z.string().trim().min(5).max(500), confirmed: z.literal(true),
+}).strict();
 export type AccessNativeRouteDependencies = { authService: AuthNativeService; service: AccessNativeService };
 
 export function registerAccessNativeRoutes(app: FastifyInstance, deps: AccessNativeRouteDependencies): void {
@@ -40,5 +45,27 @@ export function registerAccessNativeRoutes(app: FastifyInstance, deps: AccessNat
     const data = await deps.service.readProfile(actor, profileId);
     if (!data) throw new SchoolSafeError(404, "NOT_FOUND", "Profil introuvable", false);
     return { data, request_id: actor.requestId };
+  });
+  app.get("/native/access/roles/:roleId", { preHandler: requireSession }, async (request, reply) => {
+    reply.header("Cache-Control", "no-store");
+    const { roleId } = z.object({ roleId: z.string().uuid() }).strict().parse(request.params);
+    z.object({}).strict().parse(request.query);
+    const actor = context(request);
+    const data = await deps.service.readRole(actor, roleId);
+    if (!data) throw new SchoolSafeError(404, "NOT_FOUND", "Rôle introuvable", false);
+    return { data, request_id: actor.requestId };
+  });
+  app.post("/native/access/profiles/:profileId/roles", { preHandler: requireSession }, async (request, reply) => {
+    reply.header("Cache-Control", "no-store");
+    // Cannot be submitted by a cross-origin HTML form; browser fetch requires
+    // the existing explicit-origin CORS preflight for this custom header.
+    if (request.headers["x-schoolsafe-action"] !== "access-write" || request.headers["sec-fetch-site"] === "cross-site") {
+      throw new SchoolSafeError(403, "PERMISSION_DENIED", "Requête de modification refusée", false);
+    }
+    const { profileId } = profileSchema.parse(request.params);
+    z.object({}).strict().parse(request.query);
+    const input = roleChangeSchema.parse(request.body);
+    const actor = context(request);
+    return { data: await deps.service.changeRole(actor, profileId, input), request_id: actor.requestId };
   });
 }

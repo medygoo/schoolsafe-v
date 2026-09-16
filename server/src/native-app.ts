@@ -44,7 +44,7 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
     trialNative: { authService, service: createTrialNativeService(pools.businessPool) },
     sessionNative: { authService, service: createSessionNativeService(pools.businessPool) },
     accessNative: { authService, service: createAccessNativeService(pools.businessPool) },
-    jaspeNative: { authService, service: createJaspeNativeService({
+    jaspeNative: { authService, businessPool: pools.businessPool, service: createJaspeNativeService({
       workerUrl: env.JASPE_WORKER_URL,
       timeoutMs: env.JASPE_CHAT_TIMEOUT_MS,
       ratePerMinute: env.JASPE_RATE_PER_MINUTE,

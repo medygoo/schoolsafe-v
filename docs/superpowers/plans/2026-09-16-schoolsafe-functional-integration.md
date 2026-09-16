@@ -44,16 +44,16 @@ parcours réel terminé. Aucune estimation de pourcentage ne remplace ces preuve
 | A2.0 | Contrat de lecture IAM et préparation de la preuve SQL | A1 | PARCOURS VALIDÉ · contrat et runner PostgreSQL 17.11 réels |
 | A2.1 | Projections et API natives des profils/rôles de l'école | A2.0 | PARCOURS VALIDÉ · SQL sous schoolsafe_api, 2 écoles, assemblage natif |
 | A2.2 | Liste réelle et détail d'accès dans la console existante | A2.1 | PARCOURS VALIDÉ · navigateur/cookie/API/PG réels, bureau/mobile, révocation |
-| A3.0 | Contrat de modification et limites de délégation | A2.2 | À FAIRE — **prochaine tâche** |
-| A3.1 | Attribution/révocation de rôles existants, persistantes | A3.0 | À FAIRE |
+| A3.0 | Contrat de modification et limites de délégation | A2.2 | PARCOURS VALIDÉ · contrat et migrations additives |
+| A3.1 | Attribution/révocation de rôles existants, persistantes | A3.0 | PARCOURS VALIDÉ · SQL/API/UI réels, concurrence, audit et JASPE |
 | A4 | Création de postes et composition des permissions | A3.1 | À FAIRE |
 | A5 | Périmètres, conditions et exceptions individuelles | A4 | À FAIRE |
 | A6 | Journal d'accès et révocation effective des droits | A3.1, A5 | À FAIRE |
 | A7 | Recette complète Rôles et accès, sans régression | A2 à A6 | À FAIRE |
 | B à K | Autres fonctions et raccordements, voir séquence finale | A7 puis dépendances | À FAIRE |
 
-Responsable du dernier lot : Codex, A2 sur `main`, base `146ad3e` ; lot clôturé.
-A3.0 reste à réserver par le prochain agent dans le handoff. La source du
+Responsable du dernier lot : Codex, A3 sur `main`, base applicative `0f23979` ; lot clôturé.
+A4 est la prochaine tâche à réserver dans le handoff. La source du
 SHA d'un lot est Git ; ne pas essayer d'inscrire un commit dans son propre contenu.
 
 ## Mandat et état
@@ -319,20 +319,20 @@ uniquement dans son contexte explicite.
 postes et composer leurs permissions/portées dans l'enveloppe Control/Access Law.
 Les quatre expériences adultes ne limitent pas le nombre de postes internes.
 
-- [ ] Relire les règles actives, les modèles de rôle et la séparation d'autorité
+- [x] Relire les règles actives, les modèles de rôle et la séparation d'autorité
   Control. Décrire quels rôles/permissions sont attribuables et par qui, sans
   inventer un droit de délégation à partir d'une case frontend.
-- [ ] Définir les invariants du dernier administrateur autorisé, l'auto-retrait,
+- [x] Définir les invariants du dernier administrateur autorisé, l'auto-retrait,
   les comptes suspendus, les attributions futures/expirées et les rôles inactifs.
-- [ ] Définir contrôle de concurrence et précondition de version : une écriture
+- [x] Définir contrôle de concurrence et précondition de version : une écriture
   depuis un écran ancien doit échouer proprement, pas écraser un changement récent.
-- [ ] Choisir une protection transactionnelle commune à l'école pour l'invariant
+- [x] Choisir une protection transactionnelle commune à l'école pour l'invariant
   du dernier administrateur ; verrouiller seulement la personne modifiée ne suffit
   pas si deux retraits concurrents visent deux personnes différentes.
-- [ ] Décrire confirmation humaine **dans l'application**, résumé avant/après,
+- [x] Décrire confirmation humaine **dans l'application**, résumé avant/après,
   motif, audit et effet sur la session cible. Cela ne signifie pas demander au
   propriétaire une nouvelle permission pour chaque modification de code autorisée.
-- [ ] Si une règle produit reste indécidable après lecture des sources, préparer
+- [x] Si une règle produit reste indécidable après lecture des sources, préparer
   les choix concrets et demander seulement cet arbitrage ; continuer les tâches
   indépendantes. Les choix déjà validés ne sont pas soumis à une deuxième approbation.
 
@@ -345,17 +345,17 @@ ne sont marqués validés qu'après une réponse explicite du propriétaire.
 **Fichiers :** mêmes couches que A2, RPC IAM versionnée, triggers d'audit existants,
 tests serveur/SQL et console. Réutiliser `iam.profile_roles` et ses dates/états.
 
-- [ ] Tests de refus : autre école, rôle Control/rôle inactif, absence de droit,
+- [x] Tests de refus : autre école, rôle Control/rôle inactif, absence de droit,
   tentative d'élévation hors enveloppe, requête périmée et retrait du dernier admin.
-- [ ] Transaction unique : autorisation courante → contrôle des invariants →
+- [x] Transaction unique : autorisation courante → contrôle des invariants →
   attribution/désactivation → audit → résultat relisible ; rollback intégral sinon.
-- [ ] Préserver l'historique par les mécanismes d'état/révocation ; ne pas copier
+- [x] Préserver l'historique par les mécanismes d'état/révocation ; ne pas copier
   l'ancien schéma Supabase de suppression complète puis réinsertion hors transaction.
-- [ ] UI : modifications explicites, confirmation avant/après, envoi unique,
+- [x] UI : modifications explicites, confirmation avant/après, envoi unique,
   erreur conservant le formulaire, succès uniquement après réponse serveur.
-- [ ] Après mutation : relire les attributions ; vérifier une nouvelle requête
+- [x] Après mutation : relire les attributions ; vérifier une nouvelle requête
   de la personne cible. Aucun ancien droit ne doit survivre dans l'autorité serveur.
-- [ ] Tester double soumission, deux changements concurrents, erreur d'audit,
+- [x] Tester double soumission, deux changements concurrents, erreur d'audit,
   reconnexion et changement d'école. Ne pas placer ces mutations dans la file offline.
 
 **Fin de tâche :** attribuer puis retirer un rôle modifie réellement la base de

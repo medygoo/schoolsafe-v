@@ -54,7 +54,7 @@
       escape(user.profile.display_name) + '</h3><p>' + escape(user.school && user.school.name) + '</p><p>Rôles : ' +
       (user.roles || []).map(escape).join(", ") + '</p></div><button type="button" id="refreshNativeAccess" class="ss-button ss-button--secondary">Actualiser les droits</button></div>' +
       '<p>Les rôles regroupent les permissions. Chaque permission possède un périmètre ; un refus explicite reste prioritaire. Le serveur vérifie aussi les conditions propres à chaque action.</p>' +
-      '<p class="native-access-boundary">Consultation des droits du compte connecté. La modification des attributions n’est pas encore disponible.</p>' +
+      '<p class="native-access-boundary">Consultez un utilisateur de l’école pour attribuer ou retirer ses rôles. Chaque changement est contrôlé et journalisé par le serveur.</p>' +
       '<div class="native-access-filters"><label>Rechercher un droit ou un module<input id="accessPermissionSearch" type="search" autocomplete="off"></label>' +
       '<label>État<select id="accessPermissionState"><option value="all">Tous les droits</option><option value="granted">Attribués</option><option value="denied">Refus explicites</option><option value="absent">Non attribués</option></select></label></div>' +
       '<p id="accessPermissionCount" role="status"></p><div class="native-access-table"><table><caption>Permissions du compte dans l’école courante</caption><thead><tr><th>Module / service</th><th>Permission</th><th>État</th><th>Périmètres transmis</th></tr></thead><tbody id="nativeAccessRows"></tbody></table></div>';
@@ -159,7 +159,102 @@
           checkSchool(data);
           if (!data.profile || data.profile.id !== id) { var changed = new Error('Profil modifié'); changed.status = 401; throw changed; }
           renderDetail(detail, data, catalog);
+          if (typeof data.revision === 'string') editRoles(id, data, request);
         } catch (error) { if (request === detailRevision) fail(error, detail, function () { inspect(id); }, ticket); }
+      }
+      function editRoles(id, profile, request) {
+        var box = document.createElement('section'); box.className = 'native-access-editor';
+        detail.prepend(box);
+        var selectedRevision = 0, roleOffset = 0, roleQuery = '', changePending = false;
+        function alive() { return current(ticket) && request === detailRevision && detail.contains(box); }
+        box.innerHTML = '<h4>Modifier les rôles de ' + escape(profile.profile.display_name) + '</h4>' +
+          '<p>Les droits de JASPE suivent aussi ces attributions. Les refus et restrictions restent prioritaires.</p>' +
+          '<div data-role-current>' + profile.roles.filter(function (r) { return r.assignment.is_active; }).map(function (r) {
+            return '<button type="button" class="ss-button ss-button--secondary" data-role-revoke="' + escape(r.id) + '">Retirer ' + escape(r.label) + '</button>';
+          }).join('') + '</div><form data-role-search class="native-access-filters"><label>Rechercher un rôle à attribuer<input name="roleQuery" type="search" maxlength="100"></label><button type="submit" class="ss-button">Rechercher</button></form><div data-role-options></div><div data-role-confirm aria-live="polite"></div>';
+        var options = box.querySelector('[data-role-options]'), confirm = box.querySelector('[data-role-confirm]');
+        function failure(error) {
+          if (!alive()) return;
+          if (error.status === 401 || error.status === 403) { fail(error, box, function () { inspect(id); }, ticket); return; }
+          // Keep the submitted target, role and reason visible if the result is
+          // uncertain. A fresh read is required before any new submission.
+          if (!confirm.querySelector('[data-role-change]')) confirm.replaceChildren();
+          var message = document.createElement('p'); message.setAttribute('role', 'alert');
+          message.textContent = error.status === 409 ? error.message : 'Modification non confirmée. Rechargez les attributions pour vérifier leur état avant de réessayer.';
+          var retry = document.createElement('button'); retry.className = 'ss-button'; retry.type = 'button'; retry.textContent = 'Recharger les attributions';
+          retry.onclick = function () { inspect(id); }; confirm.append(message, retry);
+        }
+        async function choose(roleId, action) {
+          var choice = ++selectedRevision;
+          confirm.textContent = 'Lecture du rôle…';
+          try {
+            var roleData = await root.SchoolSafeAccessNative.role(roleId);
+            if (!alive() || choice !== selectedRevision) return;
+            checkSchool(roleData);
+            if (!roleData.role || roleData.role.id !== roleId || roleData.revision !== profile.revision) {
+              var stale = new Error('Les accès ont changé. Rechargez les attributions avant de confirmer.'); stale.status = 409; throw stale;
+            }
+            if (!roleData.role.delegatable) {
+              confirm.textContent = 'Ce rôle dépasse votre autorité de délégation ou est désactivé. La modification est indisponible.'; return;
+            }
+            var verb = action === 'assign' ? 'Attribuer' : 'Retirer';
+            confirm.innerHTML = '<form data-role-change><h4>' + verb + ' « ' + escape(roleData.role.label) + ' » à ' + escape(profile.profile.display_name) + '</h4>' +
+              '<p>' + (action === 'assign' ? 'Attribution immédiate, sans date de fin.' : 'Cette attribution sera désactivée. Les autres rôles et exceptions restent applicables.') + '</p>' +
+              '<details open><summary>Permissions du rôle</summary><ul>' + (roleData.grants.map(function (g) {
+                return '<li>' + escape(g.permission) + ' · ' + (g.effect === 'deny' ? 'Refus' : 'Autorisation') + ' · ' + escape(validity(g)) + ' · ' +
+                  escape(g.scopes.map(function (s) { return (SCOPES[s.type] || s.type) + (s.target ? ' : ' + s.target : '') + ' (' + validity(s) + ')'; }).join(', ')) +
+                  (g.conditions.length ? ' · Conditions : ' + escape(g.conditions.join(', ')) : '') + '</li>';
+              }).join('') || '<li>Aucune permission dans ce rôle.</li>') + '</ul></details>' +
+              '<label>Motif du changement<textarea name="reason" required minlength="5" maxlength="500" rows="2"></textarea></label>' +
+              '<label class="native-access-confirm"><input type="checkbox" name="confirmed" required> Je confirme ce changement pour ' + escape(profile.profile.display_name) + '.</label>' +
+              '<button type="submit" class="ss-button">Confirmer le changement</button> <button type="button" class="ss-button ss-button--secondary" data-role-cancel>Annuler</button><p data-role-result role="status"></p></form>';
+            confirm.querySelector('[data-role-cancel]').onclick = function () { ++selectedRevision; confirm.replaceChildren(); };
+            confirm.querySelector('form').onsubmit = async function (event) {
+              event.preventDefault();
+              if (!alive() || choice !== selectedRevision || changePending) return;
+              var form = event.currentTarget;
+              if (!form.reportValidity()) return;
+              var reason = form.elements.reason.value.trim();
+              if (reason.length < 5) { form.elements.reason.focus(); return; }
+              // Freeze every local editor control so a delayed result cannot be
+              // confused with another choice. Navigation invalidates this view.
+              changePending = true;
+              box.querySelectorAll('button,input,textarea').forEach(function (el) { el.disabled = true; });
+              form.querySelector('[data-role-result]').textContent = 'Enregistrement…';
+              try {
+                var result = await root.SchoolSafeAccessNative.changeRole(id, { roleId: roleId, action: action, revision: profile.revision, reason: reason, confirmed: true });
+                if (!alive() || choice !== selectedRevision) return;
+                checkSchool(result);
+                if (result.profileId !== id || result.roleId !== roleId) { var changed = new Error('Contexte modifié'); changed.status = 401; throw changed; }
+                // Refresh the real session after self-change, including loss of
+                // roles.manage; never keep the old UI rights as authority.
+                if (id === (user.profileId || user.profile.id)) { refresh(); return; }
+                await inspect(id);
+              } catch (error) { failure(error); }
+            };
+          } catch (error) { if (choice === selectedRevision) failure(error); }
+        }
+        async function loadRoles() {
+          var choice = ++selectedRevision;
+          confirm.replaceChildren(); options.textContent = 'Chargement des rôles…';
+          try {
+            var data = await root.SchoolSafeAccessNative.roles(roleQuery, roleOffset);
+            if (!alive() || choice !== selectedRevision) return;
+            checkSchool(data);
+            options.innerHTML = '<ul class="native-access-people">' + (data.rows.map(function (r) {
+              var assigned = profile.roles.some(function (pr) { return pr.id === r.id && validity(pr.assignment) === 'En cours' && !pr.assignment.ends_at; });
+              return '<li><button type="button" class="ss-button" data-role-assign="' + escape(r.id) + '"' + (!r.delegatable || assigned ? ' disabled' : '') + '>' + escape(r.label) + (assigned ? ' · Déjà attribué' : !r.delegatable ? ' · Non délégable' : ' · Attribuer') + '</button></li>';
+            }).join('') || '<li>Aucun rôle trouvé.</li>') + '</ul><div class="native-access-pagination"><button type="button" class="ss-button" data-role-prev' + (!roleOffset ? ' disabled' : '') + '>Précédent</button><button type="button" class="ss-button" data-role-next' + (roleOffset + data.rows.length >= data.total ? ' disabled' : '') + '>Suivant</button></div>';
+            options.querySelector('[data-role-prev]').onclick = function () { roleOffset = Math.max(0, roleOffset - 25); loadRoles(); };
+            options.querySelector('[data-role-next]').onclick = function () { roleOffset += 25; loadRoles(); };
+            options.querySelectorAll('[data-role-assign]').forEach(function (el) { el.onclick = function () { choose(el.dataset.roleAssign, 'assign'); }; });
+          } catch (error) { if (choice === selectedRevision) failure(error); }
+        }
+        box.querySelectorAll('[data-role-revoke]').forEach(function (el) { el.onclick = function () { choose(el.dataset.roleRevoke, 'revoke'); }; });
+        box.querySelector('[data-role-search]').onsubmit = function (event) {
+          event.preventDefault(); roleQuery = event.currentTarget.elements.roleQuery.value.trim(); roleOffset = 0; loadRoles();
+        };
+        loadRoles();
       }
       panel.querySelector('form').addEventListener('submit', function (event) {
         event.preventDefault(); query = panel.querySelector('input').value.trim(); offset = 0; load();

@@ -42,6 +42,50 @@ function fixture(options: { allowed?: boolean; invalidSession?: boolean; data?: 
 const headers = { cookie: "schoolsafe_session=synthetic-test-token" };
 const urls = ["/native/access/profiles", "/native/access/roles", `/native/access/profiles/${target}`];
 
+describe("native role changes", () => {
+  const url = `/native/access/profiles/${target}/roles`;
+  const payload = { roleId: "77777777-0000-4000-8000-000000000001", action: "assign", revision: "12", reason: "Responsabilité confirmée", confirmed: true };
+  const writeHeaders = { ...headers, "x-schoolsafe-action": "access-write" };
+  it("uses the session actor and one authorized transaction", async () => {
+    const { app, log } = fixture();
+    const response = await app.inject({ method: "POST", url, headers: writeHeaders, payload });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["cache-control"]).toBe("no-store");
+    expect(log[1].params?.slice(0, 3)).toEqual([user, actor, school]);
+    expect(log[2].params?.[0]).toBe("roles.manage");
+    expect(log[3].params).toEqual([target, payload.roleId, "assign", "12", payload.reason, true]);
+    expect(log.at(-1)?.sql).toBe("COMMIT");
+  });
+  it.each([{}, { ...writeHeaders, cookie: "" }])("requires session before write", async requestHeaders => {
+    const { app, log } = fixture();
+    expect((await app.inject({ method: "POST", url, headers: requestHeaders, payload })).statusCode).toBe(401);
+    expect(log).toEqual([]);
+  });
+  it.each([headers, { ...writeHeaders, "sec-fetch-site": "cross-site" }])("refuses form/cross-site writes before SQL", async requestHeaders => {
+    const { app, log } = fixture();
+    expect((await app.inject({ method: "POST", url, headers: requestHeaders, payload })).statusCode).toBe(403);
+    expect(log).toEqual([]);
+  });
+  it.each([{ schoolId: school }, { actor }, { confirmed: false }, { revision: "12.5" }, { revision: "-1" }, { reason: " " }, { roleId: "bad" }, { action: "delete" }])("rejects forged or incomplete mutation %j", async override => {
+    const { app, log } = fixture();
+    expect((await app.inject({ method: "POST", url, headers: writeHeaders, payload: { ...payload, ...override } })).statusCode).toBe(400);
+    expect(log).toEqual([]);
+  });
+  it.each([["40001", 409], ["P0002", 404], ["42501", 403], ["22023", 400], ["XX000", 500]])("rolls back and sanitizes %s", async (error, status) => {
+    const { app, log, isReleased } = fixture({ error: String(error) });
+    const response = await app.inject({ method: "POST", url, headers: writeHeaders, payload });
+    expect(response.statusCode).toBe(status);
+    expect(response.body).not.toContain("private SQL");
+    expect(log.at(-1)?.sql).toBe("ROLLBACK");
+    expect(isReleased()).toBe(true);
+  });
+  it("a revoked manager cannot reach the mutation", async () => {
+    const { app, log } = fixture({ allowed: false });
+    expect((await app.inject({ method: "POST", url, headers: writeHeaders, payload })).statusCode).toBe(403);
+    expect(log.some(x => x.sql.includes("api.access_role_assign"))).toBe(false);
+  });
+});
+
 describe("native IAM reads on the production assembly", () => {
   it.each(urls)("%s requires a cookie, no business SQL", async url => {
     const { app, log } = fixture();

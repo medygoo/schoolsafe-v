@@ -1,5 +1,55 @@
 # Handoff courant SchoolSafe
 
+## Lot terminé — A3.0–A3.1, rôles persistants et autorité JASPE
+
+Codex, `main`, base applicative `0f23979` ; reprise après décisions `db4e882`.
+**PARCOURS VALIDÉ SUR BASE DE TEST RÉELLE. Prochaine tâche : A4.**
+
+- Attribution, réactivation et retrait natifs depuis la fiche d'un profil ;
+  aperçu du rôle, motif, confirmation, relecture, absence de rejeu offline.
+  Un conflit conserve le formulaire consultable et exige une nouvelle lecture.
+- `roles.manage` contrôlé dans la transaction et après verrou de l'école ;
+  enveloppe de délégation conservatrice, Control exclu, dernier administrateur
+  permanent protégé, révision commune et audit atomique avant/après/motif.
+- Provisionnement des modèles retiré du runtime scolaire pour empêcher un
+  gestionnaire limité de rétablir ses privilèges ; bootstrap/migration conservés.
+- Route JASPE protégée par `safe.assistant.use` sur le profil réel ; mode sans
+  auth fermé. Ce relais ne dispose toujours pas d'outils métier ; la loi générale
+  devra être appliquée à chaque outil futur. Pas de promesse d'exécuteur déjà livré.
+- Deux migrations additives : `access/v1/04_role_assignments.sql` et
+  `projections/v1/04_access_assignment_views.sql`. Unité A2/03 conservée intacte.
+  Console/client/CSS/cache, service/routes/tests accès, route JASPE/tests, runners
+  et manifestes concernés ; fichiers utilisateur non suivis toujours exclus.
+
+### Preuves
+
+- PostgreSQL 17.11 : installation fraîche de **23 unités**, rejeu des unités A3,
+  SQL A2/A3 et Access Law trois écoles PASS. Mise à niveau sur ancienne base A2
+  synthétique PASS, nombres de rôles/attributions/grants/audit inchangés.
+- SQL : Control/cross-school/DENY/droits temporaires/manager limité/refus directs,
+  administrateur futur/temporaire/suspendu/utilisateur inactif non compté comme
+  secours, double requête périmée, audit en panne = rollback.
+- `qa-access-mutations-live.mjs` PASS : deux connexions API concurrentes,
+  révocation d'autorité pendant attente du verrou ; vrai navigateur/cookie/API/PG,
+  attribution puis rechargement/retrait, audit, conflit conservant le formulaire,
+  mobile sombre, révocation JASPE sur cookie déjà ouvert. Captures inspectées.
+- **76/76** tests serveur ciblés PASS ; **38/38** contrats statiques PASS ;
+  typecheck, QA A1 et annuaire A2, JASPE Access Law, contrat visuel, diff PASS.
+  Manifestes globaux : **9 ensembles / 30 unités**.
+
+### Limites et reprise
+
+**A4** : créer un poste vide ou depuis un modèle, composer ses permissions,
+montrer les personnes affectées avant édition partagée et protéger l'enveloppe
+de délégation. Reprendre la fiche A4 du plan et réutiliser les helpers/transactions
+A3. A5 reste nécessaire pour dates, conditions, exceptions et exactitude du
+bootstrap temporel ; A6 pour journal consultable ; A7 pour recette complète.
+Pas de modification de production, appareil, VPS ou validation complète des
+autres modules. Les bases locales `_3` (upgrade), `_5` (UI), `_6` (SQL) ne portent
+que des fixtures de test. Git : commit du lot dans l'historique, miroir à vérifier.
+
+---
+
 ## Précision produit courante — QR, empreinte enfant et remplaçant habilité
 
 Le propriétaire confirme : QR de la carte enfant scanné par le gardien, contrôle

@@ -34,3 +34,9 @@
   .native-access-table td { display: block; border: 0; padding: 6px; }
   .native-access-table td::before { content: attr(data-label); display: block; font-size: 12px; opacity: .8; margin-bottom: 4px; }
 }
+/* Native role changes keep their target and confirmation in the same panel. */
+.native-access-editor { border: 1px solid var(--ss-border, #d8e1ee); border-radius: 12px; padding: 1rem; margin-block: 1rem; }
+.native-access-editor textarea { display: block; width: 100%; box-sizing: border-box; margin-block: .5rem; color: inherit; background: var(--ss-surface, transparent); border: 1px solid var(--ss-border, #d8e1ee); border-radius: 8px; padding: .65rem; }
+.native-access-confirm { display: flex; align-items: flex-start; gap: .5rem; margin-block: 1rem; }
+.native-access-editor details { overflow-wrap: anywhere; }
+.native-access-editor [data-role-current] { display: flex; flex-wrap: wrap; gap: .5rem; }

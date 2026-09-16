@@ -6,7 +6,10 @@ import { SchoolSafeError } from "../http/errors.js";
 
 export type AccessPageInput = { query: string; limit: number; offset: number };
 export type AccessProfile = { id: string; display_name: string; is_active: boolean; account_status: string };
-export type AccessRole = { id: string; code: string; label: string; is_active: boolean };
+export type AccessRole = { id: string; code: string; label: string; is_active: boolean; delegatable: boolean };
+export type RoleChange = { roleId: string; action: "assign" | "revoke"; revision: string; reason: string; confirmed: true };
+export type RoleChangeResult = { schoolId: string; profileId: string; roleId: string; revision: string; changed: boolean };
+export type AccessRoleDetail = { schoolId: string; revision: string; role: AccessRole; grants: (Pick<AccessGrant, "permission" | "effect" | "is_active" | "starts_at" | "ends_at" | "scopes"> & { conditions: string[] })[] };
 export type AccessPage<T> = { schoolId: string; rows: T[]; total: number; limit: number; offset: number };
 type Validity = { is_active: boolean; starts_at: string; ends_at: string | null };
 export type AccessScope = Validity & { type: string; target: string | null };
@@ -16,8 +19,8 @@ export type AccessGrant = Validity & {
   conditions: { code: string; is_active: boolean }[];
 };
 export type AccessProfileDetail = {
-  schoolId: string; profile: AccessProfile;
-  roles: (AccessRole & { assignment: Validity })[];
+  schoolId: string; revision: string; profile: AccessProfile;
+  roles: (Omit<AccessRole, "delegatable"> & { assignment: Validity })[];
   grants: AccessGrant[];
   exceptions: (Validity & {
     id: string; permission: string; permission_active: boolean;
@@ -39,6 +42,18 @@ export function createAccessNativeService(pool: BusinessPool) {
       if ((error as { code?: string }).code === "42501") {
         throw new SchoolSafeError(403, "PERMISSION_DENIED", "Accès refusé", false);
       }
+      if ((error as { code?: string }).code === "40001") {
+        throw new SchoolSafeError(409, "VERSION_CONFLICT", "Les accès ont changé. Actualisez et confirmez à nouveau.", false);
+      }
+      if ((error as { code?: string }).code === "P0002") {
+        throw new SchoolSafeError(404, "NOT_FOUND", "Profil ou rôle introuvable dans cette école", false);
+      }
+      if ((error as { code?: string }).code === "22023") {
+        throw new SchoolSafeError(400, "VALIDATION_INVALID", "Modification invalide", false);
+      }
+      if ((error as { code?: string }).code === "P0001" && (error as Error).message === "LAST_ACCESS_ADMIN") {
+        throw new SchoolSafeError(409, "VERSION_CONFLICT", "Un administrateur actif doit conserver la gestion des accès.", false);
+      }
       throw error;
     }
   }
@@ -51,6 +66,13 @@ export function createAccessNativeService(pool: BusinessPool) {
     },
     readProfile(context: RequestContext, profileId: string) {
       return read<AccessProfileDetail | null>(context, "select api.access_profile_read($1) as data", [profileId]);
+    },
+    readRole(context: RequestContext, roleId: string) {
+      return read<AccessRoleDetail | null>(context, "select api.access_role_read($1) as data", [roleId]);
+    },
+    changeRole(context: RequestContext, profileId: string, input: RoleChange) {
+      return read<RoleChangeResult>(context, "select api.access_role_assign($1,$2,$3,$4,$5,$6) as data",
+        [profileId, input.roleId, input.action, input.revision, input.reason, input.confirmed]);
     },
   };
 }

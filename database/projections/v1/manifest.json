@@ -20,6 +20,12 @@
       "name": "access_read",
       "file": "03_access_read.sql",
       "sha256": "f10a7d3c6d5a15e96393c654ebd72eabb6ee7019d1345830737742c73edd4b54"
+    },
+    {
+      "order": 4,
+      "name": "access_assignment_views",
+      "file": "04_access_assignment_views.sql",
+      "sha256": "4ce603d95511cbf16b19a7833487ba6b94114087626571986bfcbc83e812c55e"
     }
   ]
 }

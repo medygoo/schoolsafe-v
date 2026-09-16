@@ -10,9 +10,10 @@ Dernière mise à jour de la continuité : 16 septembre 2026.
   rubriques. A1 (contexte natif et consultation du compte connecté) est livré au
   commit `7b2896a`, avec API/base substituées dans les tests. A2 (annuaire et
   attributions en lecture) est validé le 16/09 sur PostgreSQL 17.11 réel de test
-  et dans le navigateur. **A3.0–A3.1 sont en cours** ; code local et preuves de
-  mutations réelles présents, clôture/revue/synchronisation applicative restantes.
-  Le lot A3 n'est pas encore livré et la production n'est pas validée.
+  et dans le navigateur. **A3.0–A3.1 livrés sur base de test réelle** : attribution,
+  retrait, délégation, dernier administrateur, concurrence, audit et révocation
+  JASPE. **Prochaine tâche : A4, postes personnalisés et composition.**
+  Le module complet A4–A7 et la production ne sont pas encore validés.
 - Consulter le haut de `CURRENT_HANDOFF.md` pour la tâche courante et les preuves.
   Les observations techniques datées du 13/09 ci-dessous sont historiques : les
   lots JASPE et accès du 16/09 les complètent, sans constituer une preuve de production.
