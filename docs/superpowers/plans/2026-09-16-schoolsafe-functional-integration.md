@@ -46,14 +46,14 @@ parcours réel terminé. Aucune estimation de pourcentage ne remplace ces preuve
 | A2.2 | Liste réelle et détail d'accès dans la console existante | A2.1 | PARCOURS VALIDÉ · navigateur/cookie/API/PG réels, bureau/mobile, révocation |
 | A3.0 | Contrat de modification et limites de délégation | A2.2 | PARCOURS VALIDÉ · contrat et migrations additives |
 | A3.1 | Attribution/révocation de rôles existants, persistantes | A3.0 | PARCOURS VALIDÉ · SQL/API/UI réels, concurrence, audit et JASPE |
-| A4 | Création de postes et composition des permissions | A3.1 | À FAIRE |
+| A4 | Création de postes et composition des permissions | A3.1 | PARCOURS VALIDÉ · création/copie/composition/attribution, DENY, audit, SQL/API/UI réels |
 | A5 | Périmètres, conditions et exceptions individuelles | A4 | À FAIRE |
 | A6 | Journal d'accès et révocation effective des droits | A3.1, A5 | À FAIRE |
 | A7 | Recette complète Rôles et accès, sans régression | A2 à A6 | À FAIRE |
 | B à K | Autres fonctions et raccordements, voir séquence finale | A7 puis dépendances | À FAIRE |
 
-Responsable du dernier lot : Codex, A3 sur `main`, base applicative `0f23979` ; lot clôturé.
-A4 est la prochaine tâche à réserver dans le handoff. La source du
+Responsable du dernier lot : Codex, A4 sur `main`, base applicative `e62529b` ; lot clôturé.
+A5 est la prochaine tâche à réserver dans le handoff. La source du
 SHA d'un lot est Git ; ne pas essayer d'inscrire un commit dans son propre contenu.
 
 ## Mandat et état
@@ -367,22 +367,28 @@ test, les accès et l'audit ; le parcours survit à un rechargement.
 modèles `iam.role_templates` et console existante. Ne pas éditer les modèles
 souverains pour personnaliser un poste d'école.
 
-- [ ] Créer un poste à partir d'un modèle ou d'une composition vide, puis modifier
+- [x] Créer un poste à partir d'un modèle ou d'une composition vide, puis modifier
   son nom et ses permissions autorisées. Identité du rôle stable ; libellé libre
   ne créant ni endpoint, ni permission, ni code exécutable.
-- [ ] Montrer le lien entre permissions, rubriques et services de l'écosystème.
+- [x] Montrer le lien entre permissions, rubriques et services de l'écosystème.
   Distinguer droit de l'utilisateur, autorité Control et activation commerciale
   d'un service. SchoolSafe ID reste le socle permanent.
-- [ ] Avant modification d'un rôle partagé, montrer les profils affectés et
+- [x] Avant modification d'un rôle partagé, montrer les profils affectés et
   confirmer l'impact ; ne pas changer tous ses membres par une action présentée
   comme une restriction d'une seule personne.
-- [ ] Autoriser uniquement des codes canoniques et délégables ; valider côté serveur
+- [x] Autoriser uniquement des codes canoniques et délégables ; valider côté serveur
   chaque code, portée, date et cible. Tester payload forgé et permission Control.
-- [ ] Auditer création/modification/désactivation ; préserver les références et
+- [x] Auditer création/modification/désactivation ; préserver les références et
   l'historique. Vérifier deux rôles cumulés et le maintien de la priorité des DENY.
 
 **Fin de tâche :** un poste personnalisé est créé, composé, attribué et relu,
 avec effets prouvés sur les actions autorisées, sans rôle codé en dur dans l'UI.
+
+Livré le 16/09 : [contrat et preuves A4](../specs/2026-09-16-custom-roles-contract.md).
+Les nouvelles portées simples sont explicites ; les cibles/dates/conditions
+existantes sont conservées et leur modification attend A5. Les modèles canoniques
+restent protégés. Upgrade A3 sans changement des données, 90 tests serveur,
+38 contrats statiques, QA A1/A2/A4 et parcours réel PostgreSQL/API/UI PASS.
 
 ### A5 — périmètres et exceptions individuelles
 

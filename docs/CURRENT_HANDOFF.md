@@ -1,5 +1,57 @@
 # Handoff courant SchoolSafe
 
+## Lot terminé — A4, postes personnalisés
+
+Codex, `main`, départ `e62529b6808b85d5ce430501bbdffc86f903142c`.
+**PARCOURS VALIDÉ SUR BASE DE TEST RÉELLE. Prochaine tâche : A5.**
+
+- Création vide ou modèle, nom, composition ALLOW/DENY, état actif/inactif,
+  membres concernés, motif et confirmation. Copies personnalisables, modèles
+  canoniques protégés, références conservées. Attribution via le parcours A3.
+- Même autorité serveur, verrou/révision, dernier administrateur et audit
+  atomique. Conditions/dates/portées existantes conservées ; nouvelles portées
+  simples explicites. Control reste exclu. JASPE ne reçoit aucun droit supplémentaire.
+- Fichiers : `database/access/v1/05_custom_roles.sql`, générateur/manifestes,
+  `server/src/accessnative/{routes,service}.ts`, tests ; nouvel éditeur
+  `app/modules/administration/access-role-editor.js`, console/client/CSS/index,
+  cache `native-custom-roles-2026-09-16`, QA, runners et documents de continuité.
+- Contrat exact, protocole et limites :
+  `docs/superpowers/specs/2026-09-16-custom-roles-contract.md`.
+
+### Preuves A4
+
+- **90/90** tests serveur, typecheck, **38/38** contrats statiques, manifestes
+  **9 ensembles / 31 unités**, JASPE Access Law, contrat visuel PASS.
+- PostgreSQL 17.11 : 24 unités sur base vide `_7`, rejeu A3/04 puis A4/05,
+  tests SQL A2/A3/A4 et Access Law trois écoles PASS. Upgrade ancienne base A3
+  `_5` : toutes les lignes de neuf tables IAM/école/audit inchangées.
+- SQL A4 : délégation, cross-school, Control, dernier admin, deux postes avec
+  DENY prioritaire, champs forgés, conditions conservées, panne d'audit annulant
+  création/composition/révision PASS.
+- Vrai navigateur/cookie/API/PG : création/composition/attribution, persistance,
+  impact sur membres, refus effectif, mobile sombre PASS. Concurrence A3 et
+  révocation JASPE même cookie PASS. Captures finales bureau/mobile inspectées.
+- QA A1/A2 et éditeur A4 : réponses tardives, filtre ne perdant pas les droits
+  masqués, soumission unique, conflit conservé, changement d'école PASS.
+  Deux erreurs de fixtures/outillage corrigées (nom trop court, tri sans `id`),
+  tests concernés rejoués avec succès. Aucun test en échec restant dans ce lot.
+
+### Prochaine action exacte
+
+Réserver **A5** après vérification du miroir Git. Lire la fiche A5 et auditer
+`iam.grant_scopes`, `iam.permission_conditions`, les exceptions individuelles et
+`database/projections/v1/02_session_bootstrap.sql`. Ce bootstrap ignore encore
+plusieurs dates/états et projette trop largement certains DENY conditionnels ;
+le corriger par migration additive en réutilisant l'évaluateur Access Law.
+Implémenter ensuite les cibles/dates/conditions/exceptions dans l'éditeur existant,
+avec délégation bornée et scénarios parent/enfant, classe/matière/portail.
+A6 journal et A7 recette complète restent nécessaires. Pas de production validée.
+Les bases locales `_5` (upgrade), `_6`/`_7` (UI) ne portent que des fixtures ; le
+cluster de test reste disponible pour la suite. Les fichiers `.claude/` et les
+deux PNG utilisateur sont toujours exclus. Commit du lot dans l'historique Git.
+
+---
+
 ## Lot terminé — A3.0–A3.1, rôles persistants et autorité JASPE
 
 Codex, `main`, base applicative `0f23979` ; reprise après décisions `db4e882`.

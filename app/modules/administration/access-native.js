@@ -26,6 +26,9 @@
     roles: function (query, offset) { return page("roles", query, offset); },
     profile: function (id) { return read("profiles/" + encodeURIComponent(id)); },
     role: function (id) { return read("roles/" + encodeURIComponent(id)); },
+    roleEditor: function (id) { return read("role-editor" + (id ? "?roleId=" + encodeURIComponent(id) : "")); },
+    createRole: function (body) { return read("roles", body); },
+    saveRole: function (id, body) { return read("roles/" + encodeURIComponent(id), body); },
     changeRole: function (id, body) { return read("profiles/" + encodeURIComponent(id) + "/roles", body); }
   };
 })(window);

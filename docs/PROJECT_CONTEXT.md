@@ -12,8 +12,10 @@ Dernière mise à jour de la continuité : 16 septembre 2026.
   attributions en lecture) est validé le 16/09 sur PostgreSQL 17.11 réel de test
   et dans le navigateur. **A3.0–A3.1 livrés sur base de test réelle** : attribution,
   retrait, délégation, dernier administrateur, concurrence, audit et révocation
-  JASPE. **Prochaine tâche : A4, postes personnalisés et composition.**
-  Le module complet A4–A7 et la production ne sont pas encore validés.
+  JASPE. **A4 livré sur base de test réelle** : postes personnalisés, copies de
+  modèles, composition, impact partagé, audit et refus effectifs.
+  **Prochaine tâche : A5, périmètres, conditions et exceptions individuelles.**
+  Le module complet A5–A7 et la production ne sont pas encore validés.
 - Consulter le haut de `CURRENT_HANDOFF.md` pour la tâche courante et les preuves.
   Les observations techniques datées du 13/09 ci-dessous sont historiques : les
   lots JASPE et accès du 16/09 les complètent, sans constituer une preuve de production.

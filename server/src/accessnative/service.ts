@@ -9,6 +9,8 @@ export type AccessProfile = { id: string; display_name: string; is_active: boole
 export type AccessRole = { id: string; code: string; label: string; is_active: boolean; delegatable: boolean };
 export type RoleChange = { roleId: string; action: "assign" | "revoke"; revision: string; reason: string; confirmed: true };
 export type RoleChangeResult = { schoolId: string; profileId: string; roleId: string; revision: string; changed: boolean };
+export type RoleCreate = { label: string; templateId: string | null; revision: string; reason: string; confirmed: true };
+export type RoleComposition = { label: string; isActive: boolean; grants: { permission: string; effect: "allow" | "deny"; scope?: string }[]; revision: string; reason: string; confirmed: true };
 export type AccessRoleDetail = { schoolId: string; revision: string; role: AccessRole; grants: (Pick<AccessGrant, "permission" | "effect" | "is_active" | "starts_at" | "ends_at" | "scopes"> & { conditions: string[] })[] };
 export type AccessPage<T> = { schoolId: string; rows: T[]; total: number; limit: number; offset: number };
 type Validity = { is_active: boolean; starts_at: string; ends_at: string | null };
@@ -73,6 +75,17 @@ export function createAccessNativeService(pool: BusinessPool) {
     changeRole(context: RequestContext, profileId: string, input: RoleChange) {
       return read<RoleChangeResult>(context, "select api.access_role_assign($1,$2,$3,$4,$5,$6) as data",
         [profileId, input.roleId, input.action, input.revision, input.reason, input.confirmed]);
+    },
+    roleEditor(context: RequestContext, roleId: string | null) {
+      return read<Record<string, unknown> | null>(context, "select api.access_role_editor($1) as data", [roleId]);
+    },
+    createRole(context: RequestContext, input: RoleCreate) {
+      return read<{ schoolId: string; roleId: string; revision: string }>(context, "select api.access_role_create($1,$2,$3,$4,$5) as data",
+        [input.label, input.templateId, input.revision, input.reason, input.confirmed]);
+    },
+    saveRole(context: RequestContext, roleId: string, input: RoleComposition) {
+      return read<{ schoolId: string; roleId: string; revision: string }>(context, "select api.access_role_save($1,$2,$3,$4,$5,$6,$7) as data",
+        [roleId, input.label, input.isActive, JSON.stringify(input.grants), input.revision, input.reason, input.confirmed]);
     },
   };
 }

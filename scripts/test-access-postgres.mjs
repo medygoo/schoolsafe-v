@@ -49,6 +49,7 @@ try {
   runFile(projection); // CREATE OR REPLACE is replayable without changing assignments.
   runFile(path.join(root, 'database/projections/v1/tests/access-read.test.sql'));
   runFile(path.join(root, 'database/access/v1/04_role_assignments.sql'));
+  runFile(path.join(root, 'database/access/v1/05_custom_roles.sql'));
   runFile(path.join(root, 'database/access/v1/tests/role-assignments.test.sql'));
   console.log('PASS access SQL: real PostgreSQL 17.11, API role, two schools, no persisted fixture');
 } finally { await admin.end(); }

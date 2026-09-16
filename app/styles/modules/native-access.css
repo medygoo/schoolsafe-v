@@ -3,7 +3,7 @@
 .native-access-tabs [aria-pressed="true"] { font-weight: 700; outline: 2px solid var(--ss-text-primary); outline-offset: -2px; }
 .native-access-people { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 10px; }
 .native-access-people li { min-width: 0; padding: 8px; border: 1px solid var(--ss-border); border-radius: 8px; overflow-wrap: anywhere; }
-.native-access-people button { width: 100%; text-align: left; min-height: 48px; white-space: normal; }
+.native-access-people button { display: block; width: 100%; text-align: left; min-height: 48px; white-space: normal; }
 .native-access-people span, .native-access-people code { display: block; margin-top: 5px; }
 [data-access-detail] { margin-top: 24px; }
 .native-access button:disabled { opacity: .5; cursor: default; }
@@ -40,3 +40,10 @@
 .native-access-confirm { display: flex; align-items: flex-start; gap: .5rem; margin-block: 1rem; }
 .native-access-editor details { overflow-wrap: anywhere; }
 .native-access-editor [data-role-current] { display: flex; flex-wrap: wrap; gap: .5rem; }
+.native-access-editor fieldset { border: 0; padding: 0; min-width: 0; }
+.native-access-composition { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; margin-block: 16px; }
+.native-access-composition section { border: 1px solid var(--ss-border); border-radius: 8px; padding: 12px; overflow-wrap: anywhere; }
+.native-access-composition section[hidden] { display: none; }
+.native-access-composition code { display: block; margin-block: 6px; font-size: 12px; }
+.native-access-composition small { display: block; margin-bottom: 8px; }
+.native-access-composition select { display: block; width: 100%; min-height: 44px; margin-block: 6px; color: inherit; background: var(--ss-surface); border: 1px solid var(--ss-border); border-radius: 8px; }

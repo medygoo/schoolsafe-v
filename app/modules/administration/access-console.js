@@ -127,10 +127,22 @@
       var button = document.createElement('button'); button.type = 'button'; button.className = 'ss-button'; button.textContent = 'Réessayer'; button.addEventListener('click', retry);
       box.append(alert, button);
     }
-    function showDirectory(kind) {
+    function showDirectory(kind, selectedRole) {
       var ticket = ++revision, query = '', offset = 0, pageRevision = 0;
       panel.innerHTML = '<form class="native-access-filters" data-access-search><label>Rechercher ' + (kind === 'profiles' ? 'un utilisateur' : 'un rôle') + '<input type="search" maxlength="100" autocomplete="off" name="query"></label><button type="submit" class="ss-button">Rechercher</button></form><div data-access-list aria-live="polite"></div><section data-access-detail aria-label="Attributions de la personne"></section>';
       var list = panel.querySelector('[data-access-list]'), detail = panel.querySelector('[data-access-detail]');
+      if (kind === 'roles') {
+        var create = document.createElement('button'); create.type = 'button'; create.className = 'ss-button'; create.dataset.createRole = ''; create.textContent = 'Créer un poste';
+        create.onclick = function () { editRole(null); }; panel.prepend(create);
+      }
+      function editRole(roleId) {
+        var request = ++detailRevision;
+        root.SchoolSafeRoleEditor.open(detail, roleId, {
+          isCurrent: function () { return current(ticket) && request === detailRevision; },
+          checkSchool: checkSchool, onDenied: lifecycle.onDenied,
+          onSaved: function (id, affectsCurrentProfile) { if (affectsCurrentProfile) refresh(); else showDirectory('roles', id); }
+        });
+      }
       async function load() {
         var request = ++pageRevision; ++detailRevision;
         list.textContent = 'Chargement…'; detail.replaceChildren();
@@ -141,13 +153,15 @@
           list.innerHTML = '<p role="status">' + escape(data.total) + (kind === 'profiles' ? ' utilisateur(s)' : ' rôle(s)') + '</p><ul class="native-access-people">' +
             (data.rows.map(function (item) {
               return kind === 'profiles' ? '<li><button class="ss-button" type="button" data-access-profile="' + escape(item.id) + '"><b>' + escape(item.display_name) + '</b><span>' + escape(profileStatus(item)) + '</span></button></li>' :
-                '<li><b>' + escape(item.label) + '</b><code>' + escape(item.code) + '</code><span>' + (item.is_active ? 'Actif' : 'Désactivé') + '</span></li>';
+                '<li><button class="ss-button" type="button" data-access-role="' + escape(item.id) + '"><b>' + escape(item.label) + '</b><span>' + (/^custom_/.test(item.code) ? 'Poste personnalisé' : escape(item.code)) + '</span><span>' + (item.is_active ? 'Actif' : 'Désactivé') + '</span></button></li>';
             }).join('') || '<li>Aucun résultat dans cette école.</li>') + '</ul><div class="native-access-pagination"><button type="button" class="ss-button" data-page="previous"' + (offset === 0 ? ' disabled' : '') + '>Précédent</button><span>Page ' + (Math.floor(offset / 25) + 1) + '</span><button type="button" class="ss-button" data-page="next"' + (offset + data.rows.length >= data.total || !data.rows.length ? ' disabled' : '') + '>Suivant</button></div>';
           list.querySelector('[data-page="previous"]').addEventListener('click', function () { offset = Math.max(0, offset - 25); load(); });
           list.querySelector('[data-page="next"]').addEventListener('click', function () { offset += 25; load(); });
           list.querySelectorAll('[data-access-profile]').forEach(function (button) {
             button.addEventListener('click', function () { inspect(button.dataset.accessProfile); });
           });
+          list.querySelectorAll('[data-access-role]').forEach(function (button) { button.onclick = function () { editRole(button.dataset.accessRole); }; });
+          if (selectedRole) { var nextRole = selectedRole; selectedRole = null; editRole(nextRole); }
         } catch (error) { if (request === pageRevision) fail(error, list, load, ticket); }
       }
       async function inspect(id) {

@@ -139,6 +139,47 @@ try {
   const audit = await root.query("select count(*)::int n from audit.events where event_type='access.role.revoke' and entity_id=$1 and payload->>'reason'=$2", [pid(3), 'Mission de lecture validée par la direction']);
   assert.equal(audit.rows[0].n, 1);
 
+  // A4: a new custom post follows the same native path, with real persistence.
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.locator('[data-access-view="roles"]').click();
+  await page.locator('[data-create-role]').click();
+  await page.locator('[data-custom-role-form] [name="label"]').fill('Consultation RH personnalisée');
+  await page.locator('[data-custom-role-form] [name="reason"]').fill('Création de poste pour la recette');
+  await page.locator('[data-custom-role-form] [name="confirmed"]').check();
+  await page.locator('[data-custom-role-form] button[type="submit"]').click();
+  const permissionRow=page.locator('[data-composition-row="staff.read"]');
+  await permissionRow.waitFor();
+  await permissionRow.locator('[data-permission-check]').check();
+  await permissionRow.locator('[data-permission-scope]').selectOption('school');
+  await page.locator('[data-custom-role-form] [name="reason"]').fill('Autoriser la consultation RH');
+  await page.locator('[data-custom-role-form] [name="confirmed"]').check();
+  await page.locator('[data-custom-role-form] button[type="submit"]').click();
+  await page.waitForFunction(() => document.querySelector('[data-composition-row="staff.read"]')?.textContent.includes('Périmètre conservé'));
+  const customRole=(await root.query('select id from iam.roles where school_id=$1 and label=$2',[school,'Consultation RH personnalisée'])).rows[0].id;
+  await page.locator('[data-access-view="profiles"]').click();
+  await page.locator(`[data-access-profile="${pid(3)}"]`).click();
+  await page.locator(`[data-role-assign="${customRole}"]`).click(); await submit();
+  await page.locator(`[data-role-revoke="${customRole}"]`).waitFor();
+  await page.locator('[data-access-view="roles"]').click();
+  await page.locator(`[data-access-role="${customRole}"]`).click();
+  await page.getByText('1 profil(s) avec attribution active', { exact: true }).waitFor();
+  assert.match(await page.locator('[data-access-detail]').innerText(),/Gestionnaire limité A3/);
+  await page.locator('[data-composition-search]').fill('personnel');
+  if(process.env.ACCESS_LIVE_QA_OUTPUT) await page.screenshot({path:process.env.ACCESS_LIVE_QA_OUTPUT.replace(/\.png$/,'-custom-desktop.png'),fullPage:true});
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForFunction(() => document.getElementById('workspaceSidebar').getBoundingClientRect().right <= 0);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  if(process.env.ACCESS_LIVE_QA_OUTPUT) await page.screenshot({path:process.env.ACCESS_LIVE_QA_OUTPUT.replace(/\.png$/,'-custom-mobile.png'),fullPage:true});
+  await page.locator('[data-composition-row="staff.read"] [data-permission-effect]').selectOption('deny');
+  await page.locator('[data-custom-role-form] [name="reason"]').fill('Restriction RH confirmée pour le profil');
+  await page.locator('[data-custom-role-form] [name="confirmed"]').check();
+  await page.locator('[data-custom-role-form] button[type="submit"]').click();
+  await page.waitForFunction(() => document.querySelector('[data-composition-row="staff.read"] [data-permission-effect]')?.value==='deny' && !document.querySelector('[data-custom-role-form] fieldset')?.disabled);
+  await begin(first,3);
+  assert.equal((await first.query("select api.check_access('staff.read') allowed")).rows[0].allowed,false,'UI composition enforces DENY on actual target');
+  await first.query('commit');
+  console.log('PASS A4 real browser: create/compose/assign, affected profiles, mobile dark, effective DENY');
+
   // Same cookie, real Access Law, no provider configured or called.
   const endpoint = 'http://127.0.0.1:8787/native/jaspe/chat';
   assert.equal((await context.request.post(endpoint, { data: { message: 'Bonjour' } })).status(), 503);
