@@ -1,5 +1,57 @@
 # Handoff courant SchoolSafe
 
+## Lot en cours — disposition de référence sans table
+
+Codex, `main`, départ synchronisé `9881c2762eee26eb27b06aea63fd241c441c21e6`.
+Nouvelle instruction : reproduire la disposition mobile, JASPE à gauche jusqu’aux
+hanches, texte à droite, sans table. Réutiliser directement le personnage v12
+existant et ses gestes, sans intégrer les images non validées. Fichiers réservés :
+contrôleur dashboard JASPE, HTML/CSS du bandeau, QA concernés, cache et continuité.
+Le logo et le cartable restent dans le plan de reprise ; ne pas déclarer leurs
+raccordements ou nouvelles images terminés sans preuve. A5.1 suit le lot visuel.
+
+### Correction du 16/09 (après vérification navigateur) — canvas live du bandeau
+
+- Vérification navigateur réelle (DevTools, parcours auth → admin → workspace) :
+  le moteur live se montait bien (`.jaspe2d--live`, 8 frames animées distinctes
+  en 3,2 s = respiration/clignement actifs), MAIS le canvas rendait à 0×0.
+- Cause exacte : `.jaspe-hero__character` avec `container-type: size` mais
+  hauteur indéfinie (`min-height: 300px` + `align-self: stretch`) → `cqh`
+  se résolvait à 0 → `width: min(166cqw, 125cqh)` donnait un canvas vide.
+- Correction : `app/styles/modules/jaspe-dashboard.css` (~ligne 32),
+  `min-height: 300px` → `height: 300px` (hauteur définie, cqh exploitable
+  pour le cadrage hanches).
+- Cache service worker bumpé : `jaspe-hip-canvas-live-2026-09-16` dans `sw.js` ;
+  assertion QA mise à jour dans `qa-responsive-visual-system.cjs`.
+- Preuves : canvas live 375×563 visible, fallback masqué, 8/8 frames animées ;
+  `qa-jaspe-dashboard` PASS, `qa-jaspe-hip-layout` PASS (10 paires
+  viewport/thème), `qa-jaspe-voice` PASS (1440/390), `qa-responsive-visual-system`
+  PASS. Pas de commit (pas de demande explicite).
+- Prochaine action : faire valider visuellement le bandeau par le propriétaire
+  sur 4176, puis committer le lot sans table ; logo et cartable restent à reprendre.
+
+### Correction du 16/09 (après vérification navigateur) — canvas live du bandeau
+
+- Vérification navigateur réelle (DevTools, parcours auth → admin → workspace) :
+  le moteur live se montait bien (`.jaspe2d--live`, 8 frames animées distinctes
+  en 3,2 s = respiration/clignement actifs), MAIS le canvas rendait à 0×0.
+- Cause exacte : `.jaspe-hero__character` avec `container-type: size` mais
+  hauteur indéfinie (`min-height: 300px` + `align-self: stretch`) → `cqh`
+  se résolvait à 0 → `width: min(166cqw, 125cqh)` donnait un canvas vide.
+- Correction : `app/styles/modules/jaspe-dashboard.css` (~ligne 32),
+  `min-height: 300px` → `height: 300px` (hauteur définie, cqh exploitable
+  pour le cadrage hanches).
+- Cache service worker bumpé : `jaspe-hip-canvas-live-2026-09-16` dans `sw.js` ;
+  assertion QA mise à jour dans `qa-responsive-visual-system.cjs`.
+- Preuves : canvas live 375×563 visible, fallback masqué, 8/8 frames animées ;
+  `qa-jaspe-dashboard` PASS, `qa-jaspe-hip-layout` PASS (10 paires
+  viewport/thème), `qa-jaspe-voice` PASS (1440/390), `qa-responsive-visual-system`
+  PASS. Pas de commit (pas de demande explicite).
+- Prochaine action : faire valider visuellement le bandeau par le propriétaire
+  sur 4176, puis committer le lot sans table ; logo et cartable restent à reprendre.
+
+---
+
 ## Reprise immédiate — JASPE latérale, visage fidèle et logo de l’école
 
 Codex, `main`, base applicative `9d8654246e4622cf4485de551effa93c5a0fa03a`.

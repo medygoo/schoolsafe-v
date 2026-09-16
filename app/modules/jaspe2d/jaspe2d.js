@@ -323,8 +323,13 @@
             sc.engine = engine;
             return {
               play: function (command) {
-                if (command.action === "idle") return engine.stop("intent-idle");
-                return engine.play(command.action, { intensity: command.intensity, source: command.source });
+                if (command.action === "idle" || matchMedia("(prefers-reduced-motion: reduce)").matches) return engine.stop("intent-idle");
+                // Dashboard speech reuses the registered talking sequence until
+                // its trusted UI/audio intent ends; never an action from model text.
+                return engine.play(command.action, {
+                  intensity: command.intensity, source: command.source,
+                  continuous: opts.continuousSpeech === true && command.fallback === "SPEAKING"
+                });
               },
               stop: function (reason) { return engine.stop(reason); },
               destroy: function () {

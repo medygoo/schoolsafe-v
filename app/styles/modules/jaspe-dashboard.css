@@ -1,14 +1,11 @@
 /* Dashboard reference: pale blue, existing JASPE identity, one shared chat. */
 body.screen-workspace .jaspe-hero {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(210px, .85fr) minmax(290px, 1.3fr) minmax(200px, .75fr);
-  grid-template-rows: auto auto;
-  gap: 18px 24px;
+  display: block;
   max-width: 1440px;
   min-height: 340px;
   margin: 0 auto 24px;
-  padding: 26px 26px 22px 0;
+  padding: 0;
   overflow: hidden;
   border: 1px solid #d8e9f9;
   border-radius: 26px;
@@ -17,15 +14,23 @@ body.screen-workspace .jaspe-hero {
   color: #142953;
   backdrop-filter: none;
 }
+.jaspe-hero__scene {
+  display: grid;
+  grid-template-columns: minmax(250px, .95fr) minmax(290px, 1.3fr) minmax(200px, .75fr);
+  gap: 24px;
+  padding: 26px 26px 0 0;
+  overflow: hidden;
+}
 .jaspe-hero[hidden] { display: none !important; }
 .jaspe-hero__character {
   grid-column: 1;
-  grid-row: 1 / 3;
+  grid-row: 1;
   position: relative;
   align-self: stretch;
+  container-type: size;
   min-width: 0;
-  min-height: 285px;
-  margin: -26px 0 -22px;
+  height: 300px; /* cqh stays usable for the hip-cropped live canvas */
+  margin: -26px 0 0;
   padding: 0;
   border: 0;
   background: transparent;
@@ -39,10 +44,11 @@ body.screen-workspace .jaspe-hero {
 .jaspe-character-host :is(.jaspe2d > img, .jaspe2d__live-canvas, .jaspe-character-fallback) {
   position: absolute;
   width: 510px;
-  height: 766px;
+  height: auto;
+  aspect-ratio: 1023 / 1537;
   max-width: none;
   left: calc(50% - 255px);
-  top: -26px;
+  top: -35px;
   margin: 0;
   object-fit: contain;
   object-position: center top;
@@ -51,11 +57,16 @@ body.screen-workspace .jaspe-hero {
 .jaspe-character-host:has(.jaspe2d img.on[src]) > .jaspe-character-fallback,
 .jaspe-character-host:has(.jaspe2d--live) > .jaspe-character-fallback { display: none; }
 .jaspe-character-host .jaspe2d--live > img { opacity: 0; animation: none; }
+#jaspeHeroLauncher .jaspe-character-host :is(.jaspe2d > img, .jaspe2d__live-canvas, .jaspe-character-fallback) {
+  /* Keep the original image proportions; crop the body at the hip line. */
+  width: min(166cqw, 125cqh); height: auto; aspect-ratio: 1023 / 1537;
+  left: 48%; top: auto; bottom: 0; transform: translate(-50%, 47%);
+}
 .jaspe-hero__open-hint { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 5px; white-space: nowrap; padding: 6px 12px; border: 1px solid #ffffffa8; border-radius: 999px; background: #ffffffd9; color: #264c8b; font-size: 11px; }
 .jaspe-hero__open-hint svg { width: 13px; height: 13px; }
 .jaspe-is-out .jaspe-hero__character::before { content: "Je suis ici, à vos côtés."; position: absolute; inset: 40% 20px auto; color: #476993; font-size: 14px; }
 .jaspe-is-out .jaspe-hero__open-hint { visibility: hidden; }
-.jaspe-hero__speech { grid-column: 2; align-self: center; min-width: 0; }
+.jaspe-hero__speech { grid-column: 2; align-self: center; min-width: 0; padding-bottom: 22px; }
 .jaspe-hero__identity > span { color: #3169ab; font-size: 11px; font-weight: 700; letter-spacing: .075em; text-transform: uppercase; }
 .jaspe-hero__identity h1 { display: flex; align-items: center; gap: 10px; margin: 2px 0 14px; font-size: clamp(26px, 3vw, 39px); font-weight: 900; line-height: 1.1; letter-spacing: -.045em; color: #102454; }
 .jaspe-hero__identity svg { width: 29px; height: 29px; color: #367dce; }
@@ -67,7 +78,7 @@ body.screen-workspace .jaspe-hero {
 .jaspe-hero__badges span { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; background: #ffffffbd; color: #244775; padding: 7px 10px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .jaspe-hero__badges svg { width: 14px; height: 14px; color: #3975c6; }
 .jaspe-hero__badges span:first-child svg { color: #249172; }
-.jaspe-hero__about { grid-column: 3; grid-row: 1 / 3; align-self: stretch; border-radius: 21px; background: #ffffff94; padding: 21px; }
+.jaspe-hero__about { grid-column: 3; grid-row: 1; align-self: stretch; border-radius: 21px; background: #ffffff94; padding: 21px; margin-bottom: 22px; }
 .jaspe-hero__about > svg { width: 28px; height: 28px; color: #4b95e8; }
 .jaspe-hero__about h2 { margin: 9px 0; font-size: 22px; line-height: 1.25; color: #153262; }
 .jaspe-hero__about p { font-size: 12px; line-height: 1.6; margin: 0 0 15px; color: #4a6892; }
@@ -75,7 +86,7 @@ body.screen-workspace .jaspe-hero {
 .jaspe-hero__about li { display: flex; gap: 7px; align-items: center; }
 .jaspe-hero__about li svg { width: 16px; height: 16px; color: #208895; }
 .jaspe-hero__about small { display: block; color: #4d77a5; font-style: italic; line-height: 1.5; }
-.jaspe-hero__chat { grid-column: 2; min-width: 0; align-self: end; }
+.jaspe-hero__chat { min-width: 0; padding: 14px 22px; background: #f7fbff; border-top: 1px solid #d8e9f9; }
 .jaspe-hero__chat .safe-chat-log { max-height: 94px; min-height: 20px; overflow: auto; margin-bottom: 9px; color: #426183; font-size: 12px; line-height: 1.5; scrollbar-width: thin; }
 .jaspe-hero__chat .safe-history-line { margin: 0 0 6px; padding: 7px 10px; border-radius: 10px; background: #ffffff59; overflow-wrap: anywhere; }
 .jaspe-hero__chat .safe-history-line b { color: #254971; margin-right: 5px; }
@@ -180,6 +191,7 @@ body.screen-workspace .dashboard-features > header h3 { font-size: 23px; color: 
 [data-theme="dark"] :is(.jaspe-hero__bubble p, .jaspe-hero__about p, .jaspe-hero__about ul, .jaspe-hero__about small, .jaspe-hero__chat .safe-chat-log, .safe-chat-input-row input, .jaspe-access-message) { color: #bad0e6; }
 [data-theme="dark"] .jaspe-hero__badges span { background: #284765; color: #d0e6fc; }
 [data-theme="dark"] .jaspe-hero__chat .safe-history-line { background: #29496885; }
+[data-theme="dark"] .jaspe-hero__chat { background: #172e46; border-color: #294968; }
 [data-theme="dark"] .jaspe-hero__chat .safe-history-line b { color: #bbd9fa; }
 [data-theme="dark"] .jaspe-panel { background: #172e46f5; border-color: #35506c; color: #daebff; }
 [data-theme="dark"] .jaspe-panel__header h2 { color: #e1efff; }
@@ -192,12 +204,14 @@ body.screen-workspace .dashboard-features > header h3 { font-size: 23px; color: 
 [data-theme="dark"] .jaspe-panel__modes button { color: #a6c0da; }
 
 @media (max-width: 1150px) {
-  body.screen-workspace .jaspe-hero { grid-template-columns: minmax(200px, .8fr) minmax(270px, 1.2fr); }
+  .jaspe-hero__scene { grid-template-columns: minmax(200px, .8fr) minmax(270px, 1.2fr); }
   .jaspe-hero__about { display: none; }
 }
 @media (max-width: 768px) {
-  body.screen-workspace .jaspe-hero { grid-template-columns: 40% minmax(0, 1fr); min-height: 0; gap: 14px 8px; padding: 18px 14px 14px; margin-bottom: 22px; border-radius: 22px; }
-  .jaspe-hero__character { grid-row: 1; min-height: 210px; margin: -18px 0 0 -14px; }
+  body.screen-workspace .jaspe-hero { min-height: 0; margin-bottom: 22px; border-radius: 22px; }
+  .jaspe-hero__scene { grid-template-columns: 45% minmax(0, 1fr); gap: 4px; padding: 16px 12px 0 0; }
+  .jaspe-hero__character { grid-row: 1; min-height: 212px; margin: -16px 0 0; }
+  .jaspe-hero__speech { grid-row: 1; grid-column: 2; padding-bottom: 14px; }
   .jaspe-character-host :is(.jaspe2d > img, .jaspe2d__live-canvas, .jaspe-character-fallback) { width: 290px; height: 436px; left: calc(50% - 145px); top: -12px; }
   .jaspe-hero__identity > span { font-size: 8px; letter-spacing: .025em; }
   .jaspe-hero__identity h1 { font-size: 29px; margin-bottom: 11px; }
@@ -206,11 +220,11 @@ body.screen-workspace .dashboard-features > header h3 { font-size: 23px; color: 
   .jaspe-hero__bubble strong { font-size: 14px; }
   .jaspe-hero__bubble p { font-size: 12px; }
   .jaspe-hero__badges { gap: 4px; margin-top: 10px; }
-  .jaspe-hero__badges span { padding: 5px 6px; font-size: 8px; gap: 3px; }
+  .jaspe-hero__badges span { padding: 5px 6px; font-size: 9px; gap: 3px; }
   .jaspe-hero__badges svg { width: 10px; height: 10px; }
-  .jaspe-hero__chat { grid-column: 1 / -1; }
+  .jaspe-hero__chat { padding: 12px; }
   .jaspe-hero__chat .safe-chat-log { max-height: 82px; }
-  .jaspe-hero__open-hint { font-size: 9px; padding: 5px 8px; bottom: 2px; }
+  .jaspe-hero__open-hint { font-size: 9px; padding: 5px 8px; bottom: 4px; }
   .jaspe-panel-overlay { right: 8px; bottom: calc(84px + env(safe-area-inset-bottom) + var(--jaspe-view-bottom, 0px)); width: calc(100vw - 16px); max-height: calc(var(--jaspe-view-height, 100dvh) - 105px); }
   .jaspe-panel-layout { grid-template-columns: minmax(90px, .55fr) minmax(0, 1fr); gap: 0; }
   .jaspe-full-stage { height: min(340px, calc(var(--jaspe-view-height, 100dvh) - 130px)); margin-right: -7px; }

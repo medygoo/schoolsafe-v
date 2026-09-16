@@ -1,10 +1,9 @@
-/* Seated pose sequences in the dashboard; existing renderer for the full body.
+/* One existing V12 renderer, cropped at the hips in the dashboard or full body.
  * Conversation and authorization remain owned by SafeAssistant / Access Law. */
 (function (global) {
   "use strict";
   var initialized = false;
   var showcase = null;
-  var seated = null;
   var voiceUtterance = null;
   var dialog, character, launcher, fullStage, input, log, mic, status;
   var audioMode = false;
@@ -22,7 +21,7 @@
 
   function intent(kind, settings) {
     if (!allowed()) return;
-    if (showcase && dialog.open) {
+    if (showcase) {
       var current = showcase.getState();
       if (current && current.current.priority >= 100 && kind !== "refuse" && kind !== "error") return;
       // Audio phase changes end ordinary gestures immediately, while refusals/errors
@@ -30,14 +29,8 @@
       if (current && current.current.priority < 100 &&
           (kind === "idle" || kind === "listen" || (settings && settings.audioPhase))) showcase.stop();
       var command = { kind: kind, source: "dashboard-ui" };
-      if (settings && settings.duration === 0) command.holdMs = 0;
+      if (settings && typeof settings.duration === "number") command.holdMs = settings.duration;
       showcase.dispatch(command);
-    }
-    if (seated && !dialog.open) {
-      var actions = { idle: "idle", listen: "listen", think: "think", speak: "speak", explain: "speakBoth", success: "smile", refuse: "neutral", error: "neutral" };
-      var duration = { speak: 4800, explain: 3500, success: 3400, think: 6000 };
-      var action = kind === "explain" && settings && settings.standing ? "standExplain" : actions[kind];
-      seated.setAction(action || "neutral", settings || { duration: duration[kind] || 0 });
     }
   }
 
@@ -207,7 +200,6 @@
   function syncAccess() {
     if (!initialized) return;
     var canUse = allowed();
-    if (seated) seated.setActive(canUse && !dialog.open);
     document.querySelectorAll("[data-jaspe-open], [data-jaspe-audio], [data-jaspe-chat-input], [data-jaspe-chat-send], [data-bottom-nav='jaspe']").forEach(function (element) {
       element.disabled = !canUse;
     });
@@ -281,10 +273,15 @@
     if (showcase || !global.SchoolSafeJaspe2d || !allowed()) return;
     showcase = global.SchoolSafeJaspe2d.mountShowcase(character, {
       transparent: true,
+      continuousSpeech: true,
       surface: "workspace-bust", // Existing registered dashboard surface; framing is injected below.
       label: "Jaspe, votre assistante SchoolSafe",
-      isBust: function () { return false; },
-      isVisible: function () { return allowed() && dialog.open && character.getClientRects().length > 0; },
+      isBust: function () { return !dialog.open; },
+      isVisible: function () {
+        if (!allowed() || !character.getClientRects().length) return false;
+        var rect = (dialog.open ? fullStage : launcher).getBoundingClientRect();
+        return rect.bottom > 0 && rect.top < global.innerHeight && rect.right > 0 && rect.left < global.innerWidth;
+      },
       variants: [
         { pack: "pack1", key: "idle" }, { pack: "pack1", key: "wave" },
         { pack: "pack2", key: "listening", rotate: false },
@@ -316,7 +313,6 @@
     if (showcase) showcase.stop();
     launcher.prepend(character);
     document.body.classList.remove("jaspe-is-out");
-    if (seated) seated.setActive(allowed());
     input.value = "";
     intent("idle");
     if (returnFocus && returnFocus.isConnected && !returnFocus.disabled && returnFocus.getClientRects().length) returnFocus.focus({ preventScroll: true });
@@ -353,7 +349,6 @@
       global.visualViewport.addEventListener("resize", fitVisibleViewport, { passive: true });
       global.visualViewport.addEventListener("scroll", fitVisibleViewport, { passive: true });
     }
-    if (global.SchoolSafeJaspeSeated) seated = global.SchoolSafeJaspeSeated.mount(document.getElementById("jaspeSeatedCharacter"));
     global.SafeAssistant.setEmbeddedPresentation(true);
     conversationRevision = global.SafeAssistant.getConversationRevision();
     global.SafeAssistant.onHistoryChange(syncConversation);

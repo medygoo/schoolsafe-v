@@ -1,5 +1,5 @@
 var CACHE_PREFIX = "schoolsafe-v2-";
-var CACHE_NAME = CACHE_PREFIX + "native-custom-roles-2026-09-16";
+var CACHE_NAME = CACHE_PREFIX + "jaspe-hip-canvas-live-2026-09-16";
 var CORE_PATHS = [
   "./",
   "./index.html",

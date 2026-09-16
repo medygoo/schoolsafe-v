@@ -38,7 +38,7 @@ async function checkVoice(page, width) {
   const voice = page.locator('#jaspeHeroVoice');
   const field = page.locator('[data-jaspe-chat-input]');
   const send = page.locator('[data-jaspe-chat-send]');
-  const pose = name => page.waitForFunction(name => document.querySelector('#jaspeSeatedCharacter').dataset.action === name, name);
+  const pose = name => page.waitForFunction(name => qaShowcase.getState()?.current.kind === name, name);
 
   await mic.click();
   await page.evaluate(() => qaRecognition.onend());
@@ -79,10 +79,10 @@ async function checkVoice(page, width) {
   await mic.click();
   await pose('idle');
 
-  // A longer explanation rises in the banner and sits down when speech finishes.
+  // The same V12 renderer explains in the banner and rests when speech finishes.
   await field.fill('qui es tu');
   await send.click();
-  await pose('standExplain');
+  await pose('explain');
   await page.evaluate(() => qaUtterance.onend());
   await pose('idle');
 
@@ -97,6 +97,7 @@ async function checkVoice(page, width) {
   });
   await page.waitForTimeout(4800);
   assert.equal(await page.evaluate(() => qaShowcase.getState().current.kind), 'explain', 'speaking continues beyond the former fixed gesture duration');
+  assert.equal(await page.evaluate(() => qaShowcase.getState().engine), 'v12', 'speech keeps the original character renderer');
   await capture(page, 'jaspe-voice-' + width);
   await page.locator('#jaspePanelMic').click();
   assert.equal(await page.evaluate(() => qaShowcase.getState().current.kind), 'listen');

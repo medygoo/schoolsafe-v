@@ -128,7 +128,7 @@ export class BaseController{
   const step=clamp(realMilliseconds,0,50)*this.speed;this.clock+=step;
   if(this.action!=='idle'){
    this.elapsed+=step;
-   if(this.elapsed>=this.duration&&actions[this.action].loop&&!this.queued){this.elapsed%=this.duration;}
+   if(this.elapsed>=this.duration&&(actions[this.action].loop||(this.action==='guide'&&this.metadata.continuous===true))&&!this.queued){this.elapsed%=this.duration;}
    if(this.elapsed>=this.duration){this.action=this.queued||'idle';this.metadata=this.queued?this.queuedMetadata:{};this.queued=null;this.queuedMetadata={};this.elapsed=0;}
   }
  }

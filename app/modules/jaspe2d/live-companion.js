@@ -95,7 +95,10 @@ export async function mountLiveCompanion(box,host,{
     const id=++requestId;pendingAction=true;
     try {
       await ensureAction(action);
-      if(closed||id!==requestId||failed)return false;
+      if(closed||failed)return false;
+      // A pointer/key activity can supersede an asset load without changing the
+      // presentation intent. Cancellation is not an unavailable renderer.
+      if(id!==requestId)return true;
       controller.request(action,{...metadata,intensity:metadata.intensity??.9});
       controller.idleBlockedUntil=Infinity;
       dirty=true;

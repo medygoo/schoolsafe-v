@@ -32,8 +32,12 @@ async function bounds(page) {
     const errors = [];
     page.on("pageerror", error => { errors.push(error.message); console.error("Browser:", error.message); });
     await page.goto(baseUrl);
+    await page.evaluate(() => {
+      const mount = SchoolSafeJaspe2d.mountShowcase;
+      SchoolSafeJaspe2d.mountShowcase = (...args) => (window.qaShowcase = mount(...args));
+    });
     await preview(page);
-    await page.waitForFunction(() => document.querySelector('#jaspeSeatedCharacter[data-ready="true"]'));
+    await page.waitForFunction(() => document.querySelector('#jaspeDashboardCharacter .jaspe2d--live'));
     await capture(page, "jaspe-desktop");
     await page.evaluate(() => { window.qaCharacter = document.getElementById("jaspeDashboardCharacter"); });
 
@@ -41,7 +45,7 @@ async function bounds(page) {
     await page.locator("[data-jaspe-chat-input]").fill("bonjour");
     await page.locator("[data-jaspe-chat-send]").click();
     assert.equal(await page.locator("#jaspePanelOverlay").evaluate(el => el.open), false);
-    await page.waitForFunction(() => document.querySelector('#jaspeSeatedCharacter[data-action="speakBoth"]'));
+    await page.waitForFunction(() => qaShowcase.getState()?.current.kind === 'explain');
     await page.locator("[data-jaspe-chat-input]").fill("merci");
     await page.locator("[data-jaspe-chat-input]").press("Enter");
     assert.match(await page.locator("[data-jaspe-chat-log]").innerText(), /^Jaspe\s+Avec plaisir !$/i);
@@ -54,7 +58,7 @@ async function bounds(page) {
     await page.mouse.down();
     await page.waitForFunction(() => document.getElementById("jaspePanelOverlay").open);
     await page.waitForFunction(() => document.querySelector("#jaspeFullStage .jaspe2d--live"));
-    assert.equal(await page.locator("#jaspeSeatedCharacter").getAttribute("data-playing"), "false");
+    assert.equal(await page.locator("#jaspeHeroLauncher .jaspe2d").count(), 0);
     assert.equal(await page.evaluate(() => document.querySelector("#jaspeFullStage #jaspeDashboardCharacter") === window.qaCharacter), true);
     await page.mouse.up();
     await bounds(page);
@@ -99,9 +103,9 @@ async function bounds(page) {
     assert.equal(await page.locator("#jaspeHeroMic").getAttribute("aria-pressed"), "true");
     await page.evaluate(() => window.qaRecognition.onresult({ results: [[{ transcript: "merci" }]] }));
     assert.deepEqual(await page.evaluate(() => window.qaSpoken), ["Avec plaisir !"]);
-    await page.waitForFunction(() => document.querySelector('#jaspeSeatedCharacter[data-action="speak"]'));
+    await page.waitForFunction(() => qaShowcase.getState()?.current.kind === 'speak');
     await page.evaluate(() => window.qaUtterance.onend());
-    await page.waitForFunction(() => document.querySelector('#jaspeSeatedCharacter[data-action="idle"]'));
+    await page.waitForFunction(() => qaShowcase.getState()?.current.kind === 'idle');
     assert.match(await page.locator("[data-jaspe-chat-log]").innerText(), /^Jaspe\s+Avec plaisir !$/i);
 
     // Explicit permission denial closes the chat and clears response and inputs.
@@ -115,7 +119,7 @@ async function bounds(page) {
     assert.equal(await page.locator("[data-jaspe-chat-log]").innerText(), "");
     assert.equal(await page.locator("#jaspeHeroMic").isDisabled(), true);
     assert.deepEqual(await page.evaluate(() => SafeAssistant.getHistory()), []);
-    assert.equal(await page.locator("#jaspeSeatedCharacter").getAttribute("data-playing"), "false");
+    assert.equal(await page.evaluate(() => qaShowcase.getState().current.kind), "idle");
     await page.evaluate(() => Object.defineProperty(window, "currentSession", window.qaSessionDescriptor));
     await preview(page, "parent");
     assert.deepEqual(errors, [], "account switch must not throw");
