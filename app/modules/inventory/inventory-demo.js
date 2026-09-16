@@ -69,7 +69,7 @@
     return { permissions: [], scopes: [] };
   }
 
-  function isDemoMode(subject) { return !(subject && subject.token); }
+  function isDemoMode(subject) { return !(subject && (subject.native === true || subject.token)); }
 
   function allowsFor(subject, permission, scope) {
     var access = root.SchoolSafeAccess;

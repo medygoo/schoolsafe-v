@@ -7,7 +7,7 @@
   var SECURITY_PERMISSIONS = ["school.guardian.read", "security.pickup.read", "security.events.read"];
 
   function isLiveSession(user) {
-    return !!(user && user.token);
+    return !!(user && (user.native === true || user.token));
   }
 
   var CHILDREN = [

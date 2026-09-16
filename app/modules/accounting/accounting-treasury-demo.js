@@ -55,7 +55,7 @@
   }
 
   function isLiveSession() {
-    return !!(user() && user().token);
+    return !!(user() && (user().native === true || user().token));
   }
 
   function renderLiveUnavailable() {

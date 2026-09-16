@@ -253,7 +253,7 @@
       .catch(function (err) {
         console.error("[SchoolSafeAccess] catalogue canonique indisponible — accès par portée fermé", err);
         permissionsLoadFailed = true;
-        permissionsCache = [];
+        permissionsCache = null;
         return [];
       });
   }

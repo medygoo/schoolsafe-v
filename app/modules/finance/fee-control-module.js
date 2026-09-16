@@ -97,13 +97,14 @@
     var appUser = root.SchoolSafeAppContext && typeof root.SchoolSafeAppContext.getCurrentUser === "function"
       ? root.SchoolSafeAppContext.getCurrentUser()
       : null;
+    if (appUser && (appUser.native === true || appUser.token)) return appUser;
     if (appUser && Array.isArray(appUser.permissions) && appUser.permissions.some(function (permission) { return permission.indexOf("finance.control.") === 0; })) return appUser;
     return demoControlUser();
   }
 
   function isLiveSession() {
     var user = controlAccessUser();
-    return !!(user && user.token);
+    return !!(user && (user.native === true || user.token));
   }
 
   function permissionScopes(user, permission) {

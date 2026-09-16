@@ -93,7 +93,7 @@
   function canReadAttendance() { return allows("staff.attendance.read", "school"); }
   function canReadReports() { return allows("reports.hr.read", "school"); }
   function canAccessHr() { return canReadStaff() || canManageStaff() || canReadAttendance() || canReadReports(); }
-  function isLiveSession() { return !!(user() && user().token); }
+  function isLiveSession() { return !!(user() && (user().native === true || user().token)); }
 
   function renderLiveUnavailable() {
     return '<section class="hr-future" data-hr-live-unavailable role="status"><span>SESSION LIVE</span><h3>DONNÉES INDISPONIBLES</h3><p>Les dossiers, contrats, affectations, absences, présences et statistiques RH réels ne sont pas connectés.</p><span class="hr-boundary-chip">BACKEND_LATER</span></section>';

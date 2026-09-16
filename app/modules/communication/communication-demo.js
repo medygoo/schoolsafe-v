@@ -36,7 +36,7 @@
   }
 
   function isDemoMode(subject) {
-    return !(subject && subject.token);
+    return !(subject && (subject.native === true || subject.token));
   }
 
   function access() {

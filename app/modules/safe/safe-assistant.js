@@ -31,17 +31,17 @@
     { animation: "TalkPassionately", message: "Tu connais les bases ! Clique sur moi quand tu as une question. 🎉" },
   ];
 
-  // Session réelle = token présent (window.currentSession exposé par app.js,
-  // sinon session persistée en localStorage pendant la restauration asynchrone).
+  // Session réelle = cookie natif ou ancien token (contexte exposé par app.js,
+  // sinon sessionStorage pendant la restauration asynchrone).
   // Sans session : mode démo, comportement historique inchangé.
   function sessionUser() {
     var live = global.currentSession;
-    if (live && live.token) return live;
+    if (live && (live.native === true || live.token)) return live;
     try {
       var raw = global.sessionStorage && global.sessionStorage.getItem("schoolsafe-v2-session");
       if (raw) {
         var saved = JSON.parse(raw);
-        if (saved && saved.token) return saved;
+        if (saved && (saved.native === true || saved.token)) return saved;
       }
     } catch (e) { /* session illisible : traiter comme démo */ }
     return null;
@@ -118,7 +118,7 @@
 
   function syncConversationOwner() {
     var user = assistantUser() || {};
-    var owner = [currentSurface, user.token || "", user.userId || "", user.profileId || "", user.schoolId || "", user.role || ""].join("|");
+    var owner = [currentSurface, user.token || "", user.userId || "", user.profileId || (user.profile && user.profile.id) || "", user.schoolId || "", user.role || ""].join("|");
     if (owner === conversationOwner) return;
     conversationOwner = owner;
     conversationRevision += 1;

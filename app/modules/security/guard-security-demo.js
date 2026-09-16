@@ -534,7 +534,7 @@
     activeUser = user || {};
     var projection = getPortalProjection(activeUser);
     if (!projection.allowed) renderDenied(container, activeUser);
-    else if (activeUser.token) {
+    else if (activeUser.native === true || activeUser.token) {
       container.innerHTML = '<section class="guard-security-denied" role="status"><i data-lucide="cloud-off"></i><div><span>SESSION LIVE</span><h1>DONNÉES INDISPONIBLES</h1><p>Les portails, élèves, scans, récupérations et événements réels ne sont pas connectés. Aucune fixture de sécurité n’est affichée · BACKEND_LATER.</p></div></section>';
     }
     else renderDashboard(container, projection);

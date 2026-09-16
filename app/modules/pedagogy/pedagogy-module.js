@@ -177,11 +177,12 @@
       var raw = global.sessionStorage.getItem("schoolsafe-v2-session");
       if (!raw) return false;
       var session = JSON.parse(raw);
-      return !!(session && session.token);
+      return !!(session && (session.native === true || session.token));
     } catch (e) { return false; }
   }
 
   function isDemoMode() {
+    if (hasValidSessionToken()) return false;
     if (global.schoolSafeDemoMode === true) return true;
     var host = String(global.location && global.location.hostname || "").toLowerCase();
     var isLocalhost = host === "localhost" || host === "127.0.0.1";

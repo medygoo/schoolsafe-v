@@ -134,4 +134,13 @@ function loadAssistant(options) {
   assert.ok(dom.container.innerHTML.includes("Top 10"), "réponse pedagogy visible avec accès branche");
 }
 
+// Une session cookie ne porte aucun bearer : elle doit garder ses vrais refus.
+for (const source of ["liveSession", "storedSession"]) {
+  const { dom } = loadAssistant({ [source]: {
+    native: true, token: null, profile: { id: "native-profile" }, role: "admin",
+    permissions: ["school.student.read"], scopes: [],
+  } });
+  assert.strictEqual(dom.appended.length, 0, source + " native sans permission : aucune init démo");
+}
+
 console.log("FE-SEC-A3A4 access law + safe assistant gate: PASS");

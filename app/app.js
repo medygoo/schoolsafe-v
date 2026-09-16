@@ -103,6 +103,10 @@
     showScreen("setup");
   }
 
+  function hasLiveSession() {
+    return !!(currentSession && (currentSession.native === true || currentSession.token));
+  }
+
   function currentApiToken() {
     if (currentSession && currentSession.token) return currentSession.token;
     try {
@@ -383,9 +387,10 @@
   };
 
   function getCurrentUser() {
-    if (currentSession && currentSession.token) {
+    if (hasLiveSession()) {
       return Object.assign({}, currentSession, {
         role: currentDemoRole,
+        profileId: currentSession.profile && currentSession.profile.id,
         schoolId: currentSession.schoolId || (currentSession.school && currentSession.school.id) || null
       });
     }
@@ -418,7 +423,7 @@
     }
     var binding = window.SchoolSafeDocumentRuntime.bindContext({
       user: getCurrentUser(),
-      mode: currentSession && currentSession.token ? "live" : "demo",
+      mode: hasLiveSession() ? "live" : "demo",
       selectedContext: selectedContext || {}
     });
     window.SchoolSafeDocumentContextReady = binding;
@@ -622,7 +627,7 @@
       : (english
           ? "Demo access enabled."
           : "Accès de démonstration activé."));
-    window.schoolSafeDemoMode = !currentApiToken();
+    window.schoolSafeDemoMode = !hasLiveSession();
     // INC-4 renforcé : la démo déclare son propre contexte local explicite
     // (jamais une vraie école, jamais synchronisé vers un serveur).
     if (window.SchoolSafeSync && typeof window.SchoolSafeSync.setSchoolContext === "function") {
@@ -2134,7 +2139,7 @@
     icons();
 
     var perms = (currentSession && currentSession.permissions) || [];
-    var hasToken = !!currentApiToken();
+    var liveSession = hasLiveSession();
     var hasDashboardRead = perms.indexOf("pilotage.dashboard.read") >= 0;
 
     function renderEmpty(state, message) {
@@ -2156,11 +2161,11 @@
       icons();
     }
 
-    if (hasToken && !hasDashboardRead) {
+    if (liveSession && !hasDashboardRead) {
       renderEmpty("shield", "Non accessible");
       return;
     }
-    if (!hasToken) {
+    if (!liveSession) {
       renderDemoExecutiveKpis(desktopContainer, mobileContainer);
       return;
     }
@@ -2252,7 +2257,7 @@
     schoolLogoRequest = null;
     if (schoolLogoObjectUrl) URL.revokeObjectURL(schoolLogoObjectUrl);
     schoolLogoObjectUrl = null;
-    var school = currentSession && currentSession.token && currentSession.school;
+    var school = hasLiveSession() && currentSession.school;
     var sameSchool = school && school.id && (!currentSession.schoolId || currentSession.schoolId === school.id);
     var source = sameSchool ? schoolLogoUrl(school.logo_path) : null;
     var images = document.querySelectorAll("[data-school-logo]");
@@ -2310,11 +2315,11 @@
     var accessUser = getCurrentUser();
     var access = window.SchoolSafeAccess;
     // Source unique du mode démo pour les modules finance/fee-control
-    window.schoolSafeDemoMode = !currentApiToken();
+    window.schoolSafeDemoMode = !hasLiveSession();
 
     var demoBanner = document.getElementById("workspaceDemoBanner");
     if (demoBanner) {
-      demoBanner.hidden = !!currentApiToken();
+      demoBanner.hidden = hasLiveSession();
       if (!demoBanner.hidden) icons();
     }
 
@@ -2403,7 +2408,7 @@
     // Branches visibles selon ACCESS_LAW : permission + portée + condition + exception.
     // En session réelle, SchoolSafeAccess filtre selon currentSession.permissions.
     // En démo sans session, roleCatalog continue de fournir le modèle de navigation.
-    var isLiveSession = !!(currentSession && currentSession.token);
+    var isLiveSession = hasLiveSession();
     var allBranches = Object.keys(branchDefinitions).map(function (key) {
       return { key: key, description: branchDefinitions[key].label, groups: [] };
     });
@@ -3076,23 +3081,94 @@
     icons();
   }
 
-  function openAccessConsole() {
+  var accessConsoleRevision = 0;
+
+  function showAccessConsoleSurface(live) {
+    setWorkspaceDashboardVisible(false);
+    ["pedagogyModule", "documentCenterModule", "financeModule", "accountingModule", "hrModule", "inventoryModule", "communicationModule", "administrationModule", "securityModule", "pilotageModule", "feeControlModule", "schoolModule", "cardsStudio", "teacherPedagogyPortal"].forEach(function (id) {
+      var element = document.getElementById(id);
+      if (element) element.hidden = true;
+    });
+    document.getElementById("accessConsole").hidden = false;
+    document.getElementById("accessConsole").dataset.sessionMode = live ? "native" : "demo";
+    document.getElementById("cardsProtected").hidden = true;
+    document.getElementById("accessDemoLayout").hidden = live;
+    document.getElementById("nativeAccessContent").hidden = !live;
+    document.getElementById("accessConsoleTitle").textContent = live ? "Rôles et accès du compte connecté" : "Attribuer un rôle et limiter son périmètre";
+    document.getElementById("accessConsoleDescription").textContent = live
+      ? "Compte, rôles, permissions et périmètres de votre école. Un refus explicite reste prioritaire."
+      : "Le modèle du rôle active les branches et actions utiles ; les ajustements restent des brouillons de démonstration.";
+    setBreadcrumb("Rôles et accès");
+    closeWorkspaceMenu();
+  }
+
+  async function openAccessConsole() {
+    var revision = ++accessConsoleRevision;
     if (!canManageRoles(getCurrentUser())) {
+      document.getElementById("nativeAccessContent").replaceChildren();
+      document.getElementById("accessConsole").hidden = true;
       notify("Console Rôles et accès non autorisée pour cette session.");
       return;
     }
-    document.getElementById("pedagogyModule").hidden = true;
-    document.getElementById("documentCenterModule").hidden = true;
-    document.getElementById("financeModule").hidden = true;
-    document.getElementById("accessConsole").hidden = false;
-    setWorkspaceDashboardVisible(false);
-    document.getElementById("cardsProtected").hidden = true;
-    closeWorkspaceMenu();
-    renderPermissionEditor();
+    var live = hasLiveSession();
+    showAccessConsoleSurface(live);
+    if (!live) {
+      document.getElementById("nativeAccessContent").replaceChildren();
+      renderPermissionEditor();
+    } else {
+      var expectedSession = currentSession;
+      var content = document.getElementById("nativeAccessContent");
+      content.textContent = "Vérification des droits auprès du serveur…";
+      try {
+        if (!expectedSession.native || !window.SchoolSafeAuthNative) throw new Error("Session native requise");
+        var fresh = await window.SchoolSafeAuthNative.sessionBootstrap();
+        if (revision !== accessConsoleRevision || currentSession !== expectedSession || document.getElementById("accessConsole").hidden) return;
+        if (!fresh || !fresh.data || fresh.data.schoolId !== expectedSession.schoolId || !fresh.data.profile || fresh.data.profile.id !== expectedSession.profile.id) {
+          var changed = new Error("Contexte de session modifié");
+          changed.status = 401;
+          throw changed;
+        }
+        applyBootstrap(fresh.data);
+        expectedSession = currentSession;
+        if (!canManageRoles(getCurrentUser())) {
+          content.replaceChildren();
+          notify("Vos droits ont changé. La console n’est plus autorisée.");
+          return;
+        }
+        showAccessConsoleSurface(true);
+        var catalog = await window.SchoolSafeAccess.loadPermissions();
+        if (revision !== accessConsoleRevision || currentSession !== expectedSession || document.getElementById("accessConsole").hidden) return;
+        if (!catalog.length || window.SchoolSafeAccess.isPermissionsLoadFailed()) throw new Error("Catalogue indisponible");
+        window.SchoolSafeNativeAccessConsole.render(content, getCurrentUser(), catalog, openAccessConsole);
+      } catch (error) {
+        if (revision !== accessConsoleRevision || currentSession !== expectedSession || document.getElementById("accessConsole").hidden) return;
+        content.replaceChildren();
+        if (error.status === 401 || error.status === 403) {
+          clearSession();
+          closeAccessConsole();
+          showScreen("auth");
+          notify("Session expirée ou refusée. Reconnectez-vous pour consulter vos droits.");
+          return;
+        }
+        showAccessConsoleSurface(true);
+        var alert = document.createElement("p");
+        alert.setAttribute("role", "alert");
+        alert.textContent = "Droits indisponibles. La connexion au serveur est nécessaire pour vérifier les accès.";
+        var retry = document.createElement("button");
+        retry.type = "button";
+        retry.id = "retryNativeAccess";
+        retry.className = "ss-button ss-button--secondary";
+        retry.textContent = "Réessayer";
+        retry.addEventListener("click", openAccessConsole);
+        content.append(alert, retry);
+      }
+    }
     document.getElementById("accessConsole").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function closeAccessConsole() {
+    accessConsoleRevision += 1;
+    document.getElementById("nativeAccessContent").replaceChildren();
     document.getElementById("accessConsole").hidden = true;
     setWorkspaceDashboardVisible(true);
     document.getElementById("cardsProtected").hidden = currentDemoRole !== "admin" && currentDemoRole !== "admissions";
@@ -3463,6 +3539,10 @@
     document.getElementById("editorAssignment").textContent = roleCatalog[staffSamples[selectedStaffIndex].role].label + " · " + this.value;
   });
   bindIfExists("savePermissions", "click", function () {
+    if (hasLiveSession() || !canManageRoles(getCurrentUser())) {
+      notify("Les brouillons de démonstration ne modifient pas les droits du compte connecté.");
+      return;
+    }
     var person = staffSamples[selectedStaffIndex];
     queueOfflineOperation("administration", "Modification des droits · " + person.name, { kind: "permission-change", person: person.name, role: person.role, scopeType: person.scopeType, scope: person.scope, permissions: Object.assign({}, person.permissions || {}), actionLevels: Object.assign({}, person.actionLevels || {}), dataViews: Object.assign({}, person.dataViews || {}) });
     notify("Brouillon d’accès enregistré localement. Aucun serveur n’a été modifié.");

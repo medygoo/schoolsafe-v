@@ -123,6 +123,19 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
   pas les parcours Le Sage/P5 terminés et ne retire aucune condition de sécurité
   ou de sauvegarde avant exploitation réelle.
 
+## Priorité du 16 septembre — fonctionnalités et Rôles et accès
+
+- **VALIDÉE, instruction directe du propriétaire** : traiter les 16 rubriques du
+  menu avec leurs interfaces, backends et liens écosystème, en réutilisant l'existant.
+- **VALIDÉE, priorité explicite** : commencer par **Rôles et accès**, corriger et
+  rendre fonctionnel sans supprimer, puis progresser étape par étape. Maintenir
+  le miroir local/GitHub après chaque lot vérifié.
+- A1 livré : contexte natif corrigé et consultation des droits du compte connecté
+  par le bootstrap serveur existant. L'ancien éditeur reste démonstratif ; aucune
+  attribution persistante n'est annoncée. A2/A3 restent à réaliser dans
+  `docs/superpowers/plans/2026-09-16-schoolsafe-functional-integration.md`.
+- Cette priorité ne valide pas implicitement l'architecture Device Hub en attente.
+
 ## Décisions restant à préciser
 
 - Technologie exacte de synthèse vocale Cloudflare lorsque le lot voix commencera.

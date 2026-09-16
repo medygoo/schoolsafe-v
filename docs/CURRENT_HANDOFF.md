@@ -1,6 +1,69 @@
 # Handoff courant SchoolSafe
 
-## Lot courant — 16 septembre 2026 : audit Device Hub avant codage
+## Lot courant — 16 septembre 2026 : Rôles et accès, A1
+
+**A1 LIVRÉ — CONTEXTE NATIF ET CONSULTATION.** Le propriétaire demande de traiter
+les 16 rubriques frontend/backend/écosystème, puis impose Rôles et accès en premier,
+sans supprimer l'existant, étape par étape. Le lot Device Hub ci-dessous reste en
+attente de sa validation propre ; il n'est pas le prochain codage à lancer.
+
+### Travail terminé
+
+- Fetch effectué ; départ `main` = `origin/main` = `3ca73fa5946e3498d1b9244e8fbdb9d9a4ad9961`.
+  Aucun changement suivi préexistant ; `.claude/` et les deux PNG racine préservés.
+- Défaut reproduit : session native sans bearer → `getCurrentUser()` renvoyait
+  `demo-school-1`. Contexte réel restauré dans la navigation, documents, identité,
+  modules concernés et JASPE ; reconnaissance native conservée sans lire le cookie.
+- Console native relue par `/native/session/bootstrap` à chaque ouverture/refresh :
+  compte, école, rôles, permissions, toutes les portées, DENY, recherche et filtre.
+  Garde `roles.manage` + `school`, aucune autorité implicite liée au nom du rôle.
+- Rejet d'un changement d'école/profil inattendu, expiration/refus → connexion,
+  réponse tardive ignorée, échec → message et nouvelle tentative sans anciens droits.
+- Éditeur de brouillons démo conservé, inaccessible comme mutation réelle.
+  Réutilisation du backend existant ; aucune nouvelle route/table/permission.
+- Plan unique des 16 rubriques et étapes A1/A2/A3 :
+  `docs/superpowers/plans/2026-09-16-schoolsafe-functional-integration.md`.
+
+### Fichiers et vérifications
+
+- `app/app.js`, `app/index.html`, nouveau module `administration/access-console.js`,
+  nouveau style `native-access.css`, reprise du chargement du catalogue dans `core/access.js`.
+- Reconnaissance native corrigée dans Finance/contrôle financier, Comptabilité,
+  RH, Stock, Communication, Parent, Pédagogie/Palmarès/portail enseignant, Gardien,
+  et `safe-assistant.js` (identité du profil dans le changement de conversation).
+- Nouveau `app/qa-native-access-console.cjs` ; complément du contrôle accès assistant,
+  cache PWA et contrat associé ; plan, décisions et ce handoff.
+- **PASS** navigateur : défaut initial reproduit puis corrigé, permissions exactes,
+  pas de finance par simple rôle admin, refus JASPE, RH indisponible sans fixtures,
+  cibles multiples, filtres, 390 px, panne/reprise, fermeture pendant requête,
+  révocation, expiration, autre école refusée, démo préservée, aucune mutation HTTP.
+- **23/23 PASS**, 5 fichiers serveur : sessionnative, auth-session,
+  authnative-profiles, db-context, native-access-contract. **4/4 PASS** contrats
+  permissions et isolation statique. Access/JASPE, contrat visuel, soumission paiement,
+  campagnes de contrôle financier, dashboard JASPE navigateur : **PASS**.
+- Syntaxe JS et `git diff --check` : PASS. Captures bureau/mobile clair/sombre
+  inspectées, contraste des boutons natifs corrigé. Aucun SQL/migration modifié.
+
+### Limites et prochaine action exacte
+
+Les tests navigateur substituent l'API ; les tests serveur substituent PostgreSQL.
+Pas de preuve de base réelle, de données de production ou de déploiement.
+La nouvelle console consulte **le compte connecté uniquement**. La liste réelle
+des autres profils et les attributions/révocations persistantes ne sont pas livrées.
+Les autres modules ont toujours les écarts de raccordement détaillés dans le plan.
+
+**Reprendre A2 du plan** : auditer puis raccorder une projection native des profils,
+rôles et grants de l'école à la liste existante ; réutiliser IAM et Access Law.
+Ensuite A3 : mutations transactionnelles/auditées et révocation effective. Ne pas
+transformer les brouillons offline en commandes de droits. Rejeu sur base isolée
+obligatoire pour les nouveaux parcours SQL ; conserver le périmètre école/Control.
+
+Lot Git : `fix(access): contexte natif et consultation des droits` ; SHA dans Git.
+Synchronisation annoncée après comparaison directe du commit local et de GitHub.
+
+---
+
+## Historique — 16 septembre 2026 : audit Device Hub avant codage
 
 **PHASE 0 LIVRÉE — VALIDATION DU PROPRIÉTAIRE ATTENDUE.** La nouvelle mission
 Device Hub/identités/biométrie/QR/présences demande au §56 un premier livrable

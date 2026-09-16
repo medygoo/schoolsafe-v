@@ -48,6 +48,7 @@
   <link rel="stylesheet" href="./styles/modules/document-center.css">
   <link rel="stylesheet" href="./styles/modules/communication.css">
   <link rel="stylesheet" href="./styles/modules/administration.css">
+  <link rel="stylesheet" href="./styles/modules/native-access.css">
   <link rel="stylesheet" href="./styles/screens/setup.css">
   <link rel="stylesheet" href="./styles/screens/auth.css">
   <link rel="stylesheet" href="./styles/modules/entree-visuel.css?v=jaspe-vivante-04">
@@ -104,6 +105,7 @@
   <script src="./modules/safe/jaspe-governance.js" defer></script>
   <script src="./modules/safe/jaspe-capability-router.js" defer></script>
   <script src="./modules/administration/administration-demo.js" defer></script>
+  <script src="./modules/administration/access-console.js" defer></script>
   <script src="./modules/communication/communication-demo.js" defer></script>
   <script src="./modules/document-center/document-center.js" defer></script>
   <script src="./modules/document-center/finance-accounting-documents.js" defer></script>
@@ -788,8 +790,9 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             <div class="pedagogy-content pilotage-content" id="pilotageContent"></div>
           </section>
           <section class="access-console" id="accessConsole" hidden>
-            <header class="access-header"><div><span>Administration des accès</span><h2>Attribuer un rôle et limiter son périmètre</h2><p>Le modèle du rôle active les branches et actions utiles; l’Administrateur principal peut ensuite retirer une permission ou réduire son périmètre.</p></div><button class="ss-button ss-button--secondary" id="closeAccessConsole" type="button"><i data-lucide="x"></i> Fermer</button></header>
-            <div class="access-layout">
+            <header class="access-header"><div><span>Administration des accès</span><h2 id="accessConsoleTitle">Attribuer un rôle et limiter son périmètre</h2><p id="accessConsoleDescription">Le modèle du rôle active les branches et actions utiles; l’Administrateur principal peut ensuite retirer une permission ou réduire son périmètre.</p></div><button class="ss-button ss-button--secondary" id="closeAccessConsole" type="button"><i data-lucide="x"></i> Fermer</button></header>
+            <div id="nativeAccessContent" class="native-access" hidden aria-live="polite"></div>
+            <div class="access-layout" id="accessDemoLayout">
               <aside class="staff-list" id="staffList"></aside>
               <div class="permission-editor">
                 <div class="editor-identity"><span id="editorAvatar">GA</span><div><h3 id="editorName">M. X</h3><p id="editorAssignment">Agent de contrôle d’accès</p></div><span class="template-state"><i data-lucide="wand-sparkles"></i> Modèle automatique</span></div>

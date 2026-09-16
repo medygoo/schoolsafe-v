@@ -106,7 +106,7 @@
       var raw = root.sessionStorage.getItem("schoolsafe-v2-session");
       if (!raw) return false;
       var session = JSON.parse(raw);
-      return !!(session && session.token);
+      return !!(session && (session.native === true || session.token));
     } catch (e) { return false; }
   }
 
@@ -115,7 +115,7 @@
   // ---------------------------------------------------------------------------
   function isDemoMode() {
     var session = currentSession();
-    if (session && session.token) return false;
+    if (session && (session.native === true || session.token)) return false;
     if (root.schoolSafeDemoMode === true) return true;
     var host = String(root.location && root.location.hostname || "").toLowerCase();
     var isLocalhost = host === "localhost" || host === "127.0.0.1";
