@@ -66,6 +66,10 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
 - La lecture vocale pilote le début/la fin de la séquence de parole ; il ne s'agit
   pas d'une synchronisation phonétique. Permissions et réponse courante sans
   historique restent régies par le contrat du lot précédent.
+- **VALIDÉE, complément du propriétaire le 16/09** : ajouter une séquence de
+  parole avec les deux mains, en clair et sombre, en conservant celle à une main.
+  Les explications (`TalkHandsOpen` / `TalkPassionately`) utilisent cette nouvelle
+  séquence. Le propriétaire demande ensuite la clôture du chantier courant.
 
 ## Décisions restant à préciser
 

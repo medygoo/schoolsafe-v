@@ -41,6 +41,7 @@ async function bounds(page) {
     await page.locator("[data-jaspe-chat-input]").fill("bonjour");
     await page.locator("[data-jaspe-chat-send]").click();
     assert.equal(await page.locator("#jaspePanelOverlay").evaluate(el => el.open), false);
+    await page.waitForFunction(() => document.querySelector('#jaspeSeatedCharacter[data-action="speakBoth"]'));
     await page.locator("[data-jaspe-chat-input]").fill("merci");
     await page.locator("[data-jaspe-chat-input]").press("Enter");
     assert.match(await page.locator("[data-jaspe-chat-log]").innerText(), /^Jaspe\s+Avec plaisir !$/i);

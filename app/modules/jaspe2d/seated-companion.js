@@ -2,12 +2,13 @@
 (function (global) {
   "use strict";
   var assetRoot = new URL("../../assets/jaspe2d/assise-v1/", document.currentScript.src).href;
-  var sheets = { idle: "sourire", listen: "sourire", smile: "sourire", speak: "parole", think: "reflexion", read: "lecture", neutral: "sourire" };
+  var sheets = { idle: "sourire", listen: "sourire", smile: "sourire", speak: "parole", speakBoth: "parole-deux-mains", think: "reflexion", read: "lecture", neutral: "sourire" };
   var sequences = {
     idle: [[0, 4600], [1, 500], [2, 110], [3, 320], [0, 3600]],
     listen: [[0, 2700], [2, 110], [0, 1900]],
     smile: [[0, 450], [1, 550], [3, 1000], [2, 110], [3, 500], [0, 600]],
     speak: [[0, 240], [1, 280], [2, 340], [3, 290], [0, 250]],
+    speakBoth: [[0, 260], [1, 320], [2, 360], [1, 210], [3, 300], [0, 240]],
     think: [[0, 650], [1, 430], [2, 400], [3, 300], [2, 340], [3, 420], [1, 400], [0, 850]],
     read: [[0, 900], [1, 1700], [2, 600], [1, 1000], [3, 900]],
     neutral: [[0, 5000]]

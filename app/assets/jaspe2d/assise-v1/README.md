@@ -1,10 +1,11 @@
 # JASPE assise — séquences 2D v1
 
-8 planches générées avec `image_gen.imagegen`, 4 images chacune :
+10 planches générées avec `image_gen.imagegen`, 4 images chacune :
 
 | Action | Fichiers (clair / sombre) | Mouvement |
 |---|---|---|
-| Parole | `parole-*.png` | Lèvres et main gauche qui accompagne la réponse |
+| Parole, une main | `parole-clair.png`, `parole-sombre.png` | Lèvres et main gauche qui accompagne la réponse |
+| Parole, deux mains | `parole-deux-mains-*.png` | Les deux mains s'ouvrent, accompagnent l'explication puis reviennent au centre |
 | Réflexion | `reflexion-*.png` | Main de la joue à la tempe et aux cheveux |
 | Sourire | `sourire-*.png` | Sourire progressif et clignement |
 | Lecture | `lecture-*.png` | Regard au livre, page tournée, sourire pendant la lecture |
@@ -13,7 +14,7 @@ Chaque PNG mesure 1536×1024, grille 2×2 sans gouttière, images 768×512.
 Ordre : haut gauche, haut droite, bas gauche, bas droite. Images opaques avec
 fond intégré ; aucune alpha ni séparation personnage/bureau annoncée.
 Les originaux v12 restent intacts. Les prompts et les hashes sont dans
-`prompts.json` et `manifest.json`. Les premières versions de lecture sont
+`prompts.json`, `prompts-deux-mains.json` et `manifest.json`. Les premières versions de lecture sont
 remplacées par les éditions souriantes à la demande du propriétaire ; l'historique
 de génération est conservé dans les prompts.
 

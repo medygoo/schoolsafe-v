@@ -1,6 +1,38 @@
 # Handoff courant SchoolSafe
 
-## État actif — 16 septembre 2026 : JASPE assise, planches animées
+## Clôture — 16 septembre 2026 : parole avec les deux mains
+
+Le propriétaire a demandé le mouvement de parole avec les deux mains, puis la
+clôture du chantier courant. Aucun nouveau développement à lancer sans sa reprise.
+
+- Deux nouvelles planches `parole-deux-mains-clair.png` / `-sombre.png` : quatre
+  étapes chacune. Total **10 planches / 40 vignettes**, 16,28 Mio. Les huit planches
+  précédentes sont inchangées (SHA-256 comparés au manifeste antérieur).
+- Action fermée `speakBoth`, rythme propre, bouton « Parler · deux mains » dans
+  l'aperçu ; la lecture vocale conserve le geste sélectionné. Les états métier
+  `TalkHandsOpen` / `TalkPassionately` et l'accueil utilisent l'intention existante
+  `explain`, traduite en deux mains pour la pose assise. Corps entier inchangé.
+- Fichiers : deux PNG, manifeste et prompts dédiés, README des assets,
+  `seated-companion.js`, `dashboard-companion.js`, aperçu, contrôles navigateur,
+  version du cache et contrat associé, décisions et ce handoff.
+- Contrôles : dimensions 1536×1024/grille 2×2/hashes PASS ; syntaxe JS PASS ;
+  `qa-jaspe-seated` PASS (5 actions/deux thèmes, voix simulée avec deux mains,
+  pause, mouvements réduits, 390/320) ; contrats visuels et accès assistant PASS.
+- `qa-jaspe-dashboard` PASS : réponse avec deux mains, sortie entière, retour,
+  texte/audio simulé, refus de permission, changement de compte, sombre et
+  mouvements réduits. Aucune modification des permissions, données métier ou SQL.
+- Limites inchangées : fonds intégrés, animation par poses, pas de synchronisation
+  phonétique ; microphone réel/voix réelle non validés par ces tests simulés.
+- Aperçu : `http://127.0.0.1:4176/jaspe-assise-preview.html#deux-mains`.
+- Lot : `feat(jaspe): parole avec les deux mains`. SHA dans Git, miroir à
+  confirmer après push. Fichiers utilisateur non suivis préservés.
+
+**À la reprise :** demander le prochain objectif au propriétaire. Les réserves
+métier et de voix du lot précédent restent documentées ci-dessous.
+
+---
+
+## Lot précédent — 16 septembre 2026 : JASPE assise, planches animées
 
 ### Demande et livraison
 

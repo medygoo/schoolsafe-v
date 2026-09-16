@@ -23,7 +23,7 @@
     if (!allowed()) return;
     if (showcase) showcase.dispatch({ kind: kind, source: "dashboard-ui" });
     if (seated && !dialog.open) {
-      var actions = { idle: "idle", listen: "listen", think: "think", speak: "speak", explain: "speak", success: "smile", refuse: "neutral", error: "neutral" };
+      var actions = { idle: "idle", listen: "listen", think: "think", speak: "speak", explain: "speakBoth", success: "smile", refuse: "neutral", error: "neutral" };
       var duration = { speak: 4800, explain: 3500, success: 3400, think: 6000 };
       seated.setAction(actions[kind] || "neutral", settings || { duration: duration[kind] || 0 });
     }
@@ -165,7 +165,7 @@
     var animation = global.SafeAssistant.getAnimation();
     if (animation !== lastAnimation || responseChanged) {
       lastAnimation = animation;
-      var mapping = { Idle: "idle", Listening: "listen", Thinking: "think", Wave: "explain", Agree: "success", Shrug: "refuse", TalkHandsOpen: "speak", TalkPassionately: "speak" };
+      var mapping = { Idle: "idle", Listening: "listen", Thinking: "think", Wave: "explain", Agree: "success", Shrug: "refuse", TalkHandsOpen: "explain", TalkPassionately: "explain" };
       intent(mapping[animation] || "speak");
     }
     if (audioMode && response && response !== lastSpoken && animation !== "Listening" && animation !== "Thinking" && global.speechSynthesis) {
@@ -175,7 +175,9 @@
       utterance.lang = "fr-FR";
       voiceUtterance = utterance;
       utterance.onstart = function () {
-        if (voiceUtterance === utterance && allowed()) intent("speak", { duration: 0 });
+        if (voiceUtterance === utterance && allowed()) {
+          intent(animation === "TalkHandsOpen" || animation === "TalkPassionately" || animation === "Wave" ? "explain" : "speak", { duration: 0 });
+        }
       };
       utterance.onend = utterance.onerror = function () {
         if (voiceUtterance !== utterance) return;

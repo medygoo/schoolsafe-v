@@ -12,7 +12,7 @@ const output = process.env.JASPE_QA_OUTPUT;
     page.on('response', r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
     await page.goto(new URL('jaspe-assise-preview.html',base).href);
     await page.waitForFunction(()=>document.querySelectorAll('.jaspe-seated[data-ready="true"]').length===2);
-    for (const action of ['speak','think','smile','read']) {
+    for (const action of ['speak','speakBoth','think','smile','read']) {
       await page.locator(`[data-action="${action}"]`).click();
       await page.waitForFunction(action=>[...document.querySelectorAll('.jaspe-seated')].every(e=>e.dataset.action===action),action);
       const start=await page.locator('#light').getAttribute('data-frame');
@@ -50,11 +50,12 @@ const output = process.env.JASPE_QA_OUTPUT;
       speechSynthesis.cancel=()=>{};
       speechSynthesis.speak=u=>{window.qaVoice=u;u.onstart();};
     });
+    await page.locator('[data-action="speakBoth"]').click();
     await page.locator('#voiceForm button[type="submit"]').click();
-    await page.waitForFunction(()=>document.getElementById('light').dataset.action==='speak');
+    await page.waitForFunction(()=>document.getElementById('light').dataset.action==='speakBoth');
     await page.evaluate(()=>window.qaVoice.onend());
     await page.waitForFunction(()=>document.getElementById('light').dataset.action==='smile');
     assert.deepEqual(errors,[]);
-    console.log('PASS: 4 actions / 2 themes, changing frames, audio start/end, pause, viewport pause, reduced motion, 390/320px, no page errors.');
+    console.log('PASS: 5 actions / 2 themes, changing frames, both-hands audio start/end, pause, viewport pause, reduced motion, 390/320px, no page errors.');
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

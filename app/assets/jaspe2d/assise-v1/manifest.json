@@ -31,6 +31,20 @@
       "sha256": "17c2043f9b3ca6b2aca800183ef4b13ffd7c07f4c79966b01adec2d4f20322e9"
     },
     {
+      "file": "parole-deux-mains-clair.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1758149,
+      "sha256": "a71380c14de97b9a217fd550eb6b7a93365d31854d4547b97ff8a930fb35254f"
+    },
+    {
+      "file": "parole-deux-mains-sombre.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1670414,
+      "sha256": "3678dce5e6f6f049239537d32932596965853ce65ff4ea6456a2f5bbd548b6ef"
+    },
+    {
       "file": "parole-sombre.png",
       "width": 1536,
       "height": 1024,
