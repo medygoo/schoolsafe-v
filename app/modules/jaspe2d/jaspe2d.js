@@ -312,6 +312,7 @@
                 return !!auth && auth.classList.contains("auth-is-typing");
               },
               isBust: function () {
+                if (typeof opts.isBust === "function") return opts.isBust();
                 var auth = el.closest && el.closest(".auth-screen");
                 return !!auth && auth.dataset.loginLayout === "welcome" && matchMedia("(max-width: 760px)").matches;
               },
@@ -340,6 +341,7 @@
         host: box,
         surface: opts.surface || "auth",
         isVisible: function () {
+          if (typeof opts.isVisible === "function") return !document.hidden && opts.isVisible();
           var screen = el.closest && el.closest(".auth-screen");
           return !document.hidden && (!screen || screen.classList.contains("active")) && (!screen || !screen.classList.contains("auth-jaspe-withdrawn"));
         }

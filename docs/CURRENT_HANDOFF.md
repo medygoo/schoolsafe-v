@@ -1,5 +1,153 @@
 # Handoff courant SchoolSafe
 
+## État actif — 16 septembre 2026 : JASPE en buste et sortie entière
+
+Cette section remplace les indications de prochaine action des rapports historiques
+ci-dessous. Leurs textes restent conservés pour la continuité. La demande directe du
+propriétaire autorise la reprise du chantier frontend dans ce compte.
+
+### Demande et résultat
+
+- Reprendre les références bureau/mobile avec **la JASPE existante**.
+- Bandeau commun aux tableaux de bord (y compris Parent/Enseignant/Gardien), buste
+  v12 animé, accueil lié au profil courant, texte + bouton d'envoi + micro sur place.
+- Appui prolongé **450 ms** sur JASPE (personnage ou bouton mobile) : sortie en corps
+  entier, même instance déplacée dans une boîte flottante non modale. Clic/clavier
+  possibles. Fermeture par croix/Échap, retour au bandeau.
+- Corrections du propriétaire intégrées : discussion **sans quitter le bandeau**,
+  audio entrant/réponse vocale via Web Speech lorsque disponible, **aucun historique
+  de chat**. Seule la réponse courante est gardée en mémoire.
+- Interface pâle/discrète, sombre/mouvements réduits ; fonctionnalités avant services
+  sur bureau, services existants également accessibles dans la vue mobile.
+
+### Corrections techniques et fichiers
+
+- `app/modules/jaspe2d/dashboard-companion.js` (nouveau) : montage unique, appui
+  prolongé, dialogue flottant, écoute explicite, lecture des réponses, contrôle accès.
+- `app/styles/modules/jaspe-dashboard.css` (nouveau) : buste/corps entier,
+  responsive, chat discret, bouton JASPE mobile et ajustements du tableau de bord.
+- `app/index.html`, `app/app.js` : chargement réel de SafeAssistant, raccordement
+  des surfaces, bandeau commun ; ancien bloc de panneau extrait/consolidé (retrait
+  du polling et des multiples montages à chaque rendu du tableau de bord).
+- `app/modules/jaspe2d/jaspe2d.js` : visibilité/cadrage injectables,
+  paramètres de connexion conservés par défaut. Aucun nouvel asset ni identité.
+- `app/modules/safe/safe-assistant.js` : présentation intégrée, réponse courante
+  seule, retrait du journal de 30 entrées, correction de la capture du bouton
+  d'envoi, nettoyage sur changement de contexte/refus de permission.
+- `app/server.mjs` : microphone limité à `self` (autorisation utilisateur toujours
+  requise), caméra et géolocalisation toujours interdites.
+- `app/sw.js` et contrats de cache : nouvelle version pour publier les scripts.
+- `app/qa-jaspe-dashboard.cjs` (nouveau), contrats JASPE/visuel adaptés à la version.
+- `docs/DECISIONS.md`, ce handoff : décisions et résultats du lot.
+- Les changements JASPE non committés du 15/09 sont intégrés/consolidés ici.
+  Les quatre commits locaux préexistants de `9298c85` à `e26ecef` sont conservés.
+  Aucun serveur métier ni SQL modifié.
+
+### Vérifications réellement exécutées
+
+- Playwright `node app/qa-jaspe-dashboard.cjs` : PASS sur 1440×1000, 390×844,
+  320×640 et 844×390 ; appui prolongé avant relâchement, même moteur, aucun
+  débordement, saisie dans le bandeau, réponse unique, fermeture/retour, absence de
+  stockage de conversation, audio simulé dans le bandeau, refus même admin,
+  nettoyage entre contextes, Parent, mode sombre et mouvements réduits.
+- Captures inspectées : bureau, mobile, sortie entière, petit écran, paysage, sombre.
+- `qa-safe-assistant-access`, `qa-responsive-visual-system`,
+  `qa-no-guardian-screen` : PASS. `test:jaspe-physical` : 5 tests + contrat PASS.
+- Permissions : 3/3 PASS ; manifestes migrations : 9 sets / 27 unités PASS.
+- Syntaxe JS contrôlée. En-tête local vérifié : microphone=(self).
+- Audio testé avec adaptateur Web Speech simulé, **pas avec un microphone réel**.
+  Aucune affirmation de validation vocale réelle ou de connexion Cloudflare.
+
+### Limites et prochaine action exacte
+
+1. Faire valider visuellement le résultat au propriétaire sur le port **4176** et
+   essayer le microphone réel dans son navigateur (support/autorisation requis).
+2. Les réponses utilisent l'assistant métier/local existant. Le modèle distant
+   GLM/Cloudflare et la synchronisation labiale ne sont pas raccordés ici.
+3. Ne pas confondre les anciens lots visuels « P4 terminé » avec la preuve du cœur
+   métier : le retrait des enfants comporte encore des parcours démo BACKEND_LATER.
+   Vérifier ces parcours avant de déclarer Le Sage opérationnel.
+4. Puis P5 : sauvegarde/restauration exécutée et SQL sur base réelle. Le désaccord
+   documentaire Docker/AGENTS.md est antérieur et non arbitré dans ce lot.
+5. `.claude/` et les deux images originales non suivies à la racine appartiennent à
+   l'environnement/références de l'utilisateur : préservés hors du commit.
+
+### Livraison Git
+
+Lot à identifier par `feat(jaspe): compagnon flottant et reponse sans historique`.
+SHA exact dans `git log`. Synchronisation annoncée seulement après push et comparaison
+directe de HEAD avec GitHub ; ce document ne contient pas son propre SHA.
+
+---
+
+## Historique conservé — rapports du 15 septembre (remplacés par l'état actif ci-dessus)
+
+Dernière mise à jour : 15 septembre 2026 — Lot JASPE hero vivant + log intégré.
+
+### Rapport — Lot JASPE hero (2.5D vivant + log de conversation intégré)
+
+```text
+PRÉVU :    JASPE 2.5D VIVANTE (moteur jaspe2d.js, pas d'image statique)
+           dans le hero desktop + mobile, en BUSTE (membre supérieur,
+           corps coupé par le bas) ; LOG DE CONVERSATION COMPLET intégré
+           au hero (teinte pâle discrète) ; suppression du bouton séparé
+           « Écrire » (remplacé par le champ intégré) ; bouton Audio
+           conservé ; clic sur Jaspe → sortie flottante (panneau) ;
+           suppression des anciennes sections chat fixes redondantes.
+FAIT :     index.html : hôtes vides #jaspeHeroCharacterDesktop/Mobile
+           montés par le moteur 2.5D ; log data-jaspe-chat + champ +
+           bouton send intégrés sous les 3 badges (desktop + mobile) ;
+           anciennes sections chat fixes (desktop + mobile) supprimées.
+           app.js : mountJaspeHero2d() monte SchoolSafeJaspe2d.mountShowcase()
+           (variants explain/idle/wave en rotation + réactions
+           listening/thinking/speaking/congratulate/worried) ; clic sur
+           le buste → openJaspePanel(). dashboard-liquid-glass.css :
+           recadrage buste (object-fit cover, top center) ; styles
+           .jaspe-hero__chat pâles + contre-poids mode sombre.
+           safe-assistant.js : câblage du bouton data-jaspe-chat-send
+           (même mécanisme que Enter → openWithQuery).
+TESTS :    node --check app/app.js OK · node --check safe-assistant.js OK ·
+           git grep confirme hôtes + montage + boutons send (desktop 427,
+           mobile 572).
+NON TOUCHÉ: jaspe-governance, endpoint /native/jaspe/chat, serveur, SQL.
+RISQUES :  validation visuelle navigateur (4176) à refaire : buste coupé,
+           log pâle lisible clair/sombre, clic → panneau flottant.
+COMMIT :   en attente — sandbox bloque .git/index.lock ; commit + push
+           avec élévation au prochain tour.
+```
+
+Dernière mise à jour : 15 septembre 2026 — Lot JASPE Étape A (buste hero + badges + sortie plein écran).
+
+### Rapport — Lot JASPE Étape A (JASPE en buste dans le hero)
+
+```text
+PRÉVU :    JASPE en BUSTE uniquement dans le hero du dashboard (desktop +
+           mobile), corps coupé par le bas (overflow hidden, ancrage bas) ;
+           bulle de dialogue au-dessus ; 3 badges « Plus simple / Plus sûr /
+           Plus serein » ; boutons Écrire + Audio ; au clic sur le bouton
+           JASPE ou sur son avatar, elle sort EN TOTALITÉ (panneau plein
+           écran existant #jaspePanel), responsive et lisible en mode sombre.
+FAIT :     index.html : badges ajoutés sous la bulle desktop + hero mobile
+           converti au traitement JASPE (avatar, bulle, badges, boutons
+           data-jaspe-hero-action text/audio). dashboard-liquid-glass.css :
+           recadrage buste (object-fit: cover, object-position: top center,
+           avatar cliquable), styles badges Liquid Glass + contre-poids mode
+           sombre, variante mobile. app.js : câblage des boutons du hero vers
+           openJaspePanel() avec bascule du mode Écrit/Audio, clic sur
+           l'avatar ouvre aussi la conversation plein écran.
+TESTS :    node --check app/app.js OK · git grep confirme badges (desktop
+           ligne 420, mobile ligne 568) + boutons data-jaspe-hero-action
+           câblés (app.js ligne 2842) + styles CSS ligne 1082.
+NON TOUCHÉ: moteur SafeAssistant, jaspe-governance, panneau plein écran
+           (existant e26ecef), serveur, SQL, permissions.
+RISQUES :  validation visuelle navigateur (port 4176) à refaire : vérifier
+           que le buste est bien coupé par le bas du hero et que le recadrage
+           « top center » ne coupe pas la tête sur petits écrans ; ajuster
+           object-position si nécessaire.
+SUIVANT :  étape B — poses dynamiques dans le hero (idle/listening/speaking)
+           via le manifeste existant, puis docs + commit + push de ce lot.
+```
+
 Dernière mise à jour : 15 septembre 2026 — Lot JASPE P4-ter (chat fixe + 2.5D).
 
 ## ÉTAT ACTUEL

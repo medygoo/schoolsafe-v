@@ -35,6 +35,22 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
 | 2026-09-14 | **License Contract V2** validé (spec G0) : CORE `id` non licenciable ; services `pass/watch/staffid/guardian/lab` + catalogue extensible par Control ; grâce globale ; quotas reportés ; héritage V1 = `["pass"]` (car `id` est fourni par le CORE) ; sunset déclenché par critères de readiness puis fenêtre de compatibilité, jamais par une date arbitraire. Implémentation d'enforcement après la Phase A. | Validée |
 | 2026-09-14 | **Règle permanente de continuité** : toutes les instructions, ordres, décisions, plans et handoffs se conservent. Une nouvelle instruction s'ajoute à l'historique avec statut (`VALIDÉE`, `ACTIVE`, `REMPLACÉE`, `OBSOLÈTE`, `REPORTÉE`, `ABANDONNÉE`, `À VALIDER`), date et raison. Ne jamais supprimer l'historique ; ne jamais laisser deux règles contradictoires actives. Chaque lot laisse une trace complète (prévu/fait/modifié/tests/résultats/décisions/fichiers/SHA/reste à faire/risques) permettant la reprise immédiate par tout agent. | Validée |
 
+## Décision produit du 16 septembre 2026 — JASPE au tableau de bord
+
+- **VALIDÉE, instruction directe du propriétaire le 16/09** : reprendre les références
+  bureau/mobile avec le personnage JASPE déjà conçu et son moteur v12 2D/2,5D.
+  JASPE reste en buste dans le bandeau et peut discuter par écrit ou audio sur place.
+- **VALIDÉE** : un appui prolongé sur le bouton JASPE fait sortir le personnage
+  en corps entier, animé et adapté à l'écran, avec une boîte de dialogue flottante
+  aux couleurs pâles. L'application reste utilisable autour. Clic et clavier
+  permettent également l'ouverture ; fermeture par bouton ou Échap.
+- **REMPLACE l'historique de chat du lot du 15/09** : aucun journal de conversation
+  accumulé ou persisté ; seule la réponse courante est affichée, partagée entre
+  bandeau et boîte flottante, et effacée au changement de contexte utilisateur.
+- Les réponses et les actions restent soumises à Access Law et au routeur existant.
+  L'audio navigateur ne constitue pas un raccordement GLM/Cloudflare ni une
+  synchronisation labiale ; ces capacités ne sont pas livrées par ce lot.
+
 ## Décisions restant à préciser
 
 - Technologie exacte de synthèse vocale Cloudflare lorsque le lot voix commencera.

@@ -1,5 +1,5 @@
 var CACHE_PREFIX = "schoolsafe-v2-";
-var CACHE_NAME = CACHE_PREFIX + "visual-system-2026-09-13";
+var CACHE_NAME = CACHE_PREFIX + "jaspe-dashboard-2026-09-16";
 var CORE_PATHS = [
   "./",
   "./index.html",

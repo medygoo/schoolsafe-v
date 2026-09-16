@@ -16,8 +16,8 @@ assert.ok(!/if\(typing&&!wasTyping\)\{[^}]*controller\.request\('idle'\)/s.test(
 assert.ok(!/\['walk','joySway','attentive'\]\.includes/.test(live), 'la saisie ne doit pas annuler la posture attentive explicite');
 assert.ok(/presentation-controller\.js/.test(facade), 'la façade doit charger le contrôleur');
 assert.ok(/live-companion\.js\?v=physical-controller-02/.test(facade), 'le moteur v12 corrigé doit contourner l’ancien cache');
-assert.ok(/jaspe2d\.js\?v=physical-controller-02/.test(html), 'la façade JASPE doit contourner l’ancien cache');
-assert.ok(/app\.js\?v=physical-controller-02/.test(html), 'les intentions de connexion doivent contourner l’ancien cache');
+assert.ok(/jaspe2d\.js\?v=jaspe-dashboard-01/.test(html), 'la façade JASPE doit contourner l’ancien cache');
+assert.ok(/app\.js\?v=jaspe-dashboard-01/.test(html), 'les intentions de connexion doivent contourner l’ancien cache');
 assert.ok(/sc\.dispatch\s*=/.test(facade), 'mountShowcase doit exposer dispatch');
 assert.ok(/sc\.destroy\s*=/.test(facade), 'mountShowcase doit exposer destroy');
 assert.ok(/sc\.bubble\.textContent\s*=\s*sc\.pendingBubble/.test(facade), 'le texte doit apparaître sans attendre la préparation de l’image de repli');

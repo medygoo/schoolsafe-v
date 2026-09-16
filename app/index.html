@@ -61,6 +61,7 @@
   <link rel="stylesheet" href="./styles/modules/deep-operations-harmony.css">
 <link rel="stylesheet" href="./styles/modules/deep-governance-harmony.css">
 <link rel="stylesheet" href="./styles/dashboard-liquid-glass.css">
+  <link rel="stylesheet" href="./styles/modules/jaspe-dashboard.css">
 <script src="./lucide.min.js" defer></script>
   <script src="./jspdf.umd.min.js" defer></script>
   <script src="./vendor/qrcode.min.js" defer></script>
@@ -112,8 +113,10 @@
   <script src="./modules/core/ui-helpers.js" defer></script>
   <script src="./modules/jaspe2d/auth-presence.js?v=connexion-responsive-10-final" defer></script>
   <script src="./modules/jaspe2d/auth-layouts.js?v=connexion-responsive-10-final" defer></script>
-  <script src="./modules/jaspe2d/jaspe2d.js?v=physical-controller-02" defer></script>
-  <script src="./app.js?v=physical-controller-02" defer></script>
+  <script src="./modules/jaspe2d/jaspe2d.js?v=jaspe-dashboard-01" defer></script>
+  <script src="./modules/safe/safe-assistant.js" defer></script>
+  <script src="./modules/jaspe2d/dashboard-companion.js" defer></script>
+  <script src="./app.js?v=jaspe-dashboard-01" defer></script>
 </head>
 <body>
 <!--
@@ -388,6 +391,27 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             </ol>
           </nav>
 
+          <section id="jaspeDashboardWelcome" class="dashboard-hero jaspe-hero" aria-label="Votre assistante Jaspe">
+            <button type="button" class="jaspe-hero__character" id="jaspeHeroLauncher" data-jaspe-open aria-label="Ouvrir Jaspe en entier et discuter" aria-haspopup="dialog" aria-controls="jaspePanelOverlay">
+              <span class="jaspe-character-host" id="jaspeDashboardCharacter">
+                <img class="jaspe-character-fallback" src="./assets/jaspe2d/attente-v13/adossee-detouree.png" alt="" decoding="async">
+              </span>
+              <span class="jaspe-hero__open-hint"><i data-lucide="expand"></i> Maintenez pour ouvrir</span>
+            </button>
+            <div class="jaspe-hero__speech">
+              <div class="jaspe-hero__identity"><span>Votre assistante SchoolSafe</span><h1>JASPE <i data-lucide="sparkles" aria-hidden="true"></i></h1></div>
+              <div class="jaspe-hero__bubble"><strong>Bonjour <span id="jaspeHeroName"></span> !</strong><p>Je vous aide à vous concentrer sur l’essentiel.</p></div>
+              <div class="jaspe-hero__badges"><span><i data-lucide="sprout"></i> Plus simple</span><span><i data-lucide="shield-check"></i> Plus sûr</span><span><i data-lucide="heart"></i> Plus serein</span></div>
+            </div>
+            <aside class="jaspe-hero__about"><i data-lucide="sparkles" aria-hidden="true"></i><h2>À vos côtés,<br>chaque jour.</h2><p>Un quotidien scolaire plus simple et plus sûr.</p><ul><li><i data-lucide="circle-check"></i> Vous informe</li><li><i data-lucide="circle-check"></i> Vous accompagne</li><li><i data-lucide="circle-check"></i> Vous aide à agir</li></ul><small>L’intelligence au service<br>de chaque enfant.</small></aside>
+            <div class="jaspe-hero__chat" data-jaspe-chat>
+              <div class="safe-chat-log" data-jaspe-chat-log role="status" aria-live="polite" aria-label="Réponse de Jaspe"></div>
+              <div class="safe-chat-input-row"><input type="text" data-jaspe-chat-input aria-label="Votre question à Jaspe" autocomplete="off" placeholder="Posez votre question à Jaspe…"><button type="button" data-jaspe-chat-send aria-label="Envoyer à Jaspe"><i data-lucide="arrow-up"></i></button><button type="button" id="jaspeHeroMic" data-jaspe-audio aria-label="Parler à Jaspe dans le tableau de bord" aria-pressed="false"><i data-lucide="mic"></i><span>Audio</span></button></div>
+              <p id="jaspeHeroAudioStatus" class="jaspe-audio-status" role="status" hidden></p>
+              <p class="jaspe-access-message" id="jaspeAccessMessage" role="status" hidden>Jaspe n’est pas activée pour ce compte.</p>
+            </div>
+          </section>
+
           <!-- ===== DASHBOARD CONTAINER ===== -->
           <div class="workspace-grid" id="dashboardContainer">
 
@@ -407,21 +431,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               </div>
             </div>
 
-            <div class="dashboard-hero">
-              <div class="hero-copy">
-                <span class="hero-label">Vue d'ensemble</span>
-                <h1 id="desktopHeroTitle">Votre école, en un regard.</h1>
-                <p>Retrouvez vos outils et les informations utiles à votre journée.</p>
-                <p class="hero-date" id="heroDate"></p>
-                <div class="hero-actions">
-                  <a class="hero-cta hero-cta--primary" href="#desktopModuleGrid"><i data-lucide="layout-grid" aria-hidden="true"></i> Mes outils</a>
-                </div>
-              </div>
-              <div class="hero-visual">
-                <img src="./schoolsafe-logo.png" alt="" class="hero-illustration">
-              </div>
-            </div>
-
             <div class="dashboard-kpi" id="dashboardKpi">
               <article class="kpi-card"><span class="kpi-icon blue"><i data-lucide="users"></i></span><div><b id="kpiStudents">—</b><span>Élèves inscrits</span><small id="kpiStudentsTrend">—</small></div></article>
               <article class="kpi-card"><span class="kpi-icon green"><i data-lucide="user-check"></i></span><div><b id="kpiStaff">—</b><span>Personnel actif</span><small id="kpiStaffTrend">—</small></div></article>
@@ -433,6 +442,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
             <div class="dashboard-body">
               <div class="dashboard-body-main">
+                <section class="dashboard-section dashboard-features">
+                  <header><h3 id="desktopToolsTitle">Fonctionnalités</h3><p class="dashboard-section-subtitle">Ce que vous faites dans SchoolSafe</p></header>
+                  <div class="module-grid" id="desktopModuleGrid" tabindex="-1" aria-labelledby="desktopToolsTitle"></div>
+                </section>
                 <section class="dashboard-section ecosystem-row" aria-label="Écosystème SchoolSafe">
                   <header><h3>Écosystème SchoolSafe</h3><span class="ecosystem-hint">Services connectés</span></header>
                   <div class="ecosystem-grid" id="ecosystemGrid">
@@ -474,10 +487,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                     </button>
                   </div>
                 </section>
-                <section class="dashboard-section">
-                  <header><h3 id="desktopToolsTitle">Mes outils</h3></header>
-                  <div class="module-grid" id="desktopModuleGrid" tabindex="-1" aria-labelledby="desktopToolsTitle"></div>
-                </section>
+
 
                 <div class="dashboard-bottom-grid">
                   <section class="dashboard-section">
@@ -502,13 +512,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               </div>
 
               <aside class="dashboard-right-column">
-                <section class="dashboard-section" data-jaspe-chat aria-label="Conversation Jaspe">
-                  <header><h3>Jaspe — votre assistante</h3><span class="ecosystem-hint">Discussion en direct</span></header>
-                  <div class="safe-chat-log" data-jaspe-chat-log role="log" aria-live="polite" aria-label="Historique de conversation Jaspe"></div>
-                  <div class="safe-chat-input-row">
-                    <input type="text" data-jaspe-chat-input aria-label="Votre question à Jaspe" autocomplete="off" placeholder="Posez votre question à Jaspe…">
-                  </div>
-                </section>
                 <section class="dashboard-section">
                   <header><h3>Alertes importantes</h3><button class="section-link" type="button">Tout voir <i data-lucide="chevron-right"></i></button></header>
                   <div class="alert-list compact" id="importantAlerts">
@@ -535,22 +538,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               </div>
             </div>
 
-            <div class="dashboard-hero dashboard-hero--mobile">
-              <div class="hero-copy">
-                <span class="hero-label">Vue d'ensemble</span>
-                <h1>Votre école, en un regard.</h1>
-                <p>Vos outils et les informations utiles à votre journée.</p>
-                <div class="hero-actions">
-                  <a class="hero-cta hero-cta--primary" href="#mobileQuickAccess"><i data-lucide="layout-grid" aria-hidden="true"></i> Mes outils</a>
-                </div>
-              </div>
-              <div class="hero-visual">
-                <img src="./schoolsafe-logo.png" alt="" class="hero-illustration">
-              </div>
-            </div>
-
             <section class="mobile-section">
-              <header><h3 id="mobileToolsTitle">Mes outils</h3></header>
+              <header><h3 id="mobileToolsTitle">Fonctionnalités</h3></header>
               <div class="quick-access-grid" id="mobileQuickAccess" tabindex="-1" aria-labelledby="mobileToolsTitle"></div>
             </section>
 
@@ -561,6 +550,47 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               <article class="kpi-card"><span class="kpi-icon gold"><i data-lucide="activity"></i></span><div><b id="mkpiPresence">—</b><span>Taux de présence</span><small id="mkpiPresenceTrend">—</small></div></article>
             </div>
 
+                <section class="mobile-section ecosystem-row" aria-label="Écosystème SchoolSafe">
+                  <header><h3>Écosystème SchoolSafe</h3><span class="ecosystem-hint">Services connectés</span></header>
+                  <div class="ecosystem-grid" id="ecosystemGridMobile">
+                    <button type="button" class="ecosystem-card ecosystem-card--security" data-ecosystem="security">
+                      <span class="ecosystem-card__icon"><i data-lucide="scan-line"></i></span>
+                      <span class="ecosystem-card__title">Sécurité &amp; Accès</span>
+                      <span class="ecosystem-card__desc">Entrées, sorties et contrôle QR</span>
+                      <span class="ecosystem-card__status" data-status="active">Actif</span>
+                    </button>
+                    <button type="button" class="ecosystem-card ecosystem-card--cards" data-ecosystem="cards">
+                      <span class="ecosystem-card__icon"><i data-lucide="id-card"></i></span>
+                      <span class="ecosystem-card__title">Cartes élèves</span>
+                      <span class="ecosystem-card__desc">Émission et impression protégées</span>
+                      <span class="ecosystem-card__status" data-status="active">Actif</span>
+                    </button>
+                    <button type="button" class="ecosystem-card ecosystem-card--guardian" data-ecosystem="guardian">
+                      <span class="ecosystem-card__icon"><i data-lucide="heart-handshake"></i></span>
+                      <span class="ecosystem-card__title">Guardian</span>
+                      <span class="ecosystem-card__desc">Personnes autorisées de retrait</span>
+                      <span class="ecosystem-card__status" data-status="active">Actif</span>
+                    </button>
+                    <button type="button" class="ecosystem-card ecosystem-card--watch" data-ecosystem="watch">
+                      <span class="ecosystem-card__icon"><i data-lucide="watch"></i></span>
+                      <span class="ecosystem-card__title">SchoolSafe Watch</span>
+                      <span class="ecosystem-card__desc">Bracelets élèves connectés</span>
+                      <span class="ecosystem-card__status" data-status="soon">Bientôt</span>
+                    </button>
+                    <button type="button" class="ecosystem-card ecosystem-card--staffid" data-ecosystem="staffid">
+                      <span class="ecosystem-card__icon"><i data-lucide="badge-check"></i></span>
+                      <span class="ecosystem-card__title">StaffID</span>
+                      <span class="ecosystem-card__desc">Identification du personnel</span>
+                      <span class="ecosystem-card__status" data-status="soon">Bientôt</span>
+                    </button>
+                    <button type="button" class="ecosystem-card ecosystem-card--lab" data-ecosystem="lab">
+                      <span class="ecosystem-card__icon"><i data-lucide="flask-conical"></i></span>
+                      <span class="ecosystem-card__title">Lab</span>
+                      <span class="ecosystem-card__desc">Expérimentations pédagogiques</span>
+                      <span class="ecosystem-card__status" data-status="soon">Bientôt</span>
+                    </button>
+                  </div>
+                </section>
             <section class="mobile-section">
               <header><h3>Alertes importantes</h3><button class="section-link" type="button">Tout voir <i data-lucide="chevron-right"></i></button></header>
               <div class="alert-list" id="mobileImportantAlerts">
@@ -568,13 +598,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               </div>
             </section>
 
-            <section class="mobile-section" data-jaspe-chat aria-label="Conversation Jaspe">
-              <header><h3>Jaspe — votre assistante</h3><span class="ecosystem-hint">Discussion en direct</span></header>
-              <div class="safe-chat-log safe-chat-log--mobile" data-jaspe-chat-log role="log" aria-live="polite" aria-label="Historique de conversation Jaspe"></div>
-              <div class="safe-chat-input-row">
-                <input type="text" data-jaspe-chat-input aria-label="Votre question à Jaspe" autocomplete="off" placeholder="Posez votre question à Jaspe…">
-              </div>
-            </section>
 
           </div>
 
@@ -832,6 +855,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
           <i data-lucide="layout-dashboard"></i>
           <span>Dashboard</span>
         </button>
+        <button class="ss-bottom-nav__item ss-bottom-nav__jaspe" type="button" data-bottom-nav="jaspe" aria-label="Jaspe — maintenir pour la faire sortir" aria-haspopup="dialog" aria-controls="jaspePanelOverlay"><span class="jaspe-nav-avatar"><img src="./assets/jaspe2d/attente-v13/adossee-detouree.png" alt=""></span><span>JASPE</span></button>
         <button class="ss-bottom-nav__item" type="button" data-bottom-nav="menu" aria-label="Menu">
           <i data-lucide="menu"></i>
           <span>Menu</span>
@@ -898,25 +922,18 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <!-- BLOC 2 — Panneau conversation JASPE plein écran (appel de Jaspe) -->
-  <div class="jaspe-panel-overlay" id="jaspePanelOverlay" aria-hidden="true">
-    <aside class="jaspe-panel" id="jaspePanel" role="dialog" aria-modal="true" aria-labelledby="jaspePanelTitle">
-      <header class="jaspe-panel__header">
-        <span class="jaspe-panel__avatar"><img src="./assets/jaspe2d/attente-v13/adossee-detouree.png" alt="" draggable="false"></span>
-        <span class="jaspe-panel__title" id="jaspePanelTitle">Jaspe — votre assistante</span>
-        <span class="jaspe-panel__modes">
-          <button class="jaspe-panel__mode-btn is-active" type="button" data-jaspe-mode="text" aria-pressed="true">💬 Écrit</button>
-          <button class="jaspe-panel__mode-btn" type="button" data-jaspe-mode="audio" aria-pressed="false">🎤 Audio</button>
-        </span>
-        <button class="jaspe-panel__close" type="button" id="jaspePanelClose" aria-label="Fermer la conversation">✕</button>
-      </header>
-      <div class="jaspe-panel__body" id="jaspePanelBody" role="log" aria-live="polite" aria-label="Historique de conversation Jaspe"></div>
-      <footer class="jaspe-panel__footer">
-        <input class="jaspe-panel__input" type="text" id="jaspePanelInput" aria-label="Votre question à Jaspe" autocomplete="off" placeholder="Posez votre question à Jaspe…">
-        <button class="jaspe-panel__mic" type="button" id="jaspePanelMic" aria-label="Parler à Jaspe" title="Mode audio — parler à Jaspe"><i data-lucide="mic"></i></button>
-        <button class="jaspe-panel__send" type="button" id="jaspePanelSend" aria-label="Envoyer"><i data-lucide="send"></i></button>
-      </footer>
-    </aside>
-  </div>
+  <dialog class="jaspe-panel-overlay" id="jaspePanelOverlay" aria-labelledby="jaspePanelTitle" aria-modal="false">
+    <div class="jaspe-panel-layout">
+      <div class="jaspe-full-stage" id="jaspeFullStage" aria-label="Jaspe en corps entier"><span class="jaspe-full-caption">Toujours à vos côtés.</span></div>
+      <section class="jaspe-panel" id="jaspePanel">
+        <header class="jaspe-panel__header"><div><span class="jaspe-panel__eyebrow">Votre assistante SchoolSafe</span><h2 id="jaspePanelTitle">Un moment avec Jaspe</h2></div><button class="jaspe-panel__close" id="jaspePanelClose" type="button" aria-label="Fermer et ramener Jaspe dans le bandeau"><i data-lucide="x"></i></button></header>
+        <div class="jaspe-panel__modes"><button type="button" data-jaspe-mode="text" aria-pressed="true"><i data-lucide="message-circle"></i> Écrit</button><button type="button" data-jaspe-mode="audio" aria-pressed="false"><i data-lucide="mic"></i> Audio</button></div>
+        <div class="jaspe-panel__body" id="jaspePanelBody" role="status" aria-live="polite" aria-label="Réponse de Jaspe"></div>
+        <p class="jaspe-panel__status" id="jaspePanelStatus" role="status" hidden></p>
+        <form class="jaspe-panel__footer" id="jaspePanelForm"><label class="sr-only" for="jaspePanelInput">Votre question à Jaspe</label><input id="jaspePanelInput" autocomplete="off" placeholder="Écrivez à Jaspe…"><button id="jaspePanelMic" type="button" aria-label="Démarrer l’écoute" aria-pressed="false" hidden><i data-lucide="mic"></i></button><button id="jaspePanelSend" type="submit" aria-label="Envoyer le message"><i data-lucide="arrow-up"></i></button></form>
+      </section>
+    </div>
+  </dialog>
 
 </body>
 </html>

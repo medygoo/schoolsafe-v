@@ -91,7 +91,6 @@
     inputDraft: "",
     lastTopic: "",
     discreet: readDiscreetPreference(),
-    history: [],
   };
 
   
@@ -110,6 +109,7 @@
   var authInputMode = false;
   var authFocusListenerBound = false;
   var conversationOwner = null;
+  var embeddedPresentation = false;
 
   function readDiscreetPreference() {
     try { return global.localStorage.getItem(DISCREET_STORAGE_KEY) === "1"; } catch (e) { return false; }
@@ -124,7 +124,6 @@
     state.currentMessage = "";
     state.inputDraft = "";
     state.lastTopic = "";
-    state.history = [];
     state.animation = "Idle";
     state.open = false;
     state.suggestions = defaultSuggestions();
@@ -205,15 +204,17 @@
         state.userHidden = false;
       }
     }
+    syncConversationOwner();
     if (!surfaceSupportsJaspe(currentSurface)) {
       removeVisualSurface(true);
+      notifyHistoryListeners();
       return false;
     }
     if (!isAllowed()) {
       removeVisualSurface(true);
+      notifyHistoryListeners();
       return false;
     }
-    syncConversationOwner();
     ensureContainer();
     container.hidden = false;
     container.dataset.surface = currentSurface;
@@ -383,12 +384,14 @@
   function refreshAccess() {
     conversationOwner = null;
     if (!initialized) init();
+    syncConversationOwner();
     if (!surfaceSupportsJaspe(currentSurface || detectSurface())) {
       removeVisualSurface(true);
       return false;
     }
     if (!isAllowed()) {
       removeVisualSurface(true);
+      notifyHistoryListeners();
       return false;
     }
     return setSurface(currentSurface || detectSurface());
@@ -432,15 +435,7 @@
     return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  // Historique borné : la conversation reste lisible sans croître sans limite.
-  var HISTORY_LIMIT = 30;
-  function pushHistory(from, text) {
-    var value = String(text || "").trim();
-    if (!value) return;
-    state.history.push({ from: from, text: value.slice(0, 600) });
-    if (state.history.length > HISTORY_LIMIT) state.history.splice(0, state.history.length - HISTORY_LIMIT);
-  }
-
+  // Seule la réponse en cours est conservée en mémoire, jamais de journal de chat.
   // Miroir dashboard : sections chat fixes (desktop + mobile) synchronisées
   // depuis l'état de la conversation Jaspe, sans duplication de logique.
   function mirrorDashboardChats() {
@@ -450,14 +445,10 @@
       var input = mirrors[index].querySelector("input[data-jaspe-chat-input]");
       if (!output) continue;
       var html = "";
-      if (state.history.length) {
-        state.history.forEach(function (entry) {
-          html += '<p class="safe-history-line safe-history-line--' + (entry.from === "user" ? "user" : "jaspe") + '"><b>' + (entry.from === "user" ? "Vous" : "Jaspe") + '</b> ' + escape(entry.text) + '</p>';
-        });
-      } else if (state.currentMessage) {
+      if (state.currentMessage) {
         html += '<p class="safe-history-line safe-history-line--jaspe"><b>Jaspe</b> ' + escape(state.currentMessage) + '</p>';
       } else {
-        html += '<p class="safe-chat-empty">Posez votre question à Jaspe — elle répond ici et dans sa bulle flottante.</p>';
+        html += '<p class="safe-chat-empty">Écrivez ou parlez à Jaspe. Sa réponse apparaît ici.</p>';
       }
       output.innerHTML = html;
       output.scrollTop = output.scrollHeight;
@@ -473,21 +464,36 @@
           }
         });
       }
+      var sendBtn = mirrors[index].querySelector("[data-jaspe-chat-send]");
+      if (sendBtn && sendBtn.dataset.bound !== "true") {
+        sendBtn.dataset.bound = "true";
+        sendBtn.addEventListener("click", function (event) {
+          var mirror = event.currentTarget.closest("[data-jaspe-chat]");
+          var field = mirror && mirror.querySelector("input[data-jaspe-chat-input]");
+          if (!field) return;
+          var value = field.value;
+          if (!value.trim()) return;
+          field.value = "";
+          if (global.SafeAssistant && typeof global.SafeAssistant.openWithQuery === "function") {
+            global.SafeAssistant.openWithQuery(value);
+          }
+        });
+      }
     }
   }
 
   function render() {
     if (!container || !surfaceSupportsJaspe(currentSurface)) return;
-    // Enregistrer la réponse Jaspe dans l'historique (une seule fois par réponse).
-    if (state.currentMessage) {
-      var lastEntry = state.history[state.history.length - 1];
-      if (!lastEntry || lastEntry.from !== "jaspe" || lastEntry.text !== state.currentMessage) {
-        pushHistory("jaspe", state.currentMessage);
-      }
-    }
     if (!isAllowed()) { // session devenue réelle sans safe.assistant.use : masquer Jaspe
       container.innerHTML = "";
       container.hidden = true;
+      notifyHistoryListeners();
+      return;
+    }
+    if (embeddedPresentation) {
+      container.hidden = true;
+      mirrorDashboardChats();
+      notifyHistoryListeners();
       return;
     }
     var previousInput = container.querySelector("#safeInput");
@@ -502,13 +508,7 @@
       html += '<div class="safe-bubble" id="safeJaspeBubble" role="dialog" aria-label="Dialogue Jaspe">';
       html += '<div class="safe-bubble-header"><strong>Jaspe</strong><span class="safe-bubble-tools"><button class="safe-position-reset" type="button" aria-label="Réinitialiser la position de Jaspe" title="Réinitialiser la position de Jaspe">↺</button><button class="safe-bubble-close" aria-label="Fermer">✕</button></span></div>';
       html += '<div class="safe-bubble-body" role="log" aria-live="polite">';
-      if (state.history.length) {
-        state.history.forEach(function (entry) {
-          html += '<p class="safe-history-line safe-history-line--' + (entry.from === "user" ? "user" : "jaspe") + '"><b>' + (entry.from === "user" ? "Vous" : "Jaspe") + '</b> ' + escape(entry.text) + '</p>';
-        });
-      } else {
-        html += '<p role="status" aria-live="polite">' + escape(state.currentMessage) + '</p>';
-      }
+      html += '<p role="status" aria-live="polite">' + escape(state.currentMessage) + '</p>';
       if (state.suggestions.length) {
         html += '<div class="safe-suggestions">';
         state.suggestions.forEach(function (s) {
@@ -620,6 +620,7 @@
 
   function playVisual(animation, options) {
     state.animation = animation;
+    if (embeddedPresentation) notifyHistoryListeners();
     // JASPE 2.5D : la synchronisation visuelle est gérée par le rendu 2.5D.
   }
 
@@ -827,7 +828,6 @@
     var text = raw.toLowerCase();
     if (!text) return;
     state.inputDraft = "";
-    pushHistory("user", raw);
     var input = container && container.querySelector("#safeInput");
     if (input) input.value = "";
     playVisual("Listening", { once: false });
@@ -1091,7 +1091,7 @@
     });
   }
 
-  // Callbacks abonnés aux changements d'historique (panneau conversation plein écran).
+  // Notification de la réponse courante ; noms publics conservés pour compatibilité.
  var historyListeners = [];
  function notifyHistoryListeners() {
  for (var i = 0; i < historyListeners.length; i++) {
@@ -1106,8 +1106,14 @@
  refreshAccess: refreshAccess,
  setSurface: setSurface,
  setDashboardVisible: setDashboardVisible,
- getHistory: function () { return state.history.slice(); },
- getCurrentMessage: function () { return state.currentMessage || ""; },
+ // Compatibility: one current response, no accumulated conversation.
+ getHistory: function () { return isAllowed() && state.currentMessage ? [{ from: "jaspe", text: state.currentMessage }] : []; },
+ getCurrentMessage: function () { return isAllowed() ? state.currentMessage || "" : ""; },
+ getAnimation: function () { return isAllowed() ? state.animation : "Idle"; },
+ setEmbeddedPresentation: function (enabled) {
+   embeddedPresentation = enabled === true;
+   if (container) render();
+ },
  onHistoryChange: function (fn) {
  if (typeof fn === "function" && historyListeners.indexOf(fn) < 0) {
  historyListeners.push(fn);
