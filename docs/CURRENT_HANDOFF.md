@@ -1,6 +1,68 @@
 # Handoff courant SchoolSafe
 
-## Lot courant — 16 septembre 2026 : parcours vocal et interruption
+## Lot courant — 16 septembre 2026 : se lever, expliquer, se rasseoir
+
+**TERMINÉ.** Le propriétaire a autorisé la suite du plan assise/debout. Le lot
+vocal précédent et ses réserves restent dans l'historique ci-dessous.
+
+### Livré
+
+- Quatre planches nouvelles : `se-lever-clair.png`, `se-lever-sombre.png`,
+  `debout-parole-clair.png`, `debout-parole-sombre.png`. Même identité et tenue,
+  haut du corps visible, bureau masquant le bas ; aucune nouvelle 3D.
+- Séquence finie assise → appui des mains → montée → explication debout avec
+  les deux mains. La descente réutilise les quatre étapes de montée à l'envers.
+- Les explications `TalkHandsOpen` / `TalkPassionately` déclenchent cette séquence
+  dans le bandeau. La salutation reste assise. La fin ou l'arrêt de la voix
+  ramène JASPE au repos ; une autre action interrompt le geste et la fait asseoir.
+- Préchargement des deux planches nécessaires, repli sur parole assise si elles
+  manquent, annulation des chargements devenus obsolètes, pose fixe en mouvements
+  réduits. La version flottante entière conserve son moteur et ses gestes.
+- Aperçu enrichi : **Se lever et expliquer** / **Se rasseoir · repos**,
+  lien `http://127.0.0.1:4176/jaspe-assise-preview.html#debout`.
+
+### Fichiers et contrôles
+
+- Assets, `manifest.json`, `prompts-debout.json`, README ;
+  `seated-companion.js`, raccord dans `dashboard-companion.js`,
+  `jaspe-seated.css`, aperçu, nouveau `qa-jaspe-standing.cjs`, complément du
+  test vocal, version du cache et contrat associé, décisions et ce handoff.
+- **14 planches / 56 vignettes, 22,68 Mio** : dimensions 1536×1024 / grille 2×2
+  vérifiées ; SHA-256 des dix planches précédentes inchangés. Un brouillon de
+  montée a été écarté ; les prompts décrivent la correction de cadrage/échelle.
+- **PASS** `qa-jaspe-standing` : ordre montée/descente, gestes, interruption en
+  montée, durée, thème, mouvements réduits, désactivation, asset manquant sans
+  boucle réseau et absence de débordement à 390/320 pixels.
+- **PASS** `qa-jaspe-voice` : 1440 clair / 390 sombre, explication debout jusqu'à
+  la fin de la voix simulée et retour assis ; arrêts, micro, changement de compte
+  et dialogue avec clavier restent couverts. `qa-jaspe-dashboard`,
+  `qa-jaspe-seated`, accès assistant, contrat visuel et permissions (3/3) : PASS.
+- Syntaxe JavaScript et `git diff --check` : PASS. Pas de changement métier,
+  permissions, base, argent ou migrations ; aucun test SQL nécessaire pour ce lot.
+- Capture comparative clair/sombre inspectée et nouvelle animation vérifiée dans
+  le navigateur intégré. Son ancien cache gardait d'abord le lecteur précédent ;
+  rechargement de l'application puis de l'aperçu effectué, nouvelle pose confirmée.
+  Question « Qui es-tu ? » essayée dans le tableau de bord de démonstration sombre.
+
+### Limites et prochaine action
+
+Animation par poses avec fondu court, fonds intégrés : ce n'est pas une animation
+continue ni une synchronisation phonétique. Les planches conservent de légères
+variations de dessin entre les poses. Micro humain, qualité sonore et téléphone
+physique restent à valider comme au lot vocal précédent.
+
+Prochaine action : faire essayer au propriétaire une explication écrite puis
+audio sur son appareil et recueillir son retour sur le rythme montée/retour et
+la voix. Les développements du plan assise/debout sont livrés ; ne pas élargir
+ce lot à un raccordement IA/Cloudflare. Réserves métier Le Sage/P5/base réelle
+inchangées. `.claude/` et les deux PNG utilisateur à la racine restent hors lot.
+
+Lot Git : `feat(jaspe): se lever et expliquer au tableau de bord` ; SHA dans Git.
+Synchronisation annoncée uniquement après comparaison HEAD/branche distante.
+
+---
+
+## Historique — 16 septembre 2026 : parcours vocal et interruption
 
 Le propriétaire a repris le chantier par « GO » après les conseils sur le naturel
 des gestes et la validation du parcours vocal. La clôture précédente est historique.

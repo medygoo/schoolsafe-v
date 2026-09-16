@@ -36,7 +36,8 @@
     if (seated && !dialog.open) {
       var actions = { idle: "idle", listen: "listen", think: "think", speak: "speak", explain: "speakBoth", success: "smile", refuse: "neutral", error: "neutral" };
       var duration = { speak: 4800, explain: 3500, success: 3400, think: 6000 };
-      seated.setAction(actions[kind] || "neutral", settings || { duration: duration[kind] || 0 });
+      var action = kind === "explain" && settings && settings.standing ? "standExplain" : actions[kind];
+      seated.setAction(action || "neutral", settings || { duration: duration[kind] || 0 });
     }
   }
 
@@ -189,7 +190,7 @@
       setStatus("Jaspe vous répond…");
       var kind = animation === "Shrug" ? "refuse" :
         (animation === "TalkHandsOpen" || animation === "TalkPassionately" || animation === "Wave" ? "explain" : "speak");
-      intent(kind, kind === "refuse" ? undefined : { duration: 0, audioPhase: true });
+      intent(kind, kind === "refuse" ? undefined : { duration: 0, audioPhase: true, standing: animation === "TalkHandsOpen" || animation === "TalkPassionately" });
     };
     function finish(failed) {
       if (voiceUtterance !== utterance) return;
@@ -268,7 +269,8 @@
     if (animation !== lastAnimation || responseChanged) {
       lastAnimation = animation;
       var mapping = { Idle: "idle", Listening: "listen", Thinking: "think", Wave: "explain", Agree: "success", Shrug: "refuse", TalkHandsOpen: "explain", TalkPassionately: "explain" };
-      intent(mapping[animation] || "speak");
+      var standing = animation === "TalkHandsOpen" || animation === "TalkPassionately";
+      intent(mapping[animation] || "speak", standing ? { standing: true, duration: 6500 } : undefined);
     }
     if (audioMode && !recognition && !document.hidden && response && response !== lastSpoken && animation !== "Listening" && animation !== "Thinking") {
       speakResponse(response, animation);

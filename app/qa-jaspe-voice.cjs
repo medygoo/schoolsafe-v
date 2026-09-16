@@ -79,6 +79,13 @@ async function checkVoice(page, width) {
   await mic.click();
   await pose('idle');
 
+  // A longer explanation rises in the banner and sits down when speech finishes.
+  await field.fill('qui es tu');
+  await send.click();
+  await pose('standExplain');
+  await page.evaluate(() => qaUtterance.onend());
+  await pose('idle');
+
   // Floating character stops speaking and adopts listening without its old hold timer.
   await page.locator('#jaspeHeroLauncher').click();
   await page.locator('[data-jaspe-mode="audio"]').click();

@@ -4,6 +4,7 @@
 [data-theme="dark"] .jaspe-seated:not([data-ready="true"]):not([data-theme="light"]), .jaspe-seated[data-theme="dark"]:not([data-ready="true"]) { background-image: url("../../assets/jaspe2d/assise-v1/sourire-sombre.png"); }
 .jaspe-seated__frame, .jaspe-seated__desk { display: block; position: absolute; inset: 0; background-size: 200% 200%; background-repeat: no-repeat; background-position: 0 0; }
 .jaspe-seated__frame { opacity: 0; transition: opacity 65ms linear; }
+.jaspe-seated:is([data-posture="rising"], [data-posture="sitting"]) .jaspe-seated__frame { transition-duration: 120ms; }
 .jaspe-seated__desk { clip-path: inset(89% 0 0); z-index: 2; }
 .jaspe-seated--still .jaspe-seated__frame { transition: none; }
 #jaspeHeroLauncher > #jaspeDashboardCharacter { display: none; }

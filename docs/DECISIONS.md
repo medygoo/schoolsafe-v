@@ -78,10 +78,27 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
   un contrôle direct de lecture/arrêt de la réponse courante ; aucun historique.
 - Le changement de compte/contexte doit couper la voix et le micro, même si le
   compte suivant a lui aussi accès à JASPE. Aucun démarrage automatique du micro.
-- **À CONCRÉTISER, demande exprimée pendant ce lot** : JASPE peut se lever dans le
+- **CONCRÉTISÉE par le lot suivant, initialement à faire pendant ce lot** : JASPE peut se lever dans le
   bandeau, cadrée sur le haut du corps et adaptée au fond. Proposition présentée :
   bureau masquant le bas du corps, séquence assise/appui/debout/retour et déclinaisons
   clair/sombre. Aucune nouvelle image ni transition livrée par le lot vocal.
+
+## Complément du 16 septembre — transition assise/debout
+
+- **VALIDÉE ET APPLIQUÉE**, suite du plan autorisée par le propriétaire : dans le
+  bandeau, JASPE se lève derrière son bureau pour expliquer avec les deux mains,
+  puis se rassoit. Le bureau masque le bas du corps ; garder l'identité et la tenue.
+- Deux familles de planches clair/sombre complètent les actions assises : montée
+  en quatre étapes (lues à l'envers pour la descente) et parole debout en quatre
+  poses. Le thème choisit les images. Le corps entier flottant reste distinct.
+- Les explications `TalkHandsOpen` / `TalkPassionately` passent de la parole assise
+  à la séquence debout dans le bandeau ; salutations, écoute et lecture restent
+  assises. Cette règle complète et remplace le seul choix de pose des explications
+  du lot « deux mains ». Les contraintes de permissions et de réponse sans
+  historique ne changent pas.
+- Fin/arrêt de voix ou nouvelle action : retour assis. Perte d'accès : arrêt
+  immédiat. Mouvements réduits : pose fixe. Assets indisponibles : repli sur
+  la parole assise. Pas de synchronisation phonétique ajoutée dans ce lot.
 
 ## Décisions restant à préciser
 

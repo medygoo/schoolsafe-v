@@ -78,6 +78,34 @@
       "height": 1024,
       "bytes": 1663026,
       "sha256": "e5bcf1db00af144a57c89329211f6f00fdb69cb615fe30234b947c5d0048d3cb"
+    },
+    {
+      "file": "se-lever-clair.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1730905,
+      "sha256": "7941e8d39ed0aef461628464375ed3537b960401ed8b6932924b724d77003863"
+    },
+    {
+      "file": "se-lever-sombre.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1640862,
+      "sha256": "21a9c68dea3aa62428f458a7db7ce69bf0afaf70e45b70eea7f17e7c1cf836fb"
+    },
+    {
+      "file": "debout-parole-clair.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1722254,
+      "sha256": "2c06c3d04ad6f2093fe388eaf12a63c8bdc445e81ad466acd71992e41455c3d1"
+    },
+    {
+      "file": "debout-parole-sombre.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1620687,
+      "sha256": "0b8e0bda403664905cf94c26cfc9e8509391dda3c88c1b39073cf42862c936ee"
     }
   ]
 }

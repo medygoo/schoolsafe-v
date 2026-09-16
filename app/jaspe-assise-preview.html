@@ -32,11 +32,12 @@
   <main>
     <div class="eyebrow">SchoolSafe · JASPE en mouvement</div>
     <h1>Un geste, une séquence.</h1>
-    <p>Parole avec une ou deux mains, réflexion, sourire et lecture souriante. Choisissez une action pour voir les deux versions.</p>
+    <p>Assise ou debout derrière son bureau, JASPE accompagne ses explications de gestes. Choisissez une action pour voir les deux versions.</p>
     <div class="actions" aria-label="Actions de Jaspe">
-      <button type="button" data-action="idle" aria-pressed="true">Au repos</button>
+      <button type="button" data-action="idle" aria-pressed="true">Se rasseoir · repos</button>
       <button type="button" data-action="speak" aria-pressed="false">Parler · une main</button>
       <button type="button" data-action="speakBoth" aria-pressed="false">Parler · deux mains</button>
+      <button type="button" data-action="standExplain" aria-pressed="false">Se lever et expliquer</button>
       <button type="button" data-action="think" aria-pressed="false">Réfléchir · cheveux</button>
       <button type="button" data-action="smile" aria-pressed="false">Sourire</button>
       <button type="button" data-action="read" aria-pressed="false">Lire en souriant</button>
@@ -90,7 +91,7 @@
         stopVoice();
         utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = "fr-FR";
-        var voiceAction = selected === "speakBoth" ? "speakBoth" : "speak";
+        var voiceAction = selected === "standExplain" ? "standExplain" : selected === "speakBoth" ? "speakBoth" : "speak";
         utterance.onstart = function () { choose(voiceAction); status.textContent = "Jaspe parle…"; };
         utterance.onend = function () { utterance = null; choose("smile"); status.textContent = "Lecture terminée."; };
         utterance.onerror = function () { utterance = null; choose("idle"); status.textContent = "Lecture vocale interrompue ou indisponible."; };
@@ -100,6 +101,7 @@
       document.addEventListener("visibilitychange", function () { if (document.hidden) { stopVoice(); choose("idle"); } });
       addEventListener("pagehide", function () { stopVoice(); players.forEach(function (player) { player.destroy(); }); });
       if (location.hash === "#deux-mains") document.querySelector('[data-action="speakBoth"]').click();
+      if (location.hash === "#debout") document.querySelector('[data-action="standExplain"]').click();
     });
   </script>
 </body>
