@@ -443,9 +443,19 @@ doit pas envoyer une seconde alerte parent pour le même fait.
 Pour l'enfant, distinguer **pointage de sortie** et **remise autorisée**. Une
 empreinte/PIN/QR peut signaler une demande ou un passage ; aucune remise n'est
 validée sans personne active autorisée, photo disponible, comparaison physique
-et confirmation explicite du gardien, sous `security.pickup.manage` et portée
+et confirmation explicite du gardien ou de son remplaçant habilité, sous `security.pickup.manage` et portée
 portail. Revalider l'autorisation et la version de photo au commit. Le terminal
 ne contourne ni ce contrôle ni le verrouillage de sécurité.
+
+**Précision produit validée le 16/09, après présentation de l'audit :** le gardien
+scanne la carte QR de l'enfant et compare le visage de l'adulte présent à la photo
+de l'une des **trois personnes autorisées pour cet enfant**. En l'absence du
+gardien, l'**empreinte de l'enfant** permet l'identification ; un **remplaçant
+habilité**, connecté avec son propre profil, applique ensuite le même contrôle
+de l'adulte et confirme la remise. Le fait que l'enfant reconnaisse cet adulte
+ne remplace pas son autorisation active ni la vérification humaine. Conserver
+en audit la méthode, l'enfant, le récupérant, le validateur, le portail et l'heure.
+Ce choix de parcours ne constitue pas une preuve de son implémentation matérielle.
 
 Rapports SchoolSafe : jour, période, classe, élève, personnel, arrivées/départs,
 retards, absences confirmées et anomalies ; portées limitées et exports audités.

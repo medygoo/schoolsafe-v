@@ -1,5 +1,22 @@
 # Handoff courant SchoolSafe
 
+## Précision produit courante — QR, empreinte enfant et remplaçant habilité
+
+Le propriétaire confirme : QR de la carte enfant scanné par le gardien, contrôle
+physique/photo parmi les trois personnes autorisées. En l'absence du gardien,
+**empreinte de l'enfant**, puis **remplaçant habilité** qui vérifie l'adulte et
+confirme la remise via son propre profil. Aucun départ automatique sur biométrie
+ou seule reconnaissance de l'adulte par l'enfant. Même autorisation et même audit
+que le parcours QR. Décision inscrite dans `DECISIONS.md` et la section présences/
+remise de la proposition Device Hub. Aucun code ou appareil modifié dans ce lot.
+
+Reprise applicative inchangée : clôture A3 détaillée ci-dessous. Ses fichiers
+locaux sont conservés. PostgreSQL temporaire A3 a été arrêté après les tests ;
+les fixtures restent dans la base dédiée. Contrôle documentaire : diff relu,
+`git diff --check` ; aucun nouveau test applicatif nécessaire pour cette précision.
+
+---
+
 ## Point courant — validation de la loi JASPE et résumé Device Hub
 
 Le propriétaire valide explicitement la loi générale : JASPE agit avec les droits

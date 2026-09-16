@@ -190,6 +190,27 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
   L'accord Device Hub reste distinct : le propriétaire demande ici son résumé,
   sans valider encore son architecture structurelle.
 
+## Règle de remise d'enfant précisée et validée le 16 septembre
+
+- **VALIDÉE, confirmation explicite du propriétaire** : conserver le parcours QR
+  scanné par le gardien. La fiche de l'enfant présente les trois personnes
+  autorisées ; l'adulte présent est vérifié parmi celles-ci, avec comparaison
+  physique à la photo enregistrée et confirmation humaine avant remise.
+- **VALIDÉE pour le secours en l'absence du gardien** : c'est l'empreinte de
+  **l'enfant** qui sert à l'identifier. Un **remplaçant habilité** contrôle l'adulte
+  parmi les trois personnes autorisées et confirme la remise. Il utilise son
+  propre profil autorisé et le périmètre du portail ; aucun compte gardien partagé.
+- Le secours rejoint le même contrôle de remise que le QR. Il ne contourne ni
+  l'autorisation active de l'adulte, ni la photo, ni la confirmation, ni l'audit.
+  La reconnaissance de l'adulte par l'enfant peut aider la vérification mais
+  n'accorde pas à elle seule une autorisation de sortie. Sans adulte autorisé
+  vérifié et validateur habilité, aucune remise n'est validée par le système.
+- Conserver la trace de l'enfant, de la personne récupérante, du validateur,
+  de la méthode d'identification, du portail et de l'heure. L'empreinte reste sur
+  l'appareil ; activation biométrique facultative et autorisations prévues maintenues.
+- Décision produit à implémenter dans Guardian/Device Hub ; aucun raccordement
+  matériel ou parcours natif de remise n'est déclaré livré par cette validation.
+
 ## Décisions restant à préciser — inchangées
 
 - Technologie exacte de synthèse vocale Cloudflare lorsque le lot voix commencera.
