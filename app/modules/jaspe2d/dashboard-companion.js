@@ -13,6 +13,7 @@
   var renderedResponse = "";
   var lastAnimation = "";
   var lastSpoken = "";
+  var conversationRevision = -1;
 
   function allowed() {
     return document.body.classList.contains("screen-workspace") &&
@@ -21,7 +22,17 @@
 
   function intent(kind, settings) {
     if (!allowed()) return;
-    if (showcase) showcase.dispatch({ kind: kind, source: "dashboard-ui" });
+    if (showcase && dialog.open) {
+      var current = showcase.getState();
+      if (current && current.current.priority >= 100 && kind !== "refuse" && kind !== "error") return;
+      // Audio phase changes end ordinary gestures immediately, while refusals/errors
+      // retain the central controller's priority over decorative movement.
+      if (current && current.current.priority < 100 &&
+          (kind === "idle" || kind === "listen" || (settings && settings.audioPhase))) showcase.stop();
+      var command = { kind: kind, source: "dashboard-ui" };
+      if (settings && settings.duration === 0) command.holdMs = 0;
+      showcase.dispatch(command);
+    }
     if (seated && !dialog.open) {
       var actions = { idle: "idle", listen: "listen", think: "think", speak: "speak", explain: "speakBoth", success: "smile", refuse: "neutral", error: "neutral" };
       var duration = { speak: 4800, explain: 3500, success: 3400, think: 6000 };
@@ -30,9 +41,21 @@
   }
 
   function stopSpeaking() {
+    var hadVoice = !!voiceUtterance;
     if (voiceUtterance) voiceUtterance.onstart = voiceUtterance.onend = voiceUtterance.onerror = null;
     voiceUtterance = null;
-    if (global.speechSynthesis) global.speechSynthesis.cancel();
+    if (hadVoice && global.speechSynthesis) global.speechSynthesis.cancel();
+    if (hadVoice) intent("idle");
+    syncVoiceControls();
+  }
+
+  function syncVoiceControls() {
+    var supported = !!(global.speechSynthesis && global.SpeechSynthesisUtterance);
+    var response = global.SafeAssistant.getCurrentMessage();
+    document.querySelectorAll("[data-jaspe-voice]").forEach(function (button) {
+      button.textContent = !supported ? "Voix indisponible" : (voiceUtterance ? "Couper la voix" : "Écouter la réponse");
+      button.disabled = !allowed() || !supported || (!voiceUtterance && !response);
+    });
   }
 
   function setStatus(message) {
@@ -48,11 +71,14 @@
     recognition = null;
     if (previous) {
       previous.onresult = previous.onerror = previous.onend = null;
+      previous.onstart = null;
       try { previous.abort(); } catch (e) { /* already stopped */ }
     }
     mic.setAttribute("aria-pressed", "false");
     mic.setAttribute("aria-label", "Démarrer l’écoute");
-    document.getElementById("jaspeHeroMic").setAttribute("aria-pressed", "false");
+    var heroMic = document.getElementById("jaspeHeroMic");
+    heroMic.setAttribute("aria-pressed", "false");
+    heroMic.setAttribute("aria-label", "Parler à Jaspe dans le tableau de bord");
     if (previous) intent("idle");
   }
 
@@ -72,44 +98,109 @@
     lastSpoken = global.SafeAssistant.getCurrentMessage();
   }
 
+  function prepareSubmission() {
+    stopListening();
+    stopSpeaking();
+    renderedResponse = null;
+    lastSpoken = "";
+    setStatus(audioMode ? "Message envoyé." : "");
+  }
+
   function submit(text) {
     text = String(text || "").trim();
     if (!text || !allowed()) return;
     input.value = "";
-    stopListening();
-    renderedResponse = null;
-    lastSpoken = "";
+    prepareSubmission();
     global.SafeAssistant.openWithQuery(text);
   }
 
   function startListening() {
     if (recognition) { stopListening(); setStatus("Écoute arrêtée."); return; }
     var Recognition = global.SpeechRecognition || global.webkitSpeechRecognition;
-    if (!Recognition || !allowed()) return;
+    if (!allowed()) return;
+    if (!Recognition) {
+      setStatus("L’écoute n’est pas disponible dans ce navigateur. Vous pouvez écrire à Jaspe.");
+      return;
+    }
     stopSpeaking();
-    recognition = new Recognition();
+    try { recognition = new Recognition(); } catch (e) {
+      setStatus("Impossible de démarrer le micro. Vous pouvez continuer par écrit.");
+      return;
+    }
+    var session = recognition;
     recognition.lang = "fr-FR";
+    recognition.continuous = false;
     recognition.interimResults = false;
+    recognition.onstart = function () {
+      if (recognition !== session || !allowed()) return;
+      setStatus("Je vous écoute…");
+    };
     recognition.onresult = function (event) {
-      if (!allowed()) return;
-      submit(event.results[0][0].transcript);
-      setStatus("Message envoyé.");
+      if (recognition !== session || !allowed() || document.hidden) return;
+      var result = event.results && event.results[event.resultIndex || 0];
+      var text = result && result[0] && result[0].transcript;
+      if (String(text || "").trim()) submit(text);
     };
-    recognition.onerror = function () {
+    recognition.onerror = function (event) {
+      if (recognition !== session) return;
       stopListening();
-      intent("error");
-      setStatus("Micro indisponible ou accès refusé. Vous pouvez continuer par écrit.");
+      var messages = {
+        "no-speech": "Aucune parole détectée. Appuyez sur le micro pour réessayer.",
+        "network": "L’écoute a rencontré un problème de connexion. Vous pouvez continuer par écrit.",
+        "not-allowed": "Accès au micro refusé. Vous pouvez continuer par écrit.",
+        "service-not-allowed": "L’écoute est refusée par ce navigateur. Vous pouvez continuer par écrit.",
+        "audio-capture": "Aucun microphone disponible. Vous pouvez continuer par écrit."
+      };
+      setStatus(messages[event && event.error] || "Micro indisponible. Vous pouvez continuer par écrit.");
     };
-    recognition.onend = function () { stopListening(); };
+    recognition.onend = function () {
+      if (recognition !== session) return;
+      stopListening();
+      setStatus("Écoute terminée. Appuyez sur le micro pour réessayer.");
+    };
     mic.setAttribute("aria-pressed", "true");
     mic.setAttribute("aria-label", "Arrêter l’écoute");
     document.getElementById("jaspeHeroMic").setAttribute("aria-pressed", "true");
-    setStatus("Je vous écoute…");
-    intent("listen");
+    document.getElementById("jaspeHeroMic").setAttribute("aria-label", "Arrêter l’écoute");
+    setStatus("Ouverture du micro…");
+    intent("listen", { duration: 0 });
     try { recognition.start(); } catch (e) {
       stopListening();
       setStatus("Impossible de démarrer le micro. Vous pouvez continuer par écrit.");
     }
+  }
+
+  function speakResponse(response, animation) {
+    if (!response || !allowed() || document.hidden) return;
+    stopListening();
+    stopSpeaking();
+    if (!global.speechSynthesis || !global.SpeechSynthesisUtterance) {
+      setStatus("La voix est indisponible dans ce navigateur. La réponse reste affichée.");
+      return;
+    }
+    lastSpoken = response;
+    var utterance = new global.SpeechSynthesisUtterance(response);
+    utterance.lang = "fr-FR";
+    voiceUtterance = utterance;
+    syncVoiceControls();
+    setStatus("Préparation de la voix…");
+    utterance.onstart = function () {
+      if (voiceUtterance !== utterance || !allowed()) return;
+      setStatus("Jaspe vous répond…");
+      var kind = animation === "Shrug" ? "refuse" :
+        (animation === "TalkHandsOpen" || animation === "TalkPassionately" || animation === "Wave" ? "explain" : "speak");
+      intent(kind, kind === "refuse" ? undefined : { duration: 0, audioPhase: true });
+    };
+    function finish(failed) {
+      if (voiceUtterance !== utterance) return;
+      voiceUtterance = null;
+      intent("idle");
+      syncVoiceControls();
+      setStatus(failed ? "La voix est indisponible. La réponse reste affichée ; vous pouvez réessayer." : "Lecture terminée. Vous pouvez reparler à Jaspe.");
+    }
+    utterance.onend = function () { finish(false); };
+    utterance.onerror = function () { finish(true); };
+    try { global.speechSynthesis.speak(utterance); } catch (e) { finish(true); }
   }
 
   function syncAccess() {
@@ -122,8 +213,7 @@
     document.getElementById("jaspeAccessMessage").hidden = canUse;
     if (!canUse) {
       close();
-      stopListening();
-      stopSpeaking();
+      setMode(false);
       renderedResponse = "";
       lastSpoken = "";
       lastAnimation = "";
@@ -133,14 +223,26 @@
       input.value = "";
       if (showcase) showcase.stop();
     }
+    syncVoiceControls();
   }
 
   function syncConversation() {
     syncAccess();
     if (!allowed()) return;
+    var revision = global.SafeAssistant.getConversationRevision();
+    if (revision !== conversationRevision) {
+      conversationRevision = revision;
+      setMode(false);
+      input.value = "";
+      document.querySelectorAll("[data-jaspe-chat-input]").forEach(function (field) { field.value = ""; });
+      renderedResponse = null;
+      lastAnimation = "";
+      lastSpoken = "";
+    }
     var response = global.SafeAssistant.getCurrentMessage();
     var signature = response;
     var responseChanged = signature !== renderedResponse;
+    if (responseChanged && voiceUtterance && response !== voiceUtterance.text) stopSpeaking();
     if (signature !== renderedResponse) {
       renderedResponse = signature;
       log.replaceChildren();
@@ -168,23 +270,8 @@
       var mapping = { Idle: "idle", Listening: "listen", Thinking: "think", Wave: "explain", Agree: "success", Shrug: "refuse", TalkHandsOpen: "explain", TalkPassionately: "explain" };
       intent(mapping[animation] || "speak");
     }
-    if (audioMode && response && response !== lastSpoken && animation !== "Listening" && animation !== "Thinking" && global.speechSynthesis) {
-      lastSpoken = response;
-      stopSpeaking();
-      var utterance = new SpeechSynthesisUtterance(response);
-      utterance.lang = "fr-FR";
-      voiceUtterance = utterance;
-      utterance.onstart = function () {
-        if (voiceUtterance === utterance && allowed()) {
-          intent(animation === "TalkHandsOpen" || animation === "TalkPassionately" || animation === "Wave" ? "explain" : "speak", { duration: 0 });
-        }
-      };
-      utterance.onend = utterance.onerror = function () {
-        if (voiceUtterance !== utterance) return;
-        voiceUtterance = null;
-        intent("idle");
-      };
-      global.speechSynthesis.speak(utterance);
+    if (audioMode && !recognition && !document.hidden && response && response !== lastSpoken && animation !== "Listening" && animation !== "Thinking") {
+      speakResponse(response, animation);
     }
   }
 
@@ -223,8 +310,8 @@
   }
 
   function returned() {
-    stopListening();
-    stopSpeaking();
+    setMode(false);
+    if (showcase) showcase.stop();
     launcher.prepend(character);
     document.body.classList.remove("jaspe-is-out");
     if (seated) seated.setActive(allowed());
@@ -250,9 +337,46 @@
     log = document.getElementById("jaspePanelBody");
     mic = document.getElementById("jaspePanelMic");
     status = document.getElementById("jaspePanelStatus");
+    function fitVisibleViewport() {
+      var viewport = global.visualViewport;
+      var height = viewport ? viewport.height : global.innerHeight;
+      var bottom = viewport ? Math.max(0, global.innerHeight - height - viewport.offsetTop) : 0;
+      dialog.style.setProperty("--jaspe-view-height", height + "px");
+      dialog.style.setProperty("--jaspe-view-bottom", bottom + "px");
+      dialog.dataset.compact = String(height < 500);
+    }
+    fitVisibleViewport();
+    global.addEventListener("resize", fitVisibleViewport, { passive: true });
+    if (global.visualViewport) {
+      global.visualViewport.addEventListener("resize", fitVisibleViewport, { passive: true });
+      global.visualViewport.addEventListener("scroll", fitVisibleViewport, { passive: true });
+    }
     if (global.SchoolSafeJaspeSeated) seated = global.SchoolSafeJaspeSeated.mount(document.getElementById("jaspeSeatedCharacter"));
     global.SafeAssistant.setEmbeddedPresentation(true);
+    conversationRevision = global.SafeAssistant.getConversationRevision();
     global.SafeAssistant.onHistoryChange(syncConversation);
+    document.querySelectorAll("[data-jaspe-voice]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        if (!allowed()) return;
+        if (voiceUtterance) {
+          stopSpeaking();
+          setStatus("Voix arrêtée. Vous pouvez continuer la discussion.");
+        } else speakResponse(global.SafeAssistant.getCurrentMessage(), global.SafeAssistant.getAnimation());
+      });
+    });
+    // SafeAssistant owns these submit handlers. Capture only the audio lifecycle,
+    // before its existing listener routes the question (no duplicate submission).
+    document.querySelectorAll("[data-jaspe-chat-input]").forEach(function (field) {
+      field.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && !event.isComposing && field.value.trim() && allowed()) prepareSubmission();
+      }, true);
+    });
+    document.querySelectorAll("[data-jaspe-chat-send]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var field = button.closest("[data-jaspe-chat]").querySelector("[data-jaspe-chat-input]");
+        if (field.value.trim() && allowed()) prepareSubmission();
+      }, true);
+    });
     document.getElementById("jaspeHeroMic").addEventListener("click", function () {
       if (!allowed()) return;
       if (recognition) { stopListening(); setStatus("Écoute arrêtée."); return; }
@@ -282,11 +406,11 @@
     document.getElementById("jaspePanelForm").addEventListener("submit", function (event) { event.preventDefault(); submit(input.value); });
     mic.addEventListener("click", startListening);
     document.querySelectorAll("[data-jaspe-chat-input], #jaspePanelInput").forEach(function (field) {
-      field.addEventListener("focus", function () { intent("listen"); });
+      field.addEventListener("focus", function () { if (!recognition && !voiceUtterance) intent("listen"); });
       field.addEventListener("blur", function () { if (!recognition && !voiceUtterance) intent("idle"); });
     });
     document.addEventListener("visibilitychange", function () {
-      if (document.hidden) { stopListening(); stopSpeaking(); intent("idle"); }
+      if (document.hidden) { stopListening(); stopSpeaking(); intent("idle"); setStatus(""); }
     });
   }
 

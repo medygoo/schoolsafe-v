@@ -1,6 +1,69 @@
 # Handoff courant SchoolSafe
 
-## Clôture — 16 septembre 2026 : parole avec les deux mains
+## Lot courant — 16 septembre 2026 : parcours vocal et interruption
+
+Le propriétaire a repris le chantier par « GO » après les conseils sur le naturel
+des gestes et la validation du parcours vocal. La clôture précédente est historique.
+
+### Livré
+
+- Boutons **Écouter la réponse / Couper la voix** dans le bandeau et la boîte
+  flottante : relecture de la réponse courante, sans historique ni enregistrement.
+- Une nouvelle question écrite interrompt le micro et la voix précédents ; une
+  réponse identique à la précédente peut être prononcée de nouveau.
+- Statuts du micro corrigés à la fin de l'écoute, erreurs distinctes (silence,
+  refus, connexion, capture) et retour écrit conservé. Les événements tardifs
+  d'une écoute ou d'une voix remplacée sont ignorés.
+- Gestes de parole jusqu'à la fin réelle de l'énoncé, interruption immédiate pour
+  écouter, également en corps entier. Le moteur entier ne reçoit plus les gestes
+  du bandeau lorsqu'il est caché. Les refus/alertes gardent leur priorité.
+- Compteur de changement de contexte, sans identifiant exposé : il arrête audio et
+  micro même entre deux comptes autorisés ; sortie/onglet caché arrêtent aussi l'audio.
+- Dialogue ajusté à `visualViewport` : commandes accessibles quand le clavier réduit
+  la hauteur visible. Contrôles en clair/sombre ; cache applicatif renouvelé.
+
+### Fichiers et contrôles
+
+- `dashboard-companion.js`, compteur dans `safe-assistant.js`, boutons dans
+  `index.html`, `jaspe-dashboard.css`, `sw.js`, contrat de cache, nouveau
+  `qa-jaspe-voice.cjs`, décisions et ce handoff. Aucun asset graphique modifié.
+- Défauts reproduits avant correction : statut « Je vous écoute » après fin du
+  micro ; champ de saisie inaccessible dans la boîte à 390×360. Corrigés.
+- Contrôles navigateur **PASS** : `qa-jaspe-voice` (1440/390, clair/sombre, arrêt/relecture,
+  question répétée, événements tardifs, changement de compte autorisé, erreurs,
+  commandes à 390×360) et `qa-jaspe-dashboard` (bureau/mobile/paysage, permissions,
+  compte, réponse unique, sombre/mouvements réduits). Adaptateurs audio simulés.
+  La parole reste active au-delà des anciennes 4,5 secondes ; captures du dialogue
+  mobile et à hauteur réduite inspectées.
+- Accès assistant, contrat visuel, permissions 3/3, physique 5 tests + contrat,
+  syntaxe JS et `git diff --check` : PASS. Aucun test SQL/migration/argent relancé,
+  ces couches ne sont pas modifiées.
+- Essai dans le navigateur intégré, sans adaptateur : préparation puis fin de
+  lecture observées, seconde lecture interrompue par le bouton, démarrage du
+  micro observé, micro arrêté à la reprise/arrêt de la lecture. Pas de phrase
+  humaine transcrite validée ; qualité acoustique et téléphone réel non vérifiés.
+- Aucune modification du backend, des permissions métier, des données ou du SQL.
+  GLM/Cloudflare et synchronisation phonétique restent hors de ce lot.
+
+### Suite demandée pendant le lot
+
+Le propriétaire souhaite que JASPE puisse aussi se lever dans le bandeau, visible
+par le haut du corps, avec images adaptées à l'arrière-plan. Proposition expliquée :
+bureau fixe masquant le bas, étapes assise → appui sur les mains → debout/explique →
+retour assis, même identité et deux thèmes. **Idée discutée, images non produites et
+transition non implémentée dans ce lot vocal.** À concrétiser à la prochaine demande.
+
+Prochaine action : recueillir le retour sonore du propriétaire et essayer une phrase
+au micro sur son appareil ; puis reprendre sa demande de transition assise/debout.
+Les réserves métier Le Sage/P5/base réelle restent valides. Les fichiers utilisateur
+non suivis (`.claude/` et deux PNG racine) sont préservés hors du lot.
+
+Lot Git : `fix(jaspe): fiabiliser le parcours vocal`. SHA dans l'historique Git ;
+annoncer la synchronisation uniquement après comparaison HEAD/branche distante.
+
+---
+
+## Historique — clôture du 16 septembre 2026 : parole avec les deux mains
 
 Le propriétaire a demandé le mouvement de parole avec les deux mains, puis la
 clôture du chantier courant. Aucun nouveau développement à lancer sans sa reprise.

@@ -411,6 +411,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               <div class="safe-chat-log" data-jaspe-chat-log role="status" aria-live="polite" aria-label="Réponse de Jaspe"></div>
               <div class="safe-chat-input-row"><input type="text" data-jaspe-chat-input aria-label="Votre question à Jaspe" autocomplete="off" placeholder="Posez votre question à Jaspe…"><button type="button" data-jaspe-chat-send aria-label="Envoyer à Jaspe"><i data-lucide="arrow-up"></i></button><button type="button" id="jaspeHeroMic" data-jaspe-audio aria-label="Parler à Jaspe dans le tableau de bord" aria-pressed="false"><i data-lucide="mic"></i><span>Audio</span></button></div>
               <p id="jaspeHeroAudioStatus" class="jaspe-audio-status" role="status" hidden></p>
+              <div class="jaspe-voice-controls"><button type="button" id="jaspeHeroVoice" data-jaspe-voice disabled>Écouter la réponse</button></div>
               <p class="jaspe-access-message" id="jaspeAccessMessage" role="status" hidden>Jaspe n’est pas activée pour ce compte.</p>
             </div>
           </section>
@@ -933,6 +934,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         <div class="jaspe-panel__modes"><button type="button" data-jaspe-mode="text" aria-pressed="true"><i data-lucide="message-circle"></i> Écrit</button><button type="button" data-jaspe-mode="audio" aria-pressed="false"><i data-lucide="mic"></i> Audio</button></div>
         <div class="jaspe-panel__body" id="jaspePanelBody" role="status" aria-live="polite" aria-label="Réponse de Jaspe"></div>
         <p class="jaspe-panel__status" id="jaspePanelStatus" role="status" hidden></p>
+        <div class="jaspe-voice-controls"><button type="button" id="jaspePanelVoice" data-jaspe-voice disabled>Écouter la réponse</button></div>
         <form class="jaspe-panel__footer" id="jaspePanelForm"><label class="sr-only" for="jaspePanelInput">Votre question à Jaspe</label><input id="jaspePanelInput" autocomplete="off" placeholder="Écrivez à Jaspe…"><button id="jaspePanelMic" type="button" aria-label="Démarrer l’écoute" aria-pressed="false" hidden><i data-lucide="mic"></i></button><button id="jaspePanelSend" type="submit" aria-label="Envoyer le message"><i data-lucide="arrow-up"></i></button></form>
       </section>
     </div>

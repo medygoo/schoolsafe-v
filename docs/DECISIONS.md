@@ -71,6 +71,18 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
   Les explications (`TalkHandsOpen` / `TalkPassionately`) utilisent cette nouvelle
   séquence. Le propriétaire demande ensuite la clôture du chantier courant.
 
+## Complément du 16 septembre — reprise du parcours vocal
+
+- **VALIDÉE, reprise « GO » du propriétaire** : vérifier et corriger écouter,
+  répondre, interrompre et reprendre, dans le bandeau et en corps entier. Ajouter
+  un contrôle direct de lecture/arrêt de la réponse courante ; aucun historique.
+- Le changement de compte/contexte doit couper la voix et le micro, même si le
+  compte suivant a lui aussi accès à JASPE. Aucun démarrage automatique du micro.
+- **À CONCRÉTISER, demande exprimée pendant ce lot** : JASPE peut se lever dans le
+  bandeau, cadrée sur le haut du corps et adaptée au fond. Proposition présentée :
+  bureau masquant le bas du corps, séquence assise/appui/debout/retour et déclinaisons
+  clair/sombre. Aucune nouvelle image ni transition livrée par le lot vocal.
+
 ## Décisions restant à préciser
 
 - Technologie exacte de synthèse vocale Cloudflare lorsque le lot voix commencera.

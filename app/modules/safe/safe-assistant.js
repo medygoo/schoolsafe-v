@@ -109,6 +109,7 @@
   var authInputMode = false;
   var authFocusListenerBound = false;
   var conversationOwner = null;
+  var conversationRevision = 0;
   var embeddedPresentation = false;
 
   function readDiscreetPreference() {
@@ -120,6 +121,7 @@
     var owner = [currentSurface, user.token || "", user.userId || "", user.profileId || "", user.schoolId || "", user.role || ""].join("|");
     if (owner === conversationOwner) return;
     conversationOwner = owner;
+    conversationRevision += 1;
     if (container) container.innerHTML = "";
     state.currentMessage = "";
     state.inputDraft = "";
@@ -1109,6 +1111,7 @@
  // Compatibility: one current response, no accumulated conversation.
  getHistory: function () { return isAllowed() && state.currentMessage ? [{ from: "jaspe", text: state.currentMessage }] : []; },
  getCurrentMessage: function () { return isAllowed() ? state.currentMessage || "" : ""; },
+ getConversationRevision: function () { return conversationRevision; },
  getAnimation: function () { return isAllowed() ? state.animation : "Idle"; },
  setEmbeddedPresentation: function (enabled) {
    embeddedPresentation = enabled === true;
