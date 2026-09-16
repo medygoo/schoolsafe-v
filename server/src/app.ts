@@ -27,6 +27,7 @@ import { registerAuthNativeRoutes, type AuthNativeRouteDependencies } from "./au
 import { registerStudentsNativeRoutes, type StudentsNativeRouteDependencies } from "./studentsnative/routes.js";
 import { registerTrialNativeRoutes, type TrialNativeRouteDependencies } from "./trialnative/routes.js";
 import { registerSessionNativeRoutes, type SessionNativeRouteDependencies } from "./sessionnative/routes.js";
+import { registerAccessNativeRoutes, type AccessNativeRouteDependencies } from "./accessnative/routes.js";
 import { registerJaspeNativeRoutes, type JaspeNativeRouteDependencies } from "./jaspenative/routes.js";
 import { registerLicenseNativeRoutes, type LicenseNativeRouteDependencies } from "./licensenative/routes.js";
 import { registerFinanceNativeRoutes, type FinanceNativeRouteDependencies } from "./financenative/routes.js";
@@ -58,6 +59,7 @@ export type BuildAppOptions = {
   studentsNative?: StudentsNativeRouteDependencies;
   trialNative?: TrialNativeRouteDependencies;
   sessionNative?: SessionNativeRouteDependencies;
+  accessNative?: AccessNativeRouteDependencies;
   jaspeNative?: JaspeNativeRouteDependencies;
   licenseNative?: LicenseNativeRouteDependencies;
   financeNative?: FinanceNativeRouteDependencies;
@@ -71,7 +73,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const readinessProbe = options.readinessProbe ?? defaultReadinessProbe;
 
   app.register(cors, {
-    origin: ["http://127.0.0.1:4175", "http://localhost:4175", "http://127.0.0.1:4290", "http://localhost:4290"],
+    origin: ["http://127.0.0.1:4175", "http://localhost:4175", "http://127.0.0.1:4176", "http://localhost:4176", "http://127.0.0.1:4290", "http://localhost:4290"],
     credentials: true,
   });
   app.register(multipart, { limits: { fileSize: 2 * 1024 * 1024 } });
@@ -131,6 +133,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   if (options.sessionNative) {
     registerSessionNativeRoutes(app, options.sessionNative);
+  }
+
+  if (options.accessNative) {
+    registerAccessNativeRoutes(app, options.accessNative);
   }
 
   if (options.jaspeNative) {

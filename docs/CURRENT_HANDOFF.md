@@ -1,6 +1,83 @@
 # Handoff courant SchoolSafe
 
-## Lot courant — 16 septembre 2026 : plan commun aux agents
+## Lot courant — 16 septembre 2026 : A2, consultation des accès de l'école
+
+**A2.0–A2.2 LIVRÉS ET VALIDÉS SUR BASE DE TEST RÉELLE. PROCHAINE TÂCHE : A3.0.**
+Responsable du lot terminé : Codex ; branche `main` ; départ/fetch
+`146ad3e761dd0ba5e544726e9f12736185b29049`, identique à `origin/main`.
+Aucun fichier suivi modifié au départ ; `.claude/` et les deux PNG restent hors lot.
+
+### Réalisations et corrections
+
+- Annuaire natif des utilisateurs/rôles de l'école : recherche, pagination et
+  détail des attributions (rôles, grants, exceptions, périmètres, conditions,
+  validité). Mon compte conservé, aucun brouillon démo utilisé comme source réelle.
+- Trois GET `/native/access/profiles`, `/native/access/roles`,
+  `/native/access/profiles/:profileId` → session résolue → `roles.manage` →
+  transaction contextualisée → trois RPC SQL. Aucun acteur/tenant imposé par client.
+- Profil hors école = absent (404), sortie minimale, `no-store`, absence de
+  droits = 403, CORS local 4176 corrigé. UI : erreurs/réessai, pas de réponse
+  périmée lors d'un changement de cible, recherche, fermeture ou session.
+- Deux défauts reproduits **sur PostgreSQL réel**, puis corrigés : installation
+  bloquée par gardes « 60 permissions » malgré 64 codes ; rôle désactivé encore
+  autorisant via `iam.can_access`. Activation du rôle vérifiée pour ALLOW et DENY.
+- Contrat/preuves/protocole :
+  `docs/superpowers/specs/2026-09-16-access-directory-contract.md`.
+
+### Fichiers concernés
+
+- `server/src/accessnative/{routes,service}.ts`, assemblage `app.ts`/`native-app.ts`,
+  `server/tests/accessnative.test.ts`.
+- `database/projections/v1/03_access_read.sql`, test SQL et manifeste/générateur ;
+  baseline `08_internal_functions.sql`, `12_seed_permissions.sql`,
+  `13_verification.sql` et manifeste ; compteur des unités dans le test de manifestes.
+- Console `app/modules/administration/access-console.js`, client `access-native.js`,
+  `app/app.js`, `app/index.html`, CSS accès, version PWA/contrat, nouveau QA annuaire.
+- `scripts/test-access-postgres.mjs`, `scripts/qa-access-live.mjs`, contrat et
+  documents de continuité/plan. Aucun compte ni droit de production modifié.
+
+### Vérifications réelles
+
+- **PASS** installation fraîche PostgreSQL 17.11, 21 unités baseline/auth/access/
+  projections ; rejeu de la nouvelle RPC ; test SQL A2 sous `schoolsafe_api`,
+  deux écoles, aucune identité usurpée, dates/retrait/DENY/rôle inactif/suspension,
+  absence de lecture directe des tables. Fixtures SQL annulées par ROLLBACK.
+- **PASS** suite SQL existante `from-zero-access-law.test.sql` : classes/matières,
+  parents/enfants et isolation de trois écoles, sans régression du moteur.
+- **PASS** `qa-access-live.mjs` : vrais cookies, pools auth/métier, API native et
+  PostgreSQL ; annuaire/détail/recherche/rôles, 404 étranger, bureau/mobile sombre,
+  révocation refusée immédiatement depuis une session ouverte. Captures inspectées.
+- **PASS** QA annuaire avec API substituée : pagination, recherches concurrentes,
+  sélection A→B, fermeture tardive, panne/réessai, XSS, école incohérente, zéro écriture.
+  Régression QA A1, contrats JASPE et visuel : PASS.
+- **51/51 PASS** sur 7 fichiers serveur ciblés ; **38/38 PASS** contrats statiques
+  permissions/isolation/baseline/access/manifestes. Typecheck, syntaxe, diff : PASS.
+- Instance de test portable `%TEMP%/schoolsafe-access-a2-pg`, loopback 55432,
+  aucune installation de service/Docker. API de preuve fermée ; arrêt PostgreSQL
+  vérifié avant clôture. Les fixtures navigateur restent seulement dans la base
+  temporaire dédiée. Aucun déploiement ni validation d'une base existante.
+
+### Limites et prochaine action exacte
+
+**A3.0 : contrat des mutations et limites de délégation**, puis A3.1 attribution/
+révocation transactionnelle. Reprendre `05_iam.sql`, `02_provision_bridge.sql`,
+l'évaluateur et la fiche A3.0 du plan ; fixer rôle/permission délégable, protection
+du dernier administrateur, concurrence, confirmation dans l'UI et audit atomique.
+Ces fonctions ne sont pas encore livrées. Aucun lot applicatif suivant réservé.
+
+Restent : A4 postes, A5 exceptions et fidélité temporelle/conditionnelle du
+bootstrap existant, A6 journal, A7 recette complète. Le rejeu ci-dessus ne valide
+pas les autres ensembles métier, la licence distante ou P5/restauration.
+`02_student_list.sql` hors manifeste et anomalies d'admission toujours ouverts.
+L'application des modifications baseline à une installation exploitée reste un
+lot d'exploitation ; aucune migration de production n'a été lancée.
+
+Lot Git : `feat(access): consulter les utilisateurs et leurs droits en natif`.
+SHA dans Git ; annoncer le miroir après comparaison avec la branche GitHub réelle.
+
+---
+
+## Historique — 16 septembre 2026 : plan commun aux agents
 
 **PLAN LIVRÉ — PROCHAINE TÂCHE APPLICATIVE A2.0.** Le propriétaire a demandé
 « GO » avec un plan de travail que tout agent puisse suivre. Le plan existant

@@ -3094,7 +3094,7 @@
     document.getElementById("cardsProtected").hidden = true;
     document.getElementById("accessDemoLayout").hidden = live;
     document.getElementById("nativeAccessContent").hidden = !live;
-    document.getElementById("accessConsoleTitle").textContent = live ? "Rôles et accès du compte connecté" : "Attribuer un rôle et limiter son périmètre";
+    document.getElementById("accessConsoleTitle").textContent = live ? "Rôles et accès de l’école" : "Attribuer un rôle et limiter son périmètre";
     document.getElementById("accessConsoleDescription").textContent = live
       ? "Compte, rôles, permissions et périmètres de votre école. Un refus explicite reste prioritaire."
       : "Le modèle du rôle active les branches et actions utiles ; les ajustements restent des brouillons de démonstration.";
@@ -3139,7 +3139,15 @@
         var catalog = await window.SchoolSafeAccess.loadPermissions();
         if (revision !== accessConsoleRevision || currentSession !== expectedSession || document.getElementById("accessConsole").hidden) return;
         if (!catalog.length || window.SchoolSafeAccess.isPermissionsLoadFailed()) throw new Error("Catalogue indisponible");
-        window.SchoolSafeNativeAccessConsole.render(content, getCurrentUser(), catalog, openAccessConsole);
+        window.SchoolSafeNativeAccessConsole.render(content, getCurrentUser(), catalog, openAccessConsole, {
+          isCurrent: function () { return revision === accessConsoleRevision && currentSession === expectedSession && !document.getElementById("accessConsole").hidden; },
+          onDenied: function () {
+            clearSession();
+            closeAccessConsole();
+            showScreen("auth");
+            notify("Accès expiré ou refusé. Reconnectez-vous pour vérifier vos droits.");
+          }
+        });
       } catch (error) {
         if (revision !== accessConsoleRevision || currentSession !== expectedSession || document.getElementById("accessConsole").hidden) return;
         content.replaceChildren();

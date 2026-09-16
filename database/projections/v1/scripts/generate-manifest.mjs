@@ -6,7 +6,7 @@ import { sha256Sql } from "../../../../scripts/migration-manifest.mjs";
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const projDir = path.resolve(scriptsDir, "..");
 
-const units = ["01_student_read.sql", "02_session_bootstrap.sql"];
+const units = ["01_student_read.sql", "02_session_bootstrap.sql", "03_access_read.sql"];
 
 const manifestUnits = [];
 for (const [index, file] of units.entries()) {

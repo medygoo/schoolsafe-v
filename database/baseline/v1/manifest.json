@@ -52,7 +52,7 @@
       "order": 8,
       "name": "internal_functions",
       "file": "08_internal_functions.sql",
-      "sha256": "b980a266c1c7ff3ee7ec646fdbfadefa7cab62680ed6fdbc6aee8a38e5a2a866"
+      "sha256": "63422301ad2b9ccc6dfad079fe2c88d302e53f1ad7c20cf757a8f0ec64905ca2"
     },
     {
       "order": 9,
@@ -76,13 +76,13 @@
       "order": 12,
       "name": "seed_permissions",
       "file": "12_seed_permissions.sql",
-      "sha256": "d65d615ce4af41ac5c984d358f71342943c833cbcc083b0180cb543ed1870f78"
+      "sha256": "bfbc080d4a1c4502cd849eb00f6cc6a4ed1cf1a790ff680a26e817158da4c13a"
     },
     {
       "order": 13,
       "name": "verification",
       "file": "13_verification.sql",
-      "sha256": "7f4c20c7e7530d3bd27d2a45a75d342cf5fb662a9d100f7c62fb97ba6dae0d95"
+      "sha256": "9ae19b0d309ce76c483434e1484dae89e5ea572a02a001b84fc7502cb9e842d2"
     }
   ]
 }

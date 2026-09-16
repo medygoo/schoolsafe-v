@@ -595,6 +595,10 @@ as $schoolsafe$
         and pr.is_active = true
         and pr.starts_at <= pg_catalog.now()
         and (pr.ends_at is null or pr.ends_at >= pg_catalog.now())
+        and exists (
+          select 1 from iam.roles r
+          where r.id = pr.role_id and r.school_id = pr.school_id and r.is_active = true
+        )
         and g.effect = 'deny'
         and g.is_active = true
         and g.starts_at <= pg_catalog.now()
@@ -723,6 +727,10 @@ as $schoolsafe$
           and pr.is_active = true
           and pr.starts_at <= pg_catalog.now()
           and (pr.ends_at is null or pr.ends_at >= pg_catalog.now())
+          and exists (
+            select 1 from iam.roles r
+            where r.id = pr.role_id and r.school_id = pr.school_id and r.is_active = true
+          )
           and g.effect = 'allow'
           and g.is_active = true
           and g.starts_at <= pg_catalog.now()

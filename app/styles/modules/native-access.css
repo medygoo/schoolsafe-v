@@ -1,4 +1,12 @@
 .native-access { padding: 20px; min-width: 0; }
+.native-access-tabs, .native-access-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 18px; }
+.native-access-tabs [aria-pressed="true"] { font-weight: 700; outline: 2px solid var(--ss-text-primary); outline-offset: -2px; }
+.native-access-people { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 10px; }
+.native-access-people li { min-width: 0; padding: 8px; border: 1px solid var(--ss-border); border-radius: 8px; overflow-wrap: anywhere; }
+.native-access-people button { width: 100%; text-align: left; min-height: 48px; white-space: normal; }
+.native-access-people span, .native-access-people code { display: block; margin-top: 5px; }
+[data-access-detail] { margin-top: 24px; }
+.native-access button:disabled { opacity: .5; cursor: default; }
 #accessConsole[data-session-mode="native"] { scroll-margin-top: 80px; }
 #accessConsole[data-session-mode="native"] .ss-button { background: var(--ss-surface); color: var(--ss-text-primary); border: 1px solid var(--ss-border); }
 .native-access-summary { display: flex; justify-content: space-between; align-items: start; gap: 16px; }

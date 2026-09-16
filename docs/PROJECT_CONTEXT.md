@@ -8,7 +8,10 @@ Dernière mise à jour de la continuité : 16 septembre 2026.
   [fonctionnalités et Rôles et accès](superpowers/plans/2026-09-16-schoolsafe-functional-integration.md).
 - Priorité : terminer Rôles et accès progressivement, puis raccorder les autres
   rubriques. A1 (contexte natif et consultation du compte connecté) est livré au
-  commit `7b2896a`, avec API/base substituées dans les tests ; A2.0 est à faire.
+  commit `7b2896a`, avec API/base substituées dans les tests. A2 (annuaire et
+  attributions en lecture) est validé le 16/09 sur PostgreSQL 17.11 réel de test
+  et dans le navigateur. **A3.0 est la prochaine tâche** ; les modifications de
+  droits par l'interface et la production ne sont pas encore validées.
 - Consulter le haut de `CURRENT_HANDOFF.md` pour la tâche courante et les preuves.
   Les observations techniques datées du 13/09 ci-dessous sont historiques : les
   lots JASPE et accès du 16/09 les complètent, sans constituer une preuve de production.

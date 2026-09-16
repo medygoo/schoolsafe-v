@@ -76,8 +76,8 @@ begin
   end if;
 
   select pg_catalog.count(*) into v_count from iam.permissions;
-  if v_count <> 60 then
-    raise exception 'Expected exactly 60 permissions, found %', v_count;
+  if v_count <> 64 then
+    raise exception 'Expected exactly 64 permissions, found %', v_count;
   end if;
 
   select pg_catalog.count(*) into v_count from iam.scopes;

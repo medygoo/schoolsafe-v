@@ -6,6 +6,7 @@ import { createAuthNativeService } from "./authnative/service.js";
 import { createStudentsNativeService } from "./studentsnative/service.js";
 import { createTrialNativeService } from "./trialnative/service.js";
 import { createSessionNativeService } from "./sessionnative/service.js";
+import { createAccessNativeService } from "./accessnative/service.js";
 import { createJaspeNativeService } from "./jaspenative/service.js";
 import { createLicenseNativeService } from "./licensenative/service.js";
 import { createControlLicenseClient } from "./licensenative/control-client.js";
@@ -42,6 +43,7 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
     studentsNative: { authService, service: createStudentsNativeService(pools.businessPool) },
     trialNative: { authService, service: createTrialNativeService(pools.businessPool) },
     sessionNative: { authService, service: createSessionNativeService(pools.businessPool) },
+    accessNative: { authService, service: createAccessNativeService(pools.businessPool) },
     jaspeNative: { authService, service: createJaspeNativeService({
       workerUrl: env.JASPE_WORKER_URL,
       timeoutMs: env.JASPE_CHAT_TIMEOUT_MS,

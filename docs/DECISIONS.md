@@ -154,7 +154,21 @@ Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni t
   réel de test, puis production. La rédaction du plan ne valide ni les tâches
   futures, ni leurs choix produit encore ouverts, ni l'architecture Device Hub.
 
-## Décisions restant à préciser
+## Réalisation du 16 septembre — A2, annuaire des accès
+
+- **APPLIQUÉE dans le mandat existant** : consultation de profils/rôles/attributions
+  de l'école par trois projections `api.access_*` et routes natives protégées par
+  `roles.manage`. Tables IAM et moteur Access Law réutilisés, sans doublon ni
+  mutation d'accès depuis les brouillons de démonstration.
+- Une consultation d'un tiers conserve l'acteur connecté ; les attributions
+  stockées et leur validité ne sont pas présentées comme une simulation complète
+  des permissions effectives. Frontend, serveur et PostgreSQL testés ensemble.
+- Le rôle inactif ne participe plus aux ALLOW/DENY du moteur canonique. Les
+  gardes d'installation sont alignées sur les 64 permissions déjà validées.
+- Preuve de test uniquement, pas de déploiement ni nouvelle décision produit.
+  Contrat : `docs/superpowers/specs/2026-09-16-access-directory-contract.md`.
+
+## Décisions restant à préciser — inchangées
 
 - Technologie exacte de synthèse vocale Cloudflare lorsque le lot voix commencera.
 - Procédure finale de service VPS, de proxy inverse et de sauvegarde avant le déploiement de production.

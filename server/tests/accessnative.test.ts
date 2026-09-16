@@ -1,0 +1,111 @@
+import { afterEach, describe, expect, it } from "vitest";
+import { buildNativeApp } from "../src/native-app.js";
+import { parseEnv } from "../src/config/env.js";
+import type { VerifiedPools } from "../src/db/startpools.js";
+
+const school = "33333333-0000-4000-8000-000000000001";
+const actor = "66666666-0000-4000-8000-000000000001";
+const target = "66666666-0000-4000-8000-000000000002";
+const user = "55555555-0000-4000-8000-000000000001";
+const apps: ReturnType<typeof buildNativeApp>[] = [];
+afterEach(async () => { await Promise.all(apps.splice(0).map(app => app.close())); });
+
+function fixture(options: { allowed?: boolean; invalidSession?: boolean; data?: unknown; error?: string } = {}) {
+  const log: { sql: string; params?: unknown[] }[] = [];
+  let released = false;
+  const client = {
+    async query(sql: string, params?: unknown[]) {
+      log.push({ sql, params });
+      if (sql.includes("api.check_access")) return { rows: [{ allowed: options.allowed !== false }] };
+      if (sql.includes("api.access_")) {
+        if (options.error) throw Object.assign(new Error("private SQL details"), { code: options.error });
+        return { rows: [{ data: options.data === undefined ? { schoolId: school, rows: [], total: 0, limit: 25, offset: 0 } : options.data }] };
+      }
+      return { rows: [] };
+    },
+    release() { released = true; },
+  };
+  const authPool = {
+    async query(sql: string) {
+      return { rows: sql.includes("auth_resolve_session") && !options.invalidSession ? [{
+        session_id: "44444444-0000-4000-8000-000000000001", identity_id: user,
+        user_id: user, profile_id: actor, school_id: school, must_change: false,
+      }] : [] };
+    },
+    async end() {},
+  };
+  const businessPool = { async connect() { return client; }, async end() {} };
+  const app = buildNativeApp(parseEnv({ NODE_ENV: "test" }), { authPool, businessPool } as unknown as VerifiedPools);
+  apps.push(app);
+  return { app, log, isReleased: () => released };
+}
+const headers = { cookie: "schoolsafe_session=synthetic-test-token" };
+const urls = ["/native/access/profiles", "/native/access/roles", `/native/access/profiles/${target}`];
+
+describe("native IAM reads on the production assembly", () => {
+  it.each(urls)("%s requires a cookie, no business SQL", async url => {
+    const { app, log } = fixture();
+    expect((await app.inject({ method: "GET", url })).statusCode).toBe(401);
+    expect(log).toEqual([]);
+  });
+  it("rejects an expired session", async () => {
+    const { app, log } = fixture({ invalidSession: true });
+    expect((await app.inject({ method: "GET", url: urls[0], headers })).statusCode).toBe(401);
+    expect(log).toEqual([]);
+  });
+  it.each(urls)("%s refuses missing permission before projection", async url => {
+    const { app, log, isReleased } = fixture({ allowed: false });
+    expect((await app.inject({ method: "GET", url, headers })).statusCode).toBe(403);
+    expect(log.map(x => x.sql).join(" ")).not.toContain("api.access_");
+    expect(log.at(-1)?.sql).toBe("ROLLBACK");
+    expect(isReleased()).toBe(true);
+  });
+  it("lists using only the resolved actor; bounded filters remain query parameters", async () => {
+    const { app, log } = fixture();
+    const res = await app.inject({ method: "GET", url: "/native/access/profiles?query=%27OR%201%3D1&limit=10&offset=20", headers });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["cache-control"]).toBe("no-store");
+    expect(log[1].params?.slice(0, 3)).toEqual([user, actor, school]);
+    expect(log[2].params).toEqual(["roles.manage", null, null, null, null, null, "{}"]);
+    expect(log[3].params).toEqual(["'OR 1=1", 10, 20]);
+    expect(log.at(-1)?.sql).toBe("COMMIT");
+  });
+  it("does not impersonate the profile being inspected", async () => {
+    const { app, log } = fixture({ data: { schoolId: school, profile: { id: target } } });
+    const res = await app.inject({ method: "GET", url: urls[2], headers });
+    expect(res.statusCode).toBe(200);
+    expect(log[1].params?.[1]).toBe(actor);
+    expect(log[2].params?.[1]).toBeNull();
+    expect(log[3].params).toEqual([target]);
+  });
+  it("treats a missing or out-of-school profile as not found", async () => {
+    const { app } = fixture({ data: null });
+    expect((await app.inject({ method: "GET", url: urls[2], headers })).statusCode).toBe(404);
+  });
+  it.each(["?school_id=other", "?profileId=other", "?limit=101", "?limit=0", "?limit=1.5", "?offset=-1", "?offset=1000001", "?query=" + "x".repeat(101)])("rejects forged or unbounded query %s", async query => {
+    const { app, log } = fixture();
+    expect((await app.inject({ method: "GET", url: urls[0] + query, headers })).statusCode).toBe(400);
+    expect(log).toEqual([]);
+  });
+  it("rejects malformed targets before business SQL", async () => {
+    const { app, log } = fixture();
+    expect((await app.inject({ method: "GET", url: "/native/access/profiles/bad-id", headers })).statusCode).toBe(400);
+    expect(log).toEqual([]);
+  });
+  it.each([["42501", 403], ["08006", 500]])("handles DB error %s without leaking SQL", async (error, status) => {
+    const { app, log, isReleased } = fixture({ error: String(error) });
+    const res = await app.inject({ method: "GET", url: urls[0], headers });
+    expect(res.statusCode).toBe(status);
+    expect(res.body).not.toContain("private SQL");
+    expect(log.at(-1)?.sql).toBe("ROLLBACK");
+    expect(isReleased()).toBe(true);
+  });
+  it("accepts the actual local frontend origin with credentials", async () => {
+    const { app } = fixture();
+    const res = await app.inject({ method: "OPTIONS", url: urls[0], headers: {
+      origin: "http://127.0.0.1:4176", "access-control-request-method": "GET",
+    } });
+    expect(res.headers["access-control-allow-origin"]).toBe("http://127.0.0.1:4176");
+    expect(res.headers["access-control-allow-credentials"]).toBe("true");
+  });
+});

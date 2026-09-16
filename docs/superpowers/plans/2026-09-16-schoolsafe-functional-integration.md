@@ -1,7 +1,7 @@
 # SchoolSafe — intégration des fonctionnalités, Rôles et accès en premier
 
 Date : 16 septembre 2026. Inventaire initial : `main`, `3ca73fa`.
-**PLAN ACTIF COMMUN À TOUS LES AGENTS**, détaillé après le lot A1 `7b2896a`.
+**PLAN ACTIF COMMUN À TOUS LES AGENTS**, A1 `7b2896a` puis A2 livré le 16/09.
 Le propriétaire autorise la poursuite étape par étape ; ce document organise cette
 exécution. Les choix techniques proposés restent distincts des règles produit validées.
 
@@ -41,10 +41,10 @@ parcours réel terminé. Aucune estimation de pourcentage ne remplace ces preuve
 | ID | Livrable | Prérequis | Statut / preuve |
 | --- | --- | --- | --- |
 | A1 | Session native et droits du compte connecté | Existant | CODE VÉRIFIÉ · `7b2896a` · API/PG substitués |
-| A2.0 | Contrat de lecture IAM et préparation de la preuve SQL | A1 | À FAIRE — **prochaine tâche** |
-| A2.1 | Projections et API natives des profils/rôles de l'école | A2.0 | À FAIRE |
-| A2.2 | Liste réelle et détail d'accès dans la console existante | A2.1 | À FAIRE |
-| A3.0 | Contrat de modification et limites de délégation | A2.2 | À FAIRE |
+| A2.0 | Contrat de lecture IAM et préparation de la preuve SQL | A1 | PARCOURS VALIDÉ · contrat et runner PostgreSQL 17.11 réels |
+| A2.1 | Projections et API natives des profils/rôles de l'école | A2.0 | PARCOURS VALIDÉ · SQL sous schoolsafe_api, 2 écoles, assemblage natif |
+| A2.2 | Liste réelle et détail d'accès dans la console existante | A2.1 | PARCOURS VALIDÉ · navigateur/cookie/API/PG réels, bureau/mobile, révocation |
+| A3.0 | Contrat de modification et limites de délégation | A2.2 | À FAIRE — **prochaine tâche** |
 | A3.1 | Attribution/révocation de rôles existants, persistantes | A3.0 | À FAIRE |
 | A4 | Création de postes et composition des permissions | A3.1 | À FAIRE |
 | A5 | Périmètres, conditions et exceptions individuelles | A4 | À FAIRE |
@@ -52,8 +52,8 @@ parcours réel terminé. Aucune estimation de pourcentage ne remplace ces preuve
 | A7 | Recette complète Rôles et accès, sans régression | A2 à A6 | À FAIRE |
 | B à K | Autres fonctions et raccordements, voir séquence finale | A7 puis dépendances | À FAIRE |
 
-Responsable courant : aucun lot applicatif pris par la rédaction de ce plan.
-À la prise d'A2.0, remplacer cette ligne et renseigner le handoff. La source du
+Responsable du dernier lot : Codex, A2 sur `main`, base `146ad3e` ; lot clôturé.
+A3.0 reste à réserver par le prochain agent dans le handoff. La source du
 SHA d'un lot est Git ; ne pas essayer d'inscrire un commit dans son propre contenu.
 
 ## Mandat et état
@@ -101,9 +101,16 @@ contrôles Access Law/JASPE, 23 tests serveur ciblés, contrats permissions/isol
 régressions paiement/campagnes et dashboard JASPE. API navigateur et dépendances
 PostgreSQL substituées : **aucune validation sur une base réelle annoncée**.
 
-### A2 — consulter les profils de l'école et leurs attributions : résumé
+### A2 — consulter les profils de l'école et leurs attributions : livré
 
-Le résumé initial est conservé. Son exécution est désormais découpée en A2.0,
+Contrat exact, corrections, protocole rejouable et limites :
+[annuaire natif des accès](../specs/2026-09-16-access-directory-contract.md).
+Les trois routes de lecture sont assemblées et les vues Mon compte/Utilisateurs/
+Rôles sont raccordées. Preuve sur PostgreSQL 17.11 temporaire, distincte de la
+production. Correction du rôle désactivé encore autorisant, des gardes SQL
+60/64 et du CORS 4176 ; aucun droit attribué ou supprimé par l'interface.
+
+Le résumé initial est conservé comme trace du travail prévu. Son exécution est découpée en A2.0,
 A2.1 et A2.2 dans les fiches ci-dessous ; ne pas considérer ce résumé comme un
 second plan à mener en parallèle.
 
@@ -161,7 +168,7 @@ Les liens écosystème indiquent la cible de raccordement, pas une intégration 
 | Contrôle et rapports | Entrée de menu encore « prochaine étape » | Projections autorisées des modules, exports, audit |
 | Centre de documents | Registre d'aperçus et contrôles frontend existants ; sorties officielles à raccorder par domaine | Tous les modules ; impression de cartes via Control |
 | Paramètres | Entrée système encore « prochaine étape » ; préférences et réglages dispersés existants | École, années/classes, comptes, intégrations |
-| Rôles et accès | A1 ci-dessus ; attributions persistantes et autres profils restent A2/A3 | Tous les modules, SchoolSafe ID ; JASPE limité aux mêmes droits |
+| Rôles et accès | A1/A2 livrés : compte et annuaire natif ; modifications persistantes restent A3–A6 | Tous les modules, SchoolSafe ID ; JASPE limité aux mêmes droits |
 | Audit et journaux | Entrée système encore « prochaine étape » ; tables/triggers/services existants | Actions sensibles, changements de droits, corrections traçables |
 | Intégrations | Entrée encore « prochaine étape » ; connecteurs hétérogènes présents | Device Hub, notifications, stockage, Control ; secrets côté serveur |
 
@@ -197,6 +204,11 @@ Ce lot ne change aucune décision d'exploitation ni configuration VPS.
 
 ## Fiches d'exécution — chantier Rôles et accès
 
+**Clôture A2 le 16/09 :** les fiches A2.0–A2.2 ci-dessous conservent les critères
+initiaux ; leur réalisation et leurs choix exacts sont consignés dans le contrat
+lié ci-dessus. Les fichiers/URLs proposés dans ces fiches existent désormais.
+Reprendre A3.0, sans refaire le travail A2.
+
 ### A2.0 — verrouiller le contrat de lecture et la préparation SQL
 
 **Résultat attendu :** l'agent suivant sait exactement quelles données lire et
@@ -218,25 +230,25 @@ comment prouver le parcours sans dépendre de fixtures ni d'une table parallèle
 
 **Travail :**
 
-- [ ] Décrire ici le contrat retenu : liste paginée des profils de l'école,
+- [x] Décrire ici le contrat retenu : liste paginée des profils de l'école,
   détail des attributions d'un profil, rôles disponibles et catalogue délégable.
   Nom proposé pour le backend : `accessnative`, conforme aux services natifs existants.
-- [ ] Prévoir les routes de lecture `/native/access/profiles`,
+- [x] Prévoir les routes de lecture `/native/access/profiles`,
   `/native/access/profiles/:profileId` et `/native/access/roles` ; confirmer les
   noms après inventaire des routes, sans créer de doublon. Aucune route livrée par ce plan.
-- [ ] Limiter les sorties à l'identifiant du profil, nom d'affichage, état du compte,
+- [x] Limiter les sorties à l'identifiant du profil, nom d'affichage, état du compte,
   rôles, grants, portées et exceptions utiles. Ne pas joindre contacts, secrets,
   paiements ou dossiers d'enfant pour remplir une liste d'accès.
-- [ ] Conserver l'acteur authentifié dans le contexte serveur. Le profil consulté
+- [x] Conserver l'acteur authentifié dans le contexte serveur. Le profil consulté
   est une cible, jamais un acteur usurpé via un changement de contexte de session.
   Un relevé d'attributions n'est pas une simulation complète des accès effectifs.
-- [ ] Fixer filtres, tri stable, pagination bornée, champs de réponse et erreurs :
+- [x] Fixer filtres, tri stable, pagination bornée, champs de réponse et erreurs :
   401 sans session, 403 sans droit, 404 pour une cible inexistante ou hors école.
-- [ ] Identifier un PostgreSQL de **test isolé**, sa version, les extensions et
+- [x] Identifier un PostgreSQL de **test isolé**, sa version, les extensions et
   l'ordre d'application réel des manifestes. Ne jamais afficher les credentials.
   À défaut d'instance, documenter exactement ce qui manque et préparer les tests
   indépendants ; ne pas transformer leur réussite en preuve SQL.
-- [ ] Inventorier les SQL hors manifeste : notamment
+- [x] Inventorier les SQL hors manifeste : notamment
   `database/projections/v1/02_student_list.sql`, absent du manifeste actuel des
   projections. Le contrôle des hashes ne détecte pas ce fichier non déclaré.
   Distinguer les anomalies bloquant IAM de celles à corriger au futur lot École.
@@ -259,19 +271,19 @@ substituts, mais ne reçoit pas le statut PARCOURS VALIDÉ sans rejeu PostgreSQL
 `server/tests/accessnative.test.ts`. Choisir l'unité SQL versionnée après A2.0,
 puis mettre à jour son manifeste et le contrôleur de versions si nécessaire.
 
-- [ ] Écrire les tests de refus avant la lecture : session absente/invalide,
+- [x] Écrire les tests de refus avant la lecture : session absente/invalide,
   `roles.manage` refusé même avec un rôle nommé admin, portée insuffisante.
-- [ ] Résoudre user/profile/school depuis `request.authSession`, valider les
+- [x] Résoudre user/profile/school depuis `request.authSession`, valider les
   entrées avec les conventions existantes, utiliser `withAuthorizedContext`.
-- [ ] Appeler une RPC `api.*` qui contrôle aussi l'accès et filtre explicitement
+- [x] Appeler une RPC `api.*` qui contrôle aussi l'accès et filtre explicitement
   l'école. Aucun `SELECT` IAM arbitraire privilégié depuis le navigateur.
-- [ ] Borner également les totaux, jointures, rôles, grants, cibles et exceptions
+- [x] Borner également les totaux, jointures, rôles, grants, cibles et exceptions
   à l'école. Tester une recherche/pagination qui ne révèle aucun profil voisin.
-- [ ] Assemblage réel dans `buildNativeApp` ; tester une requête HTTP sur cet
+- [x] Assemblage réel dans `buildNativeApp` ; tester une requête HTTP sur cet
   assemblage, pas seulement une méthode service appelée directement.
-- [ ] Tester succès/vide/erreur, cible de l'autre école, paramètre `school_id`
+- [x] Tester succès/vide/erreur, cible de l'autre école, paramètre `school_id`
   falsifié, rollback en cas d'erreur et absence de données d'authentification.
-- [ ] Rejouer SQL sur la cible de test, avec les véritables rôles DB et deux
+- [x] Rejouer SQL sur la cible de test, avec les véritables rôles DB et deux
   écoles synthétiques ; conserver une preuve sans données privées.
 
 **Fin de tâche :** les routes listent seulement les profils/rôles autorisés,
@@ -285,16 +297,16 @@ avec réponse stable et preuve explicite du niveau réellement testé.
 nécessaire ; suivre `app/modules/authnative/auth-native.js` pour l'origine API,
 le cookie et les erreurs. Conserver l'Administration existante et ses points d'entrée.
 
-- [ ] Garder « Mon compte » et ajouter la liste réelle paginée avec recherche.
-- [ ] Sélectionner une personne → lire ses rôles/grants/refus/périmètres. Le texte
+- [x] Garder « Mon compte » et ajouter la liste réelle paginée avec recherche.
+- [x] Sélectionner une personne → lire ses rôles/grants/refus/périmètres. Le texte
   distingue attributions stockées et décision effective pour une action donnée.
-- [ ] Traduire les cibles en libellés uniquement via une projection autorisée ;
+- [x] Traduire les cibles en libellés uniquement via une projection autorisée ;
   garder un identifiant explicite lorsqu'un libellé n'est pas encore disponible.
-- [ ] Afficher chargement, liste vide, erreur avec réessai et accès refusé ; ne
+- [x] Afficher chargement, liste vide, erreur avec réessai et accès refusé ; ne
   jamais remplacer une réponse vide/échouée par `staffSamples`.
-- [ ] Invalider les réponses tardives sur fermeture, changement de sélection,
+- [x] Invalider les réponses tardives sur fermeture, changement de sélection,
   de compte ou d'école. Une sélection rapide A → B ne doit pas réafficher A.
-- [ ] Tester bureau/mobile, clavier, clair/sombre, recherche, pagination,
+- [x] Tester bureau/mobile, clavier, clair/sombre, recherche, pagination,
   expiration et perte de `roles.manage` pendant l'affichage.
 
 **Fin de tâche :** un administrateur autorisé consulte une personne réelle de
@@ -421,7 +433,7 @@ retirée échoue réellement sur les routes concernées, même depuis un ancien 
   session expirée, refus, panne, écriture concurrente et rechargement.
 - [ ] Rejouer A1 et les protections déjà livrées. Tester les actions métier sur
   les routes natives déjà raccordées ; ne pas déclarer les 15 autres rubriques
-  opérationnels simplement parce que les permissions fonctionnent.
+  opérationnelles simplement parce que les permissions fonctionnent.
 - [ ] Vérifier desktop/mobile/clavier/clair/sombre et les données montrées par
   JASPE/documents. Maintenir un état indisponible honnête pour les modules non raccordés.
 - [ ] Mettre à jour les preuves, limites, SHA, cartographie et prochain lot.

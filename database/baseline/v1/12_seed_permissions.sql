@@ -100,8 +100,8 @@ begin
   select pg_catalog.count(*) into v_permission_count from iam.permissions;
   select pg_catalog.count(*) into v_scope_count from iam.scopes;
 
-  if v_permission_count <> 60 then
-    raise check_violation using message = pg_catalog.format('Expected exactly 60 permissions, found %s', v_permission_count);
+  if v_permission_count <> 64 then
+    raise check_violation using message = pg_catalog.format('Expected exactly 64 permissions, found %s', v_permission_count);
   end if;
   if v_scope_count <> 7 then
     raise check_violation using message = pg_catalog.format('Expected exactly 7 scopes, found %s', v_scope_count);
