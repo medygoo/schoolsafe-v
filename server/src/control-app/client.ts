@@ -67,3 +67,49 @@ export async function pushCardPrintRequest(
   const data = (await response.json()) as { data: { id: string } };
   return { id: data.data.id };
 }
+
+/** Lot 1 cartes : notifier Control qu'un ZIP de lot est prêt à être téléchargé/imprimé. */
+export async function pushCardPrintBatch(
+  config: ControlAppConfig,
+  batch: {
+    school_id: string;
+    batch_id: string;
+    version: number;
+    card_count: number;
+    r2_key: string;
+    zip_signed_url: string;
+    signed_url_expires_at: string;
+    zip_sha256: string;
+  }
+): Promise<{ id: string }> {
+  const path = "/card-print-batches";
+  const body = JSON.stringify(batch);
+  const timestamp = Math.floor(Date.now() / 1000);
+  const signature = signControlAppRequest({
+    method: "POST",
+    path,
+    body,
+    timestamp,
+    secret: config.hmacSecret
+  });
+
+  const url = new URL(path, config.url).toString();
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-schoolsafe-instance": config.instanceId,
+      "x-schoolsafe-timestamp": String(timestamp),
+      "x-schoolsafe-signature": signature
+    },
+    body
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "unknown error");
+    throw new Error(`Control app returned ${response.status}: ${text}`);
+  }
+
+  const data = (await response.json()) as { data: { id: string } };
+  return { id: data.data.id };
+}

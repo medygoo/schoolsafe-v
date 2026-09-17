@@ -28,7 +28,7 @@ declare
   v_school_id uuid := iam.current_school_id();
   v_profile_id uuid := iam.current_profile_id();
   v_class_id uuid;
-  v_student mat app.students%rowtype;
+  v_student app.students%rowtype;
   v_current_version int;
   v_next_version int;
   v_academic_year_id uuid;

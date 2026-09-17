@@ -356,6 +356,7 @@ export function initCardsModule(options) {
   const classSelect = $('cardsClassSelect');
   const renderBtn = $('cardsRenderBtn');
   const requestBtn = $('cardsRequestPrintBtn');
+  const buildBatchBtn = $('cardsBuildBatchBtn');
   const selectAll = $('cardsSelectAll');
 
   if (!navCards || !studio || !closeBtn || !classSelect || !renderBtn || !requestBtn || !selectAll) {
@@ -408,6 +409,105 @@ export function initCardsModule(options) {
 
   renderBtn.addEventListener('click', renderPreview);
   requestBtn.addEventListener('click', requestPrintBatch);
+  if (buildBatchBtn) buildBatchBtn.addEventListener('click', async () => {
+    const cardsApi = window.SchoolSafeCardsNativeAPI;
+    if (!cardsApi) { setStatus({ type: 'error', title: 'Erreur', message: 'API cartes non disponible.', size: 'inline' }); return; }
+    setStatus({ type: 'loading', title: 'Lot en préparation', message: 'Regroupement des cartes en ZIP…', size: 'inline' });
+    try {
+      const res = await cardsApi.buildBatch({ status: 'submitted' });
+      const d = res && res.data;
+      if (!d) throw new Error('Réponse serveur invalide');
+      setStatus({
+        type: 'success',
+        title: 'Lot ZIP prêt',
+        message: `Lot ${d.batch_id} v${d.version} — ${d.card_count} carte(s), ZIP SHA-256 ${String(d.zip_sha256 || '').slice(0, 12)}…, valable pour Control.`,
+        size: 'inline'
+      });
+    } catch (e) {
+      setStatus({ type: 'error', title: 'Erreur de lot', message: 'Erreur préparation lot : ' + e.message, size: 'inline' });
+    }
+  });
+  // ————— Lot 2 : cycle de vie perte/vol —————
+  function selectedSingleStudent() {
+    const ids = Array.from(state.selectedStudentIds);
+    if (ids.length !== 1) return null;
+    return state.students.find(s => s.id === ids[0]) || null;
+  }
+
+  function requireCardsApi() {
+    const cardsApi = window.SchoolSafeCardsNativeAPI;
+    if (!cardsApi) setStatus({ type: 'error', title: 'Erreur', message: 'API cartes non disponible.', size: 'inline' });
+    return cardsApi || null;
+  }
+
+  const lossReportBtn = $('cardsLossReportBtn');
+  if (lossReportBtn) lossReportBtn.addEventListener('click', async () => {
+    const cardsApi = requireCardsApi(); if (!cardsApi) return;
+    const student = selectedSingleStudent();
+    if (!student) { setStatus({ type: 'error', title: 'Sélection requise', message: 'Sélectionnez exactement un élève pour signaler une perte/vol.', size: 'inline' }); return; }
+    const reason = window.prompt('Motif du signalement (perte ou vol) :');
+    if (!reason || reason.trim().length < 3) return;
+    setStatus({ type: 'loading', title: 'Signalement', message: 'Suspension de la carte…', size: 'inline' });
+    try {
+      const res = await cardsApi.lossReport({ student_id: student.id, reason: reason.trim() });
+      const d = res && res.data;
+      setStatus({ type: 'success', title: 'Carte suspendue', message: `Carte ${d && d.card_number} passée en statut ${d && d.status} — l'ancien QR est refusé dès maintenant.`, size: 'inline' });
+    } catch (e) {
+      setStatus({ type: 'error', title: 'Erreur signalement', message: 'Erreur signalement : ' + e.message, size: 'inline' });
+    }
+  });
+
+  const replaceBtn = $('cardsReplaceBtn');
+  if (replaceBtn) replaceBtn.addEventListener('click', async () => {
+    const cardsApi = requireCardsApi(); if (!cardsApi) return;
+    const student = selectedSingleStudent();
+    if (!student) { setStatus({ type: 'error', title: 'Sélection requise', message: 'Sélectionnez exactement un élève pour remplacer sa carte.', size: 'inline' }); return; }
+    const reason = window.prompt('Motif du remplacement :');
+    if (!reason || reason.trim().length < 3) return;
+    const cardId = window.prompt('Identifiant de la carte à remplacer (card_id) :');
+    if (!cardId) return;
+    setStatus({ type: 'loading', title: 'Remplacement', message: 'Révocation et émission de la nouvelle carte…', size: 'inline' });
+    try {
+      const res = await cardsApi.replaceCard({ student_id: student.id, old_card_id: cardId, reason: reason.trim() });
+      const d = res && res.data;
+      setStatus({ type: 'success', title: 'Carte remplacée', message: `Nouvelle carte ${d && d.card_number} active ; ancienne révoquée.`, size: 'inline' });
+    } catch (e) {
+      setStatus({ type: 'error', title: 'Erreur remplacement', message: 'Erreur remplacement : ' + e.message, size: 'inline' });
+    }
+  });
+
+  const reprintBtn = $('cardsReprintBtn');
+  if (reprintBtn) reprintBtn.addEventListener('click', async () => {
+    const cardsApi = requireCardsApi(); if (!cardsApi) return;
+    const cardId = window.prompt('Identifiant de la carte à réimprimer (card_id) — support détruit/récupéré requis :');
+    if (!cardId) return;
+    const reason = window.prompt('Motif de la réimpression contrôlée :');
+    if (!reason || reason.trim().length < 3) return;
+    setStatus({ type: 'loading', title: 'Réimpression', message: 'Autorisation de réimpression…', size: 'inline' });
+    try {
+      const res = await cardsApi.reprintAuthorize({ card_id: cardId, reason: reason.trim() });
+      const d = res && res.data;
+      setStatus({ type: 'success', title: 'Réimpression autorisée', message: `Carte ${d && d.card_number} — même credential, réimpression tracée.`, size: 'inline' });
+    } catch (e) {
+      setStatus({ type: 'error', title: 'Erreur réimpression', message: 'Erreur réimpression : ' + e.message, size: 'inline' });
+    }
+  });
+
+  const distributeBtn = $('cardsDistributeBtn');
+  if (distributeBtn) distributeBtn.addEventListener('click', async () => {
+    const cardsApi = requireCardsApi(); if (!cardsApi) return;
+    const cardId = window.prompt('Identifiant de la carte distribuée à l\'élève (card_id) :');
+    if (!cardId) return;
+    if (!window.confirm('Confirmer la remise physique de cette carte à l\'élève ?')) return;
+    setStatus({ type: 'loading', title: 'Distribution', message: 'Enregistrement de la remise…', size: 'inline' });
+    try {
+      await cardsApi.markDistributed({ card_id: cardId });
+      setStatus({ type: 'success', title: 'Distribution confirmée', message: 'Remise de la carte à l\'élève enregistrée.', size: 'inline' });
+    } catch (e) {
+      setStatus({ type: 'error', title: 'Erreur distribution', message: 'Erreur distribution : ' + e.message, size: 'inline' });
+    }
+  });
+
   navCards._cardsBound = true;
 }
 

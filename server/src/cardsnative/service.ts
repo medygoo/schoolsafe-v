@@ -6,7 +6,7 @@
 import type { PoolClient } from "pg";
 import type { BusinessPool } from "../db/pool.js";
 import { withRequestContext, type RequestContext } from "../db/context.js";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHmac } from "node:crypto";
 import type { ControlAppConfig } from "../control-app/client.js";
 import { pushCardPrintRequest } from "../control-app/client.js";
 import { createR2Client, uploadBuffer, getSignedDownloadUrl, type R2Config } from "../storage/r2.js";
@@ -320,6 +320,56 @@ export function createCardsNativeService(
           "select api.card_print_request_counts() as card_print_request_counts",
         );
         return r.rows[0]?.card_print_request_counts ?? { pending: 0, submitted: 0, printed: 0, failed: 0, total: 0 };
+      });
+    },
+  // ————— Lot 2 : cycle de vie perte/vol (RPC api.card_* de 03_cards_lifecycle.sql) —————
+
+    async lossReport(context: RequestContext, input: {
+      student_id: string;
+      card_id?: string;
+      reason: string;
+      reported_by_relation?: "school" | "primary_guardian";
+    }): Promise<Record<string, unknown>> {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query(
+          "select api.card_loss_report($1, $2, $3, $4) as result",
+          [input.student_id, input.card_id ?? null, input.reason, input.reported_by_relation ?? "school"],
+        );
+        return r.rows[0].result as Record<string, unknown>;
+      });
+    },
+
+    async replaceCard(context: RequestContext, input: {
+      student_id: string;
+      old_card_id: string;
+      reason: string;
+    }): Promise<Record<string, unknown>> {
+      // Signature de la nouvelle carte calculée côté serveur (HMAC), jamais du client.
+      const secret = process.env.CARD_HMAC_SECRET;
+      if (!secret) throw new Error("CARD_HMAC_SECRET is not configured");
+      const cardSecret = randomUUID();
+      const cardNumber = `SS-REPL-${input.student_id.slice(0, 8)}-${Date.now()}`;
+      const signature = createHmac("sha256", secret).update(cardNumber).digest("hex");
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query(
+          "select api.card_replace($1, $2, $3, $4, $5, $6) as result",
+          [input.student_id, input.old_card_id, input.reason, cardNumber, signature, cardSecret],
+        );
+        return r.rows[0].result as Record<string, unknown>;
+      });
+    },
+
+    async reprintAuthorize(context: RequestContext, cardId: string, reason: string): Promise<Record<string, unknown>> {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query("select api.card_reprint_authorize($1, $2) as result", [cardId, reason]);
+        return r.rows[0].result as Record<string, unknown>;
+      });
+    },
+
+    async markDistributed(context: RequestContext, cardId: string): Promise<Record<string, unknown>> {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query("select api.card_mark_distributed($1) as result", [cardId]);
+        return r.rows[0].result as Record<string, unknown>;
       });
     },
   };

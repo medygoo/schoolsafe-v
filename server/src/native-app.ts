@@ -16,6 +16,7 @@ import { createFinanceNativeService } from "./financenative/service.js";
 import { createPedagogyNativeService } from "./pedagogynative/service.js";
 import { createControlPrintNativeService } from "./controlprintnative/service.js";
 import { createCardsNativeService } from "./cardsnative/service.js";
+import { createCardsBatchService } from "./cardsnative/batches.js";
 
 /** Assemble uniquement les services qui utilisent les sessions et pools du VPS. */
 export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
@@ -62,6 +63,12 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
     cardsNative: {
       authService,
       service: createCardsNativeService(pools.businessPool, env.R2_ENDPOINT ? {
+        endpoint: env.R2_ENDPOINT,
+        accessKeyId: env.R2_ACCESS_KEY_ID!,
+        secretAccessKey: env.R2_SECRET_ACCESS_KEY!,
+        bucket: env.R2_BUCKET_CARDS ?? "cards",
+      } : undefined, controlConfig),
+      batchService: createCardsBatchService(pools.businessPool, env.R2_ENDPOINT ? {
         endpoint: env.R2_ENDPOINT,
         accessKeyId: env.R2_ACCESS_KEY_ID!,
         secretAccessKey: env.R2_SECRET_ACCESS_KEY!,

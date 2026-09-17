@@ -69,6 +69,63 @@
       return apiRequest("/native/cards/print-requests/counts");
     },
 
+    /** Lot 1 : construire un lot ZIP (manifeste + PNG) pour Control */
+    buildBatch: function (opts) {
+      return apiRequest("/native/cards/batches", {
+        method: "POST",
+        body: {
+          request_ids: (opts && opts.request_ids) || undefined,
+          status: (opts && opts.status) || undefined,
+        },
+      });
+    },
+
+    /** Lot 2 : signaler une perte/vol (suspension immédiate de la carte active) */
+    lossReport: function (input) {
+      return apiRequest("/native/cards/loss-report", {
+        method: "POST",
+        body: {
+          student_id: input.student_id,
+          card_id: input.card_id || undefined,
+          reason: input.reason,
+          reported_by_relation: input.reported_by_relation || "school",
+        },
+      });
+    },
+
+    /** Lot 2 : remplacer une carte (révoque l'ancienne, nouveau QR) */
+    replaceCard: function (input) {
+      return apiRequest("/native/cards/replace", {
+        method: "POST",
+        body: {
+          student_id: input.student_id,
+          old_card_id: input.old_card_id,
+          reason: input.reason,
+        },
+      });
+    },
+
+    /** Lot 2 : autoriser une réimpression contrôlée (même credential) */
+    reprintAuthorize: function (input) {
+      return apiRequest("/native/cards/reprint", {
+        method: "POST",
+        body: {
+          card_id: input.card_id,
+          reason: input.reason,
+        },
+      });
+    },
+
+    /** Lot 2 : confirmer la distribution de la carte à l'élève (admin) */
+    markDistributed: function (input) {
+      return apiRequest("/native/cards/distribute", {
+        method: "POST",
+        body: {
+          card_id: input.card_id,
+        },
+      });
+    },
+
     /** Ajouter une demande Control App (depuis LOT-10/11) */
     submitControlPrintRequest: function (input) {
       return apiRequest("/native/control/print-request", {

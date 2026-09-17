@@ -7,12 +7,14 @@ import { newRequestId } from "../http/request-id.js";
 import { requireAuthSession } from "../authnative/middleware.js";
 import type { AuthNativeService } from "../authnative/service.js";
 import type { CardsNativeService } from "./service.js";
+import type { CardsBatchService } from "./batches.js";
 import type { RequestContext } from "../db/context.js";
 import { z } from "zod";
 
 export type CardsNativeRouteDependencies = {
   authService: AuthNativeService;
   service: CardsNativeService;
+  batchService?: CardsBatchService;
 };
 
 export function registerCardsNativeRoutes(
@@ -88,6 +90,68 @@ export function registerCardsNativeRoutes(
   // Compteurs
   app.get("/native/cards/print-requests/counts", { preHandler: requireSession }, async (request) => {
     const data = await dependencies.service.getCounts(contextFrom(request));
+    return { data, request_id: newRequestId() };
+  });
+
+  // Construire un lot ZIP pour Control (Lot 1 cartes)
+  app.post("/native/cards/batches", { preHandler: requireSession }, async (request) => {
+    if (!dependencies.batchService) {
+      throw new SchoolSafeError(503, "DEPENDENCY_UNAVAILABLE", "Service de lots non configuré (R2 requis)", false);
+    }
+    const body = z.object({
+      request_ids: z.array(z.string().uuid()).optional(),
+      status: z.string().optional(),
+    }).parse(request.body ?? {});
+
+    const result = await dependencies.batchService.buildBatch(contextFrom(request), body);
+    return { data: result, request_id: newRequestId() };
+  });
+
+  // ————— Lot 2 : cycle de vie perte/vol —————
+
+  // Signaler une perte/vol (école ou principal via parcours autorisé)
+  app.post("/native/cards/loss-report", { preHandler: requireSession }, async (request) => {
+    const body = z.object({
+      student_id: z.string().uuid(),
+      card_id: z.string().uuid().optional(),
+      reason: z.string().min(3),
+      reported_by_relation: z.enum(["school", "primary_guardian"]).default("school"),
+    }).parse(request.body);
+
+    const data = await dependencies.service.lossReport(contextFrom(request), body);
+    return { data, request_id: newRequestId() };
+  });
+
+  // Remplacer une carte (révoque l'ancienne, nouvelle signature HMAC serveur)
+  app.post("/native/cards/replace", { preHandler: requireSession }, async (request) => {
+    const body = z.object({
+      student_id: z.string().uuid(),
+      old_card_id: z.string().uuid(),
+      reason: z.string().min(3),
+    }).parse(request.body);
+
+    const data = await dependencies.service.replaceCard(contextFrom(request), body);
+    return { data, request_id: newRequestId() };
+  });
+
+  // Autoriser une réimpression contrôlée (même credential, support détruit)
+  app.post("/native/cards/reprint", { preHandler: requireSession }, async (request) => {
+    const body = z.object({
+      card_id: z.string().uuid(),
+      reason: z.string().min(3),
+    }).parse(request.body);
+
+    const data = await dependencies.service.reprintAuthorize(contextFrom(request), body.card_id, body.reason);
+    return { data, request_id: newRequestId() };
+  });
+
+  // Confirmer la distribution de la carte à l'élève (admin)
+  app.post("/native/cards/distribute", { preHandler: requireSession }, async (request) => {
+    const body = z.object({
+      card_id: z.string().uuid(),
+    }).parse(request.body);
+
+    const data = await dependencies.service.markDistributed(contextFrom(request), body.card_id);
     return { data, request_id: newRequestId() };
   });
 
