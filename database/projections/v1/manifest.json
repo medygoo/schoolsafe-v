@@ -32,6 +32,12 @@
       "name": "session_validity",
       "file": "05_session_validity.sql",
       "sha256": "132062f3bcdb6dafe306bf88db078152b7ac0e2e293804abab3439b17cd00d8b"
+    },
+    {
+      "order": 6,
+      "name": "targeted_denies",
+      "file": "07_targeted_denies.sql",
+      "sha256": "80a0702410b542f55bd25fd49536b706a7c1c94e88e30c1af067deeb674e446b"
     }
   ]
 }

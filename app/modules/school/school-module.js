@@ -60,7 +60,33 @@
     }
   }
 
+  // Mode démo : aucune session réelle (même règle que pilotage-module.js).
+  // En démo, l'API école n'est pas disponible : état explicite, pas d'erreur réseau.
+  function isDemoMode() {
+    var live = window.currentSession;
+    if (live && (live.native === true || live.token)) return false;
+    try {
+      var raw = window.sessionStorage && window.sessionStorage.getItem("schoolsafe-v2-session");
+      if (raw) {
+        var saved = JSON.parse(raw);
+        if (saved && (saved.native === true || saved.token)) return false;
+      }
+    } catch (e) { /* session illisible : traiter comme démo */ }
+    return true;
+  }
+
+  function renderDemoState(title, message) {
+    var container = document.getElementById("schoolContent");
+    if (!container) return;
+    container.innerHTML = window.ssState({ type: "empty", title: title, message: message });
+    if (typeof window.icons === "function") window.icons();
+  }
+
   async function loadSchool() {
+    if (isDemoMode()) {
+      renderDemoState("Démonstration", "Les paramètres de l’école s’affichent avec les données réelles de l’établissement après connexion. Aucune donnée en mode démonstration.");
+      return;
+    }
     try {
       settingsData = await window.SchoolSafeSchoolAPI.getSettings();
       renderSchoolTab();
@@ -70,6 +96,10 @@
   }
 
   async function loadStaff() {
+    if (isDemoMode()) {
+      renderDemoState("Démonstration", "L’équipe de l’école s’affiche avec les données réelles de l’établissement après connexion. Aucune donnée en mode démonstration.");
+      return;
+    }
     try {
       var results = await Promise.all([
         window.SchoolSafeSchoolAPI.listStaff(),
@@ -138,6 +168,10 @@
   async function loadStudents() {
     var container = document.getElementById("schoolContent");
     if (!container) return;
+    if (isDemoMode()) {
+      renderDemoState("Démonstration", "Les dossiers élèves s’affichent avec les données réelles de l’établissement après connexion. Aucune donnée en mode démonstration.");
+      return;
+    }
     renderStudentsTab(true);
     try {
       var page = await (window.SchoolSafeSchoolNativeAPI || window.SchoolSafeSchoolAPI).listStudents(studentStatus, studentQuery);

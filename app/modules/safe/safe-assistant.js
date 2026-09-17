@@ -988,6 +988,25 @@
       }
     }
 
+    if (routeAllows("reports") && global.SchoolSafeReportsDemo && typeof global.SchoolSafeReportsDemo.answerJaspe === "function") {
+      var reportsContext = global.SchoolSafeAppContext && typeof global.SchoolSafeAppContext.getAssistantContext === "function"
+        ? global.SchoolSafeAppContext.getAssistantContext()
+        : null;
+      var reportsAnswer = reportsContext
+        ? global.SchoolSafeReportsDemo.answerJaspe(raw, reportsContext)
+        : null;
+      if (reportsAnswer) {
+        state.currentMessage = reportsAnswer.message;
+        state.animation = reportsAnswer.refusal ? "Shrug" : "TalkHandsOpen";
+        state.suggestions = [];
+        if (!reportsAnswer.refusal && reportsAnswer.action && global.SchoolSafeAppContext && typeof global.SchoolSafeAppContext.openReports === "function") {
+          global.SchoolSafeAppContext.openReports(reportsAnswer.action);
+        }
+        render();
+        return;
+      }
+    }
+
     if (routeAllows("accounting") && global.SchoolSafeAccountingTreasury && typeof global.SchoolSafeAccountingTreasury.answerJaspe === "function") {
       var accountingContext = global.SchoolSafeAppContext && typeof global.SchoolSafeAppContext.getAssistantContext === "function"
         ? global.SchoolSafeAppContext.getAssistantContext()

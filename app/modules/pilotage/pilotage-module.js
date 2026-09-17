@@ -13,9 +13,34 @@
     return d.toLocaleString("fr-FR");
   }
 
+  // Mode démo : aucune session réelle (même règle que safe-assistant.js).
+  // En démo, l'API Pilotage n'est pas disponible : afficher un état de
+  // démonstration explicite au lieu d'une erreur réseau « Failed to fetch ».
+  function isDemoMode() {
+    var live = window.currentSession;
+    if (live && (live.native === true || live.token)) return false;
+    try {
+      var raw = window.sessionStorage && window.sessionStorage.getItem("schoolsafe-v2-session");
+      if (raw) {
+        var saved = JSON.parse(raw);
+        if (saved && (saved.native === true || saved.token)) return false;
+      }
+    } catch (e) { /* session illisible : traiter comme démo */ }
+    return true;
+  }
+
+  function renderDemo(container, title, message) {
+    container.innerHTML = window.ssState({ type: "empty", title: title, message: message });
+    if (typeof window.icons === "function") window.icons();
+  }
+
   function renderDashboard(containerId) {
     var container = document.getElementById(containerId);
     if (!container) return;
+    if (isDemoMode()) {
+      renderDemo(container, "Démonstration", "Le tableau de bord de pilotage s’affiche avec les données réelles de l’établissement après connexion. Aucune donnée en mode démonstration.");
+      return;
+    }
     container.innerHTML = window.ssState({ type: "loading", title: "Chargement…", message: "Chargement du tableau de bord…" });
     if (!window.SchoolSafePilotageAPI) {
       container.innerHTML = window.ssState({ type: "error", title: "Erreur", message: "API Pilotage non disponible.", retry: { attrs: { "data-pilotage-retry": "" } } });
@@ -55,6 +80,10 @@
   function renderAlerts(containerId) {
     var container = document.getElementById(containerId);
     if (!container) return;
+    if (isDemoMode()) {
+      renderDemo(container, "Démonstration", "Les alertes de pilotage s’affichent avec les données réelles de l’établissement après connexion. Aucune donnée en mode démonstration.");
+      return;
+    }
     container.innerHTML = window.ssState({ type: "loading", title: "Chargement…", message: "Chargement des alertes…" });
     if (!window.SchoolSafePilotageAPI) {
       container.innerHTML = window.ssState({ type: "error", title: "Erreur", message: "API Pilotage non disponible.", retry: { attrs: { "data-pilotage-retry": "" } } });

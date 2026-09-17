@@ -2950,6 +2950,33 @@
     return true;
   }
 
+  function openReportsModule(actionName) {
+    ["pedagogyModule", "palmaresModule", "financeModule", "accountingModule", "hrModule", "inventoryModule", "communicationModule", "administrationModule", "securityModule", "pilotageModule", "feeControlModule", "accessConsole", "schoolModule"].forEach(function (id) {
+      var module = document.getElementById(id);
+      if (module) module.hidden = true;
+    });
+    setWorkspaceDashboardVisible(false);
+    document.getElementById("cardsProtected").hidden = true;
+    var module = document.getElementById("reportsModule");
+    if (module) module.hidden = false;
+    if (window.SchoolSafeReportsDemo && typeof window.SchoolSafeReportsDemo.open === "function") {
+      var tab = /audit/i.test(actionName || "") ? "audit"
+        : /administratif/i.test(actionName || "") ? "administrative"
+        : /export/i.test(actionName || "") ? "exports"
+        : /historique/i.test(actionName || "") ? "history"
+        : "history";
+      window.SchoolSafeReportsDemo.open(tab);
+    }
+    document.querySelector(".workspace-content").scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function closeReportsModule() {
+    var module = document.getElementById("reportsModule");
+    if (module) module.hidden = true;
+    setWorkspaceDashboardVisible(true);
+    document.getElementById("cardsProtected").hidden = false;
+  }
+
   function openModuleByBranch(branchKey) {
     var documentCenter = document.getElementById("documentCenterModule");
     if (documentCenter) documentCenter.hidden = true;
@@ -2969,7 +2996,7 @@
     if (branchKey === "inventory") { openInventoryModule(); return; }
     if (branchKey === "communication") { openCommunicationModule(); return; }
     if (branchKey === "administration") { openAdministrationModule(); return; }
-    if (branchKey === "reports") { notify("Contrôle et rapports — ouverture dans une prochaine étape."); return; }
+    if (branchKey === "reports") { openReportsModule(); return; }
     notify(definition.label + " — ouverture dans une prochaine étape.");
   }
 
@@ -3007,6 +3034,7 @@
     if (branchKey === "security") { openSecurityModule(actionName); return; }
     if (branchKey === "school") { openSchoolModule(schoolTabForAction(actionName) || "school"); return; }
     if (branchKey === "pilotage") { openPilotageModule(actionName); return; }
+    if (branchKey === "reports") { openReportsModule(actionName); return; }
     notify(actionName + " — ouverture dans une prochaine étape.");
   }
 
@@ -3486,6 +3514,7 @@
   bindIfExists("closeDocumentCenter", "click", closeDocumentCenter);
   bindIfExists("closeSecurityModule", "click", closeSecurityModule);
   bindIfExists("closePilotageModule", "click", closePilotageModule);
+  bindIfExists("closeReportsModule", "click", closeReportsModule);
   bindIfExists("closeFeeControlModule", "click", closeFeeControlModule);
   bindIfExists("closeSchoolModule", "click", closeSchoolModule);
   document.querySelectorAll("#pilotageTabs [data-pilotage-tab]").forEach(function (button) {

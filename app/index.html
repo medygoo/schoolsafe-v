@@ -78,6 +78,7 @@
   <script src="./modules/accounting/accounting-treasury-demo.js" defer></script>
   <script src="./modules/hr/hr-demo.js" defer></script>
   <script src="./modules/inventory/inventory-demo.js" defer></script>
+  <script src="./modules/reports/reports-demo.js?v=reports-module-2026-09-17" defer></script>
   <script src="./modules/finance/fee-control-module.js" defer></script>
   <script src="./modules/security/security-api.js" defer></script>
   <script src="./modules/school/student-pickup-demo.js" defer></script>
@@ -779,6 +780,20 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               <span class="local-draft"><i data-lucide="badge-check"></i> Contrôle financier</span>
             </header>
             <div class="pedagogy-content fee-control-content" id="feeControlContent"></div>
+          </section>
+          <section class="pedagogy-module reports-module" id="reportsModule" hidden>
+            <header class="pedagogy-module-header reports-module-header">
+              <button class="ss-button ss-button--secondary" id="closeReportsModule" type="button"><i data-lucide="arrow-left"></i> Tableau de bord</button>
+              <div><span>Contrôle et rapports</span><h2>Historiques, audit et rapports administratifs</h2><p>Consultez l’activité de l’école et produisez les rapports attendus.</p></div>
+              <span class="local-draft"><i data-lucide="file-chart-column"></i> DÉMONSTRATION · BACKEND_LATER</span>
+            </header>
+            <nav class="pedagogy-tabs reports-tabs" id="reportsTabs" aria-label="Fonctions Contrôle et rapports">
+              <button class="active" type="button" data-reports-tab="history" aria-pressed="true"><i data-lucide="history"></i><span>Historiques</span></button>
+              <button type="button" data-reports-tab="audit" aria-pressed="false"><i data-lucide="list-checks"></i><span>Audit des actions</span></button>
+              <button type="button" data-reports-tab="administrative" aria-pressed="false"><i data-lucide="file-chart-column"></i><span>Rapports administratifs</span></button>
+              <button type="button" data-reports-tab="exports" aria-pressed="false"><i data-lucide="file-down"></i><span>Exports PDF et Excel</span></button>
+            </nav>
+            <div class="pedagogy-content reports-content" id="reportsContent"></div>
           </section>
           <section class="pedagogy-module pilotage-module" id="pilotageModule" hidden>
             <header class="pedagogy-module-header pilotage-module-header">

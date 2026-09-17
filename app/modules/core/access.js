@@ -123,10 +123,42 @@
     return Array.isArray(user && user.permissionExceptions) ? user.permissionExceptions : [];
   }
 
+  // A5.1 : un DENY projeté via deniedRules n'est global que s'il n'a ni cible
+  // ni condition. Un DENY ciblé (scope/target) ou conditionnel ne doit pas
+  // aplatir la permission entière — il s'applique seulement à sa cible,
+  // évaluée côté serveur par Access Law.
+  function deniedRules(user) {
+    return Array.isArray(user && user.deniedRules) ? user.deniedRules : [];
+  }
+
+  function isGlobalDeny(rule) {
+    if (!rule) return false;
+    if (rule.scopeType && rule.scopeType !== "all") return false;
+    if (rule.target) return false;
+    if (rule.conditionCode) return false;
+    return true;
+  }
+
+  function targetedDenies(user, permissionCode) {
+    return deniedRules(user).filter(function (rule) {
+      return rule && rule.permission === permissionCode && !isGlobalDeny(rule);
+    });
+  }
+
   function explicitDeny(user, permissionCode) {
-    if (Array.isArray(user && user.deniedPermissions) && user.deniedPermissions.indexOf(permissionCode) >= 0) return true;
+    var rules = deniedRules(user);
+    if (rules.length) {
+      // Projection A5.1 fiable : seul un DENY global (sans cible ni condition)
+      // bloque la permission entière ; les DENY ciblés sont exposés via
+      // targetedDenies et évalués par la base au moment de l'action.
+      if (rules.some(function (rule) { return rule && rule.permission === permissionCode && isGlobalDeny(rule); })) return true;
+    } else if (Array.isArray(user && user.deniedPermissions) && user.deniedPermissions.indexOf(permissionCode) >= 0) {
+      // Repli legacy : projection aplatie sans deniedRules.
+      return true;
+    }
     return permissionExceptions(user).some(function (item) {
-      return item && item.permission === permissionCode && String(item.effect || "").toLowerCase() === "deny";
+      return item && item.permission === permissionCode && String(item.effect || "").toLowerCase() === "deny"
+        && !(Array.isArray(item.scopes) && item.scopes.length);
     });
   }
 
@@ -273,6 +305,10 @@
     isPermissionsLoadFailed: function () { return permissionsLoadFailed; },
     isAdmin: isAdmin,
     explicitDeny: explicitDeny,
+    targetedDenies: targetedDenies,
+    isGlobalDeny: isGlobalDeny,
+    targetedDenies: targetedDenies,
+    isGlobalDeny: isGlobalDeny,
     canAccess: canAccess,
     scopeFor: scopeFor,
     normalizeScopes: normalizeScopes,

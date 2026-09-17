@@ -30,7 +30,64 @@ raccordements ou nouvelles images terminés sans preuve. A5.1 suit le lot visuel
 - Prochaine action : faire valider visuellement le bandeau par le propriétaire
   sur 4176, puis committer le lot sans table ; logo et cartable restent à reprendre.
 
-### Correction du 16/09 (après vérification navigateur) — canvas live du bandeau
+### Lot en cours — 16/09 : logo de l’école dans le bandeau (première partie du lot logo/cartable)
+
+- Lot sans table commité `f006a12` (validé par le propriétaire, « VALIDE G »).
+- `app/index.html` : zone `.jaspe-hero__school` (img `[data-school-logo]` + `#jaspeHeroSchoolName`)
+  ajoutée dans le bloc identité du bandeau JASPE.
+- `app/app.js` : `renderSchoolBranding` étendu — `closest` accepte `.jaspe-hero__identity`
+  (garde-fou null), `#jaspeHeroSchoolName` rempli depuis `currentSession.school.name`.
+- `app/styles/modules/jaspe-dashboard.css` : styles `.jaspe-hero__school` (flex, logo 24×24,
+  nom discret).
+- Migration additive `database/projections/v1/06_school_logo.sql` : même contrat A5.0 que 05
+  + champ `logo_path` sur l’objet école du bootstrap ; type `SessionBootstrap.school` étendu
+  (`logo_path?: string | null`) ; générateur/manifeste régénérés (6 unités), compteur
+  migration 32→33, `check-migration-versions` 2/2 PASS.
+- Cache SW bumpé `jaspe-school-logo-2026-09-16` ; assertion QA visuelle mise à jour.
+- Preuves : typecheck serveur PASS ; `qa-responsive-visual-system`, `qa-jaspe-dashboard`,
+  `qa-jaspe-hip-layout` PASS ; navigateur réel (DevTools, workspace admin) : logo 24×24
+  visible + nom + `has-school-logo`, canvas live intact (data-URL simulée).
+- **Non couvert :** rejeu PostgreSQL réel de l’unité 06 (cluster arrêté) — obligatoire avant
+  livraison ; poses cartable NON produites ; fidélité visage v12 à reprendre (REPRISE.md §1).
+- Prochaine action : rejeu 06 sur PostgreSQL (`_10`), puis poses cartable depuis l’identité v12.
+
+### Lot abandonné puis reprise A5.1 — 16/09
+
+- Le lot logo/cartable a été **abandonné sur demande du propriétaire** : tous les
+  changements ont été revertés (retour à l’état du commit `f006a12`, bandeau et
+  bouton JASPE du bas inchangés). Aucun changement logo ne subsiste.
+- **A5.1 en cours** : unité de projection additive
+  `database/projections/v1/07_targeted_denies.sql` créée — même contrat A5.0
+  que 05 + clé `deniedRules` (provenance role/exception, originId, scopeType,
+  target, conditionCode/Params, startsAt/endsAt) pour projeter exactement les
+  DENY ciblés/conditionnels au lieu de les aplatir globalement.
+- `deniedPermissions` conservé pour compatibilité ; type `SessionBootstrap`
+  étendu avec `deniedRules` (typecheck serveur PASS) ; manifeste régénéré
+  (6 unités), compteur 32→33, `check-migration-versions` 2/2 PASS.
+- **Reste à faire A5.1** : consommer `deniedRules` côté frontend
+  (`app/modules/core/access.js` : ne plus bloquer globalement une permission
+  quand le DENY est ciblé), console de restrictions individuelles avec
+  délégation bornée, recette parent/enseignant/gardien, rejeu PostgreSQL réel
+  de l’unité 07 (cluster arrêté, base `_10`), tests SQL A5.0 à repasser.
+
+### Lot abandonné puis reprise A5.1 — 16/09
+
+- Le lot logo/cartable a été **abandonné sur demande du propriétaire** : tous les
+  changements ont été revertés (retour à l’état du commit `f006a12`, bandeau et
+  bouton JASPE du bas inchangés). Aucun changement logo ne subsiste.
+- **A5.1 en cours** : unité de projection additive
+  `database/projections/v1/07_targeted_denies.sql` créée — même contrat A5.0
+  que 05 + clé `deniedRules` (provenance role/exception, originId, scopeType,
+  target, conditionCode/Params, startsAt/endsAt) pour projeter exactement les
+  DENY ciblés/conditionnels au lieu de les aplatir globalement.
+- `deniedPermissions` conservé pour compatibilité ; type `SessionBootstrap`
+  étendu avec `deniedRules` (typecheck serveur PASS) ; manifeste régénéré
+  (6 unités), compteur 32→33, `check-migration-versions` 2/2 PASS.
+- **Reste à faire A5.1** : consommer `deniedRules` côté frontend
+  (`app/modules/core/access.js` : ne plus bloquer globalement une permission
+  quand le DENY est ciblé), console de restrictions individuelles avec
+  délégation bornée, recette parent/enseignant/gardien, rejeu PostgreSQL réel
+  de l’unité 07 (cluster arrêté, base `_10`), tests SQL A5.0 à repasser.
 
 - Vérification navigateur réelle (DevTools, parcours auth → admin → workspace) :
   le moteur live se montait bien (`.jaspe2d--live`, 8 frames animées distinctes

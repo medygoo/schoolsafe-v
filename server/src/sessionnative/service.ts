@@ -16,6 +16,18 @@ export type SessionBootstrap = {
   assignedSubjectIds: string[];
   assignedPortalIds: string[];
   deniedPermissions: string[];
+  deniedRules: {
+    permission: string;
+    source: "role" | "exception";
+    originId: string;
+    effect: "deny";
+    scopeType: string;
+    target: string | null;
+    conditionCode: string | null;
+    conditionParams: Record<string, unknown> | null;
+    startsAt: string | null;
+    endsAt: string | null;
+  }[];
   permissionExceptions: {
     permission: string;
     effect: "allow" | "deny";
