@@ -1,0 +1,12 @@
+{
+  "devicehub_version": "schoolsafe-devicehub-v1",
+  "requires_baseline": "schoolsafe-vps-v1",
+  "units": [
+    {
+      "order": 1,
+      "name": "devicehub_core",
+      "file": "01_devicehub_core.sql",
+      "sha256": "f693e2782fe0c882d292bde13af403b6fa917d08338b56f024d4e94eef25bf15"
+    }
+  ]
+}
