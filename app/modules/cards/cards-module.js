@@ -361,6 +361,19 @@ export function initCardsModule(options) {
 
   if (!navCards || !studio || !closeBtn || !classSelect || !renderBtn || !requestBtn || !selectAll) {
     console.warn('[cards-module] Éléments du studio non disponibles — init différée.');
+    // Correction : les éléments du studio n'existent qu'après connexion.
+    // Observateur borné qui relance l'init UNE fois quand ils apparaissent,
+    // au lieu d'abandonner silencieusement (le studio ne s'ouvrait jamais).
+    if (!window.__cardsInitObserver) {
+      window.__cardsInitObserver = new MutationObserver(() => {
+        if (document.getElementById('navCards') && document.getElementById('cardsStudio') && document.getElementById('cardsRequestPrintBtn')) {
+          window.__cardsInitObserver.disconnect();
+          window.__cardsInitObserver = null;
+          initCardsModule(options);
+        }
+      });
+      window.__cardsInitObserver.observe(document.body, { childList: true, subtree: true });
+    }
     return;
   }
 
