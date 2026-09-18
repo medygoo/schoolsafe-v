@@ -240,6 +240,8 @@
     }
     var createButton = document.getElementById("newStudentDraftBtn");
     if (createButton) createButton.addEventListener("click", openStudentDraftModal);
+    var importButton = document.getElementById("studentImportBtn");
+    if (importButton) importButton.addEventListener("click", openStudentImportModal);
     container.querySelectorAll("[data-student-detail]").forEach(function (button) {
       button.addEventListener("click", function () { openStudentDetail(button.getAttribute("data-student-detail")); });
     });
@@ -266,7 +268,8 @@
     container.innerHTML =
       '<section id="studentWorkspace" class="student-workspace" aria-busy="' + (loading ? "true" : "false") + '">' +
         '<header class="student-workspace__header"><div><h3>Dossiers élèves</h3><p>Préparez les dossiers administratifs et consultez séparément les élèves actifs.</p></div>' +
-        (canCreateStudent() ? window.ssButton({ label: "Nouveau dossier", icon: "user-plus", attrs: { id: "newStudentDraftBtn" } }) : '') + '</header>' +
+        (canCreateStudent() ? window.ssButton({ label: "Nouveau dossier", icon: "user-plus", attrs: { id: "newStudentDraftBtn" } }) : '') +
+        (canCreateStudent() ? window.ssButton({ label: "Importer des élèves (CSV)", icon: "upload", variant: "secondary", attrs: { id: "studentImportBtn" } }) : '') + '</header>' +
         '<div class="student-toolbar"><div class="student-status-filter" role="group" aria-label="Statut du dossier">' +
           '<button type="button" data-student-status="draft" class="' + (studentStatus === "draft" ? "active" : "") + '">En préparation</button>' +
           '<button type="button" data-student-status="active" class="' + (studentStatus === "active" ? "active" : "") + '">Actifs</button></div>' +
@@ -385,6 +388,92 @@
     } catch (e) {
       notify("Erreur : " + e.message);
     }
+  }
+
+  // Lot E : import collectif des élèves — parcours préparer → aperçu → confirmer.
+  // Le CSV est lu localement (FileReader), l'aperçu s'affiche AVANT toute
+  // écriture ; la confirmation appelle le commit idempotent côté serveur.
+  async function openStudentImportModal() {
+    var modal = window.ssModal({
+      title: "Importer des élèves (CSV)",
+      content: '<div class="student-import-modal">' +
+        '<p class="ss-muted">Fichier CSV avec les colonnes : <code>matricule, first_name, last_name, class_code</code> (et facultativement <code>eleve_ref, pere, mere, tuteur</code>).</p>' +
+        '<input type="file" id="studentImportFile" accept=".csv,text/csv" class="ss-input">' +
+        '<div id="studentImportPreview" aria-live="polite"></div></div>',
+      actions: [
+        { label: "Annuler", variant: "secondary", onClick: function () { modal.close(); } },
+        { label: "Aperçu", variant: "primary", type: "button", attrs: { id: "studentImportPreviewBtn" } },
+        { label: "Confirmer l'import", variant: "primary", type: "button", attrs: { id: "studentImportCommitBtn" }, disabled: true },
+      ],
+    });
+    var fileInput = modal.content.querySelector("#studentImportFile");
+    var previewBox = modal.content.querySelector("#studentImportPreview");
+    var previewBtn = modal.content.querySelector("#studentImportPreviewBtn");
+    var commitBtn = modal.content.querySelector("#studentImportCommitBtn");
+    var jobId = null;
+    var fileContent = null;
+    var filename = null;
+
+    previewBtn.addEventListener("click", async function () {
+      var file = fileInput.files && fileInput.files[0];
+      if (!file) { modal.setError("Choisissez un fichier CSV."); return; }
+      previewBtn.disabled = true;
+      previewBox.innerHTML = '<p class="ss-muted">Lecture et préparation…</p>';
+      try {
+        fileContent = await file.text();
+        filename = file.name;
+        var prepare = await familyFetch("/native/family/student-imports", {
+          method: "POST",
+          body: JSON.stringify({ filename: filename, file_content: fileContent }),
+        });
+        var d = prepare && prepare.data;
+        if (d && d.error_codes && d.error_codes.length) {
+          previewBox.innerHTML = '<p class="ss-error">' + d.error_codes.map(escapeMarkup).join("<br>") + '</p>';
+          previewBtn.disabled = false;
+          return;
+        }
+        jobId = d.job_id;
+        var preview = await familyFetch("/native/family/student-imports/" + encodeURIComponent(jobId) + "/preview", { method: "POST" });
+        var p = preview && preview.data;
+        var counts = p && p.counts;
+        var plan = p && p.plan;
+        var html = '<h4>Aperçu du lot' + (d.idempotent ? ' (déjà importé — idempotent)' : '') + '</h4>' +
+          '<p>' + (counts.total || 0) + ' ligne(s) : <b>' + (counts.create || 0) + '</b> à créer, <b>' + (counts.match || 0) + '</b> existantes, <b>' + (counts.reject || 0) + '</b> rejetées.</p>';
+        if (Array.isArray(plan) && plan.length) {
+          html += '<div class="import-plan-list"><ul>';
+          plan.slice(0, 200).forEach(function (line) {
+            html += '<li><small>#' + line.line_no + '</small> <b>' + escapeMarkup(line.name || "—") + '</b>' +
+              (line.matricule ? ' · ' + escapeMarkup(line.matricule) : '') +
+              ' <small>' + escapeMarkup(line.action) + (line.error_code ? ' — ' + escapeMarkup(line.error_code) : '') + '</small></li>';
+          });
+          html += '</ul>';
+          if (plan.length > 200) html += '<p class="ss-muted">… ' + (plan.length - 200) + ' ligne(s) supplémentaires.</p>';
+          html += '</div>';
+        }
+        html += '<p class="ss-muted">Aucune donnée n\'est encore enregistrée. Confirmez pour appliquer.</p>';
+        previewBox.innerHTML = html;
+        commitBtn.disabled = false;
+      } catch (e) {
+        previewBox.innerHTML = '<p class="ss-error">Erreur : ' + escapeMarkup(e.message) + '</p>';
+        previewBtn.disabled = false;
+      }
+    });
+
+    commitBtn.addEventListener("click", async function () {
+      if (!jobId) return;
+      commitBtn.disabled = true;
+      previewBox.insertAdjacentHTML("beforeend", '<p class="ss-muted">Application en cours…</p>');
+      try {
+        var result = await familyFetch("/native/family/student-imports/" + encodeURIComponent(jobId) + "/commit", { method: "POST" });
+        var c = result && result.data;
+        modal.close();
+        notify("Import terminé : " + (c.created_rows || 0) + " créé(s), " + (c.matched_rows || 0) + " existant(s), " + (c.rejected_rows || 0) + " rejeté(s)." + (c.idempotent ? " (lot déjà appliqué)" : ""));
+        await loadStudents();
+      } catch (e) {
+        modal.setError(e.message);
+        commitBtn.disabled = false;
+      }
+    });
   }
 
   async function openStudentDraftModal() {
