@@ -54,6 +54,22 @@ export function createFamilyNativeService(businessPool: BusinessPool) {
       });
     },
 
+    // V16/R16-R17 : confirmation de remise transactionnelle (gardien).
+    async pickupConfirm(context: RequestContext, input: {
+      student_id: string;
+      guardian_id: string;
+      request_key: string;
+      note?: string;
+    }): Promise<Record<string, unknown>> {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query(
+          "select api.pickup_confirm($1, $2, $3, $4, $5) as result",
+          [input.student_id, input.guardian_id, context.profileId, input.request_key, input.note ?? null],
+        );
+        return r.rows[0].result as Record<string, unknown>;
+      });
+    },
+
     // V12/T04 : transfert atomique du responsable principal (école habilitée).
     async familyPrimaryTransfer(context: RequestContext, input: {
       student_id: string;

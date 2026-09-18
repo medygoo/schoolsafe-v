@@ -67,6 +67,19 @@ export function registerFamilyNativeRoutes(
     return { data, request_id: newRequestId() };
   });
 
+  // Confirmer une remise — gardien, revalidation serveur au moment de confirmer (V16/R16-R17)
+  app.post("/native/family/pickup-confirm", { preHandler: requireSession }, async (request) => {
+    const body = z.object({
+      student_id: z.string().uuid(),
+      guardian_id: z.string().uuid(),
+      request_key: z.string().min(8),
+      note: z.string().optional(),
+    }).parse(request.body);
+
+    const data = await dependencies.service.pickupConfirm(contextFrom(request), body);
+    return { data, request_id: newRequestId() };
+  });
+
   // Transfert atomique du responsable principal — école habilitée (V12/T04)
   app.post("/native/family/students/:studentId/primary-transfer", { preHandler: requireSession }, async (request) => {
     const { studentId } = request.params as { studentId: string };
