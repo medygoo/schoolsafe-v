@@ -53,6 +53,21 @@ export function createFamilyNativeService(businessPool: BusinessPool) {
         return r.rows[0].result as Record<string, unknown>;
       });
     },
+
+    // V12/T04 : transfert atomique du responsable principal (école habilitée).
+    async familyPrimaryTransfer(context: RequestContext, input: {
+      student_id: string;
+      new_guardian_id: string;
+      reason: string;
+    }): Promise<Record<string, unknown>> {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query(
+          "select api.family_primary_transfer($1, $2, $3) as result",
+          [input.student_id, input.new_guardian_id, input.reason],
+        );
+        return r.rows[0].result as Record<string, unknown>;
+      });
+    },
   };
 }
 

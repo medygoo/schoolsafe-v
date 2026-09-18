@@ -67,6 +67,22 @@ export function registerFamilyNativeRoutes(
     return { data, request_id: newRequestId() };
   });
 
+  // Transfert atomique du responsable principal — école habilitée (V12/T04)
+  app.post("/native/family/students/:studentId/primary-transfer", { preHandler: requireSession }, async (request) => {
+    const { studentId } = request.params as { studentId: string };
+    const body = z.object({
+      new_guardian_id: z.string().uuid(),
+      reason: z.string().min(3),
+    }).parse(request.body ?? {});
+
+    const data = await dependencies.service.familyPrimaryTransfer(contextFrom(request), {
+      student_id: studentId,
+      new_guardian_id: body.new_guardian_id,
+      reason: body.reason,
+    });
+    return { data, request_id: newRequestId() };
+  });
+
   // Liste des deux groupes pour l'écran du gardien (§7.1)
   app.get("/native/family/students/:studentId/pickup-authorizations", { preHandler: requireSession }, async (request) => {
     const { studentId } = request.params as { studentId: string };
