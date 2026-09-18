@@ -20,13 +20,17 @@
     }).then(function (res) { return res.ok ? res.json() : null; }).then(function (payload) {
       var data = payload && payload.data;
       if (!data) return;
-      var html = '<div class="authorized-persons pickup-groups">';
+      var html = '<div class="authorized-persons pickup-groups" data-student-id="' + escapeHtml(studentId) + '">';
       if (Array.isArray(data.family) && data.family.length) {
         html += '<h4>Responsables familiaux</h4><ul>';
         data.family.forEach(function (person) {
           html += '<li><b>' + escapeHtml(person.name) + '</b> <small>' + escapeHtml(person.type) +
             (person.is_primary ? ' · principal' : '') + '</small>' +
-            (person.authorized ? '' : ' <small>— récupération suspendue</small>') + '</li>';
+            (person.authorized ? '' : ' <small>— récupération suspendue</small>');
+          if (person.authorized) {
+            html += ' <button type="button" class="ss-button ss-button--secondary" data-pickup-confirm="' + escapeHtml(person.guardian_id) + '">Confirmer la remise</button>';
+          }
+          html += '</li>';
         });
         html += '</ul>';
       }
@@ -38,13 +42,53 @@
             escapeHtml(person.status) +
             (person.starts_on ? ' · du ' + escapeHtml(String(person.starts_on).slice(0, 10)) : '') +
             (person.ends_on ? ' au ' + escapeHtml(String(person.ends_on).slice(0, 10)) : '') +
-            '</small>' + (valid ? '' : ' <small>— non utilisable</small>') + '</li>';
+            '</small>' + (valid ? '' : ' <small>— non utilisable</small>');
+          if (valid) {
+            html += ' <button type="button" class="ss-button ss-button--secondary" data-pickup-confirm="' + escapeHtml(person.guardian_id) + '">Confirmer la remise</button>';
+          }
+          html += '</li>';
         });
         html += '</ul>';
       }
       html += '<p class="ss-muted">Comparez la personne présente à sa photo avant de confirmer la remise — un QR valide ne suffit jamais.</p>';
       html += '</div>';
       resultBox.insertAdjacentHTML("beforeend", html);
+
+      // V16/R16–R17 : confirmation serveur au moment du clic — droit
+      // revalidé, idempotent, une seule remise par jour. Comparaison humaine
+      // demandée avant le clic (le logiciel ne la remplace jamais).
+      var groups = resultBox.querySelector(".pickup-groups");
+      if (groups) {
+        groups.querySelectorAll("[data-pickup-confirm]").forEach(function (button) {
+          button.addEventListener("click", async function () {
+            var guardianId = button.getAttribute("data-pickup-confirm");
+            var studentKey = groups.getAttribute("data-student-id") || studentId;
+            if (!window.confirm("Avez-vous comparé la personne présente à sa photo ? Confirmer la remise ?")) return;
+            button.disabled = true;
+            try {
+              var res = await fetch(apiBase + "/native/family/pickup-confirm", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  student_id: studentKey,
+                  guardian_id: guardianId,
+                  request_key: "pickup-" + studentKey + "-" + guardianId + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10)
+                })
+              });
+              var payload = null;
+              try { payload = await res.json(); } catch (e) {}
+              if (!res.ok) throw new Error(payload && payload.message ? payload.message : "Erreur " + res.status);
+              var d = payload && payload.data;
+              button.textContent = d && d.idempotent ? "Remise déjà confirmée" : "Remise confirmée ✓";
+              button.classList.add("ss-button--primary");
+            } catch (e) {
+              button.disabled = false;
+              window.alert("Remise refusée : " + e.message);
+            }
+          });
+        });
+      }
     }).catch(function () { /* repli silencieux : l'ancienne liste reste affichée */ });
   }
 
