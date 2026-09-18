@@ -18,6 +18,7 @@ import { createControlPrintNativeService } from "./controlprintnative/service.js
 import { createCardsNativeService } from "./cardsnative/service.js";
 import { createCardsBatchService } from "./cardsnative/batches.js";
 import { createFamilyNativeService } from "./familynative/service.js";
+import { createFamilyImportService } from "./familynative/import.js";
 
 /** Assemble uniquement les services qui utilisent les sessions et pools du VPS. */
 export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
@@ -80,6 +81,7 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
     familyNative: {
       authService,
       service: createFamilyNativeService(pools.businessPool),
+      importService: createFamilyImportService(pools.businessPool),
     },
   });
   if (licenseService) {

@@ -6,12 +6,14 @@ import { newRequestId } from "../http/request-id.js";
 import { requireAuthSession } from "../authnative/middleware.js";
 import type { AuthNativeService } from "../authnative/service.js";
 import type { FamilyNativeService } from "./service.js";
+import type { FamilyImportService } from "./import.js";
 import type { RequestContext } from "../db/context.js";
 import { z } from "zod";
 
 export type FamilyNativeRouteDependencies = {
   authService: AuthNativeService;
   service: FamilyNativeService;
+  importService?: FamilyImportService;
 };
 
 export function registerFamilyNativeRoutes(
@@ -93,6 +95,45 @@ export function registerFamilyNativeRoutes(
       new_guardian_id: body.new_guardian_id,
       reason: body.reason,
     });
+    return { data, request_id: newRequestId() };
+  });
+
+  // ————— Lot E : import collectif des élèves —————
+
+  // Préparer un lot d'import (CSV texte, empreinte SHA-256, idempotent)
+  app.post("/native/family/student-imports", { preHandler: requireSession }, async (request) => {
+    if (!dependencies.importService) {
+      return { data: { error_codes: ["Service d'import non configuré."] }, request_id: newRequestId() };
+    }
+    const body = z.object({
+      filename: z.string().min(1).max(255),
+      file_content: z.string().min(10).max(2 * 1024 * 1024),
+    }).parse(request.body);
+
+    const data = await dependencies.importService.prepare(contextFrom(request), {
+        filename: body.filename,
+        fileContent: body.file_content,
+      });
+    return { data, request_id: newRequestId() };
+  });
+
+  // Aperçu du lot — aucune écriture métier (§8.2)
+  app.post("/native/family/student-imports/:jobId/preview", { preHandler: requireSession }, async (request) => {
+    if (!dependencies.importService) {
+      return { data: { error_codes: ["Service d'import non configuré."] }, request_id: newRequestId() };
+    }
+    const { jobId } = request.params as { jobId: string };
+    const data = await dependencies.importService.preview(contextFrom(request), jobId);
+    return { data, request_id: newRequestId() };
+  });
+
+  // Appliquer le lot confirmé — idempotent, matricule unique (T13)
+  app.post("/native/family/student-imports/:jobId/commit", { preHandler: requireSession }, async (request) => {
+    if (!dependencies.importService) {
+      return { data: { error_codes: ["Service d'import non configuré."] }, request_id: newRequestId() };
+    }
+    const { jobId } = request.params as { jobId: string };
+    const data = await dependencies.importService.commit(contextFrom(request), jobId);
     return { data, request_id: newRequestId() };
   });
 
