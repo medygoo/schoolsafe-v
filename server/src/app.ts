@@ -36,6 +36,7 @@ import { registerControlPrintNativeRoutes, type ControlPrintNativeRouteDependenc
 import { registerCardsNativeRoutes, type CardsNativeRouteDependencies } from "./cardsnative/routes.js";
 import { registerFamilyNativeRoutes, type FamilyNativeRouteDependencies } from "./familynative/routes.js";
 import { registerDeviceHubRoutes, type DeviceHubRouteDependencies } from "./devicehub/routes.js";
+import { registerDeviceHubMachineRoutes, type DeviceHubMachineRouteDependencies } from "./devicehub/machine-routes.js";
 
 export type BuildAppOptions = {
   testRoutes?: boolean;
@@ -70,6 +71,7 @@ export type BuildAppOptions = {
   cardsNative?: CardsNativeRouteDependencies;
   familyNative?: FamilyNativeRouteDependencies;
   deviceHub?: DeviceHubRouteDependencies;
+  deviceHubMachine?: DeviceHubMachineRouteDependencies;
 };
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
@@ -173,6 +175,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   if (options.deviceHub) {
     registerDeviceHubRoutes(app, options.deviceHub);
+  }
+
+  if (options.deviceHubMachine) {
+    registerDeviceHubMachineRoutes(app, options.deviceHubMachine);
   }
 
   if (options.setup) {

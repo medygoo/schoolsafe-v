@@ -88,6 +88,17 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
       authService,
       service: createDeviceHubService(pools.businessPool),
     },
+    deviceHubMachine: controlConfig ? {
+      service: createDeviceHubService(pools.businessPool),
+      hmacSecret: controlConfig.hmacSecret,
+      expectedInstanceId: controlConfig.instanceId,
+      // École résolue côté serveur uniquement — jamais depuis la requête.
+      machineSchoolId: async () => {
+        const r = await pools.businessPool.query("select id from app.schools order by created_at desc limit 1");
+        if (!r.rows.length) throw new Error("Aucune école configurée sur cette instance");
+        return r.rows[0].id as string;
+      },
+    } : undefined,
   });
   if (licenseService) {
     registerLicenseGate(app, { authService, licenseService });
