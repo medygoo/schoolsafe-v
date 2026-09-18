@@ -19,6 +19,7 @@ import { createCardsNativeService } from "./cardsnative/service.js";
 import { createCardsBatchService } from "./cardsnative/batches.js";
 import { createFamilyNativeService } from "./familynative/service.js";
 import { createFamilyImportService } from "./familynative/import.js";
+import { createDeviceHubService } from "./devicehub/service.js";
 
 /** Assemble uniquement les services qui utilisent les sessions et pools du VPS. */
 export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
@@ -82,6 +83,10 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
       authService,
       service: createFamilyNativeService(pools.businessPool),
       importService: createFamilyImportService(pools.businessPool),
+    },
+    deviceHub: {
+      authService,
+      service: createDeviceHubService(pools.businessPool),
     },
   });
   if (licenseService) {
