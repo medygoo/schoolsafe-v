@@ -75,6 +75,14 @@ export function createDeviceHubService(businessPool: BusinessPool) {
       });
     },
 
+    /** Consolider les présences du jour à partir des événements résolus (§47/§48). */
+    async attendanceApply(context: RequestContext, day?: string): Promise<Record<string, unknown>> {
+      return withRequestContext(businessPool, context, async (client: PoolClient) => {
+        const r = await client.query("select api.attendance_apply($1) as result", [day ?? null]);
+        return r.rows[0].result as Record<string, unknown>;
+      });
+    },
+
     /** Exécuter les jobs dus via l'adaptateur du protocole — hors transaction
      *  de données : un échec réseau ne casse jamais la file durable (§9). */
     async runSyncJobs(context: RequestContext, protocol = "mock"): Promise<Record<string, unknown>> {

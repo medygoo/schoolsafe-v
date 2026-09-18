@@ -76,6 +76,16 @@ export function registerDeviceHubRoutes(
     return { data, request_id: newRequestId() };
   });
 
+  // Consolider les présences du jour (règles métier SchoolSafe, §47/§48)
+  app.post("/native/devicehub/attendance/apply", { preHandler: requireSession }, async (request) => {
+    const body = z.object({
+      day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    }).parse(request.body ?? {});
+
+    const data = await dependencies.service.attendanceApply(contextFrom(request), body.day);
+    return { data, request_id: newRequestId() };
+  });
+
   // Exécuter les jobs de synchronisation dus (worker, adaptateur par protocole)
   app.post("/native/devicehub/sync-jobs/run", { preHandler: requireSession }, async (request) => {
     const body = z.object({
