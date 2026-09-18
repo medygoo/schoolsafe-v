@@ -8,8 +8,12 @@ import type { BusinessPool } from "../db/pool.js";
 import { withRequestContext, type RequestContext } from "../db/context.js";
 import type { DeviceAdapter } from "./adapter.js";
 import { createMockDeviceAdapter } from "./mock.js";
+import { pushDeviceRegistration, type ControlAppConfig } from "../control-app/client.js";
 
-export function createDeviceHubService(businessPool: BusinessPool) {
+export function createDeviceHubService(
+  businessPool: BusinessPool,
+  controlAppConfig?: ControlAppConfig,
+) {
   // Adaptateurs par protocole. Le mock sert le développement sans matériel ;
   // le HikvisionAdapter viendra plus tard via le Bridge local (§11/§26).
   const adapters = new Map<string, DeviceAdapter>();
@@ -35,7 +39,27 @@ export function createDeviceHubService(businessPool: BusinessPool) {
           [input.code, input.vendor, input.model, input.serial_number, input.location ?? null,
            input.protocol ?? "mock", input.connection_mode ?? "bridge"],
         );
-        return r.rows[0].result as Record<string, unknown>;
+        const result = r.rows[0].result as Record<string, unknown>;
+        // Déclaration auprès de Control (registre maître matériel) — non
+        // bloquante : l'appareil reste enregistré localement si Control
+        // est injoignable, la déclaration sera rejouée à la prochaine
+        // modification.
+        if (controlAppConfig) {
+          try {
+            await pushDeviceRegistration(controlAppConfig, {
+              school_id: context.schoolId,
+              device_code: input.code,
+              vendor: input.vendor,
+              model: input.model,
+              serial_number: input.serial_number,
+              location: input.location,
+            });
+          } catch (err) {
+            result.control_registration = "failed";
+            result.control_registration_error = err instanceof Error ? err.message : String(err);
+          }
+        }
+        return result;
       });
     },
 

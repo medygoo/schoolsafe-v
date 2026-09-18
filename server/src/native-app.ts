@@ -86,10 +86,10 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
     },
     deviceHub: {
       authService,
-      service: createDeviceHubService(pools.businessPool),
+      service: createDeviceHubService(pools.businessPool, controlConfig),
     },
     deviceHubMachine: controlConfig ? {
-      service: createDeviceHubService(pools.businessPool),
+      service: createDeviceHubService(pools.businessPool, controlConfig),
       hmacSecret: controlConfig.hmacSecret,
       expectedInstanceId: controlConfig.instanceId,
       // École résolue côté serveur uniquement — jamais depuis la requête.
