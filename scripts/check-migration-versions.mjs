@@ -15,6 +15,7 @@ const sets = [
   { name: "cards", versionKey: "cards_version", version: "schoolsafe-cards-v1", requiresBaseline: true },
   { name: "family", versionKey: "family_version", version: "schoolsafe-family-v1", requiresBaseline: true },
   { name: "devicehub", versionKey: "devicehub_version", version: "schoolsafe-devicehub-v1", requiresBaseline: true },
+  { name: "dashboard", versionKey: "dashboard_version", version: "schoolsafe-dashboard-v1", requiresBaseline: true },
   { name: "license", versionKey: "license_version", version: "schoolsafe-license-v1", requiresBaseline: true },
   { name: "trial", versionKey: "trial_version", version: "schoolsafe-trial-v1", requiresBaseline: true },
   { name: "projections", versionKey: "projections_version", version: "schoolsafe-projections-v1", requiresBaseline: true },
