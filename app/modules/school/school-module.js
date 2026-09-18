@@ -279,6 +279,84 @@
     bindStudentWorkspace();
   }
 
+  // Familles (V05–V11) : section récupérateurs de la modale détail élève —
+  // deux groupes séparés, actions valider/révoquer sur les routes natives.
+  function familyApiBase() {
+    return window.schoolSafeApiBase || (window.schoolSafeBackendConfig ? window.schoolSafeBackendConfig.api_base : "http://127.0.0.1:8787");
+  }
+
+  async function familyFetch(path, options) {
+    var res = await fetch(familyApiBase() + path, Object.assign({ credentials: "include", headers: { "Accept": "application/json", "Content-Type": "application/json" } }, options || {}));
+    var payload = null;
+    try { payload = await res.json(); } catch (e) {}
+    if (!res.ok) throw new Error(payload && payload.message ? payload.message : "Erreur " + res.status);
+    return payload;
+  }
+
+  async function loadPickupAuthSection(section, studentId) {
+    if (!section) return;
+    try {
+      var payload = await familyFetch("/native/family/students/" + encodeURIComponent(studentId) + "/pickup-authorizations");
+      var data = payload && payload.data;
+      if (!data) { section.innerHTML = '<p class="ss-muted">Récupérateurs indisponibles.</p>'; return; }
+      var html = "";
+      if (Array.isArray(data.family) && data.family.length) {
+        html += '<h4>Responsables familiaux</h4><ul>';
+        data.family.forEach(function (person) {
+          html += '<li><b>' + escapeMarkup(person.name) + '</b> <small>' + escapeMarkup(person.type) +
+            (person.is_primary ? ' · principal' : '') + (person.authorized ? '' : ' · récupération suspendue') + '</li>';
+        });
+        html += '</ul>';
+      }
+      html += '<h4>Personnes accréditées à la récupération</h4>';
+      if (Array.isArray(data.accredited) && data.accredited.length) {
+        html += '<ul>';
+        data.accredited.forEach(function (person) {
+          html += '<li data-authorization-id="' + escapeMarkup(person.authorization_id) + '"><b>' + escapeMarkup(person.name) + '</b> <small>' +
+            escapeMarkup(person.status) +
+            (person.starts_on ? ' · du ' + escapeMarkup(String(person.starts_on).slice(0, 10)) : '') +
+            (person.ends_on ? ' au ' + escapeMarkup(String(person.ends_on).slice(0, 10)) : '') + '</small> ';
+          if (person.status === "pending") {
+            html += '<button type="button" class="ss-button ss-button--secondary" data-auth-action="validate" style="margin-left:6px">Valider</button>';
+          }
+          if (person.status === "active" || person.status === "pending" || person.status === "suspended") {
+            html += '<button type="button" class="ss-button ss-button--secondary" data-auth-action="revoke" style="margin-left:6px">Retirer</button>';
+          }
+          html += '</li>';
+        });
+        html += '</ul>';
+      } else {
+        html += '<p class="ss-muted">Aucun accrédité externe enregistré pour cet élève.</p>';
+      }
+      html += '<p class="ss-muted">Jusqu’à trois accrédités actifs par enfant — aucun compte n’est créé pour eux.</p>';
+      section.innerHTML = html;
+
+      section.querySelectorAll("[data-auth-action]").forEach(function (button) {
+        button.addEventListener("click", async function () {
+          var id = button.closest("[data-authorization-id]").getAttribute("data-authorization-id");
+          var action = button.getAttribute("data-auth-action");
+          if (action === "revoke" && !window.confirm("Retirer cette accréditation ? L’effet est immédiat.")) return;
+          button.disabled = true;
+          try {
+            if (action === "validate") {
+              await familyFetch("/native/family/pickup-authorizations/" + encodeURIComponent(id) + "/validate", { method: "POST" });
+              notify("Accréditation validée.");
+            } else {
+              await familyFetch("/native/family/pickup-authorizations/" + encodeURIComponent(id) + "/revoke", { method: "POST", body: JSON.stringify({ mode: "revoked" }) });
+              notify("Accréditation retirée.");
+            }
+            loadPickupAuthSection(section, studentId);
+          } catch (e) {
+            button.disabled = false;
+            notify("Erreur : " + e.message);
+          }
+        });
+      });
+    } catch (e) {
+      section.innerHTML = '<p class="ss-muted">Récupérateurs indisponibles : ' + escapeMarkup(e.message) + '</p>';
+    }
+  }
+
   async function openStudentDetail(studentId) {
     try {
       var detail = await window.SchoolSafeSchoolAPI.getStudent(studentId);
@@ -299,9 +377,11 @@
           '<div><dt>Classe prévue</dt><dd>' + escapeMarkup(enrollment.planned_class_name || "—") + '</dd></div>' +
           '<div><dt>Parent principal</dt><dd>' + escapeMarkup(parent.display_name || "—") + '</dd></div>' +
           '<div><dt>Statut Parent</dt><dd>' + escapeMarkup(parent.account_status || "—") + '</dd></div></dl>' +
+          '<div id="pickupAuthSection" class="authorized-persons pickup-groups" data-student-id="' + escapeMarkup(detail.id) + '"><p class="ss-muted">Chargement des récupérateurs…</p></div>' +
           (detail.lifecycle_status === "draft" ? '<p class="student-detail-readonly__notice">Lecture seule · dossier non opérationnel.</p>' : '') + '</div>',
         actions: [{ label: "Fermer", variant: "secondary" }],
       });
+      loadPickupAuthSection(document.getElementById("pickupAuthSection"), detail.id);
     } catch (e) {
       notify("Erreur : " + e.message);
     }
