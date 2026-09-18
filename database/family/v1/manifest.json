@@ -1,0 +1,12 @@
+{
+  "family_version": "schoolsafe-family-v1",
+  "requires_baseline": "schoolsafe-vps-v1",
+  "units": [
+    {
+      "order": 1,
+      "name": "pickup_authorizations",
+      "file": "01_pickup_authorizations.sql",
+      "sha256": "bfb0f539c5c1a3d141727560cd2bad9ca11a4f3394a1cf5484ca3660083946ac"
+    }
+  ]
+}
