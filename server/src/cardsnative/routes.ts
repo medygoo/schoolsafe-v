@@ -15,6 +15,7 @@ export type CardsNativeRouteDependencies = {
   authService: AuthNativeService;
   service: CardsNativeService;
   batchService?: CardsBatchService;
+  autoBatchEnabled?: boolean;
 };
 
 export function registerCardsNativeRoutes(
@@ -45,7 +46,20 @@ export function registerCardsNativeRoutes(
     }).parse(request.body);
 
     const result = await dependencies.service.submitFullPrintRequest(contextFrom(request), body);
-    return { data: result, request_id: newRequestId() };
+
+    // Lot 3 : génération automatique du lot ZIP après soumission réussie
+    // (opt-in CARDS_AUTO_BATCH). Un échec du lot auto ne bloque jamais la
+    // soumission — il est seulement journalisé.
+    let autoBatch: import("./batches.js").BatchResult | null = null;
+    if (dependencies.batchService && dependencies.autoBatchEnabled && result.status === "submitted") {
+      try {
+        autoBatch = await dependencies.batchService.buildBatch(contextFrom(request), { status: "submitted" });
+      } catch (err) {
+        request.log.warn({ err }, "[cards] lot ZIP automatique échoué (soumission conservée)");
+      }
+    }
+
+    return { data: { ...result, auto_batch: autoBatch }, request_id: newRequestId() };
   });
 
   // Soumettre pour un élève spécifique (route raccourcie)

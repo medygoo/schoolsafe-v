@@ -74,6 +74,7 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
         secretAccessKey: env.R2_SECRET_ACCESS_KEY!,
         bucket: env.R2_BUCKET_CARDS ?? "cards",
       } : undefined, controlConfig),
+      autoBatchEnabled: env.CARDS_AUTO_BATCH === true,
     },
   });
   if (licenseService) {

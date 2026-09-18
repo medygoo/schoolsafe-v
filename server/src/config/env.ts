@@ -15,6 +15,8 @@ const envSchema = z.object({
   // Clé PUBLIQUE Ed25519 de SchoolSafe Control (jamais de secret partagé ici).
   CONTROL_LICENSE_PUBLIC_KEY: z.string().min(1).optional(),
   CARD_HMAC_SECRET: z.string().min(1).optional(),
+  // Lot 3 : génération automatique du lot ZIP après soumission réussie.
+  CARDS_AUTO_BATCH: z.coerce.boolean().default(false),
   ZOHO_MAIL_API_KEY: z.string().min(1).optional(),
   ZOHO_MAIL_SENDER_EMAIL: z.string().email().optional(),
   ZOHO_MAIL_SENDER_NAME: z.string().min(1).default("SchoolSafe"),
