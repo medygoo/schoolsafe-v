@@ -6,7 +6,7 @@ import { sha256Sql } from "../../../../scripts/migration-manifest.mjs";
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const dir = path.resolve(scriptsDir, "..");
 
-const files = ["01_devicehub_core.sql", "02_devicehub_rpc.sql"];
+const files = ["01_devicehub_core.sql", "02_devicehub_rpc.sql", "03_attendance.sql"];
 const units = await Promise.all(files.map(async (file, index) => {
   const bytes = await readFile(path.join(dir, file));
   return { order: index + 1, name: path.basename(file, ".sql").slice(3), file, sha256: sha256Sql(bytes) };

@@ -13,6 +13,12 @@
       "name": "devicehub_rpc",
       "file": "02_devicehub_rpc.sql",
       "sha256": "ebc853aa9b34c6cea3248e083b2eaaf9d89e19055b70606cf14d5829e84ad8ee"
+    },
+    {
+      "order": 3,
+      "name": "attendance",
+      "file": "03_attendance.sql",
+      "sha256": "ac9ab222d31dc49be9585e5f231f859b73baa9582e38029963c3fe07195d1524"
     }
   ]
 }
