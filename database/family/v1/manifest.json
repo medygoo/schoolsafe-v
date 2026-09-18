@@ -13,6 +13,12 @@
       "name": "primary_transfer",
       "file": "02_primary_transfer.sql",
       "sha256": "07d7b912afb5eaa531bb75a5971e33baf35e0e0e1b17c7cbce3962e7d25ab28f"
+    },
+    {
+      "order": 3,
+      "name": "pickup_confirmation",
+      "file": "03_pickup_confirmation.sql",
+      "sha256": "e10139ea6ff02bb0ad81a31f20567ff2976637831ea40a906a572960a50c1d93"
     }
   ]
 }
