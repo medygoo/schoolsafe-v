@@ -9,6 +9,45 @@
   var hideModeTabs = false;
   var LOCAL_EVENT_KEY = "schoolsafe-v2-security-local-events";
 
+  // Familles (V05–V11) : afficher les deux groupes séparés de récupérateurs —
+  // responsables familiaux et accrédités externes — avec photos, pour le
+  // contrôle humain du gardien (V09). Repli silencieux si la route échoue.
+  function renderPickupGroups(resultBox, studentId) {
+    var apiBase = window.schoolSafeApiBase || (window.schoolSafeBackendConfig ? window.schoolSafeBackendConfig.api_base : "http://127.0.0.1:8787");
+    fetch(apiBase + "/native/family/students/" + encodeURIComponent(studentId) + "/pickup-authorizations", {
+      credentials: "include",
+      headers: { "Accept": "application/json" }
+    }).then(function (res) { return res.ok ? res.json() : null; }).then(function (payload) {
+      var data = payload && payload.data;
+      if (!data) return;
+      var html = '<div class="authorized-persons pickup-groups">';
+      if (Array.isArray(data.family) && data.family.length) {
+        html += '<h4>Responsables familiaux</h4><ul>';
+        data.family.forEach(function (person) {
+          html += '<li><b>' + escapeHtml(person.name) + '</b> <small>' + escapeHtml(person.type) +
+            (person.is_primary ? ' · principal' : '') + '</small>' +
+            (person.authorized ? '' : ' <small>— récupération suspendue</small>') + '</li>';
+        });
+        html += '</ul>';
+      }
+      if (Array.isArray(data.accredited) && data.accredited.length) {
+        html += '<h4>Personnes accréditées à la récupération</h4><ul>';
+        data.accredited.forEach(function (person) {
+          var valid = person.status === 'active';
+          html += '<li><b>' + escapeHtml(person.name) + '</b> <small>' +
+            escapeHtml(person.status) +
+            (person.starts_on ? ' · du ' + escapeHtml(String(person.starts_on).slice(0, 10)) : '') +
+            (person.ends_on ? ' au ' + escapeHtml(String(person.ends_on).slice(0, 10)) : '') +
+            '</small>' + (valid ? '' : ' <small>— non utilisable</small>') + '</li>';
+        });
+        html += '</ul>';
+      }
+      html += '<p class="ss-muted">Comparez la personne présente à sa photo avant de confirmer la remise — un QR valide ne suffit jamais.</p>';
+      html += '</div>';
+      resultBox.insertAdjacentHTML("beforeend", html);
+    }).catch(function () { /* repli silencieux : l'ancienne liste reste affichée */ });
+  }
+
   function escapeHtml(value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -301,6 +340,13 @@
       resultBox.innerHTML = html;
       input.value = "";
       refreshIcons();
+
+      // Familles (V05–V11) : enrichir avec les deux groupes séparés —
+      // responsables familiaux et accrédités externes — depuis la route
+      // native. Repli silencieux sur l'ancienne liste en cas d'échec.
+      if (data.student && data.student.id && (data.decision === "allowed" || data.decision === "manual_override")) {
+        renderPickupGroups(resultBox, data.student.id);
+      }
     }).catch(function (err) {
       resultBox.innerHTML = window.ssState({ type: "error", title: "Erreur", message: err.message, size: "compact" });
       refreshIcons();
