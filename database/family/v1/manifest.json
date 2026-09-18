@@ -19,6 +19,12 @@
       "name": "pickup_confirmation",
       "file": "03_pickup_confirmation.sql",
       "sha256": "e10139ea6ff02bb0ad81a31f20567ff2976637831ea40a906a572960a50c1d93"
+    },
+    {
+      "order": 4,
+      "name": "student_import",
+      "file": "04_student_import.sql",
+      "sha256": "94a361704366d293536b40a89767654aa5b6e62e69caec89c453e19ef2a1fd9a"
     }
   ]
 }

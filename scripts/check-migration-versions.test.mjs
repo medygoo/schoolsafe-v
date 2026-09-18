@@ -18,5 +18,5 @@ test("the repository migration check is read-only and passes", () => {
   });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.match(result.stdout, /PASS \(10 sets, 37 units\)/);
+  assert.match(result.stdout, /PASS \(10 sets, 38 units\)/);
 });
