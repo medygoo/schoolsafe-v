@@ -7,6 +7,12 @@
       "name": "pickup_authorizations",
       "file": "01_pickup_authorizations.sql",
       "sha256": "bfb0f539c5c1a3d141727560cd2bad9ca11a4f3394a1cf5484ca3660083946ac"
+    },
+    {
+      "order": 2,
+      "name": "primary_transfer",
+      "file": "02_primary_transfer.sql",
+      "sha256": "07d7b912afb5eaa531bb75a5971e33baf35e0e0e1b17c7cbce3962e7d25ab28f"
     }
   ]
 }
