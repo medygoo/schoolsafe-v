@@ -17,6 +17,7 @@ import { createPedagogyNativeService } from "./pedagogynative/service.js";
 import { createControlPrintNativeService } from "./controlprintnative/service.js";
 import { createCardsNativeService } from "./cardsnative/service.js";
 import { createCardsBatchService } from "./cardsnative/batches.js";
+import { createFamilyNativeService } from "./familynative/service.js";
 
 /** Assemble uniquement les services qui utilisent les sessions et pools du VPS. */
 export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
@@ -75,6 +76,10 @@ export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
         bucket: env.R2_BUCKET_CARDS ?? "cards",
       } : undefined, controlConfig),
       autoBatchEnabled: env.CARDS_AUTO_BATCH === true,
+    },
+    familyNative: {
+      authService,
+      service: createFamilyNativeService(pools.businessPool),
     },
   });
   if (licenseService) {

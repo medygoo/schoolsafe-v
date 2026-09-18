@@ -34,6 +34,7 @@ import { registerFinanceNativeRoutes, type FinanceNativeRouteDependencies } from
 import { registerPedagogyNativeRoutes, type PedagogyNativeRouteDependencies } from "./pedagogynative/routes.js";
 import { registerControlPrintNativeRoutes, type ControlPrintNativeRouteDependencies } from "./controlprintnative/routes.js";
 import { registerCardsNativeRoutes, type CardsNativeRouteDependencies } from "./cardsnative/routes.js";
+import { registerFamilyNativeRoutes, type FamilyNativeRouteDependencies } from "./familynative/routes.js";
 
 export type BuildAppOptions = {
   testRoutes?: boolean;
@@ -66,6 +67,7 @@ export type BuildAppOptions = {
   pedagogyNative?: PedagogyNativeRouteDependencies;
   controlPrintNative?: ControlPrintNativeRouteDependencies;
   cardsNative?: CardsNativeRouteDependencies;
+  familyNative?: FamilyNativeRouteDependencies;
 };
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
@@ -161,6 +163,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   if (options.cardsNative) {
     registerCardsNativeRoutes(app, options.cardsNative);
+  }
+
+  if (options.familyNative) {
+    registerFamilyNativeRoutes(app, options.familyNative);
   }
 
   if (options.setup) {
