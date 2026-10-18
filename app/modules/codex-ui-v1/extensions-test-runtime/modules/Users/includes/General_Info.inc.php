@@ -277,11 +277,45 @@ if ( basename( $_SERVER['PHP_SELF'] ) != 'index.php' )
 		}
 		else
 		{
+			// SchoolSafe — nommer un profil métier dès la création (P2) : seuls
+			// les profils que l'acteur peut réellement attribuer sont proposés.
+			// Le profil de base en découle à l'enregistrement, il ne peut donc
+			// pas diverger du profil nommé choisi ici.
+			$named_profiles_RET = DBGet( "SELECT ID,TITLE,PROFILE
+				FROM user_profiles
+				ORDER BY PROFILE,ID" );
+
+			$profile_families = [
+				'admin' => _( 'Administrator' ),
+				'teacher' => _( 'Teacher' ),
+				'parent' => _( 'Parent' ),
+			];
+
+			// Familles natives : leurs profils par défaut (1, 2, 3) ne sont pas
+			// des profils nommés, ils sont déjà couverts par « Default ».
+			$default_profile_ids = [ 'admin' => 1, 'teacher' => 2, 'parent' => 3 ];
+
+			foreach ( (array) $named_profiles_RET as $named_profile )
+			{
+				if ( (int) $named_profile['ID'] < 1
+					|| ! isset( $profile_families[$named_profile['PROFILE']] )
+					|| ! function_exists( 'SchoolSafeProfileDelegable' )
+					|| ! SchoolSafeProfileDelegable( (string) $named_profile['ID'], $named_profile['PROFILE'] )
+					|| ( $default_profile_ids[$named_profile['PROFILE']] ?? -1 ) === (int) $named_profile['ID'] )
+				{
+					continue;
+				}
+
+				$permissions_options[$named_profile['ID']] = _( $named_profile['TITLE'] ) . ' — '
+					. ( $profile_families[$named_profile['PROFILE']] ?? $named_profile['PROFILE'] );
+			}
+
 			$na = _( 'Default' );
 
-			$tooltip = '<div class="tooltip"><i>' . _(
-				'You can select custom permissions or profiles after adding the user.'
-			) . '</i></div>';
+			// Pas de phrase ici : l'ancienne (« après l'ajout de l'utilisateur »)
+			// n'est plus vraie, et le libellé « Profil — Famille » suffit à dire
+			// que le choix fixe les deux niveaux.
+			$tooltip = '';
 		}
 
 		echo SelectInput(

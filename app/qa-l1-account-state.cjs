@@ -336,6 +336,94 @@ function client() {
     return 'compte teacher cree dans l\'ecole 2 (' + post.status + ')';
   });
 
+  // --- 7ter. Profil nomme des la creation (P2 : nommer un Directeur) -------
+  const directorProfileId = sql("SELECT ID FROM user_profiles WHERE TITLE='Directeur'");
+  assert.match(directorProfileId, /^[0-9]+$/, 'profil nomme Directeur (migration 015) present');
+
+  await checkAsync('proprietaire : le formulaire de creation propose le profil nomme Directeur', async () => {
+    const c = client();
+    await c.login('l1.proprietaire');
+    const form = await c.request('/Modules.php?modname=Users/User.php&staff_id=new&category_id=1');
+    assert.equal(form.status, 200, 'formulaire rendu');
+    assert.match(form.body, new RegExp('value="' + directorProfileId + '"[^>]*>Directeur'), 'Directeur propose a la creation');
+    assert.match(form.body, /value="6"[^>]*>Gardien/, 'Gardien propose a la creation');
+    assert.doesNotMatch(form.body, /after adding the user/, "l'ancienne consigne (profil choisi apres creation) a disparu");
+    return 'profils nommes listes a la creation';
+  });
+
+  await checkAsync('proprietaire : nommer un Directeur se fait en une seule creation', async () => {
+    const c = client();
+    await c.login('l1.proprietaire');
+    const form = await c.request('/Modules.php?modname=Users/User.php&staff_id=new&category_id=1');
+    const action = (form.body.match(/<form[^>]*action="([^"]*Users\/User\.php[^"]*)"/) || [])[1];
+    assert.ok(action, 'formulaire de creation rendu');
+    const url = action.replace(/&amp;/g, '&');
+    const token = (url.match(/token=([^&"]+)/) || [])[1];
+
+    const username = 'l1.named.' + Date.now();
+    try {
+      const post = await c.request('/' + url, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-Token': token },
+        form: {
+          'staff[FIRST_NAME]': 'Nomme', 'staff[LAST_NAME]': 'Directeur',
+          'staff[USERNAME]': username, 'staff[PASSWORD]': PASSWORD,
+          // La famille saisie ne compte pas : le profil nomme fait foi.
+          'staff[PROFILE]': 'teacher', 'staff[PROFILE_ID]': directorProfileId,
+          'staff[SCHOOLS][2]': 'Y',
+        },
+      });
+      assert.notEqual(post.status, 403, 'aucun refus de perimetre');
+
+      const created = sql(`SELECT PROFILE||'|'||PROFILE_ID||'|'||COALESCE(SCHOOLS,'')
+        FROM staff WHERE SYEAR='2026' AND USERNAME='${username}'`);
+      assert.equal(created, 'admin|' + directorProfileId + '|,2,',
+        'profil nomme attribue des la creation, famille admin deduite, ecole 2 conservee');
+
+      // Le compte nomme Directeur entre bien dans son perimetre.
+      sql(`UPDATE staff SET LAST_LOGIN=CURRENT_TIMESTAMP,
+        PASSWORD=(SELECT PASSWORD FROM staff WHERE USERNAME='l1.proprietaire' LIMIT 1)
+        WHERE SYEAR='2026' AND USERNAME='${username}'`);
+      const login = await client().login(username);
+      assert.ok(login.location.includes('modname='), 'le Directeur cree se connecte');
+      return 'une creation => admin|' + directorProfileId + ', ecole 2';
+    } finally {
+      sql(`DELETE FROM staff WHERE SYEAR='2026' AND USERNAME='${username}'`);
+    }
+  });
+
+  await checkAsync('directeur delegue : ne peut ni voir ni forger le profil Directeur', async () => {
+    const c = client();
+    await c.login('l1.directeur2');
+    const form = await c.request('/Modules.php?modname=Users/User.php&staff_id=new&category_id=1');
+    assert.ok(form.status === 200, 'formulaire rendu au directeur');
+    assert.doesNotMatch(form.body, new RegExp('value="' + directorProfileId + '"'), 'profil nomme admin non propose');
+
+    const action = (form.body.match(/<form[^>]*action="([^"]*Users\/User\.php[^"]*)"/) || [])[1];
+    const url = action.replace(/&amp;/g, '&');
+    const token = (url.match(/token=([^&"]+)/) || [])[1];
+    const username = 'l1.forged.' + Date.now();
+    try {
+      const post = await c.request('/' + url, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-Token': token },
+        form: {
+          'staff[FIRST_NAME]': 'Forge', 'staff[LAST_NAME]': 'Directeur',
+          'staff[USERNAME]': username, 'staff[PASSWORD]': PASSWORD,
+          'staff[PROFILE]': 'admin', 'staff[PROFILE_ID]': directorProfileId,
+          'staff[SCHOOLS][2]': 'Y',
+        },
+      });
+      const created = sql(`SELECT COALESCE(PROFILE,'-')||'|'||COALESCE(PROFILE_ID::text,'-')
+        FROM staff WHERE SYEAR='2026' AND USERNAME='${username}'`);
+      assert.equal(created, '', 'aucun compte cree par le directeur avec ce profil');
+      assert.equal(post.status, 403, 'refus de perimetre explicite');
+      return 'option absente + forge refusee (403)';
+    } finally {
+      sql(`DELETE FROM staff WHERE SYEAR='2026' AND USERNAME='${username}'`);
+    }
+  });
+
   // --- 8. Console : le directeur ne peut pas creer d'administrateur --------
   await checkAsync('directeur : creation d\'un administrateur de plateforme refusee', async () => {
     const c = client();

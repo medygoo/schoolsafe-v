@@ -453,17 +453,45 @@ if ( $_REQUEST['modfunc'] === 'update'
 			// Hook.
 			do_action( 'Users/User.php|create_user_checks' );
 
-			if ( $_REQUEST['staff']['PROFILE'] == 'admin' )
+			// SchoolSafe — nommer un profil métier dès la création (P2) : un
+			// PROFILE_ID n'est retenu que s'il désigne un profil existant que
+			// l'acteur peut attribuer ; le profil de base en découle, il ne peut
+			// donc pas diverger du profil nommé. Sinon, comportement natif :
+			// le profil par défaut de la famille native.
+			$named_profile_id = $_REQUEST['staff']['PROFILE_ID'] ?? '';
+			$named_profile_RET = ctype_digit( (string) $named_profile_id )
+				&& (int) $named_profile_id > 0
+				? DBGet( "SELECT PROFILE FROM user_profiles WHERE ID='" . (int) $named_profile_id . "'" )
+				: [];
+
+			if ( $named_profile_RET
+				&& function_exists( 'SchoolSafeProfileDelegable' )
+				&& SchoolSafeProfileDelegable( (string) $named_profile_id, $named_profile_RET[1]['PROFILE'] ) )
 			{
-				$_REQUEST['staff']['PROFILE_ID'] = '1';
+				$_REQUEST['staff']['PROFILE'] = $named_profile_RET[1]['PROFILE'];
+
+				// Un parent n'est jamais rattaché à une école : ses enfants le lient.
+				if ( $_REQUEST['staff']['PROFILE'] === 'parent' )
+				{
+					$_REQUEST['staff']['SCHOOLS'] = '';
+				}
 			}
-			elseif ( $_REQUEST['staff']['PROFILE'] == 'teacher' )
+			else
 			{
-				$_REQUEST['staff']['PROFILE_ID'] = '2';
-			}
-			elseif ( $_REQUEST['staff']['PROFILE'] == 'parent' )
-			{
-				$_REQUEST['staff']['PROFILE_ID'] = '3';
+				$_REQUEST['staff']['PROFILE_ID'] = '';
+
+				if ( $_REQUEST['staff']['PROFILE'] == 'admin' )
+				{
+					$_REQUEST['staff']['PROFILE_ID'] = '1';
+				}
+				elseif ( $_REQUEST['staff']['PROFILE'] == 'teacher' )
+				{
+					$_REQUEST['staff']['PROFILE_ID'] = '2';
+				}
+				elseif ( $_REQUEST['staff']['PROFILE'] == 'parent' )
+				{
+					$_REQUEST['staff']['PROFILE_ID'] = '3';
+				}
 			}
 
 			if ( ! $error )
