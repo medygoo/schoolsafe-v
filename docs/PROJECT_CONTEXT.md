@@ -98,6 +98,28 @@ SchoolSafe est un écosystème scolaire centré sur la gestion des écoles, des 
 - Ne lancer que les tests utiles au risque du lot, sans prétendre qu'un test non exécuté a réussi.
 - Documenter précisément les limites, erreurs connues et prochaines actions dans `docs/CURRENT_HANDOFF.md`.
 
+### Revue d'une fonctionnalité — méthode du propriétaire (une fonctionnalité à la fois)
+
+Étapes 2 à 12 telles que transmises par le propriétaire (l'étape 1 n'était pas jointe à la liste ;
+à compléter par lui) :
+
+2. **Une fonctionnalité à la fois** : ne jamais corriger plusieurs fonctionnalités simultanément.
+3. **Comprendre la fonctionnalité** : rôle, fonctionnement, sous-fonctionnalités, relations avec les autres modules.
+4. **État des lieux** : ce qui existe, ce qui fonctionne, ce qui manque, ce qui doit être amélioré.
+5. **Visuels** : couleurs, thèmes, arrière-plans, dimensions, alignements, espacements, cohérence graphique.
+6. **Boutons** : positionnement, apparence, action déclenchée, destination, appels API, fonctionnement réel.
+7. **Menus et sous-menus** : organisation, disposition, navigation, contenus, cohérence entre les pages.
+8. **Interactions** : comment chaque sous-fonctionnalité communique avec les autres fonctionnalités.
+9. **Écrans** : ordinateur, tablette et téléphone, avec les différents profils utilisateurs.
+10. **Proposer les corrections** : présenter les problèmes identifiés et les améliorations nécessaires pour harmoniser
+    la fonctionnalité avec le design général de SchoolSafe.
+11. **Corriger et tester** : après validation des changements proposés, effectuer les corrections et vérifier chaque
+    bouton, chaque menu et chaque parcours.
+12. **Valider sur Git** : documenter les fichiers modifiés, les tests et les résultats, puis enregistrer chaque lot validé.
+
+Règle de conduite qui en découle : ne pas mélanger deux fonctionnalités dans un même lot ni dans un même commit, et ne
+pas livrer une revue sans avoir réellement parcouru les écrans et les boutons concernés.
+
 
 ## Mission directe VPS ? 20 septembre 2026
 
