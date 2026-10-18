@@ -588,40 +588,16 @@ if ( empty( $_SESSION['STAFF_ID'] )
 		}
 	}
 
-	echo ErrorMessage( $error );
-
-	echo ErrorMessage( $note, 'note' );
+	// Messages natifs de Rosario (erreur, note) : rendus DANS le panneau
+	// de l'ecran bleu, jamais par-dessus les ecrans.
+	$ss_blue_messages = ErrorMessage( $error ) . ErrorMessage( $note, 'note' );
 
 ?>
 
-	<?php require 'modules/SchoolSafe/login-reference.inc.php'; ?>
-	<img src="schoolsafe-logo.png" class="logo center" alt="SchoolSafe" />
-	<h4 class="center"><?php echo SchoolSafeBrandText( ParseMLField( Config( 'TITLE' ) ) ); ?></h4>
-	<form name="loginform" id="loginform" method="post">
-	<table class="cellspacing-0 width-100p">
+<?php
 
-	<?php // Choose language.
-	if ( count( $RosarioLocales ) > 1 ) : ?>
-
-		<tr>
-			<td>
-			<?php foreach ( $RosarioLocales as $loc ) :
-				$language = function_exists( 'locale_get_display_language' ) ?
-					ucfirst( locale_get_display_language( $loc, $locale ) ) :
-					str_replace( '.utf8', '', $loc ); ?>
-
-				<a href="index.php?locale=<?php echo $loc; ?>" title="<?php echo AttrEscape( $language ); ?>">
-					<img src="locale/<?php echo $loc; ?>/flag.png" width="32" alt="<?php echo AttrEscape( $language ); ?>" />
-				</a>&nbsp;
-
-			<?php endforeach; ?>
-			<br />
-			<?php echo _( 'Language' ); ?>
-			</td>
-		</tr>
-
-	<?php endif;
-
+	// Valeurs par defaut du formulaire natif : recopiees telles quelles,
+	// l'ouverture de session au premier acces reste inchangee.
 	$default_username = $default_password = '';
 
 	if ( Config( 'LOGIN' ) === 'No'
@@ -632,89 +608,12 @@ if ( empty( $_SESSION['STAFF_ID'] )
 		// @since 12.9 First login, prefill form inputs with default "admin" username & password
 		$default_username = $default_password = 'admin';
 	}
-	?>
 
-		<tr>
-			<td>
-				<label for="USERNAME"><?php echo _( 'Username' ); ?>
-					<input type="text" name="USERNAME" id="USERNAME" value="<?php
-						echo AttrEscape( $default_username );
-					?>" size="20" maxlength="100" required <?php echo $default_username ? '' : 'autofocus'; ?> />
-				</label>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<label for="PASSWORD"><?php echo _( 'Password' ); ?>
-					<input type="password" name="PASSWORD" id="PASSWORD" value="<?php
-						echo AttrEscape( $default_password );
-					?>" size="20" maxlength="42" required />
-				</label>
-				<div class="align-right">
-					<a href="PasswordReset.php" rel="nofollow">
-						<?php echo _( 'Password help' ); ?>
-					</a>
-				</div>
-			</td>
-		</tr>
-	</table>
-	<p class="center">
-		<input type="submit" value="<?php echo AttrEscape( _( 'Login' ) ); ?>" class="button-primary" />
-	</p>
+	// Les deux ecrans bleus : accueil, puis connexion par nom d'utilisateur.
+	// Le formulaire POST reste celui de Rosario (index.php).
+	require 'modules/SchoolSafe/login-blue.inc.php';
 
-	<?php // @since 7.6 Login form link action hook.
-	do_action( 'index.php|login_form_link' ); ?>
-
-	<?php if ( Config( 'CREATE_USER_ACCOUNT' ) ) : ?>
-
-		<p class="align-right">
-			<a href="index.php?create_account=user&amp;staff_id=new" rel="nofollow">
-				<?php echo _( 'Create User Account' ); ?>
-			</a>
-		</p>
-
-	<?php endif;
-
-	if ( Config( 'CREATE_STUDENT_ACCOUNT' ) ) : ?>
-
-		<p class="align-right">
-			<a href="index.php?create_account=student&amp;student_id=new" rel="nofollow">
-				<?php echo _( 'Create Student Account' ); ?>
-			</a>
-		</p>
-
-	<?php endif;
-
-	if ( ! empty( $_REQUEST['redirect_to'] ) ) :
-		/**
-		 * Redirect to Modules.php URL after login.
-		 *
-		 * @since 3.8
-		 */
-		?>
-		<input type="hidden" name="redirect_to" value="<?php echo URLEscape( $_REQUEST['redirect_to'] ); ?>" />
-	<?php endif; ?>
-	</form>
-	<?php // SchoolSafe presentation modified 2026-10-14; original attribution retained in source and schoolsafe-licenses.php. ?>
-	<details class="about-schoolsafe">
-		<summary>SchoolSafe</summary>
-		<?php // System disclaimer. ?>
-		<p class="size-3">
-			<?php
-				echo sprintf(
-					_( 'This is a restricted network. Use of this network, its equipment, and resources is monitored at all times and requires explicit permission from the network administrator and %s. If you do not have this permission in writing, you are violating the regulations of this network and can and will be prosecuted to the full extent of the law. By continuing into this system, you are acknowledging that you are aware of and agree to these terms.'),
-					SchoolSafeBrandText( ParseMLField( Config( 'TITLE' ) ) )
-				);
-			?>
-		</p>
-	</details>
-	<?php
-	// Original notices: Copyright 2004-2009 The Miller Group & Learners Circle.
-	// Copyright 2012-2026 RosarioSIS, https://www.rosariosis.org.
-	?>
-	<p class="center size-1">SchoolSafe est fourni sans garantie. Redistribution selon la GPL v2.
-		<a href="schoolsafe-licenses.php">Licences et mentions l&eacute;gales</a></p>
-
+?>
 <?php PopTable( 'footer' );
 
 	Warehouse( 'footer' );

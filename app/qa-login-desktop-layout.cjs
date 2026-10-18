@@ -1,23 +1,20 @@
 /*
- * SchoolSafe — ecran de connexion : le panneau ne recouvre plus rien.
+ * SchoolSafe — les deux ecrans bleus, servis par la connexion Rosario.
  *
- * Defaut corrige (P4 de docs/audit/ROLES_ACCES_ETAT_DES_LIEUX.md) : en 1440x900
- * le panneau etait positionne en absolu et sa hauteur ne comptait pas dans le
- * flux, si bien qu'il recouvrait la rangee d'icones (86 px), le slogan (55 px)
- * et le debut de la zone legale (33 px).
+ * Ce test remplace celui qui mesurait l'ancien ecran de connexion
+ * (#ss-login-reference) : cet ecran n'est plus rendu, l'accueil et la
+ * connexion sont desormais les deux ecrans bleus du prototype valide.
  *
- * Le test mesure de vraies boites dans un navigateur, a plusieurs tailles, et
- * verifie l'invariant : aucune intersection entre le panneau et ce qui le suit.
- * Il injecte aussi un faux message d'erreur de 200 px pour prouver que la
- * reserve d'espace suit la hauteur REELLE du panneau, pas une valeur fige.
- *
- * Les 7 fonds sont mesures a 1440x900, et le test attend la fin du voile
- * d'accueil (#ss-splash, 0,9 s + 0,4 s) avant de capturer : sans cela la
- * capture montre le logo sur fond bleu, pas l'ecran de connexion mesure.
- *
- * Le pli est verifie au pixel pres (aucune tolerance) : le cadre historique
- * table.postbox ajoutait 1 px de bordure en haut et en bas, d'ou 2 px de
- * document au-dessus de l'ecran ; desktop.css supprime cette bordure.
+ * Il verifie, dans un vrai navigateur et sur de vraies boites mesurees :
+ *   - l'accueil s'affiche en premier, avec le bouton « Commencer » ;
+ *   - « Commencer » ouvre la connexion, avec les champs NATIFS de Rosario
+ *     (USERNAME, PASSWORD), le lien « Mot de passe oublie » et le choix de
+ *     langue restes branches sur index.php ;
+ *   - le panneau est ce que l'oeil voit : rien ne le recouvre, ni le
+ *     decor, ni le heros JASPE, ni un autre ecran ;
+ *   - un identifiant refuse ramene sur la connexion et le message de
+ *     Rosario s'affiche DANS le panneau ;
+ *   - rien ne deborde horizontalement, du bureau (1920) au telephone (360).
  *
  * Usage : node app/qa-login-desktop-layout.cjs
  * Variables : SCHOOLSAFE_URL (defaut http://127.0.0.1:8081).
@@ -31,27 +28,17 @@ const { chromium } = require('playwright');
 const baseUrl = (process.env.SCHOOLSAFE_URL || 'http://127.0.0.1:8081').replace(/\/$/, '');
 const outputDir = path.join(__dirname, 'qa-output');
 
-// fold: true => l'ecran doit tenir entierement sous le pli (cible 1440-1920).
-// panel: true => le panneau entier (bouton compris) doit etre au-dessus du pli.
+// fold: true => le panneau entier doit tenir sous le pli au chargement.
 const VIEWPORTS = [
-  { width: 1920, height: 1080, fold: true, panel: true },
-  { width: 1600, height: 900, fold: true, panel: true },
-  { width: 1440, height: 900, fold: true, panel: true },
-  { width: 1440, height: 1200, fold: true, panel: true },
-  { width: 1366, height: 768, fold: false, panel: true },
-  { width: 1280, height: 720, fold: false, panel: true },
-  { width: 1280, height: 800, fold: false, panel: true },
-  { width: 1024, height: 768, fold: false, panel: true },
-  { width: 1024, height: 600, fold: false, panel: false },
-  { width: 390, height: 844, fold: false, panel: false },
+  { width: 1920, height: 1080, fold: true, capture: 'login-blue-connexion-1920x1080' },
+  { width: 1600, height: 900, fold: true, capture: null },
+  { width: 1440, height: 900, fold: true, capture: 'login-blue-connexion-1440x900' },
+  { width: 1366, height: 768, fold: false, capture: null },
+  { width: 1280, height: 720, fold: false, capture: null },
+  { width: 1024, height: 768, fold: false, capture: null },
+  { width: 390, height: 844, fold: false, capture: 'login-blue-connexion-390x844' },
+  { width: 360, height: 640, fold: false, capture: null },
 ];
-
-// Les fonds changent les couleurs et ajoutent un calque au heros : la mise en page
-// ne doit pas bouger pour autant (verifie sur le mode par defaut, 1440x900).
-const THEMES = ['night', 'white', 'blue', 'gray', 'mint', 'rose', 'yellow'];
-const THEME_VIEWPORT = { width: 1440, height: 900, fold: true, panel: true };
-
-const FOLLOWING = ['.ss-login-features', '.ss-login-slogan', '#ss-login-legal-slot'];
 
 let passed = 0;
 let failed = 0;
@@ -66,7 +53,7 @@ function check(name, ok, detail) {
   }
 }
 
-/** Boites mesurees dans la page : panneau, ce qui le suit, l'accueil, le bas du document. */
+/** Boites mesurees dans la page, plus ce que l'oeil voit aux points cles. */
 function measure() {
   const box = (selector) => {
     const element = document.querySelector(selector);
@@ -82,52 +69,82 @@ function measure() {
     };
   };
 
-  const panel = box('#ss-login-form-slot');
-  const following = {};
+  const panelElement = document.querySelector('#auth .login-panel');
+  const panel = box('#auth .login-panel');
 
-  // Le panneau doit etre ce que l'oeil voit : ni voile d'accueil, ni superposition.
-  const slot = document.getElementById('ss-login-form-slot');
-  const x = Math.round(Math.min(Math.max(panel.left + panel.width / 2, 1), window.innerWidth - 2));
-  const y = Math.round(Math.min(Math.max(panel.top + 24, 1), window.innerHeight - 2));
-  const painted = document.elementFromPoint(x, y);
+  /** Aire de recouvrement de deux boites, en pixels carres. */
+  const overlap = (a, b) => {
+    if (!a || !b) return 0;
+    const width = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+    const height = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+    return width > 0 && height > 0 ? width * height : 0;
+  };
 
-  for (const selector of ['.ss-login-features', '.ss-login-slogan', '#ss-login-legal-slot']) {
-    following[selector] = box(selector);
-  }
+  const paintedAt = (selector) => {
+    const element = document.querySelector(selector);
+    if (!element || !panel) return null;
+    const rect = element.getBoundingClientRect();
+    const x = Math.round(Math.min(Math.max(rect.left + rect.width / 2, 1), window.innerWidth - 2));
+    const y = Math.round(Math.min(Math.max(rect.top + Math.min(rect.height / 2, 24), 1), window.innerHeight - 2));
+    const painted = document.elementFromPoint(x, y);
+    return {
+      isPanel: !!painted && !!panelElement &&
+        (painted === panelElement || panelElement.contains(painted)),
+      tag: painted ? painted.tagName.toLowerCase() + (painted.id ? '#' + painted.id : '') : null,
+    };
+  };
+
+  const visible = (selector) => {
+    const element = document.querySelector(selector);
+    if (!element) return false;
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return style.visibility !== 'hidden' && style.display !== 'none' &&
+      Number(style.opacity) > 0 && rect.width > 0 && rect.height > 0;
+  };
+
+  const username = document.getElementById('USERNAME');
+  const password = document.getElementById('PASSWORD');
 
   return {
+    splashActive: !!document.querySelector('#splash.active'),
+    authActive: !!document.querySelector('#auth.active'),
+    splashVisible: visible('#splash'),
+    startLabel: (document.querySelector('#enterSplash span') || {}).textContent || '',
     panel,
-    following,
-    welcome: box('.ss-login-welcome'),
-    position: getComputedStyle(slot).position,
-    scrollHeight: document.documentElement.scrollHeight,
-    viewportHeight: window.innerHeight,
-    hasForm: !!document.querySelector('#ss-login-form-slot #loginform'),
-    panelPainted: !!painted && (painted === slot || slot.contains(painted)),
+    panelPosition: document.querySelector('#auth .login-panel')
+      ? getComputedStyle(document.querySelector('#auth .login-panel')).position : null,
+    paintedTop: paintedAt('#auth .login-panel'),
+    paintedButton: paintedAt('#auth .login-panel .login-button'),
+    paintedField: paintedAt('#auth .ss-input-shell'),
+    topbarOverlap: overlap(panel, box('.auth-topbar')),
+    valuesOverlap: overlap(panel, box('.auth-values')),
+    footerOverlap: overlap(panel, box('.auth-footer')),
+    messageOverlap: overlap(panel, box('.auth-message')),
+    usernameVisible: visible('#USERNAME'),
+    passwordVisible: visible('#PASSWORD'),
+    submitVisible: visible('#auth .login-button'),
+    usernameValue: username ? username.value : null,
+    passwordType: password ? password.type : null,
+    formAction: document.querySelector('#loginform')
+      ? document.querySelector('#loginform').getAttribute('action') : null,
+    formMethod: document.querySelector('#loginform')
+      ? document.querySelector('#loginform').getAttribute('method') : null,
+    resetHref: (document.querySelector('#auth .text-button') || {}).getAttribute
+      ? document.querySelector('#auth .text-button').getAttribute('href') : null,
+    languageHrefs: Array.from(document.querySelectorAll('#auth .language-switch a'))
+      .map((link) => link.getAttribute('href')),
+    documentWidth: document.documentElement.scrollWidth,
+    viewportWidth: window.innerWidth,
+    errorInsidePanel: (() => {
+      const message = document.querySelector('#ss-blue .ss-blue-messages');
+      if (!message || !panel) return null;
+      const rect = message.getBoundingClientRect();
+      return rect.top >= panel.top - 1 && rect.bottom <= panel.bottom + 1 &&
+        rect.left >= panel.left - 1 && rect.right <= panel.right + 1;
+    })(),
+    errorText: (document.querySelector('#ss-blue .ss-blue-messages .error') || {}).textContent || '',
   };
-}
-
-/** Le voile d'accueil (z-index 100000) doit avoir fini son fondu avant toute capture. */
-async function waitForSplash(page) {
-  await page.waitForFunction(() => {
-    const splash = document.querySelector('.ss-splash');
-    if (!splash) return true;
-    const style = getComputedStyle(splash);
-    return style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0;
-  }, null, { timeout: 15000 });
-}
-
-/** Somme des canaux : distingue un fond clair d'un fond bleu nuit. */
-function brightness(rgb) {
-  return rgb[0] + rgb[1] + rgb[2];
-}
-
-/** Aire de recouvrement de deux boites, en pixels carres. */
-function intersectionArea(a, b) {
-  if (!a || !b) return 0;
-  const width = Math.min(a.right, b.right) - Math.max(a.left, b.left);
-  const height = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-  return width > 0 && height > 0 ? width * height : 0;
 }
 
 (async () => {
@@ -141,63 +158,79 @@ function intersectionArea(a, b) {
     ],
   });
 
-  /** Charge l'ecran de connexion et verifie la mise en page a une taille donnee. */
-  async function checkViewport(page, viewport, label, captureName) {
+  /** Ouvre la connexion depuis l'accueil, comme un utilisateur. */
+  async function openLogin(page) {
+    await page.waitForSelector('#splash.active', { timeout: 15000 });
+    await page.click('#enterSplash');
+    await page.waitForSelector('#auth.active #loginform', { timeout: 15000 });
+    await page.waitForTimeout(150);
+  }
+
+  async function checkViewport(page, viewport, label, capture) {
     await page.goto(baseUrl + '/index.php', { waitUntil: 'load', timeout: 30000 });
-    await page.waitForSelector('#ss-login-form-slot #loginform', { timeout: 15000 });
-    await waitForSplash(page);
-    await page.waitForTimeout(250); // laisser la mise en page se stabiliser
+    await page.waitForSelector('#ss-blue', { timeout: 15000 });
+    await page.waitForSelector('#splash.active', { timeout: 15000 });
+    await page.waitForTimeout(200);
 
     let state = await page.evaluate(measure);
 
-    check(label + ' : le formulaire de connexion est rendu dans le panneau', state.hasForm);
-    check(label + ' : le panneau est ce que l\'oeil voit (aucun voile par-dessus)', state.panelPainted);
-    check(label + ' : le panneau ne recouvre ni icones, ni slogan, ni zone legale',
-      FOLLOWING.every((selector) => intersectionArea(state.panel, state.following[selector]) === 0),
-      JSON.stringify(Object.fromEntries(FOLLOWING.map((selector) => [selector,
-        intersectionArea(state.panel, state.following[selector])]))));
-    check(label + ' : le panneau ne recouvre pas le titre d\'accueil',
-      intersectionArea(state.panel, state.welcome) === 0);
+    check(label + ' : l\'accueil s\'affiche en premier', state.splashActive && state.splashVisible);
+    check(label + ' : le bouton d\'accueil est « Commencer »',
+      state.startLabel.trim() === 'Commencer', 'libelle « ' + state.startLabel.trim() + ' »');
+    check(label + ' : la connexion n\'est pas encore a l\'ecran', !state.authActive);
 
-    if (viewport.width >= 900) {
-      check(label + ' : le panneau est dans le flux (position ' + state.position + ')',
-        state.position !== 'absolute',
-        'une hauteur reelle reserve la place des blocs suivants');
+    if (capture && viewport.width >= 1400) {
+      await page.screenshot({ path: path.join(outputDir, capture.replace('connexion', 'accueil') + '.png') })
+        .catch(() => {});
     }
 
-    if (viewport.panel) {
-      check(label + ' : le panneau entier est au-dessus du pli',
+    await openLogin(page);
+    state = await page.evaluate(measure);
+
+    check(label + ' : « Commencer » ouvre la connexion', state.authActive && state.usernameVisible);
+    check(label + ' : les champs natifs de Rosario sont la (nom d\'utilisateur, mot de passe)',
+      state.usernameVisible && state.passwordVisible && state.submitVisible);
+    check(label + ' : le formulaire poste vers index.php',
+      state.formAction === 'index.php' && (state.formMethod || '').toLowerCase() === 'post',
+      state.formAction + ' / ' + state.formMethod);
+    check(label + ' : le mot de passe est masque a l\'ouverture', state.passwordType === 'password');
+    check(label + ' : « Mot de passe oublie » reste branche sur Rosario',
+      state.resetHref === 'PasswordReset.php', String(state.resetHref));
+    check(label + ' : le choix de langue reste branche sur Rosario',
+      state.languageHrefs.length > 0 && state.languageHrefs.every((href) => (href || '').startsWith('index.php?locale=')),
+      state.languageHrefs.join(' '));
+    check(label + ' : le panneau est ce que l\'oeil voit (aucun decor par-dessus)',
+      state.paintedTop && state.paintedTop.isPanel, 'paint ' + (state.paintedTop || {}).tag);
+    check(label + ' : ni le bandeau, ni les engagements, ni le pied ne recouvrent le panneau',
+      state.topbarOverlap === 0 && state.valuesOverlap === 0 && state.footerOverlap === 0 &&
+        state.messageOverlap === 0,
+      JSON.stringify({ bandeau: state.topbarOverlap, engagements: state.valuesOverlap,
+        pied: state.footerOverlap, titre: state.messageOverlap }));
+    check(label + ' : le bouton « Continuer » est cliquable',
+      state.paintedButton && state.paintedButton.isPanel, 'paint ' + (state.paintedButton || {}).tag);
+    check(label + ' : le champ recoit bien le clic',
+      state.paintedField && state.paintedField.isPanel, 'paint ' + (state.paintedField || {}).tag);
+    check(label + ' : aucun debordement horizontal',
+      state.documentWidth <= state.viewportWidth + 1,
+      'document ' + state.documentWidth + ' px pour ' + state.viewportWidth + ' px');
+
+    if (viewport.fold) {
+      check(label + ' : le panneau entier tient sous le pli',
         state.panel.bottom <= viewport.height,
         'bas du panneau ' + state.panel.bottom + ' px pour ' + viewport.height + ' px de haut');
     }
 
-    if (viewport.fold) {
-      // Exact, sans tolerance : le moindre pixel sous le pli doit faire echouer.
-      const legalBottom = state.following['#ss-login-legal-slot'].bottom;
-      check(label + ' : toute la page tient sous le pli (au pixel pres)',
-        legalBottom <= viewport.height && state.scrollHeight <= viewport.height,
-        'bas de la zone legale ' + legalBottom + ' px, document ' + state.scrollHeight + ' px');
-    }
+    // Saisie reelle : les deux champs recoivent le texte, le panneau reste stable.
+    await page.fill('#USERNAME', 'qa.ecran.bleu');
+    await page.fill('#PASSWORD', 'MotDePasse-QA-2026!');
+    const filled = await page.evaluate(measure);
+    check(label + ' : les champs acceptent la saisie',
+      filled.usernameValue === 'qa.ecran.bleu' && filled.passwordType === 'password');
+    check(label + ' : la saisie ne bouge pas la mise en page',
+      Math.abs(filled.panel.top - state.panel.top) <= 2);
 
-    // Capture de l'ecran tel quel, AVANT l'injection du faux message d'erreur.
-    if (captureName) {
-      await page.screenshot({ path: path.join(outputDir, captureName + '.png') }).catch(() => {});
-    }
-
-    // Le message d'erreur allonge le panneau : l'espace reserve doit suivre.
-    if (viewport.width >= 900) {
-      await page.evaluate(() => {
-        const filler = document.createElement('div');
-        filler.style.height = '200px';
-        filler.id = 'qa-tall-error';
-        document.getElementById('ss-login-form-slot').append(filler);
-      });
-      await page.waitForTimeout(150);
-      state = await page.evaluate(measure);
-
-      check(label + ' : un panneau allonge de 200 px ne recouvre toujours rien',
-        FOLLOWING.every((selector) => intersectionArea(state.panel, state.following[selector]) === 0),
-        'hauteur du panneau ' + state.panel.height + ' px, icones a ' + state.following['.ss-login-features'].top + ' px');
+    if (capture) {
+      await page.screenshot({ path: path.join(outputDir, capture + '.png') }).catch(() => {});
     }
   }
 
@@ -208,52 +241,31 @@ function intersectionArea(a, b) {
         serviceWorkers: 'block',
       });
       const page = await context.newPage();
+      const errors = [];
+      page.on('pageerror', (error) => errors.push(error.message));
 
-      await checkViewport(page, viewport, viewport.width + 'x' + viewport.height,
-        viewport.width === 1440 && viewport.height === 900 ? 'login-desktop-1440x900' : null);
+      await checkViewport(page, viewport, viewport.width + 'x' + viewport.height, viewport.capture);
+      check(viewport.width + 'x' + viewport.height + ' : aucune erreur de script dans la page',
+        errors.length === 0, errors.join(' | '));
 
-      await context.close();
-    }
+      // Un identifiant refuse : le message de Rosario doit rester dans le panneau.
+      if (viewport.width === 1440) {
+        await page.fill('#USERNAME', 'qa.inconnu.' + Date.now());
+        await page.fill('#PASSWORD', 'MotDePasse-QA-2026!');
+        await page.click('#auth .login-button');
+        await page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }).catch(() => {});
+        await page.waitForSelector('#auth.active #loginform', { timeout: 15000 });
+        await page.waitForTimeout(250);
+        const refused = await page.evaluate(measure);
 
-    // Chaque fond doit conserver la meme mise en page que le fond par defaut.
-    for (const theme of THEMES) {
-      const label = 'fond ' + theme + ' (1440x900)';
-      const context = await browser.newContext({
-        viewport: { width: THEME_VIEWPORT.width, height: THEME_VIEWPORT.height },
-        serviceWorkers: 'block',
-      });
-      const page = await context.newPage();
-
-      // Le fond est lu au chargement depuis le stockage local : on le pose puis on recharge.
-      await page.goto(baseUrl + '/index.php', { waitUntil: 'load', timeout: 30000 });
-      await page.evaluate((value) => {
-        try { localStorage.setItem('schoolsafe-background', value); } catch {};
-      }, theme);
-      await page.reload({ waitUntil: 'load', timeout: 30000 });
-      await page.waitForSelector('#ss-login-form-slot #loginform', { timeout: 15000 });
-      await waitForSplash(page);
-
-      const applied = await page.evaluate(() => {
-        const host = document.getElementById('ss-login-reference');
-        const panel = document.querySelector('.ss-login-panel');
-        const rgb = (value) => (value.match(/\d+/g) || []).slice(0, 3).map(Number);
-
-        return {
-          theme: host.dataset.theme,
-          host: rgb(getComputedStyle(host).backgroundColor),
-          panel: rgb(getComputedStyle(panel).backgroundColor),
-        };
-      });
-      check(label + ' : le fond demande est bien applique', applied.theme === theme,
-        'theme actif : ' + applied.theme);
-      // Le bleu nuit est le seul fond sombre : les six autres doivent etre peints en clair.
-      check(label + ' : le fond est reellement peint (' + (theme === 'night' ? 'sombre' : 'clair') + ')',
-        brightness(applied.host) > 600 ? theme !== 'night' : theme === 'night',
-        'ecran ' + applied.host.join(',') + ', panneau ' + applied.panel.join(','));
-
-      // Deux captures (nuit et blanc) : leur difference prouve que le fond est rendu.
-      await checkViewport(page, { ...THEME_VIEWPORT, fold: false }, label,
-        theme === 'night' || theme === 'white' ? 'login-desktop-' + theme + '-1440x900' : null);
+        check('1440x900 : un identifiant refuse ramene sur la connexion', refused.authActive);
+        check('1440x900 : le message de Rosario s\'affiche DANS le panneau',
+          refused.errorInsidePanel === true, JSON.stringify(refused.errorInsidePanel));
+        check('1440x900 : le message porte bien le refus', refused.errorText.trim().length > 0,
+          refused.errorText.trim().slice(0, 80));
+        await page.screenshot({ path: path.join(outputDir, 'login-blue-refus-1440x900.png') })
+          .catch(() => {});
+      }
 
       await context.close();
     }
@@ -261,10 +273,14 @@ function intersectionArea(a, b) {
     const digest = (name) => crypto.createHash('md5')
       .update(fs.readFileSync(path.join(outputDir, name))).digest('hex');
 
-    check('les captures nuit et blanc different (le fond est bien rendu)',
-      digest('login-desktop-night-1440x900.png') !== digest('login-desktop-white-1440x900.png'),
-      'md5 ' + digest('login-desktop-night-1440x900.png').slice(0, 8) + ' / ' +
-        digest('login-desktop-white-1440x900.png').slice(0, 8));
+    check('l\'accueil et la connexion sont deux ecrans differents',
+      digest('login-blue-accueil-1440x900.png') !== digest('login-blue-connexion-1440x900.png'),
+      'md5 ' + digest('login-blue-accueil-1440x900.png').slice(0, 8) + ' / ' +
+        digest('login-blue-connexion-1440x900.png').slice(0, 8));
+    check('bureau et telephone ne rendent pas la meme chose',
+      digest('login-blue-connexion-1440x900.png') !== digest('login-blue-connexion-390x844.png'),
+      'md5 ' + digest('login-blue-connexion-1440x900.png').slice(0, 8) + ' / ' +
+        digest('login-blue-connexion-390x844.png').slice(0, 8));
   } finally {
     await browser.close();
   }
@@ -273,7 +289,7 @@ function intersectionArea(a, b) {
     passed,
     failed,
     base: baseUrl,
-    proof: 'navigateur Chromium reel (Playwright), mesures de boites',
+    proof: 'navigateur Chromium reel (Playwright), mesures de boites et saisie reelle',
   }));
 
   process.exitCode = failed ? 1 : 0;

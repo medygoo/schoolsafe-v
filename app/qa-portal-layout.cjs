@@ -197,14 +197,19 @@ function measure() {
     ],
   });
 
+  // Connexion par les deux ecrans bleus : accueil, puis panneau de connexion.
   async function open(page, user) {
     await page.goto(baseUrl + '/index.php', { waitUntil: 'load', timeout: 30000 });
-    await page.waitForSelector('#ss-login-form-slot #loginform', { timeout: 15000 });
+    await page.waitForSelector('#ss-blue', { timeout: 15000 });
+    if (await page.locator('#splash.active').count()) {
+      await page.click('#enterSplash');
+    }
+    await page.waitForSelector('#auth.active #loginform', { timeout: 15000 });
     await page.fill('#USERNAME', user);
     await page.fill('#PASSWORD', PASSWORD);
     await Promise.all([
       page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
-      page.click('.ss-login-submit'),
+      page.click('#auth .login-button'),
     ]);
     await page.waitForSelector('#body', { timeout: 15000 });
     await page.waitForTimeout(400);

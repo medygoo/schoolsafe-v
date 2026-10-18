@@ -305,3 +305,17 @@ et les familles sont informées sur le portail — école nommée et motif lisib
 autres écoles ; quand toutes les écoles d'un parent sont coupées, sa connexion est refusée avec le même
 motif. Portée vérifiée sur l'environnement final : image `Dockerfile.vps` (PHP 8.3, configuration de
 production) et PostgreSQL 17.11 chargé avec `rosariosis.sql`, migrations 014–016 additives et idempotentes.
+
+
+## 18 octobre 2026 — écran de connexion : les deux écrans bleus, authentification native conservée
+
+Décision : l'accueil (bouton « Commencer ») et la connexion par nom d'utilisateur et mot de passe
+deviennent les deux écrans de la connexion Rosario, repris tels quels du prototype validé (copie
+octet pour octet de ses feuilles de style sous `assets/login/blue/`). Le formulaire reste celui de
+Rosario — POST vers `index.php`, champs `USERNAME` et `PASSWORD`, `redirect_to`, hook
+`index.php|login_form_link`, création de compte, `PasswordReset.php`, choix de langue, mentions
+légales — et les messages natifs (erreur, note) sont rendus dans le panneau de l'écran. Aucune
+authentification parallèle, aucune session, aucun droit, aucune donnée déplacée ; l'ancien écran
+reste sur disque et se remet en service en une ligne dans `index.php`. Motif : une seule
+application SchoolSafe/Rosario, avec l'identité visuelle demandée et une authentification native
+stable.
