@@ -1,0 +1,11 @@
+# Secrets locaux de `wrangler dev` — copier en `.dev.vars` (ignoré par Git).
+# Ne jamais committer `.dev.vars` ni une vraie clé.
+
+# Signature HMAC partagée avec le VPS (obligatoire).
+JASPE_WORKER_HMAC_SECRET=
+
+# Suivi Respan (optionnel). Sans clé, aucun envoi : JASPE fonctionne à l'identique.
+RESPAN_API_KEY=
+
+# Base Respan (facultatif, défaut https://api.respan.ai).
+# RESPAN_BASE_URL=

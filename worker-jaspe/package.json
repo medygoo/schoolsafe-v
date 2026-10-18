@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "node --import tsx --test test/worker.test.ts"
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --import tsx --test test/worker.test.ts test/trace.test.ts"
   },
   "devDependencies": {
     "wrangler": "^3.100.0"

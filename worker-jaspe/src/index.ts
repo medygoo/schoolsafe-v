@@ -9,9 +9,14 @@
  *   - AI (Workers AI)  -> le "cerveau" (ex: @cf/meta/llama-3.3-70b-instruct)
  *   - AI_GATEWAY (AI Gateway) -> contrôle des requêtes/quotas/latence
  * Le VPS n'a aucune clé ; tout se passe côté Worker.
+ *
+ * Suivi Respan (optionnel, inerte sans RESPAN_API_KEY) : métriques seulement
+ * (durée, modèle, jetons, issue), jamais le message ni la réponse. Voir trace.ts.
  */
 
-export interface Env {
+import { traceJaspe, type TraceContext, type TraceEnv } from "./trace.js";
+
+export interface Env extends TraceEnv {
   AI: any;
   AI_GATEWAY?: any;
   JASPE_MODEL?: string;
@@ -49,8 +54,31 @@ function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
+/**
+ * Consommation de jetons, quand le fournisseur la renvoie.
+ * Workers AI n'a pas de forme unique selon les modèles : on accepte les deux
+ * conventions connues et on omet l'attribut plutôt que d'inventer un chiffre.
+ */
+function readUsage(result: unknown) {
+  const usage = (result as any)?.usage;
+  if (!usage || typeof usage !== "object") return undefined;
+  const pick = (...keys: string[]): number | undefined => {
+    for (const key of keys) {
+      const value = Number(usage[key]);
+      if (Number.isFinite(value) && value >= 0) return value;
+    }
+    return undefined;
+  };
+  const prompt = pick("prompt_tokens", "input_tokens", "promptTokens", "inputTokens");
+  const completion = pick("completion_tokens", "output_tokens", "completionTokens", "outputTokens");
+  const total = pick("total_tokens", "totalTokens")
+    ?? (prompt !== undefined || completion !== undefined ? (prompt ?? 0) + (completion ?? 0) : undefined);
+  if (prompt === undefined && completion === undefined && total === undefined) return undefined;
+  return { prompt, completion, total };
+}
+
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx?: TraceContext): Promise<Response> {
     if (request.method !== "POST") {
       return json({ code: "METHOD_NOT_ALLOWED", message: "POST requis" }, 405);
     }
@@ -78,8 +106,10 @@ export default {
       return json({ code: "AI_NOT_CONFIGURED", message: "Workers AI non configuré" }, 503);
     }
 
+    const model = env.JASPE_MODEL || DEFAULT_MODEL;
+    const startedAt = Date.now();
+
     try {
-      const model = env.JASPE_MODEL || DEFAULT_MODEL;
       const systemPrompt = env.JASPE_SYSTEM_PROMPT
         || "Tu es JASPE, l'assistante de l'école SchoolSafe. Réponds avec bienveillance et pédagogie, en français.";
 
@@ -98,9 +128,30 @@ export default {
       else if (typeof result === "string") text = result;
       else text = JSON.stringify(result);
 
+      // Métriques seulement : ni message, ni réponse, ni prompt système.
+      traceJaspe(env, {
+        sessionKey: body.session_key as string,
+        model,
+        responseModel: typeof out?.model === "string" ? out.model : undefined,
+        startedAt,
+        endedAt: Date.now(),
+        ok: true,
+        usage: readUsage(result),
+      }, ctx);
+
       return json({ reply: text });
     } catch (err: any) {
       const msg = err?.message || String(err);
+
+      traceJaspe(env, {
+        sessionKey: body.session_key as string,
+        model,
+        startedAt,
+        endedAt: Date.now(),
+        ok: false,
+        errorCode: "PROVIDER_ERROR",
+      }, ctx);
+
       return json({ code: "PROVIDER_ERROR", message: msg }, 502);
     }
   },
