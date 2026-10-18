@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Formulaire SchoolSafe</title>
+	<link rel="stylesheet" href="../tokens.css">
+	<link rel="stylesheet" href="../components.css">
+	<link rel="stylesheet" href="../animations.css">
+</head>
+<body>
+	<div class="ss-app">
+		<nav class="ss-sidebar" id="app-menu" aria-label="Modèles">
+			<img src="../../assets/themes/SchoolSafe/logo.png" alt="SchoolSafe">
+			<a href="index.html">Modèles</a>
+			<a href="dashboard.html">Tableau</a>
+			<a href="list-table.html">Liste</a>
+			<a href="detail.html">Fiche</a>
+			<a href="form.html" aria-current="page">Formulaire</a>
+			<a href="report.html">Rapport</a>
+		</nav>
+		<div class="ss-shell-main">
+			<header class="ss-topbar">
+				<button class="ss-btn ss-btn-ghost ss-icon-btn ss-menu-btn" type="button" aria-label="Ouvrir le menu" aria-controls="app-menu" data-menu>☰</button>
+				<strong>Ecole fictive</strong>
+				<details class="ss-dropdown">
+					<summary class="ss-profile">LM</summary>
+					<div class="ss-dropdown-panel">
+						<a href="form.html">Préférences</a>
+						<a href="index.html">Quitter la démo</a>
+					</div>
+				</details>
+			</header>
+			<div class="ss-shell-body">
+				<nav class="ss-crumbs" aria-label="Fil d’Ariane"><a href="index.html">Modèles</a><span>Formulaire</span></nav>
+				<form class="ss-content ss-rise" action="detail.html" method="get">
+					<p class="ss-kicker">Démonstration · rien n’est enregistré</p>
+					<h1>Ajouter une personne</h1>
+					<section class="ss-card">
+						<h2>Identité</h2>
+						<div class="ss-form-grid">
+							<label class="ss-field" for="first">Prénom
+								<input class="ss-input" id="first" name="first" type="text" value="Léa" required>
+							</label>
+							<label class="ss-field" for="last">Nom
+								<input class="ss-input" id="last" name="last" type="text" value="Démo" required>
+							</label>
+							<label class="ss-field is-error ss-span-2" for="mail">Courriel
+								<input class="ss-input" id="mail" name="mail" type="email" value="lea">
+								<small>Indiquez un courriel complet. Exemple de validation.</small>
+							</label>
+						</div>
+					</section>
+					<section class="ss-card">
+						<h2>Scolarité</h2>
+						<div class="ss-form-grid">
+							<label class="ss-field" for="level">Niveau
+								<select class="ss-select" id="level" name="level">
+									<option>Démo A</option>
+									<option>Démo B</option>
+								</select>
+							</label>
+							<label class="ss-field" for="day">Date
+								<input class="ss-input" id="day" name="day" type="date" value="2026-10-06">
+							</label>
+							<label class="ss-field ss-span-2" for="note">Note
+								<textarea class="ss-input" id="note" name="note">Texte fictif, non envoyé à Rosario.</textarea>
+							</label>
+						</div>
+					</section>
+					<div class="ss-alert ss-alert-danger"><strong>Erreur.</strong> Le courriel de démonstration est incomplet. Le formulaire n’est pas marqué réussi.</div>
+					<div class="ss-row">
+						<button class="ss-btn ss-btn-primary" type="submit">Enregistrer</button>
+						<a class="ss-btn ss-btn-secondary" href="list-table.html">Annuler</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script>
+		document.querySelectorAll("[data-menu]").forEach(function (button) {
+			button.addEventListener("click", function () {
+				var menu = document.getElementById(button.getAttribute("aria-controls"));
+				var open = menu.classList.toggle("is-open");
+				button.setAttribute("aria-expanded", open ? "true" : "false");
+			});
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SchoolSafe - Niveaux scolaires</title><link rel="stylesheet" href="account-form.css?v=2"></head>
+<body class="ss-account">
+<header class="account-bar"><div class="brand"><img src="schoolsafe-logo.png" alt="">SchoolSafe</div><span>École</span></header>
+<main>
+<div class="breadcrumb">École / Niveaux scolaires</div>
+<div class="heading"><div><h1>Niveaux scolaires</h1><p class="subtitle">Organisation des niveaux de l’établissement</p></div><a class="button" href="/schoolsafe-view/"><i data-lucide="arrow-left" aria-hidden="true"></i>Retour</a></div>
+<div class="demo" role="status">Prévisualisation · aucun niveau Rosario chargé · aucune modification enregistrée.</div>
+<fieldset><legend><i data-lucide="graduation-cap" aria-hidden="true"></i>Identité du niveau</legend><div class="fields">
+<label class="wide" for="level-title">Nom du niveau<input id="level-title" maxlength="50" autocomplete="off"></label>
+<label for="level-short">Nom court<input id="level-short" maxlength="3" autocomplete="off"></label>
+</div></fieldset>
+<fieldset class="contact"><legend><i data-lucide="list-ordered" aria-hidden="true"></i>Ordre et progression</legend><div class="fields">
+<label for="level-order">Ordre<input id="level-order" type="number" min="-9999" max="9999" maxlength="3"></label>
+<label class="wide" for="next-level">Niveau suivant<select id="next-level" disabled><option>Niveaux Rosario non chargés</option></select></label>
+</div></fieldset>
+<fieldset class="access"><legend><i data-lucide="layers" aria-hidden="true"></i>Niveaux de l’école</legend><p>Aucun niveau chargé dans cette prévisualisation.</p></fieldset>
+<footer class="actions"><a class="button" href="/schoolsafe-view/">Retour</a><a class="button primary" href="/Modules.php?modname=School_Setup/GradeLevels.php"><i data-lucide="external-link" aria-hidden="true"></i>Ouvrir les niveaux Rosario</a></footer>
+</main><script src="lucide.min.js"></script><script>if(window.lucide)lucide.createIcons();</script>
+</body></html>

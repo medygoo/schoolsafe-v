@@ -1,0 +1,14 @@
+'use strict';
+const assert = require('node:assert/strict');
+const {monthDays,hasOptions,fieldTypes} = require('./school-details-model.js');
+const leap=monthDays(2024,1);
+assert.equal(leap.length,42);
+assert.equal(leap.filter(day=>day.inMonth).length,29);
+assert.equal(new Set(leap.map(day=>day.iso)).size,42);
+assert.equal(monthDays(2025,1).filter(day=>day.inMonth).length,28);
+assert.equal(monthDays(2026,11).filter(day=>day.inMonth).length,31);
+assert.equal(monthDays(2026,11).at(-1).iso.slice(0,4),'2027');
+assert.equal(hasOptions('select'),true);
+assert.equal(hasOptions('date'),false);
+assert.equal(fieldTypes.length,10);
+console.log('9 assertions passed: calendar dates and native field types.');

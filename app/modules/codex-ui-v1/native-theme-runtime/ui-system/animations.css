@@ -1,0 +1,91 @@
+/*
+ * SchoolSafe micro-motion. State and hierarchy only.
+ */
+
+.ss-btn,
+.ss-sidebar a,
+.ss-page,
+.ss-icon-btn {
+	transition: background-color var(--ss-duration) ease, border-color var(--ss-duration) ease, color var(--ss-duration) ease;
+}
+
+.ss-card,
+.ss-kpi,
+.ss-modal-panel {
+	transition: box-shadow var(--ss-duration) ease, transform var(--ss-duration) ease;
+}
+
+.ss-card:hover,
+.ss-kpi:hover {
+	box-shadow: var(--ss-shadow-raised);
+}
+
+.ss-sidebar {
+	transition: transform var(--ss-duration) ease;
+}
+
+.ss-demo-mobile .ss-sidebar.is-closed {
+	transform: translateX(-100%);
+}
+
+.ss-app .ss-sidebar,
+.ss-dropdown-panel {
+	transition: transform var(--ss-duration) ease, opacity var(--ss-duration) ease;
+}
+
+.ss-dropdown[open] .ss-dropdown-panel {
+	animation: ss-rise var(--ss-duration) ease;
+}
+
+.ss-modal {
+	transition: opacity var(--ss-duration) ease;
+}
+
+.ss-modal.is-open {
+	opacity: 1;
+}
+
+.ss-rise {
+	animation: ss-rise var(--ss-duration) ease;
+}
+
+.ss-spinner {
+	animation: ss-spin 0.8s linear infinite;
+}
+
+@keyframes ss-rise {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes ss-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ss-btn,
+	.ss-sidebar,
+	.ss-sidebar a,
+	.ss-card,
+	.ss-kpi,
+	.ss-modal,
+	.ss-modal-panel,
+	.ss-page,
+	.ss-icon-btn,
+	.ss-spinner,
+	.ss-rise,
+	.ss-app .ss-sidebar,
+	.ss-dropdown-panel,
+	.ss-dropdown[open] .ss-dropdown-panel {
+		animation: none;
+		transition: none;
+	}
+}

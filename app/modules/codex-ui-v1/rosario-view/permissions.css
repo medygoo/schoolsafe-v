@@ -1,0 +1,8 @@
+.ss-account .permission-tabs { display:flex; gap:24px; border-bottom:1px solid var(--line); margin-bottom:24px; }
+.ss-account .permission-tabs button { min-height:48px; padding:12px 4px; border:0; border-bottom:3px solid transparent; color:var(--muted); font:600 16px/1.5 system-ui,sans-serif; background:transparent; cursor:pointer; }
+.ss-account .permission-tabs button[aria-selected=true] { border-bottom-color:var(--blue); color:var(--blue); }
+.ss-account [role=tabpanel]>label { max-width:360px; }
+.ss-account .permission-empty { padding:36px 0; color:var(--muted); }
+.ss-account .permission-empty svg { width:28px; height:28px; color:#168569; }
+.ss-account .permission-empty h2 { font-size:20px; color:var(--ink); margin:12px 0 8px; }
+.ss-account [hidden] { display:none; }

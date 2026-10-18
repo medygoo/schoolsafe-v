@@ -1,0 +1,20 @@
+body { margin: 0; }
+.sscx-content { max-width: 1200px; margin: auto; }
+.sscx-app a { color: var(--sscx-blue); text-decoration: underline; overflow-wrap: anywhere; }
+.ssview-links { display: flex; flex-wrap: wrap; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--sscx-border); }
+.ssview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; padding: 24px 0; }
+.ssview-metric { min-width: 0; background: var(--sscx-surface); border: 1px solid var(--sscx-border); border-top: 3px solid var(--sscx-accent); border-radius: 6px; padding: 20px; }
+.ssview-metric:nth-child(2) { border-top-color: #149575; }
+.ssview-total { display: block; font-size: 32px; padding: 12px 0; }
+.ssview-metric dl { margin: 0; }
+.ssview-metric dl div { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-top: 1px solid var(--sscx-border); }
+.ssview-metric dt { overflow-wrap: anywhere; }
+.ssview-metric dd { margin: 0; }
+.ssview-status { padding: 24px 0; border-top: 1px solid var(--sscx-border); }
+.ssview-native-menu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; padding-top: 16px; }
+.ssview-native-menu details { min-width: 0; border-bottom: 1px solid var(--sscx-border); padding: 14px 0; }
+.ssview-native-menu summary { cursor: pointer; font-weight: 600; }
+.ssview-native-menu li { padding: 6px 0; overflow-wrap: anywhere; }
+.ssview-total { overflow-wrap: anywhere; }
+@media (max-width: 640px) { .ssview-grid { grid-template-columns: 1fr; } .sscx-topbar { flex-wrap: wrap; } .sscx-content { padding: 20px; } }
+@media (max-width: 640px) { .ssview-native-menu { grid-template-columns: 1fr; } }

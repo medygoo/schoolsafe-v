@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Modèles SchoolSafe</title>
+	<link rel="stylesheet" href="../tokens.css">
+	<link rel="stylesheet" href="../components.css">
+	<link rel="stylesheet" href="../animations.css">
+</head>
+<body>
+	<div class="ss-app">
+		<nav class="ss-sidebar" id="app-menu" aria-label="Modèles">
+			<img src="../../assets/themes/SchoolSafe/logo.png" alt="SchoolSafe">
+			<a href="index.html" aria-current="page">Modèles</a>
+			<a href="dashboard.html">Tableau</a>
+			<a href="list-table.html">Liste</a>
+			<a href="detail.html">Fiche</a>
+			<a href="form.html">Formulaire</a>
+			<a href="report.html">Rapport</a>
+		</nav>
+		<div class="ss-shell-main">
+			<header class="ss-topbar">
+				<button class="ss-btn ss-btn-ghost ss-icon-btn ss-menu-btn" type="button" aria-label="Ouvrir le menu" aria-controls="app-menu" data-menu>☰</button>
+				<strong>Ecole fictive</strong>
+				<details class="ss-dropdown">
+					<summary class="ss-profile">LM</summary>
+					<div class="ss-dropdown-panel">
+						<a href="form.html">Préférences</a>
+						<a href="index.html">Quitter la démo</a>
+					</div>
+				</details>
+			</header>
+			<div class="ss-shell-body">
+				<nav class="ss-crumbs" aria-label="Fil d’Ariane"><span>SchoolSafe</span><span>Modèles</span></nav>
+				<div class="ss-content ss-rise">
+					<p class="ss-kicker">Démonstration</p>
+					<h1>Modèles officiels</h1>
+					<p class="ss-muted">Ces pages figent la composition. Les chiffres et les noms sont fictifs.</p>
+					<div class="ss-grid">
+						<article class="ss-card"><h2>Dashboard</h2><p>Titre, contexte, indicateurs, alertes et actions.</p><p><a href="dashboard.html">Ouvrir le tableau</a></p></article>
+						<article class="ss-card"><h2>Liste / tableau</h2><p>Recherche, filtres, statuts, actions et pagination.</p><p><a href="list-table.html">Ouvrir la liste</a></p></article>
+						<article class="ss-card"><h2>Fiche / détail</h2><p>Identité, sections, onglets et historique.</p><p><a href="detail.html">Ouvrir la fiche</a></p></article>
+						<article class="ss-card"><h2>Formulaire</h2><p>Sections, champs, validation, enregistrer et annuler.</p><p><a href="form.html">Ouvrir le formulaire</a></p></article>
+						<article class="ss-card"><h2>Rapport</h2><p>Filtres, totaux, écran et impression.</p><p><a href="report.html">Ouvrir le rapport</a></p></article>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		document.querySelectorAll("[data-menu]").forEach(function (button) {
+			button.addEventListener("click", function () {
+				var menu = document.getElementById(button.getAttribute("aria-controls"));
+				var open = menu.classList.toggle("is-open");
+				button.setAttribute("aria-expanded", open ? "true" : "false");
+			});
+		});
+	</script>
+</body>
+</html>

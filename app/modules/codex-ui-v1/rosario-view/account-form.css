@@ -1,0 +1,31 @@
+.ss-account { --blue:#1459d9; --ink:#182437; --muted:#58667a; --line:#dce4ef; margin:0; color:var(--ink); background:#f3f7fc; font:16px/1.5 system-ui,sans-serif; letter-spacing:0; }
+.ss-account * { box-sizing:border-box; }
+.ss-account a { color:var(--blue); }
+.ss-account .account-bar { min-height:76px; background:white; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:20px; padding:16px 32px; }
+.ss-account .brand { display:flex; align-items:center; gap:12px; font-size:22px; font-weight:700; }
+.ss-account .brand img { width:42px; height:48px; object-fit:contain; }
+.ss-account main { max-width:1080px; margin:auto; padding:28px 32px 48px; }
+.ss-account .breadcrumb { font-size:14px; color:var(--muted); margin-bottom:18px; }
+.ss-account .heading { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:20px; }
+.ss-account h1 { font-size:28px; margin:0; }
+.ss-account .subtitle { margin:4px 0 0; color:var(--muted); }
+.ss-account .demo { background:#fff3c7; color:#62480a; border-left:3px solid #dcae21; padding:12px 16px; margin-bottom:24px; }
+.ss-account fieldset { border:0; border-top:1px solid var(--line); padding:24px 0; margin:0; min-width:0; }
+.ss-account legend { font-size:18px; font-weight:650; padding:0 12px 0 0; display:flex; align-items:center; gap:10px; }
+.ss-account legend svg { width:21px; height:21px; color:var(--blue); }
+.ss-account fieldset.access legend svg { color:#167f67; }
+.ss-account fieldset.contact legend svg { color:#a46418; }
+.ss-account .fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+.ss-account label { display:flex; flex-direction:column; gap:7px; font-size:14px; font-weight:600; min-width:0; }
+.ss-account input,.ss-account select { width:100%; min-height:46px; border:1px solid #bac9dc; background:white; border-radius:6px; padding:10px 12px; font:inherit; color:var(--ink); }
+.ss-account input:disabled { background:#edf1f6; color:#68778d; }
+.ss-account :focus-visible { outline:3px solid #97bdfd; outline-offset:3px; }
+.ss-account .wide { grid-column:span 2; }
+.ss-account .school-choice { display:flex; flex-direction:row; align-items:center; min-height:46px; gap:12px; }
+.ss-account input[type=checkbox] { width:20px; min-height:20px; accent-color:var(--blue); }
+.ss-account .actions { border-top:1px solid var(--line); padding-top:20px; display:flex; justify-content:flex-end; flex-wrap:wrap; gap:12px; }
+.ss-account .button { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:46px; padding:10px 18px; border:1px solid var(--line); border-radius:6px; font-weight:600; text-decoration:none; background:white; }
+.ss-account .button.primary { background:var(--blue); color:white; border-color:var(--blue); }
+.ss-account .button svg { width:18px; height:18px; }
+@media(max-width:760px) { .ss-account .fields { grid-template-columns:repeat(2,minmax(0,1fr)); } .ss-account .heading { align-items:flex-start; flex-direction:column; } }
+@media(max-width:480px) { .ss-account main { padding:20px 16px 32px; } .ss-account .account-bar { padding:12px 16px; flex-wrap:wrap; } .ss-account .fields { grid-template-columns:1fr; } .ss-account .wide { grid-column:auto; } .ss-account h1 { font-size:24px; } .ss-account .actions .button { width:100%; } }

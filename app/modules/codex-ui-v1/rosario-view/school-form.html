@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SchoolSafe - Informations de l’école</title><link rel="stylesheet" href="account-form.css?v=2"></head>
+<body class="ss-account"><header class="account-bar"><div class="brand"><img src="schoolsafe-logo.png" alt="">SchoolSafe</div><span>École</span></header><main>
+<div class="breadcrumb">École / Informations de l’établissement</div><div class="heading"><div><h1>Informations de l’école</h1><p class="subtitle">Identité et références scolaires</p></div><a class="button" href="/schoolsafe-view/"><i data-lucide="arrow-left" aria-hidden="true"></i>Retour</a></div>
+<div class="demo" role="status">Prévisualisation · aucune donnée Rosario chargée · aucun paramètre enregistré.</div>
+<fieldset><legend><i data-lucide="school" aria-hidden="true"></i>Établissement</legend><div class="fields">
+<label class="wide" for="school-name">Nom de l’école<input id="school-name" maxlength="100" autocomplete="off"></label>
+<label for="short-name">Nom court<input id="short-name" maxlength="25" autocomplete="off"></label>
+<label class="wide" for="principal">Direction de l’école<input id="principal" maxlength="100" disabled placeholder="Saisie dans Rosario"></label>
+<label for="logo">Logo<input id="logo" disabled placeholder="Géré dans Rosario"></label>
+</div></fieldset>
+<fieldset class="contact"><legend><i data-lucide="map-pin" aria-hidden="true"></i>Coordonnées</legend><div class="fields">
+<label class="wide" for="address">Adresse<input id="address" maxlength="100" autocomplete="off"></label>
+<label for="city">Ville<input id="city" maxlength="100" autocomplete="off"></label>
+<label for="state">État / Province<input id="state" maxlength="10" autocomplete="off"></label>
+<label for="zipcode">Code postal<input id="zipcode" maxlength="10" autocomplete="off"></label>
+<label for="phone">Téléphone<input id="phone" type="tel" maxlength="30" autocomplete="off"></label>
+<label class="wide" for="website">Site web<input id="website" maxlength="100" autocomplete="off"></label>
+</div></fieldset>
+<fieldset class="access"><legend><i data-lucide="clipboard-list" aria-hidden="true"></i>Références scolaires</legend><div class="fields">
+<label for="number">Numéro de l’école<input id="number" maxlength="50" disabled placeholder="Référence Rosario"></label>
+<label for="scale">Échelle de notation de base<input id="scale" type="number" min="1" max="10000" disabled></label>
+</div></fieldset>
+<footer class="actions"><a class="button" href="/schoolsafe-view/">Annuler</a><a class="button primary" href="/Modules.php?modname=School_Setup/Schools.php"><i data-lucide="external-link" aria-hidden="true"></i>Ouvrir les informations Rosario</a></footer>
+</main><script src="lucide.min.js"></script><script>if(window.lucide)lucide.createIcons();</script></body></html>

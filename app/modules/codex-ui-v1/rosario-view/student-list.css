@@ -1,0 +1,9 @@
+.ss-account .filters { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:20px; }
+.ss-account #detail { padding:24px 0; border-top:3px solid #168569; margin:24px 0; }
+.ss-account #detail h2 { font-size:20px; margin:0; }
+.ss-account #detail dl { display:grid; grid-template-columns:100px minmax(0,1fr); gap:12px; }
+.ss-account #detail dd { margin:0; overflow-wrap:anywhere; }
+.ss-account #count { color:var(--muted); font-size:14px; }
+.ss-account .table-wrap { margin-bottom:24px; }
+.ss-account td .button { font-size:14px; min-width:90px; }
+@media(max-width:480px) { .ss-account .filters { grid-template-columns:1fr; } .ss-account th,.ss-account td { padding:12px 6px; } }

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SchoolSafe - Ajouter un utilisateur</title><link rel="stylesheet" href="account-form.css"></head>
+<body class="ss-account">
+<header class="account-bar"><div class="brand"><img src="schoolsafe-logo.png" alt="">SchoolSafe</div><span>Comptes et droits</span></header>
+<main>
+<div class="breadcrumb">Administration / Comptes et droits / Nouvel utilisateur</div>
+<div class="heading"><div><h1>Ajouter un utilisateur</h1><p class="subtitle">Identité, accès et coordonnées</p></div><a class="button" href="/schoolsafe-view/"><i data-lucide="arrow-left" aria-hidden="true"></i>Retour</a></div>
+<div class="demo" role="status">Prévisualisation du design · aucun compte créé. Ne saisissez pas de données personnelles.</div>
+<fieldset><legend><i data-lucide="user-round" aria-hidden="true"></i>Identité</legend><div class="fields">
+<label for="title">Titre<select id="title"><option value="">—</option><option>M.</option><option>Mme</option><option>Mlle</option><option>Dr</option></select></label>
+<label for="first">Prénom<input id="first" autocomplete="off"></label>
+<label for="last">Nom<input id="last" autocomplete="off"></label>
+<label for="middle">Second prénom<input id="middle" autocomplete="off"></label>
+<label for="suffix">Suffixe<select id="suffix"><option value="">—</option><option>Jr</option><option>Sr</option><option>II</option><option>III</option><option>IV</option><option>V</option></select></label>
+</div></fieldset>
+<fieldset class="access"><legend><i data-lucide="shield-check" aria-hidden="true"></i>Accès Rosario</legend><div class="fields">
+<label for="username">Nom d’utilisateur<input id="username" disabled placeholder="Saisie dans Rosario"></label>
+<label for="password">Mot de passe<input id="password" type="password" disabled placeholder="Saisie dans Rosario"></label>
+<label for="profile">Profil de l’utilisateur<select id="profile"><option>Parent</option><option>Enseignant</option><option>Administrateur</option><option>Sans accès</option></select></label>
+<label for="rights">Droits d’accès<select id="rights"><option>Par défaut</option></select></label>
+<label class="wide">Écoles<span class="school-choice"><input type="checkbox" aria-label="École de démonstration">École de démonstration</span></label>
+</div></fieldset>
+<fieldset class="contact"><legend><i data-lucide="contact-round" aria-hidden="true"></i>Coordonnées</legend><div class="fields">
+<label for="email">Adresse e-mail<input id="email" type="email" autocomplete="off"></label>
+<label for="phone">Téléphone<input id="phone" type="tel" autocomplete="off"></label>
+</div></fieldset>
+<footer class="actions"><a class="button" href="/schoolsafe-view/">Annuler</a><a class="button primary" href="/Modules.php?modname=Users/User.php&amp;staff_id=new"><i data-lucide="external-link" aria-hidden="true"></i>Ouvrir le formulaire Rosario</a></footer>
+</main><script src="lucide.min.js"></script><script>if(window.lucide)lucide.createIcons();</script></body></html>

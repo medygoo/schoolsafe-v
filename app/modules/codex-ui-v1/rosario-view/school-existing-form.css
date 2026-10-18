@@ -1,0 +1,16 @@
+.ss-existing-school-form { margin: 16px 0; color: #17263b; }
+.ss-existing-school-form fieldset { margin: 0 0 20px; padding: 20px; border: 1px solid #d6e1ee; border-radius: 6px; background: #fff; }
+.ss-existing-school-form legend { padding: 0 8px; font-size: 16px; font-weight: 600; color: #164e88; }
+.ss-existing-school-form .contact legend { color: #087c69; }
+.ss-existing-school-form .access legend { color: #7249a2; }
+.ss-existing-school-form .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.ss-existing-school-form .wide { grid-column: 1 / -1; }
+.ss-existing-school-form input { box-sizing: border-box; width: 100%; min-height: 44px; }
+.ss-existing-school-form .onclick { display: block; box-sizing: border-box; width: 100%; min-height: 44px; padding: 8px; border: 1px solid #d6e1ee; border-radius: 4px; }
+.ss-existing-school-form :focus-visible { outline: 3px solid #267cd1; outline-offset: 2px; }
+.ss-existing-list { margin: 16px 0; padding: 12px; border: 1px solid #d6e1ee; border-radius: 6px; min-width: 0; }
+.ss-existing-list legend { padding: 0 8px; color: #164e88; font-weight: 600; }
+.ss-existing-list-scroll { max-width: 100%; overflow-x: auto; }
+.ss-existing-list-scroll:focus-visible { outline: 3px solid #267cd1; outline-offset: 2px; }
+.ss-existing-school-form input[type="checkbox"] { width: auto; }
+@media (max-width: 600px) { .ss-existing-school-form .fields { grid-template-columns: minmax(0, 1fr); } .ss-existing-school-form fieldset { padding: 12px; } }

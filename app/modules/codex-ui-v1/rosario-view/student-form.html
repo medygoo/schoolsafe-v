@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SchoolSafe - Inscrire un élève</title><link rel="stylesheet" href="account-form.css"></head>
+<body class="ss-account">
+<header class="account-bar"><div class="brand"><img src="schoolsafe-logo.png" alt="">SchoolSafe</div><span>École / Élèves</span></header>
+<main><div class="breadcrumb">École / Élèves / Nouvelle inscription</div>
+<div class="heading"><div><h1>Inscrire un élève</h1><p class="subtitle">Identité et scolarité</p></div><a class="button" href="/schoolsafe-view/"><i data-lucide="arrow-left" aria-hidden="true"></i>Retour</a></div>
+<div class="demo" role="status">Prévisualisation du design · aucune inscription enregistrée. Ne saisissez pas de données personnelles.</div>
+<fieldset><legend><i data-lucide="user-round" aria-hidden="true"></i>Identité</legend><div class="fields">
+<label for="first">Prénom<input id="first" autocomplete="off" maxlength="50"></label>
+<label for="last">Nom<input id="last" autocomplete="off" maxlength="50"></label>
+<label for="middle">Second prénom<input id="middle" autocomplete="off" maxlength="50"></label>
+<label for="suffix">Suffixe<select id="suffix"><option value="">—</option><option>Jr</option><option>Sr</option><option>II</option><option>III</option><option>IV</option><option>V</option></select></label>
+<label for="student-id">Identifiant Rosario<input id="student-id" disabled placeholder="Attribué dans Rosario"></label>
+<label for="photo">Photo de l’élève<input id="photo" type="file" accept="image/jpeg,image/png,image/gif,image/webp" disabled></label>
+</div></fieldset>
+<fieldset class="access"><legend><i data-lucide="shield-check" aria-hidden="true"></i>Connexion de l’élève</legend><div class="fields">
+<label for="username">Nom d’utilisateur<input id="username" disabled placeholder="Saisie dans Rosario"></label>
+<label for="password">Mot de passe<input id="password" type="password" disabled placeholder="Saisie dans Rosario"></label>
+</div></fieldset>
+<fieldset><legend><i data-lucide="clipboard-list" aria-hidden="true"></i>Informations complémentaires</legend><div class="fields">
+<label for="gender">Sexe<select id="gender" disabled><option>Valeurs configurées dans Rosario</option></select></label>
+<label for="birthdate">Date de naissance<input id="birthdate" type="date" disabled></label>
+<label for="common-name">Nom usuel<input id="common-name" autocomplete="off"></label>
+<label for="ethnicity">Origine ethnique<select id="ethnicity" disabled><option>Champ natif configurable</option></select></label>
+<label for="social-security">Sécurité sociale<input id="social-security" disabled></label>
+<label for="language">Langue<select id="language" disabled><option>Valeurs configurées dans Rosario</option></select></label>
+</div></fieldset>
+<fieldset class="contact"><legend><i data-lucide="graduation-cap" aria-hidden="true"></i>Scolarité</legend><div class="fields">
+<label for="grade">Niveau scolaire<select id="grade" disabled><option>Niveaux de l’école Rosario</option></select></label>
+<label for="calendar">Calendrier<select id="calendar" disabled><option>Calendriers de l’école Rosario</option></select></label>
+<label for="next-school">Passage / redoublement<select id="next-school"><option>Classe supérieure dans la même école</option><option>Redouble</option><option>Ne pas inscrire après cette année</option></select></label>
+<label for="entry-date">Date de début de présence<input id="entry-date" type="date" disabled></label>
+<label for="entry-code">Code d’inscription<select id="entry-code" disabled><option>Codes configurés dans Rosario</option></select></label>
+<label for="school">École<input id="school" disabled placeholder="École de la session Rosario"></label>
+</div></fieldset>
+<footer class="actions"><a class="button" href="account-form.html">Formulaire utilisateur</a><a class="button primary" href="/Modules.php?modname=Students/Student.php&amp;include=General_Info&amp;student_id=new"><i data-lucide="external-link" aria-hidden="true"></i>Ouvrir le formulaire Rosario</a></footer>
+</main><script src="lucide.min.js"></script><script>if(window.lucide)lucide.createIcons();</script></body></html>

@@ -1,0 +1,4022 @@
+(function(root){"use strict";root.SchoolSafeCodexScreenSpecs={
+  "definitions": {
+    "students": {
+      "title": "Dossiers des eleves",
+      "columns": [
+        [
+          "name",
+          "Eleve"
+        ],
+        [
+          "class",
+          "Classe"
+        ],
+        [
+          "reference",
+          "Matricule"
+        ],
+        [
+          "status",
+          "Dossier"
+        ]
+      ],
+      "tabs": [
+        "Scolarite",
+        "Famille",
+        "Documents"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "reference",
+        "status",
+        "year",
+        "guardian",
+        "contact",
+        "document"
+      ],
+      "links": [
+        "presence-student",
+        "rosario-016"
+      ],
+      "api": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "source": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read"
+    },
+    "children": {
+      "title": "Mes enfants",
+      "columns": [
+        [
+          "name",
+          "Enfant"
+        ],
+        [
+          "class",
+          "Classe"
+        ],
+        [
+          "reference",
+          "Matricule"
+        ],
+        [
+          "status",
+          "Dossier"
+        ]
+      ],
+      "tabs": [
+        "Scolarite",
+        "Famille",
+        "Documents"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "reference",
+        "status",
+        "year",
+        "guardian",
+        "contact",
+        "document"
+      ],
+      "links": [
+        "presence-student",
+        "rosario-201",
+        "rosario-197",
+        "rosario-203"
+      ],
+      "api": [
+        "GET /native/parent/children",
+        "GET /native/parent/children/:studentId/record"
+      ],
+      "source": "server/src/studentrecordnative/routes.ts:345",
+      "permission": "Parent rattache; own_children"
+    },
+    "classes": {
+      "title": "Classes et affectations",
+      "columns": [
+        [
+          "name",
+          "Classe"
+        ],
+        [
+          "teacher",
+          "Enseignant"
+        ],
+        [
+          "subject",
+          "Matiere"
+        ],
+        [
+          "status",
+          "Affectation"
+        ]
+      ],
+      "tabs": [
+        "Organisation",
+        "Affectations"
+      ],
+      "fields": [
+        "name",
+        "teacher",
+        "subject",
+        "status",
+        "year"
+      ],
+      "links": [
+        "presence-class",
+        "rosario-105"
+      ],
+      "api": [
+        "GET /native/pedagogy/classes",
+        "GET /native/pedagogy/teacher-assignments"
+      ],
+      "source": "server/src/pedagogynative/routes.ts:36,59",
+      "permission": "school.class.read / pedagogy.assignment.read; portee affectations"
+    },
+    "family": {
+      "title": "Familles et personnes autorisees",
+      "columns": [
+        [
+          "name",
+          "Personne"
+        ],
+        [
+          "student",
+          "Enfant"
+        ],
+        [
+          "relationship",
+          "Lien"
+        ],
+        [
+          "status",
+          "Autorisation"
+        ]
+      ],
+      "tabs": [
+        "Identite",
+        "Autorisation",
+        "Demandes"
+      ],
+      "fields": [
+        "name",
+        "student",
+        "relationship",
+        "status",
+        "photo_review",
+        "request_status",
+        "contact"
+      ],
+      "links": [
+        "presence-student",
+        "rosario-201"
+      ],
+      "api": [
+        "GET /native/family/students/:studentId/pickup-authorizations/mine",
+        "GET /native/family/students/:studentId/pickup-authorizations/school"
+      ],
+      "source": "server/src/familynative/routes.ts:162-174,238-279",
+      "permission": "Droits famille exacts + own_children / ecole; decision distincte"
+    },
+    "cards": {
+      "title": "Cartes scolaires",
+      "columns": [
+        [
+          "name",
+          "Eleve"
+        ],
+        [
+          "class",
+          "Classe"
+        ],
+        [
+          "reference",
+          "Demande"
+        ],
+        [
+          "status",
+          "Carte"
+        ]
+      ],
+      "tabs": [
+        "Preparation",
+        "Photographie",
+        "Production"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "reference",
+        "status",
+        "photo_review",
+        "print_status"
+      ],
+      "links": [
+        "presence-student"
+      ],
+      "api": [
+        "GET /native/cards/print-requests",
+        "GET /native/cards/students/:studentId/credential"
+      ],
+      "source": "server/src/cardsnative/routes.ts:114,227",
+      "permission": "Droits cartes / capacites / licence par operation"
+    },
+    "scanner": {
+      "title": "Scanner et controles",
+      "columns": [
+        [
+          "name",
+          "Point de controle"
+        ],
+        [
+          "mode",
+          "Mode"
+        ],
+        [
+          "status",
+          "Disponibilite"
+        ]
+      ],
+      "tabs": [
+        "Modes",
+        "Perimetre"
+      ],
+      "fields": [
+        "name",
+        "mode",
+        "status",
+        "scope",
+        "expiry"
+      ],
+      "links": [
+        "scan-history"
+      ],
+      "api": [
+        "POST /native/scan-control/scan",
+        "GET /native/scan-control/locations",
+        "GET /native/scan-control/capabilities"
+      ],
+      "source": "server/src/scancontrol/routes.ts:10,48,52,102",
+      "permission": "SCAN_ENTRY / SCAN_PICKUP / SCAN_FEES / SCAN_VERIFY; par mode"
+    },
+    "attendance": {
+      "title": "Presences et passages",
+      "columns": [
+        [
+          "name",
+          "Eleve"
+        ],
+        [
+          "class",
+          "Classe"
+        ],
+        [
+          "date",
+          "Date"
+        ],
+        [
+          "status",
+          "Presence"
+        ]
+      ],
+      "tabs": [
+        "Presence",
+        "Historique"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "date",
+        "status",
+        "reason"
+      ],
+      "links": [
+        "presence-student",
+        "presence-class",
+        "presence-school",
+        "scan-history"
+      ],
+      "api": [],
+      "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique"
+    },
+    "subjects": {
+      "title": "Matieres",
+      "columns": [
+        [
+          "name",
+          "Matiere"
+        ],
+        [
+          "class",
+          "Classe"
+        ],
+        [
+          "coefficient",
+          "Coefficient"
+        ],
+        [
+          "status",
+          "Etat"
+        ]
+      ],
+      "tabs": [
+        "Matiere"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "coefficient",
+        "status"
+      ],
+      "links": [
+        "rosario-029"
+      ],
+      "api": [
+        "GET /native/pedagogy/subjects"
+      ],
+      "source": "server/src/pedagogynative/routes.ts:42",
+      "permission": "pedagogy.subject.read/manage"
+    },
+    "assignments": {
+      "title": "Devoirs et corrections",
+      "columns": [
+        [
+          "name",
+          "Devoir"
+        ],
+        [
+          "class",
+          "Classe"
+        ],
+        [
+          "subject",
+          "Matiere"
+        ],
+        [
+          "due",
+          "Echeance"
+        ],
+        [
+          "status",
+          "Publication"
+        ]
+      ],
+      "tabs": [
+        "Consigne",
+        "Correction"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "subject",
+        "due",
+        "status",
+        "instruction",
+        "correction"
+      ],
+      "links": [
+        "rosario-029"
+      ],
+      "api": [
+        "GET /native/pedagogy/assignments"
+      ],
+      "source": "server/src/pedagogynative/routes.ts:100-160",
+      "permission": "pedagogy.assignment.read/manage; affectations; publication parent"
+    },
+    "grades": {
+      "title": "Evaluations et resultats",
+      "columns": [
+        [
+          "name",
+          "Eleve"
+        ],
+        [
+          "class",
+          "Classe"
+        ],
+        [
+          "subject",
+          "Evaluation"
+        ],
+        [
+          "grade",
+          "Note publiee"
+        ],
+        [
+          "status",
+          "Publication"
+        ]
+      ],
+      "tabs": [
+        "Evaluation",
+        "Publication"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "subject",
+        "grade",
+        "status",
+        "comment"
+      ],
+      "links": [
+        "rosario-028",
+        "rosario-031"
+      ],
+      "api": [
+        "GET /native/pedagogy/assignments/:id/grades",
+        "GET /native/pedagogy/parent/grades/:studentId",
+        "GET /native/pedagogy/students/:studentId/averages"
+      ],
+      "source": "server/src/pedagogynative/routes.ts:141,211,218",
+      "permission": "pedagogy.grade.read/manage; affectations / own_children"
+    },
+    "lessons": {
+      "title": "Preparation pedagogique",
+      "columns": [
+        [
+          "name",
+          "Seance"
+        ],
+        [
+          "class",
+          "Classe"
+        ],
+        [
+          "subject",
+          "Matiere"
+        ],
+        [
+          "date",
+          "Date"
+        ],
+        [
+          "status",
+          "Preparation"
+        ]
+      ],
+      "tabs": [
+        "Objectifs",
+        "Deroulement"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "subject",
+        "date",
+        "status",
+        "objective",
+        "content"
+      ],
+      "links": [
+        "rosario-028"
+      ],
+      "api": [
+        "GET /native/pedagogy/lesson-plans"
+      ],
+      "source": "server/src/pedagogynative/routes.ts:167",
+      "permission": "pedagogy.lesson-plan.read/manage; affectations"
+    },
+    "fees": {
+      "title": "Frais scolaires",
+      "columns": [
+        [
+          "name",
+          "Frais"
+        ],
+        [
+          "class",
+          "Classe / perimetre"
+        ],
+        [
+          "amount",
+          "Montant serveur"
+        ],
+        [
+          "due",
+          "Echeance"
+        ],
+        [
+          "status",
+          "Etat"
+        ]
+      ],
+      "tabs": [
+        "Affectation",
+        "Situation"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "amount",
+        "due",
+        "status",
+        "currency",
+        "balance"
+      ],
+      "links": [
+        "scan-fees",
+        "rosario-048"
+      ],
+      "api": [
+        "GET /native/finance/fee-structures",
+        "GET /native/finance/students/:studentId/fees"
+      ],
+      "source": "server/src/financenative/routes.ts:36,55",
+      "permission": "finance.fee.read/manage; portee eleve/classe"
+    },
+    "campaigns": {
+      "title": "Controle des frais",
+      "columns": [
+        [
+          "name",
+          "Campagne"
+        ],
+        [
+          "class",
+          "Classes autorisees"
+        ],
+        [
+          "due",
+          "Echeance"
+        ],
+        [
+          "status",
+          "Etat"
+        ]
+      ],
+      "tabs": [
+        "Campagne",
+        "Delegations"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "due",
+        "status",
+        "scope",
+        "expiry"
+      ],
+      "links": [
+        "scan-fees"
+      ],
+      "api": [
+        "GET /native/finance/fee-control/campaigns",
+        "GET /native/scan-control/fees/delegations"
+      ],
+      "source": "server/src/financenative/routes.ts:138; server/src/scancontrol/routes.ts:65",
+      "permission": "finance.control.scan/manage; delegation et portee"
+    },
+    "payments": {
+      "title": "Paiements et caisse",
+      "columns": [
+        [
+          "name",
+          "Eleve"
+        ],
+        [
+          "reference",
+          "Reference"
+        ],
+        [
+          "amount",
+          "Montant serveur"
+        ],
+        [
+          "date",
+          "Date"
+        ],
+        [
+          "status",
+          "Etat"
+        ]
+      ],
+      "tabs": [
+        "Paiement",
+        "Recu"
+      ],
+      "fields": [
+        "name",
+        "reference",
+        "amount",
+        "date",
+        "status",
+        "currency",
+        "receipt"
+      ],
+      "links": [
+        "rosario-048"
+      ],
+      "api": [
+        "GET /native/finance/students/:studentId/payments",
+        "GET /native/finance/reports/daily"
+      ],
+      "source": "server/src/financenative/routes.ts:79,85,102,131",
+      "permission": "finance.payment.record / finance.report.read; caisse et eleve"
+    },
+    "receipts": {
+      "title": "Recus",
+      "columns": [
+        [
+          "name",
+          "Eleve"
+        ],
+        [
+          "reference",
+          "Paiement"
+        ],
+        [
+          "amount",
+          "Montant serveur"
+        ],
+        [
+          "date",
+          "Date"
+        ],
+        [
+          "status",
+          "Recu"
+        ]
+      ],
+      "tabs": [
+        "Recu"
+      ],
+      "fields": [
+        "name",
+        "reference",
+        "amount",
+        "date",
+        "status",
+        "currency"
+      ],
+      "links": [],
+      "api": [
+        "GET /native/finance/receipts/:paymentId"
+      ],
+      "source": "server/src/financenative/routes.ts:111",
+      "permission": "finance.receipt.read; paiement reel"
+    },
+    "documents": {
+      "title": "Documents et dossiers",
+      "columns": [
+        [
+          "name",
+          "Document"
+        ],
+        [
+          "student",
+          "Dossier"
+        ],
+        [
+          "date",
+          "Date"
+        ],
+        [
+          "status",
+          "Etat"
+        ]
+      ],
+      "tabs": [
+        "Document",
+        "Historique"
+      ],
+      "fields": [
+        "name",
+        "student",
+        "date",
+        "status",
+        "reference",
+        "category"
+      ],
+      "links": [],
+      "api": [
+        "POST /documents/create",
+        "POST /documents/:id/issue"
+      ],
+      "source": "server/src/documents/routes.ts:23,57; app/modules/core/visual-output-closure-a.js",
+      "permission": "Droit documentaire exact a confirmer"
+    },
+    "access": {
+      "title": "Utilisateurs et acces",
+      "columns": [
+        [
+          "name",
+          "Profil"
+        ],
+        [
+          "post",
+          "Poste"
+        ],
+        [
+          "scope",
+          "Perimetre"
+        ],
+        [
+          "status",
+          "Etat"
+        ]
+      ],
+      "tabs": [
+        "Profil",
+        "Droits"
+      ],
+      "fields": [
+        "name",
+        "post",
+        "scope",
+        "status",
+        "expiry"
+      ],
+      "links": [],
+      "api": [
+        "GET /native/access/profiles",
+        "GET /native/access/roles"
+      ],
+      "source": "server/src/accessnative/routes.ts:87,93,128",
+      "permission": "Droits IAM precis; aucune creation locale"
+    },
+    "staff": {
+      "title": "Personnel",
+      "columns": [
+        [
+          "name",
+          "Personnel"
+        ],
+        [
+          "post",
+          "Poste"
+        ],
+        [
+          "scope",
+          "Affectation"
+        ],
+        [
+          "status",
+          "Etat"
+        ]
+      ],
+      "tabs": [
+        "Profil",
+        "Affectation"
+      ],
+      "fields": [
+        "name",
+        "post",
+        "scope",
+        "status",
+        "date"
+      ],
+      "links": [],
+      "api": [],
+      "source": "app/modules/hr/hr-demo.js; app/modules/core/visual-wiring.js",
+      "permission": "staff.read; contrats RH a confirmer"
+    },
+    "years": {
+      "title": "Organisation scolaire",
+      "columns": [
+        [
+          "name",
+          "Annee / cycle"
+        ],
+        [
+          "start",
+          "Debut"
+        ],
+        [
+          "end",
+          "Fin"
+        ],
+        [
+          "status",
+          "Etat"
+        ]
+      ],
+      "tabs": [
+        "Organisation"
+      ],
+      "fields": [
+        "name",
+        "start",
+        "end",
+        "status"
+      ],
+      "links": [],
+      "api": [],
+      "source": "app/modules/core/visual-output-closure-a.js; app/app.js:676",
+      "permission": "school.manage; contrat individuel a confirmer"
+    },
+    "alerts": {
+      "title": "Alertes et decisions",
+      "columns": [
+        [
+          "name",
+          "Sujet"
+        ],
+        [
+          "category",
+          "Categorie"
+        ],
+        [
+          "date",
+          "Date"
+        ],
+        [
+          "status",
+          "Etat"
+        ]
+      ],
+      "tabs": [
+        "Signalement",
+        "Suivi"
+      ],
+      "fields": [
+        "name",
+        "category",
+        "date",
+        "status",
+        "reason"
+      ],
+      "links": [],
+      "api": [],
+      "source": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+      "permission": "pilotage.alerts.read / pilotage.approvals.read; decision distincte"
+    },
+    "overview": {
+      "title": "Synthese et indicateurs",
+      "columns": [
+        [
+          "name",
+          "Indicateur"
+        ],
+        [
+          "value",
+          "Valeur serveur"
+        ],
+        [
+          "date",
+          "Date de lecture"
+        ],
+        [
+          "status",
+          "Source"
+        ]
+      ],
+      "tabs": [
+        "Source"
+      ],
+      "fields": [
+        "name",
+        "value",
+        "date",
+        "status",
+        "scope"
+      ],
+      "links": [
+        "presence-school",
+        "presence-school-count"
+      ],
+      "api": [],
+      "source": "server/src/pilotage/dashboard/routes.ts; app/app.js:675",
+      "permission": "pilotage.dashboard.read; sources officielles"
+    },
+    "legacy": {
+      "title": "Ecran existant a reutiliser",
+      "columns": [],
+      "tabs": [],
+      "fields": [],
+      "links": [],
+      "api": [],
+      "source": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution"
+    },
+    "pickup": {
+      "title": "Remises et sorties",
+      "columns": [
+        [
+          "name",
+          "Eleve"
+        ],
+        [
+          "class",
+          "Classe"
+        ],
+        [
+          "guardian",
+          "Personne autorisee"
+        ],
+        [
+          "date",
+          "Preparation"
+        ],
+        [
+          "status",
+          "Remise"
+        ]
+      ],
+      "tabs": [
+        "Dossier",
+        "Preuves",
+        "Suivi"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "guardian",
+        "date",
+        "status",
+        "reason"
+      ],
+      "links": [
+        "scan-history",
+        "rosario-041"
+      ],
+      "api": [
+        "POST /native/scan-control/scan (mode pickup)"
+      ],
+      "source": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+      "permission": "SCAN_PICKUP; preuve serveur et confirmation humaine"
+    },
+    "balances": {
+      "title": "Situation personnelle des frais",
+      "columns": [
+        [
+          "name",
+          "Eleve"
+        ],
+        [
+          "class",
+          "Classe"
+        ],
+        [
+          "balance",
+          "Solde serveur"
+        ],
+        [
+          "due",
+          "Echeance"
+        ],
+        [
+          "status",
+          "Situation"
+        ]
+      ],
+      "tabs": [
+        "Situation"
+      ],
+      "fields": [
+        "name",
+        "class",
+        "balance",
+        "currency",
+        "due",
+        "status"
+      ],
+      "links": [
+        "scan-fees",
+        "rosario-048"
+      ],
+      "api": [
+        "GET /native/finance/students/:studentId/fees"
+      ],
+      "source": "server/src/financenative/routes.ts:55",
+      "permission": "finance.fee.read; portee eleve / own_children"
+    },
+    "cash": {
+      "title": "Journees de caisse",
+      "columns": [
+        [
+          "name",
+          "Caisse"
+        ],
+        [
+          "date",
+          "Journee"
+        ],
+        [
+          "scope",
+          "Responsable"
+        ],
+        [
+          "status",
+          "Etat serveur"
+        ]
+      ],
+      "tabs": [
+        "Journee",
+        "Pieces"
+      ],
+      "fields": [
+        "name",
+        "date",
+        "scope",
+        "status",
+        "reference"
+      ],
+      "links": [
+        "rosario-048"
+      ],
+      "api": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "source": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes"
+    }
+  },
+  "specs": {
+    "rosario-001": {
+      "kind": "overview",
+      "screen": "Tableau de bord",
+      "definition": "overview",
+      "contracts": [],
+      "contractSource": "server/src/pilotage/dashboard/routes.ts; app/app.js:675",
+      "permission": "pilotage.dashboard.read; sources officielles",
+      "legacy": {
+        "branch": "pilotage",
+        "action": "Tableau de bord"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-002": {
+      "kind": "overview",
+      "screen": "Statistiques",
+      "definition": "overview",
+      "contracts": [],
+      "contractSource": "server/src/pilotage/dashboard/routes.ts; app/app.js:675",
+      "permission": "pilotage.dashboard.read; sources officielles",
+      "legacy": {
+        "branch": "pilotage",
+        "action": "Statistiques"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-003": {
+      "kind": "alerts",
+      "screen": "Alertes importantes",
+      "definition": "alerts",
+      "contracts": [],
+      "contractSource": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+      "permission": "pilotage.alerts.read / pilotage.approvals.read; decision distincte",
+      "legacy": {
+        "branch": "pilotage",
+        "action": "Alertes importantes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-004": {
+      "kind": "overview",
+      "screen": "Indicateurs",
+      "definition": "overview",
+      "contracts": [],
+      "contractSource": "server/src/pilotage/dashboard/routes.ts; app/app.js:675",
+      "permission": "pilotage.dashboard.read; sources officielles",
+      "legacy": {
+        "branch": "pilotage",
+        "action": "Indicateurs"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-005": {
+      "kind": "overview",
+      "screen": "Instantanés",
+      "definition": "overview",
+      "contracts": [],
+      "contractSource": "server/src/pilotage/dashboard/routes.ts; app/app.js:675",
+      "permission": "pilotage.dashboard.read; sources officielles",
+      "legacy": {
+        "branch": "pilotage",
+        "action": "Instantanés"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-006": {
+      "kind": "students",
+      "screen": "Élèves",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "school",
+        "action": "Élèves"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-007": {
+      "kind": "classes",
+      "screen": "Classes",
+      "definition": "classes",
+      "contracts": [
+        "GET /native/pedagogy/classes",
+        "GET /native/pedagogy/teacher-assignments"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:36,59",
+      "permission": "school.class.read / pedagogy.assignment.read; portee affectations",
+      "legacy": {
+        "branch": "school",
+        "action": "Classes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-008": {
+      "kind": "family",
+      "screen": "Parent principal et tuteurs",
+      "definition": "family",
+      "contracts": [
+        "GET /native/family/students/:studentId/pickup-authorizations/mine",
+        "GET /native/family/students/:studentId/pickup-authorizations/school"
+      ],
+      "contractSource": "server/src/familynative/routes.ts:162-174,238-279",
+      "permission": "Droits famille exacts + own_children / ecole; decision distincte",
+      "legacy": {
+        "branch": "school",
+        "action": "Parent principal et tuteurs"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-009": {
+      "kind": "students",
+      "screen": "Inscriptions et réinscriptions",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "school",
+        "action": "Inscriptions et réinscriptions"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-010": {
+      "kind": "years",
+      "screen": "Année scolaire",
+      "definition": "years",
+      "contracts": [],
+      "contractSource": "app/modules/core/visual-output-closure-a.js; app/app.js:676",
+      "permission": "school.manage; contrat individuel a confirmer",
+      "legacy": {
+        "branch": "school",
+        "action": "Année scolaire"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-011": {
+      "kind": "classes",
+      "screen": "Affectations",
+      "definition": "classes",
+      "contracts": [
+        "GET /native/pedagogy/classes",
+        "GET /native/pedagogy/teacher-assignments"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:36,59",
+      "permission": "school.class.read / pedagogy.assignment.read; portee affectations",
+      "legacy": {
+        "branch": "school",
+        "action": "Affectations"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-012": {
+      "kind": "legacy",
+      "screen": "Import massif",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "school",
+        "action": "Import massif"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-013": {
+      "kind": "documents",
+      "screen": "Documents élèves",
+      "definition": "documents",
+      "contracts": [
+        "POST /documents/create",
+        "POST /documents/:id/issue"
+      ],
+      "contractSource": "server/src/documents/routes.ts:23,57; app/modules/core/visual-output-closure-a.js",
+      "permission": "Droit documentaire exact a confirmer",
+      "legacy": {
+        "branch": "school",
+        "action": "Documents élèves"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-014": {
+      "kind": "students",
+      "screen": "Identité de l'élève",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "school",
+        "action": "Identité de l'élève"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-015": {
+      "kind": "family",
+      "screen": "Consentements",
+      "definition": "family",
+      "contracts": [
+        "GET /native/family/students/:studentId/pickup-authorizations/mine",
+        "GET /native/family/students/:studentId/pickup-authorizations/school"
+      ],
+      "contractSource": "server/src/familynative/routes.ts:162-174,238-279",
+      "permission": "Droits famille exacts + own_children / ecole; decision distincte",
+      "legacy": {
+        "branch": "school",
+        "action": "Consentements"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-016": {
+      "kind": "cards",
+      "screen": "Studio des cartes",
+      "definition": "cards",
+      "contracts": [
+        "GET /native/cards/print-requests",
+        "GET /native/cards/students/:studentId/credential"
+      ],
+      "contractSource": "server/src/cardsnative/routes.ts:114,227",
+      "permission": "Droits cartes / capacites / licence par operation",
+      "legacy": {
+        "branch": "school",
+        "action": "Studio des cartes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-017": {
+      "kind": "staff",
+      "screen": "Enseignants",
+      "definition": "staff",
+      "contracts": [],
+      "contractSource": "app/modules/hr/hr-demo.js; app/modules/core/visual-wiring.js",
+      "permission": "staff.read; contrats RH a confirmer",
+      "legacy": {
+        "branch": "people",
+        "action": "Enseignants"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-018": {
+      "kind": "staff",
+      "screen": "Personnel",
+      "definition": "staff",
+      "contracts": [],
+      "contractSource": "app/modules/hr/hr-demo.js; app/modules/core/visual-wiring.js",
+      "permission": "staff.read; contrats RH a confirmer",
+      "legacy": {
+        "branch": "people",
+        "action": "Personnel"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-019": {
+      "kind": "staff",
+      "screen": "Affectations",
+      "definition": "staff",
+      "contracts": [],
+      "contractSource": "app/modules/hr/hr-demo.js; app/modules/core/visual-wiring.js",
+      "permission": "staff.read; contrats RH a confirmer",
+      "legacy": {
+        "branch": "people",
+        "action": "Affectations"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-020": {
+      "kind": "legacy",
+      "screen": "Contrats",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "people",
+        "action": "Contrats"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-021": {
+      "kind": "staff",
+      "screen": "Présence du personnel",
+      "definition": "staff",
+      "contracts": [],
+      "contractSource": "app/modules/hr/hr-demo.js; app/modules/core/visual-wiring.js",
+      "permission": "staff.read; contrats RH a confirmer",
+      "legacy": {
+        "branch": "people",
+        "action": "Présence du personnel"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-022": {
+      "kind": "legacy",
+      "screen": "Biométrie",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "people",
+        "action": "Biométrie"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-023": {
+      "kind": "legacy",
+      "screen": "Salaires",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "people",
+        "action": "Salaires"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-024": {
+      "kind": "legacy",
+      "screen": "Avances, primes et retenues",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "people",
+        "action": "Avances, primes et retenues"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-025": {
+      "kind": "subjects",
+      "screen": "Matières",
+      "definition": "subjects",
+      "contracts": [
+        "GET /native/pedagogy/subjects"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:42",
+      "permission": "pedagogy.subject.read/manage",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Matières"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-026": {
+      "kind": "legacy",
+      "screen": "Emplois du temps",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Emplois du temps"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-027": {
+      "kind": "attendance",
+      "screen": "Présences, absences et retards",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Présences, absences et retards"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-028": {
+      "kind": "assignments",
+      "screen": "Devoirs et corrections",
+      "definition": "assignments",
+      "contracts": [
+        "GET /native/pedagogy/assignments"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:100-160",
+      "permission": "pedagogy.assignment.read/manage; affectations; publication parent",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Devoirs et corrections"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-029": {
+      "kind": "grades",
+      "screen": "Évaluations et notes",
+      "definition": "grades",
+      "contracts": [
+        "GET /native/pedagogy/assignments/:id/grades",
+        "GET /native/pedagogy/parent/grades/:studentId",
+        "GET /native/pedagogy/students/:studentId/averages"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:141,211,218",
+      "permission": "pedagogy.grade.read/manage; affectations / own_children",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Évaluations et notes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-030": {
+      "kind": "grades",
+      "screen": "Moyennes et coefficients",
+      "definition": "grades",
+      "contracts": [
+        "GET /native/pedagogy/assignments/:id/grades",
+        "GET /native/pedagogy/parent/grades/:studentId",
+        "GET /native/pedagogy/students/:studentId/averages"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:141,211,218",
+      "permission": "pedagogy.grade.read/manage; affectations / own_children",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Moyennes et coefficients"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-031": {
+      "kind": "unavailable",
+      "screen": "Bulletins",
+      "definition": "unavailable",
+      "contracts": [],
+      "contractSource": "app/app.js:678",
+      "permission": "A confirmer",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Bulletins"
+      },
+      "status": "Moteur indisponible"
+    },
+    "rosario-032": {
+      "kind": "legacy",
+      "screen": "Rattrapage pédagogique",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Rattrapage pédagogique"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-033": {
+      "kind": "lessons",
+      "screen": "Cahiers de préparation",
+      "definition": "lessons",
+      "contracts": [
+        "GET /native/pedagogy/lesson-plans"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:167",
+      "permission": "pedagogy.lesson-plan.read/manage; affectations",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Cahiers de préparation"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-034": {
+      "kind": "legacy",
+      "screen": "ENAFEP",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "ENAFEP"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-035": {
+      "kind": "legacy",
+      "screen": "TENASOSP",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "TENASOSP"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-036": {
+      "kind": "legacy",
+      "screen": "EXETAT",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "EXETAT"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-037": {
+      "kind": "scanner",
+      "screen": "Scanner un QR",
+      "definition": "scanner",
+      "contracts": [
+        "POST /native/scan-control/scan",
+        "GET /native/scan-control/locations",
+        "GET /native/scan-control/capabilities"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:10,48,52,102",
+      "permission": "SCAN_ENTRY / SCAN_PICKUP / SCAN_FEES / SCAN_VERIFY; par mode",
+      "legacy": {
+        "branch": "security",
+        "action": "Scanner un QR"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-038": {
+      "kind": "attendance",
+      "screen": "Entrées",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "security",
+        "action": "Entrées"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-039": {
+      "kind": "pickup",
+      "screen": "Sorties",
+      "definition": "pickup",
+      "contracts": [
+        "POST /native/scan-control/scan (mode pickup)"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+      "permission": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+      "legacy": {
+        "branch": "security",
+        "action": "Sorties"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-040": {
+      "kind": "pickup",
+      "screen": "Préparer une sortie",
+      "definition": "pickup",
+      "contracts": [
+        "POST /native/scan-control/scan (mode pickup)"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+      "permission": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+      "legacy": {
+        "branch": "security",
+        "action": "Préparer une sortie"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-041": {
+      "kind": "family",
+      "screen": "Personnes autorisées",
+      "definition": "family",
+      "contracts": [
+        "GET /native/family/students/:studentId/pickup-authorizations/mine",
+        "GET /native/family/students/:studentId/pickup-authorizations/school"
+      ],
+      "contractSource": "server/src/familynative/routes.ts:162-174,238-279",
+      "permission": "Droits famille exacts + own_children / ecole; decision distincte",
+      "legacy": {
+        "branch": "security",
+        "action": "Personnes autorisées"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-042": {
+      "kind": "pickup",
+      "screen": "Confirmer ou refuser une sortie",
+      "definition": "pickup",
+      "contracts": [
+        "POST /native/scan-control/scan (mode pickup)"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+      "permission": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+      "legacy": {
+        "branch": "security",
+        "action": "Confirmer ou refuser une sortie"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-043": {
+      "kind": "alerts",
+      "screen": "Alertes et anomalies",
+      "definition": "alerts",
+      "contracts": [],
+      "contractSource": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+      "permission": "pilotage.alerts.read / pilotage.approvals.read; decision distincte",
+      "legacy": {
+        "branch": "security",
+        "action": "Alertes et anomalies"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-044": {
+      "kind": "attendance",
+      "screen": "Historique des passages",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "security",
+        "action": "Historique des passages"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-045": {
+      "kind": "attendance",
+      "screen": "Lockdown",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "security",
+        "action": "Lockdown"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-046": {
+      "kind": "fees",
+      "screen": "Structure des frais",
+      "definition": "fees",
+      "contracts": [
+        "GET /native/finance/fee-structures",
+        "GET /native/finance/students/:studentId/fees"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:36,55",
+      "permission": "finance.fee.read/manage; portee eleve/classe",
+      "legacy": {
+        "branch": "finance",
+        "action": "Structure des frais"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-047": {
+      "kind": "cash",
+      "screen": "Encaissements",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Encaissements"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-048": {
+      "kind": "receipts",
+      "screen": "Reçus PDF",
+      "definition": "receipts",
+      "contracts": [
+        "GET /native/finance/receipts/:paymentId"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:111",
+      "permission": "finance.receipt.read; paiement reel",
+      "legacy": {
+        "branch": "finance",
+        "action": "Reçus PDF"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-049": {
+      "kind": "campaigns",
+      "screen": "Contrôle des frais",
+      "definition": "campaigns",
+      "contracts": [
+        "GET /native/finance/fee-control/campaigns",
+        "GET /native/scan-control/fees/delegations"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:138; server/src/scancontrol/routes.ts:65",
+      "permission": "finance.control.scan/manage; delegation et portee",
+      "legacy": {
+        "branch": "finance",
+        "action": "Contrôle des frais"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-050": {
+      "kind": "balances",
+      "screen": "Impayés et soldes",
+      "definition": "balances",
+      "contracts": [
+        "GET /native/finance/students/:studentId/fees"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:55",
+      "permission": "finance.fee.read; portee eleve / own_children",
+      "legacy": {
+        "branch": "finance",
+        "action": "Impayés et soldes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-051": {
+      "kind": "payments",
+      "screen": "Recettes et dépenses",
+      "definition": "payments",
+      "contracts": [
+        "GET /native/finance/students/:studentId/payments",
+        "GET /native/finance/reports/daily"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:79,85,102,131",
+      "permission": "finance.payment.record / finance.report.read; caisse et eleve",
+      "legacy": {
+        "branch": "finance",
+        "action": "Recettes et dépenses"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-052": {
+      "kind": "cash",
+      "screen": "Rapports de caisse",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Rapports de caisse"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-053": {
+      "kind": "cash",
+      "screen": "Clôtures",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Clôtures"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-054": {
+      "kind": "cash",
+      "screen": "Exports financiers",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Exports financiers"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-055": {
+      "kind": "legacy",
+      "screen": "Plan comptable",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Plan comptable"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-056": {
+      "kind": "legacy",
+      "screen": "Journal comptable",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Journal comptable"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-057": {
+      "kind": "legacy",
+      "screen": "Grand livre",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Grand livre"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-058": {
+      "kind": "legacy",
+      "screen": "Écritures comptables",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Écritures comptables"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-059": {
+      "kind": "legacy",
+      "screen": "Balance",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Balance"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-060": {
+      "kind": "legacy",
+      "screen": "Rapprochements",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Rapprochements"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-061": {
+      "kind": "legacy",
+      "screen": "États financiers",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "États financiers"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-062": {
+      "kind": "legacy",
+      "screen": "Rapports SYSCOHADA",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Rapports SYSCOHADA"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-063": {
+      "kind": "legacy",
+      "screen": "Stock / Inventaire",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "inventory",
+        "action": "Stock / Inventaire"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-064": {
+      "kind": "legacy",
+      "screen": "Catalogue articles",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "inventory",
+        "action": "Catalogue articles"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-065": {
+      "kind": "legacy",
+      "screen": "Emplacements et seuils",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "inventory",
+        "action": "Emplacements et seuils"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-066": {
+      "kind": "legacy",
+      "screen": "Mouvements",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "inventory",
+        "action": "Mouvements"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-067": {
+      "kind": "legacy",
+      "screen": "Demandes d’achat",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "inventory",
+        "action": "Demandes d’achat"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-068": {
+      "kind": "legacy",
+      "screen": "Commandes",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "inventory",
+        "action": "Commandes"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-069": {
+      "kind": "legacy",
+      "screen": "Réceptions",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "inventory",
+        "action": "Réceptions"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-070": {
+      "kind": "legacy",
+      "screen": "Rapports Stock",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "inventory",
+        "action": "Rapports Stock"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-071": {
+      "kind": "legacy",
+      "screen": "Messages",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Messages"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-072": {
+      "kind": "legacy",
+      "screen": "Notifications",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Notifications"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-073": {
+      "kind": "legacy",
+      "screen": "E-mail",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "E-mail"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-074": {
+      "kind": "legacy",
+      "screen": "Annonces",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Annonces"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-075": {
+      "kind": "legacy",
+      "screen": "Convocations",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Convocations"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-076": {
+      "kind": "legacy",
+      "screen": "Site public et WebSync",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Site public et WebSync"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-077": {
+      "kind": "legacy",
+      "screen": "Événements",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Événements"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-078": {
+      "kind": "legacy",
+      "screen": "École & Personnel",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "administration",
+        "action": "École & Personnel"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-079": {
+      "kind": "access",
+      "screen": "Gestion des autorisations",
+      "definition": "access",
+      "contracts": [
+        "GET /native/access/profiles",
+        "GET /native/access/roles"
+      ],
+      "contractSource": "server/src/accessnative/routes.ts:87,93,128",
+      "permission": "Droits IAM precis; aucune creation locale",
+      "legacy": {
+        "branch": "administration",
+        "action": "Gestion des autorisations"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-080": {
+      "kind": "documents",
+      "screen": "Documents R2",
+      "definition": "documents",
+      "contracts": [
+        "POST /documents/create",
+        "POST /documents/:id/issue"
+      ],
+      "contractSource": "server/src/documents/routes.ts:23,57; app/modules/core/visual-output-closure-a.js",
+      "permission": "Droit documentaire exact a confirmer",
+      "legacy": {
+        "branch": "administration",
+        "action": "Documents R2"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-081": {
+      "kind": "documents",
+      "screen": "Archives",
+      "definition": "documents",
+      "contracts": [
+        "POST /documents/create",
+        "POST /documents/:id/issue"
+      ],
+      "contractSource": "server/src/documents/routes.ts:23,57; app/modules/core/visual-output-closure-a.js",
+      "permission": "Droit documentaire exact a confirmer",
+      "legacy": {
+        "branch": "administration",
+        "action": "Archives"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-082": {
+      "kind": "legacy",
+      "screen": "Paramètres",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "administration",
+        "action": "Paramètres"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-083": {
+      "kind": "access",
+      "screen": "Comptes et droits",
+      "definition": "access",
+      "contracts": [
+        "GET /native/access/profiles",
+        "GET /native/access/roles"
+      ],
+      "contractSource": "server/src/accessnative/routes.ts:87,93,128",
+      "permission": "Droits IAM precis; aucune creation locale",
+      "legacy": {
+        "branch": "administration",
+        "action": "Comptes et droits"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-084": {
+      "kind": "years",
+      "screen": "Cycles",
+      "definition": "years",
+      "contracts": [],
+      "contractSource": "app/modules/core/visual-output-closure-a.js; app/app.js:676",
+      "permission": "school.manage; contrat individuel a confirmer",
+      "legacy": {
+        "branch": "administration",
+        "action": "Cycles"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-085": {
+      "kind": "legacy",
+      "screen": "Licence",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "administration",
+        "action": "Licence"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-086": {
+      "kind": "documents",
+      "screen": "Centre documentaire",
+      "definition": "documents",
+      "contracts": [
+        "POST /documents/create",
+        "POST /documents/:id/issue"
+      ],
+      "contractSource": "server/src/documents/routes.ts:23,57; app/modules/core/visual-output-closure-a.js",
+      "permission": "Droit documentaire exact a confirmer",
+      "legacy": {
+        "branch": "administration",
+        "action": "Centre documentaire"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-087": {
+      "kind": "legacy",
+      "screen": "Français et anglais",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "administration",
+        "action": "Français et anglais"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-088": {
+      "kind": "legacy",
+      "screen": "Mode hors ligne",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "administration",
+        "action": "Mode hors ligne"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-089": {
+      "kind": "legacy",
+      "screen": "Séparation public et privé",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "administration",
+        "action": "Séparation public et privé"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-090": {
+      "kind": "legacy",
+      "screen": "Historiques",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "reports",
+        "action": "Historiques"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-091": {
+      "kind": "legacy",
+      "screen": "Audit des actions",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "reports",
+        "action": "Audit des actions"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-092": {
+      "kind": "legacy",
+      "screen": "Rapports administratifs",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "reports",
+        "action": "Rapports administratifs"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-093": {
+      "kind": "legacy",
+      "screen": "Exports PDF et Excel",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "reports",
+        "action": "Exports PDF et Excel"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-094": {
+      "kind": "scanner",
+      "screen": "Enregistrer une entrée",
+      "definition": "scanner",
+      "contracts": [
+        "POST /native/scan-control/scan",
+        "GET /native/scan-control/locations",
+        "GET /native/scan-control/capabilities"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:10,48,52,102",
+      "permission": "SCAN_ENTRY / SCAN_PICKUP / SCAN_FEES / SCAN_VERIFY; par mode",
+      "legacy": {
+        "branch": "security",
+        "action": "Enregistrer une entrée"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-095": {
+      "kind": "pickup",
+      "screen": "Enregistrer une sortie",
+      "definition": "pickup",
+      "contracts": [
+        "POST /native/scan-control/scan (mode pickup)"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+      "permission": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+      "legacy": {
+        "branch": "security",
+        "action": "Enregistrer une sortie"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-096": {
+      "kind": "scanner",
+      "screen": "Vérifier l’identité",
+      "definition": "scanner",
+      "contracts": [
+        "POST /native/scan-control/scan",
+        "GET /native/scan-control/locations",
+        "GET /native/scan-control/capabilities"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:10,48,52,102",
+      "permission": "SCAN_ENTRY / SCAN_PICKUP / SCAN_FEES / SCAN_VERIFY; par mode",
+      "legacy": {
+        "branch": "security",
+        "action": "Vérifier l’identité"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-097": {
+      "kind": "pickup",
+      "screen": "Autoriser une sortie",
+      "definition": "pickup",
+      "contracts": [
+        "POST /native/scan-control/scan (mode pickup)"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+      "permission": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+      "legacy": {
+        "branch": "security",
+        "action": "Autoriser une sortie"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-098": {
+      "kind": "pickup",
+      "screen": "Refuser une sortie",
+      "definition": "pickup",
+      "contracts": [
+        "POST /native/scan-control/scan (mode pickup)"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+      "permission": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+      "legacy": {
+        "branch": "security",
+        "action": "Refuser une sortie"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-099": {
+      "kind": "attendance",
+      "screen": "Élèves dans l’école",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "security",
+        "action": "Élèves dans l’école"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-100": {
+      "kind": "pickup",
+      "screen": "Sorties en attente",
+      "definition": "pickup",
+      "contracts": [
+        "POST /native/scan-control/scan (mode pickup)"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+      "permission": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+      "legacy": {
+        "branch": "security",
+        "action": "Sorties en attente"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-101": {
+      "kind": "attendance",
+      "screen": "Passages précédents",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "security",
+        "action": "Passages précédents"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-102": {
+      "kind": "alerts",
+      "screen": "Incidents",
+      "definition": "alerts",
+      "contracts": [],
+      "contractSource": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+      "permission": "pilotage.alerts.read / pilotage.approvals.read; decision distincte",
+      "legacy": {
+        "branch": "security",
+        "action": "Incidents"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-103": {
+      "kind": "attendance",
+      "screen": "Rechercher",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "security",
+        "action": "Rechercher"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-104": {
+      "kind": "attendance",
+      "screen": "Recherche de passage",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "security",
+        "action": "Recherche de passage"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-105": {
+      "kind": "students",
+      "screen": "Élèves de mes classes",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "school",
+        "action": "Élèves de mes classes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-106": {
+      "kind": "classes",
+      "screen": "Structure de mes classes",
+      "definition": "classes",
+      "contracts": [
+        "GET /native/pedagogy/classes",
+        "GET /native/pedagogy/teacher-assignments"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:36,59",
+      "permission": "school.class.read / pedagogy.assignment.read; portee affectations",
+      "legacy": {
+        "branch": "school",
+        "action": "Structure de mes classes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-107": {
+      "kind": "legacy",
+      "screen": "Emploi du temps",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Emploi du temps"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-108": {
+      "kind": "lessons",
+      "screen": "Cahier de préparation de l’enseignant",
+      "definition": "lessons",
+      "contracts": [
+        "GET /native/pedagogy/lesson-plans"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:167",
+      "permission": "pedagogy.lesson-plan.read/manage; affectations",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Cahier de préparation de l’enseignant"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-109": {
+      "kind": "grades",
+      "screen": "Résultats et moyennes",
+      "definition": "grades",
+      "contracts": [
+        "GET /native/pedagogy/assignments/:id/grades",
+        "GET /native/pedagogy/parent/grades/:studentId",
+        "GET /native/pedagogy/students/:studentId/averages"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:141,211,218",
+      "permission": "pedagogy.grade.read/manage; affectations / own_children",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Résultats et moyennes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-110": {
+      "kind": "legacy",
+      "screen": "Difficultés",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Difficultés"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-111": {
+      "kind": "unavailable",
+      "screen": "Bulletins à consulter",
+      "definition": "unavailable",
+      "contracts": [],
+      "contractSource": "app/app.js:705",
+      "permission": "A confirmer",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Bulletins à consulter"
+      },
+      "status": "Moteur indisponible"
+    },
+    "rosario-112": {
+      "kind": "legacy",
+      "screen": "Préparation aux épreuves certificatives",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Préparation aux épreuves certificatives"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-113": {
+      "kind": "legacy",
+      "screen": "Direction",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Direction"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-114": {
+      "kind": "legacy",
+      "screen": "Parents autorisés",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Parents autorisés"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-115": {
+      "kind": "payments",
+      "screen": "Enregistrer un paiement",
+      "definition": "payments",
+      "contracts": [
+        "GET /native/finance/students/:studentId/payments",
+        "GET /native/finance/reports/daily"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:79,85,102,131",
+      "permission": "finance.payment.record / finance.report.read; caisse et eleve",
+      "legacy": {
+        "branch": "finance",
+        "action": "Enregistrer un paiement"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-116": {
+      "kind": "payments",
+      "screen": "Versement de rattrapage",
+      "definition": "payments",
+      "contracts": [
+        "GET /native/finance/students/:studentId/payments",
+        "GET /native/finance/reports/daily"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:79,85,102,131",
+      "permission": "finance.payment.record / finance.report.read; caisse et eleve",
+      "legacy": {
+        "branch": "finance",
+        "action": "Versement de rattrapage"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-117": {
+      "kind": "students",
+      "screen": "Rechercher un élève",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "finance",
+        "action": "Rechercher un élève"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-118": {
+      "kind": "receipts",
+      "screen": "Produire un reçu PDF",
+      "definition": "receipts",
+      "contracts": [
+        "GET /native/finance/receipts/:paymentId"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:111",
+      "permission": "finance.receipt.read; paiement reel",
+      "legacy": {
+        "branch": "finance",
+        "action": "Produire un reçu PDF"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-119": {
+      "kind": "payments",
+      "screen": "Vérifier un paiement",
+      "definition": "payments",
+      "contracts": [
+        "GET /native/finance/students/:studentId/payments",
+        "GET /native/finance/reports/daily"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:79,85,102,131",
+      "permission": "finance.payment.record / finance.report.read; caisse et eleve",
+      "legacy": {
+        "branch": "finance",
+        "action": "Vérifier un paiement"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-120": {
+      "kind": "balances",
+      "screen": "Consulter le solde et les impayés",
+      "definition": "balances",
+      "contracts": [
+        "GET /native/finance/students/:studentId/fees"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:55",
+      "permission": "finance.fee.read; portee eleve / own_children",
+      "legacy": {
+        "branch": "finance",
+        "action": "Consulter le solde et les impayés"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-121": {
+      "kind": "payments",
+      "screen": "Historique du jour",
+      "definition": "payments",
+      "contracts": [
+        "GET /native/finance/students/:studentId/payments",
+        "GET /native/finance/reports/daily"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:79,85,102,131",
+      "permission": "finance.payment.record / finance.report.read; caisse et eleve",
+      "legacy": {
+        "branch": "finance",
+        "action": "Historique du jour"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-122": {
+      "kind": "payments",
+      "screen": "Demander l’annulation d’un paiement",
+      "definition": "payments",
+      "contracts": [
+        "GET /native/finance/students/:studentId/payments",
+        "GET /native/finance/reports/daily"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:79,85,102,131",
+      "permission": "finance.payment.record / finance.report.read; caisse et eleve",
+      "legacy": {
+        "branch": "finance",
+        "action": "Demander l’annulation d’un paiement"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-123": {
+      "kind": "cash",
+      "screen": "Rapport de caisse",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Rapport de caisse"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-124": {
+      "kind": "cash",
+      "screen": "Soumettre la journée",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Soumettre la journée"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-125": {
+      "kind": "alerts",
+      "screen": "Alertes",
+      "definition": "alerts",
+      "contracts": [],
+      "contractSource": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+      "permission": "pilotage.alerts.read / pilotage.approvals.read; decision distincte",
+      "legacy": {
+        "branch": "pilotage",
+        "action": "Alertes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-126": {
+      "kind": "alerts",
+      "screen": "Approbations",
+      "definition": "alerts",
+      "contracts": [],
+      "contractSource": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+      "permission": "pilotage.alerts.read / pilotage.approvals.read; decision distincte",
+      "legacy": {
+        "branch": "pilotage",
+        "action": "Approbations"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-127": {
+      "kind": "students",
+      "screen": "Élèves et classes",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "school",
+        "action": "Élèves et classes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-128": {
+      "kind": "students",
+      "screen": "Inscriptions",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "school",
+        "action": "Inscriptions"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-129": {
+      "kind": "staff",
+      "screen": "Personnel",
+      "definition": "staff",
+      "contracts": [],
+      "contractSource": "app/modules/hr/hr-demo.js; app/modules/core/visual-wiring.js",
+      "permission": "staff.read; contrats RH a confirmer",
+      "legacy": {
+        "branch": "school",
+        "action": "Personnel"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-130": {
+      "kind": "attendance",
+      "screen": "Présences",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Présences"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-131": {
+      "kind": "grades",
+      "screen": "Résultats",
+      "definition": "grades",
+      "contracts": [
+        "GET /native/pedagogy/assignments/:id/grades",
+        "GET /native/pedagogy/parent/grades/:studentId",
+        "GET /native/pedagogy/students/:studentId/averages"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:141,211,218",
+      "permission": "pedagogy.grade.read/manage; affectations / own_children",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Résultats"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-132": {
+      "kind": "legacy",
+      "screen": "Épreuves certificatives",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Épreuves certificatives"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-133": {
+      "kind": "pickup",
+      "screen": "Entrées et sorties",
+      "definition": "pickup",
+      "contracts": [
+        "POST /native/scan-control/scan (mode pickup)"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+      "permission": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+      "legacy": {
+        "branch": "security",
+        "action": "Entrées et sorties"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-134": {
+      "kind": "payments",
+      "screen": "Recettes",
+      "definition": "payments",
+      "contracts": [
+        "GET /native/finance/students/:studentId/payments",
+        "GET /native/finance/reports/daily"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:79,85,102,131",
+      "permission": "finance.payment.record / finance.report.read; caisse et eleve",
+      "legacy": {
+        "branch": "finance",
+        "action": "Recettes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-135": {
+      "kind": "cash",
+      "screen": "Statistiques",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Statistiques"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-136": {
+      "kind": "cash",
+      "screen": "Imprimer les rapports",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Imprimer les rapports"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-137": {
+      "kind": "legacy",
+      "screen": "Rapports",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "reports",
+        "action": "Rapports"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-138": {
+      "kind": "legacy",
+      "screen": "Audit",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "reports",
+        "action": "Audit"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-139": {
+      "kind": "legacy",
+      "screen": "Pilotage pédagogique",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Pilotage pédagogique"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-140": {
+      "kind": "classes",
+      "screen": "Classes",
+      "definition": "classes",
+      "contracts": [
+        "GET /native/pedagogy/classes",
+        "GET /native/pedagogy/teacher-assignments"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:36,59",
+      "permission": "school.class.read / pedagogy.assignment.read; portee affectations",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Classes"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-141": {
+      "kind": "classes",
+      "screen": "Affectations",
+      "definition": "classes",
+      "contracts": [
+        "GET /native/pedagogy/classes",
+        "GET /native/pedagogy/teacher-assignments"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:36,59",
+      "permission": "school.class.read / pedagogy.assignment.read; portee affectations",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Affectations"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-142": {
+      "kind": "attendance",
+      "screen": "Présences élèves",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Présences élèves"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-143": {
+      "kind": "attendance",
+      "screen": "Absences et retards",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Absences et retards"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-144": {
+      "kind": "lessons",
+      "screen": "Cahiers de préparation des enseignants",
+      "definition": "lessons",
+      "contracts": [
+        "GET /native/pedagogy/lesson-plans"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:167",
+      "permission": "pedagogy.lesson-plan.read/manage; affectations",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Cahiers de préparation des enseignants"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-145": {
+      "kind": "legacy",
+      "screen": "Activité enseignants",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "pedagogy",
+        "action": "Activité enseignants"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-146": {
+      "kind": "campaigns",
+      "screen": "Voir les élèves en ordre ou à régulariser",
+      "definition": "campaigns",
+      "contracts": [
+        "GET /native/finance/fee-control/campaigns",
+        "GET /native/scan-control/fees/delegations"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:138; server/src/scancontrol/routes.ts:65",
+      "permission": "finance.control.scan/manage; delegation et portee",
+      "legacy": {
+        "branch": "finance",
+        "action": "Voir les élèves en ordre ou à régulariser"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-147": {
+      "kind": "legacy",
+      "screen": "Statistiques pédagogiques",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "reports",
+        "action": "Statistiques pédagogiques"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-148": {
+      "kind": "legacy",
+      "screen": "Résultats des épreuves certificatives",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "reports",
+        "action": "Résultats des épreuves certificatives"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-149": {
+      "kind": "students",
+      "screen": "Préinscriptions",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "school",
+        "action": "Préinscriptions"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-150": {
+      "kind": "students",
+      "screen": "Vérifier les dossiers",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "school",
+        "action": "Vérifier les dossiers"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-151": {
+      "kind": "legacy",
+      "screen": "Accepter ou refuser",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "school",
+        "action": "Accepter ou refuser"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-152": {
+      "kind": "students",
+      "screen": "Créer l’élève",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "school",
+        "action": "Créer l’élève"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-153": {
+      "kind": "family",
+      "screen": "Parents et tuteurs",
+      "definition": "family",
+      "contracts": [
+        "GET /native/family/students/:studentId/pickup-authorizations/mine",
+        "GET /native/family/students/:studentId/pickup-authorizations/school"
+      ],
+      "contractSource": "server/src/familynative/routes.ts:162-174,238-279",
+      "permission": "Droits famille exacts + own_children / ecole; decision distincte",
+      "legacy": {
+        "branch": "school",
+        "action": "Parents et tuteurs"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-154": {
+      "kind": "family",
+      "screen": "Personnes autorisées",
+      "definition": "family",
+      "contracts": [
+        "GET /native/family/students/:studentId/pickup-authorizations/mine",
+        "GET /native/family/students/:studentId/pickup-authorizations/school"
+      ],
+      "contractSource": "server/src/familynative/routes.ts:162-174,238-279",
+      "permission": "Droits famille exacts + own_children / ecole; decision distincte",
+      "legacy": {
+        "branch": "school",
+        "action": "Personnes autorisées"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-155": {
+      "kind": "students",
+      "screen": "Importer des dossiers",
+      "definition": "students",
+      "contracts": [
+        "GET /native/students",
+        "GET /native/students/:id/record"
+      ],
+      "contractSource": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+      "permission": "school.student.read",
+      "legacy": {
+        "branch": "school",
+        "action": "Importer des dossiers"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-156": {
+      "kind": "documents",
+      "screen": "Attestations",
+      "definition": "documents",
+      "contracts": [
+        "POST /documents/create",
+        "POST /documents/:id/issue"
+      ],
+      "contractSource": "server/src/documents/routes.ts:23,57; app/modules/core/visual-output-closure-a.js",
+      "permission": "Droit documentaire exact a confirmer",
+      "legacy": {
+        "branch": "administration",
+        "action": "Attestations"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-157": {
+      "kind": "documents",
+      "screen": "Rechercher",
+      "definition": "documents",
+      "contracts": [
+        "POST /documents/create",
+        "POST /documents/:id/issue"
+      ],
+      "contractSource": "server/src/documents/routes.ts:23,57; app/modules/core/visual-output-closure-a.js",
+      "permission": "Droit documentaire exact a confirmer",
+      "legacy": {
+        "branch": "administration",
+        "action": "Rechercher"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-158": {
+      "kind": "documents",
+      "screen": "Certificats",
+      "definition": "documents",
+      "contracts": [
+        "POST /documents/create",
+        "POST /documents/:id/issue"
+      ],
+      "contractSource": "server/src/documents/routes.ts:23,57; app/modules/core/visual-output-closure-a.js",
+      "permission": "Droit documentaire exact a confirmer",
+      "legacy": {
+        "branch": "administration",
+        "action": "Certificats"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-159": {
+      "kind": "documents",
+      "screen": "Convocations",
+      "definition": "documents",
+      "contracts": [
+        "POST /documents/create",
+        "POST /documents/:id/issue"
+      ],
+      "contractSource": "server/src/documents/routes.ts:23,57; app/modules/core/visual-output-closure-a.js",
+      "permission": "Droit documentaire exact a confirmer",
+      "legacy": {
+        "branch": "administration",
+        "action": "Convocations"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-160": {
+      "kind": "legacy",
+      "screen": "Dossiers ENAFEP, TENASOSP et EXETAT",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "administration",
+        "action": "Dossiers ENAFEP, TENASOSP et EXETAT"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-161": {
+      "kind": "legacy",
+      "screen": "Contrôle des identités candidats",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "administration",
+        "action": "Contrôle des identités candidats"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-162": {
+      "kind": "legacy",
+      "screen": "Rendez-vous",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Rendez-vous"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-163": {
+      "kind": "cash",
+      "screen": "Tableau financier",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Tableau financier"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-164": {
+      "kind": "cash",
+      "screen": "Rapports financiers",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Rapports financiers"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-165": {
+      "kind": "fees",
+      "screen": "Types de frais",
+      "definition": "fees",
+      "contracts": [
+        "GET /native/finance/fee-structures",
+        "GET /native/finance/students/:studentId/fees"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:36,55",
+      "permission": "finance.fee.read/manage; portee eleve/classe",
+      "legacy": {
+        "branch": "finance",
+        "action": "Types de frais"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-166": {
+      "kind": "fees",
+      "screen": "Échéances",
+      "definition": "fees",
+      "contracts": [
+        "GET /native/finance/fee-structures",
+        "GET /native/finance/students/:studentId/fees"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:36,55",
+      "permission": "finance.fee.read/manage; portee eleve/classe",
+      "legacy": {
+        "branch": "finance",
+        "action": "Échéances"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-167": {
+      "kind": "cash",
+      "screen": "Caisses",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Caisses"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-168": {
+      "kind": "cash",
+      "screen": "Exports",
+      "definition": "cash",
+      "contracts": [
+        "GET /native/finance/reports/daily",
+        "POST /native/finance/cash-register/open",
+        "POST /native/finance/cash-register/close"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:119-131",
+      "permission": "finance.report.read; ouverture/cloture distinctes",
+      "legacy": {
+        "branch": "finance",
+        "action": "Exports"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-169": {
+      "kind": "legacy",
+      "screen": "Pièces comptables",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Pièces comptables"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-170": {
+      "kind": "legacy",
+      "screen": "Rapprochement",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Rapprochement"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-171": {
+      "kind": "legacy",
+      "screen": "Compte de résultat",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Compte de résultat"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-172": {
+      "kind": "legacy",
+      "screen": "Bilan",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Bilan"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-173": {
+      "kind": "legacy",
+      "screen": "Exports PDF et Excel",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "accounting",
+        "action": "Exports PDF et Excel"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-174": {
+      "kind": "legacy",
+      "screen": "Absences",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "people",
+        "action": "Absences"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-175": {
+      "kind": "staff",
+      "screen": "Présence personnel",
+      "definition": "staff",
+      "contracts": [],
+      "contractSource": "app/modules/hr/hr-demo.js; app/modules/core/visual-wiring.js",
+      "permission": "staff.read; contrats RH a confirmer",
+      "legacy": {
+        "branch": "people",
+        "action": "Présence personnel"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-176": {
+      "kind": "legacy",
+      "screen": "Primes",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "people",
+        "action": "Primes"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-177": {
+      "kind": "legacy",
+      "screen": "Avances",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "people",
+        "action": "Avances"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-178": {
+      "kind": "legacy",
+      "screen": "Retenues",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "people",
+        "action": "Retenues"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-179": {
+      "kind": "legacy",
+      "screen": "Enregistrer un passage",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Enregistrer un passage"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-180": {
+      "kind": "legacy",
+      "screen": "Incident médical",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Incident médical"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-181": {
+      "kind": "legacy",
+      "screen": "Contacter le parent",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Contacter le parent"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-182": {
+      "kind": "legacy",
+      "screen": "Dossiers santé",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Dossiers santé"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-183": {
+      "kind": "legacy",
+      "screen": "Allergies",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Allergies"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-184": {
+      "kind": "legacy",
+      "screen": "Traitements autorisés",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Traitements autorisés"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-185": {
+      "kind": "legacy",
+      "screen": "Historique",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Historique"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-186": {
+      "kind": "legacy",
+      "screen": "Présences repas",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Présences repas"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-187": {
+      "kind": "legacy",
+      "screen": "Service des repas",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Service des repas"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-188": {
+      "kind": "legacy",
+      "screen": "Menus",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Menus"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-189": {
+      "kind": "legacy",
+      "screen": "Bénéficiaires",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Bénéficiaires"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-190": {
+      "kind": "legacy",
+      "screen": "Liaison financière",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "care",
+        "action": "Liaison financière"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-191": {
+      "kind": "legacy",
+      "screen": "Site public",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Site public"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-192": {
+      "kind": "legacy",
+      "screen": "Galerie",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Galerie"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-193": {
+      "kind": "legacy",
+      "screen": "Synchronisation",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "communication",
+        "action": "Synchronisation"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-194": {
+      "kind": "attendance",
+      "screen": "Présence et passages",
+      "definition": "attendance",
+      "contracts": [],
+      "contractSource": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+      "permission": "Resoudre le droit de la destination historique",
+      "legacy": {
+        "branch": "school",
+        "action": "Présence et passages"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-195": {
+      "kind": "legacy",
+      "screen": "Emploi du temps",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "school",
+        "action": "Emploi du temps"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-196": {
+      "kind": "assignments",
+      "screen": "Devoirs",
+      "definition": "assignments",
+      "contracts": [
+        "GET /native/pedagogy/assignments"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:100-160",
+      "permission": "pedagogy.assignment.read/manage; affectations; publication parent",
+      "legacy": {
+        "branch": "school",
+        "action": "Devoirs"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-197": {
+      "kind": "grades",
+      "screen": "Résultats",
+      "definition": "grades",
+      "contracts": [
+        "GET /native/pedagogy/assignments/:id/grades",
+        "GET /native/pedagogy/parent/grades/:studentId",
+        "GET /native/pedagogy/students/:studentId/averages"
+      ],
+      "contractSource": "server/src/pedagogynative/routes.ts:141,211,218",
+      "permission": "pedagogy.grade.read/manage; affectations / own_children",
+      "legacy": {
+        "branch": "school",
+        "action": "Résultats"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-198": {
+      "kind": "legacy",
+      "screen": "Rattrapage pédagogique",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "school",
+        "action": "Rattrapage pédagogique"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-199": {
+      "kind": "legacy",
+      "screen": "Épreuves certificatives",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "school",
+        "action": "Épreuves certificatives"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-200": {
+      "kind": "legacy",
+      "screen": "Justifier une absence",
+      "definition": "legacy",
+      "contracts": [],
+      "contractSource": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+      "permission": "Non etablie; refus jusqu a resolution",
+      "legacy": {
+        "branch": "school",
+        "action": "Justifier une absence"
+      },
+      "status": "Reutilisation existant, raccordement requis"
+    },
+    "rosario-201": {
+      "kind": "family",
+      "screen": "Personnes autorisées de mes enfants",
+      "definition": "family",
+      "contracts": [
+        "GET /native/family/students/:studentId/pickup-authorizations/mine",
+        "GET /native/family/students/:studentId/pickup-authorizations/school"
+      ],
+      "contractSource": "server/src/familynative/routes.ts:162-174,238-279",
+      "permission": "Droits famille exacts + own_children / ecole; decision distincte",
+      "legacy": {
+        "branch": "school",
+        "action": "Personnes autorisées de mes enfants"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-202": {
+      "kind": "documents",
+      "screen": "Documents",
+      "definition": "documents",
+      "contracts": [
+        "POST /documents/create",
+        "POST /documents/:id/issue"
+      ],
+      "contractSource": "server/src/documents/routes.ts:23,57; app/modules/core/visual-output-closure-a.js",
+      "permission": "Droit documentaire exact a confirmer",
+      "legacy": {
+        "branch": "school",
+        "action": "Documents"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-203": {
+      "kind": "fees",
+      "screen": "Frais scolaires",
+      "definition": "fees",
+      "contracts": [
+        "GET /native/finance/fee-structures",
+        "GET /native/finance/students/:studentId/fees"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:36,55",
+      "permission": "finance.fee.read/manage; portee eleve/classe",
+      "legacy": {
+        "branch": "finance",
+        "action": "Frais scolaires"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "rosario-204": {
+      "kind": "receipts",
+      "screen": "Reçus",
+      "definition": "receipts",
+      "contracts": [
+        "GET /native/finance/receipts/:paymentId"
+      ],
+      "contractSource": "server/src/financenative/routes.ts:111",
+      "permission": "finance.receipt.read; paiement reel",
+      "legacy": {
+        "branch": "finance",
+        "action": "Reçus"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    },
+    "presence-teacher": {
+      "kind": "read",
+      "screen": "Ma journee",
+      "definition": "read",
+      "contracts": [],
+      "contractSource": "server/src/scancontrol/routes.ts:133-154",
+      "permission": "school.student.read",
+      "legacy": null,
+      "status": "GET adapter, live non teste"
+    },
+    "presence-school": {
+      "kind": "read",
+      "screen": "Presence de l'ecole",
+      "definition": "read",
+      "contracts": [],
+      "contractSource": "server/src/scancontrol/routes.ts:133-154",
+      "permission": "pilotage.dashboard.read",
+      "legacy": null,
+      "status": "GET adapter, live non teste"
+    },
+    "presence-student": {
+      "kind": "read",
+      "screen": "Presence d'un eleve",
+      "definition": "read",
+      "contracts": [],
+      "contractSource": "server/src/scancontrol/routes.ts:133-154",
+      "permission": "school.student.read",
+      "legacy": null,
+      "status": "GET adapter, live non teste"
+    },
+    "presence-class": {
+      "kind": "read",
+      "screen": "Presence d'une classe",
+      "definition": "read",
+      "contracts": [],
+      "contractSource": "server/src/scancontrol/routes.ts:133-154",
+      "permission": "school.student.read",
+      "legacy": null,
+      "status": "GET adapter, live non teste"
+    },
+    "presence-school-count": {
+      "kind": "read",
+      "screen": "Eleves sur site",
+      "definition": "read",
+      "contracts": [],
+      "contractSource": "server/src/scancontrol/routes.ts:133-154",
+      "permission": "pilotage.dashboard.read",
+      "legacy": null,
+      "status": "GET adapter, live non teste"
+    },
+    "scan-history": {
+      "kind": "read",
+      "screen": "Trace des controles",
+      "definition": "read",
+      "contracts": [],
+      "contractSource": "server/src/scancontrol/routes.ts:133-154",
+      "permission": "security.events.read",
+      "legacy": null,
+      "status": "GET adapter, live non teste"
+    },
+    "scan-fees": {
+      "kind": "scanner",
+      "screen": "Scanner les frais",
+      "definition": "scanner",
+      "contracts": [
+        "POST /native/scan-control/scan",
+        "GET /native/scan-control/locations",
+        "GET /native/scan-control/capabilities"
+      ],
+      "contractSource": "server/src/scancontrol/routes.ts:10,48,52,102",
+      "permission": "finance.control.scan",
+      "legacy": {
+        "branch": "security",
+        "action": "Scanner un QR",
+        "mode": "fees"
+      },
+      "status": "Interaction visuelle, consult/openExisting a raccorder"
+    }
+  }
+};})(window);

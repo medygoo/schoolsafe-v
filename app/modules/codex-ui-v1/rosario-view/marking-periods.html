@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SchoolSafe - Périodes scolaires</title><link rel="stylesheet" href="account-form.css?v=2"></head>
+<body class="ss-account">
+<header class="account-bar"><div class="brand"><img src="schoolsafe-logo.png" alt="">SchoolSafe</div><span>École</span></header>
+<main>
+<div class="breadcrumb">École / Périodes scolaires</div>
+<div class="heading"><div><h1>Périodes scolaires</h1><p class="subtitle">Calendrier des périodes et de la notation</p></div><a class="button" href="/schoolsafe-view/"><i data-lucide="arrow-left" aria-hidden="true"></i>Retour</a></div>
+<div class="demo" role="status">Prévisualisation · aucune période Rosario chargée · aucune modification enregistrée.</div>
+<fieldset><legend><i data-lucide="layers" aria-hidden="true"></i>Organisation de l’année</legend><div class="fields">
+<label for="year">Année<select id="year" disabled><option>Non chargée</option></select></label>
+<label for="semester">Semestre<select id="semester" disabled><option>Non chargé</option></select></label>
+<label for="quarter">Trimestre<select id="quarter" disabled><option>Non chargé</option></select></label>
+<label class="wide" for="progress">Période de progression<select id="progress" disabled><option>Non chargée</option></select></label>
+</div></fieldset>
+<fieldset><legend><i data-lucide="clipboard-list" aria-hidden="true"></i>Identité de la période</legend><div class="fields">
+<label for="period-title">Nom<input id="period-title" maxlength="50" autocomplete="off"></label>
+<label for="period-short">Nom court<input id="period-short" maxlength="10" autocomplete="off"></label>
+<label for="period-order">Ordre<input id="period-order" type="number" min="-9999" max="9999"></label>
+</div></fieldset>
+<fieldset class="contact"><legend><i data-lucide="calendar-days" aria-hidden="true"></i>Dates de la période</legend><div class="fields">
+<label for="period-start">Date de début<input id="period-start" type="date"></label>
+<label for="period-end">Date de fin<input id="period-end" type="date"></label>
+</div></fieldset>
+<fieldset class="access"><legend><i data-lucide="notebook-pen" aria-hidden="true"></i>Notation et commentaires</legend><div class="fields">
+<label class="school-choice" for="graded"><input id="graded" type="checkbox" disabled>Notée</label>
+<label class="school-choice" for="comments"><input id="comments" type="checkbox" disabled>Commentaires</label>
+</div><div class="fields">
+<label for="posting-start">Début de saisie des notes<input id="posting-start" type="date" disabled></label>
+<label for="posting-end">Fin de saisie des notes<input id="posting-end" type="date" disabled></label>
+</div></fieldset>
+<footer class="actions"><a class="button" href="/schoolsafe-view/">Retour</a><a class="button primary" href="/Modules.php?modname=School_Setup/MarkingPeriods.php"><i data-lucide="external-link" aria-hidden="true"></i>Ouvrir les périodes Rosario</a></footer>
+</main><script src="lucide.min.js"></script><script>if(window.lucide)lucide.createIcons();</script>
+</body></html>

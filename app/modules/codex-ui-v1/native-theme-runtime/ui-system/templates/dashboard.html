@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Tableau SchoolSafe</title>
+	<link rel="stylesheet" href="../tokens.css">
+	<link rel="stylesheet" href="../components.css">
+	<link rel="stylesheet" href="../animations.css">
+</head>
+<body>
+	<div class="ss-app">
+		<nav class="ss-sidebar" id="app-menu" aria-label="Modèles">
+			<img src="../../assets/themes/SchoolSafe/logo.png" alt="SchoolSafe">
+			<a href="index.html">Modèles</a>
+			<a href="dashboard.html" aria-current="page">Tableau</a>
+			<a href="list-table.html">Liste</a>
+			<a href="detail.html">Fiche</a>
+			<a href="form.html">Formulaire</a>
+			<a href="report.html">Rapport</a>
+		</nav>
+		<div class="ss-shell-main">
+			<header class="ss-topbar">
+				<button class="ss-btn ss-btn-ghost ss-icon-btn ss-menu-btn" type="button" aria-label="Ouvrir le menu" aria-controls="app-menu" data-menu>☰</button>
+				<strong>Ecole fictive</strong>
+				<details class="ss-dropdown">
+					<summary class="ss-profile">LM</summary>
+					<div class="ss-dropdown-panel">
+						<a href="form.html">Préférences</a>
+						<a href="index.html">Quitter la démo</a>
+					</div>
+				</details>
+			</header>
+			<div class="ss-shell-body">
+				<nav class="ss-crumbs" aria-label="Fil d’Ariane"><a href="index.html">Modèles</a><span>Tableau</span></nav>
+				<div class="ss-content ss-rise">
+					<p class="ss-kicker">Démonstration · données fictives</p>
+					<h1>Tableau</h1>
+					<p class="ss-muted">Ecole fictive · année 2026-2027 · Quarter démo. Ceci n’est pas le portail Rosario.</p>
+					<div class="ss-grid">
+						<article class="ss-kpi"><span>Élèves, démo</span><b>24</b><span>Chiffre fictif</span></article>
+						<article class="ss-kpi"><span>Classes, démo</span><b>6</b><span>Chiffre fictif</span></article>
+						<article class="ss-kpi"><span>Alertes, démo</span><b>2</b><span>Chiffre fictif</span></article>
+					</div>
+					<div class="ss-alert ss-alert-warning"><strong>Démonstration.</strong> Une alerte fictive de solde bas, pour montrer l’emplacement.</div>
+					<section>
+						<h2>Actions rapides</h2>
+						<div class="ss-row">
+							<a class="ss-btn ss-btn-primary" href="form.html">Ajouter</a>
+							<a class="ss-btn ss-btn-secondary" href="list-table.html">Voir la liste</a>
+							<a class="ss-btn ss-btn-secondary" href="report.html">Ouvrir un rapport</a>
+						</div>
+					</section>
+					<section class="ss-card">
+						<h2>Activité récente</h2>
+						<p>09:10 · Léa Démo · présence fictive marquée présente.</p>
+						<p>08:40 · Marc Démo · fiche fictive consultée.</p>
+					</section>
+					<div class="ss-grid">
+						<article class="ss-card"><h2>Présences</h2><p>Bloc métier. Les vrais comptes viendront de Rosario plus tard.</p></article>
+						<article class="ss-card"><h2>Notes</h2><p>Bloc métier. Aucune note réelle n’est affichée ici.</p></article>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		document.querySelectorAll("[data-menu]").forEach(function (button) {
+			button.addEventListener("click", function () {
+				var menu = document.getElementById(button.getAttribute("aria-controls"));
+				var open = menu.classList.toggle("is-open");
+				button.setAttribute("aria-expanded", open ? "true" : "false");
+			});
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SchoolSafe - Association parents élèves</title><link rel="stylesheet" href="account-form.css?v=2"><link rel="stylesheet" href="family-association.css?v=2"></head>
+<body class="ss-account"><header class="account-bar"><div class="brand"><img src="schoolsafe-logo.png" alt="">SchoolSafe</div><span>Comptes et droits</span></header>
+<main><div class="breadcrumb">Administration / Comptes et droits / Parents et élèves</div>
+<div class="heading"><div><h1>Associer les élèves aux parents</h1><p class="subtitle">Dossiers familiaux</p></div><a class="button" href="/schoolsafe-view/"><i data-lucide="arrow-left" aria-hidden="true"></i>Retour</a></div>
+<div class="demo" role="status">Prévisualisation · dossiers fictifs · aucune association enregistrée.</div>
+<div class="family-layout">
+<section aria-labelledby="parent-heading"><h2 id="parent-heading"><i data-lucide="user-round" aria-hidden="true"></i>Parent sélectionné</h2>
+<label for="parent">Compte parent<select id="parent"><option value="">Choisir un exemple</option><option value="demo-parent">Parent de démonstration</option></select></label>
+<div class="parent-summary" id="parent-summary"><span>Aucun parent sélectionné</span></div>
+<h3>Élèves déjà associés</h3><p id="associated">Sélectionnez un parent.</p>
+</section>
+<section aria-labelledby="students-heading"><h2 id="students-heading"><i data-lucide="users-round" aria-hidden="true"></i>Élèves à associer</h2>
+<label for="search">Rechercher un élève<input id="search" type="search" placeholder="Nom du dossier fictif" disabled></label>
+<div class="table-wrap"><table><caption class="sr-only">Dossiers fictifs disponibles</caption><thead><tr><th scope="col">Choix</th><th scope="col">Élève</th><th scope="col">Niveau</th></tr></thead><tbody id="student-rows"><tr><td colspan="3">Sélectionnez d’abord un parent.</td></tr></tbody></table></div>
+<p id="selection" role="status">0 élève sélectionné</p>
+</section></div>
+<footer class="actions"><a class="button" href="student-form.html">Formulaire élève</a><a class="button primary" href="/Modules.php?modname=Users/AddStudents.php"><i data-lucide="external-link" aria-hidden="true"></i>Ouvrir l’association Rosario</a></footer>
+</main><script src="lucide.min.js"></script><script src="family-association.js"></script></body></html>
