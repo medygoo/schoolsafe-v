@@ -1,0 +1,3 @@
+BEGIN;
+CREATE UNIQUE INDEX schoolsafe_remediation_receipt_unique ON schoolsafe_remediation_payment_purpose(fee_id,receipt_reference);
+COMMIT;

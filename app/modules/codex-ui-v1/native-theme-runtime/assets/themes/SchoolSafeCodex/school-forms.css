@@ -1,0 +1,45 @@
+/* Native controls remain in their original forms and retain their actions. */
+#body[data-ss-page^="School_Setup/"] {
+    --ss-page-accent: #08766b;
+}
+#body[data-ss-page^="School_Setup/"] .header1 h2 {
+    color: var(--ss-text);
+    font-size: 22px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+#body[data-ss-page^="School_Setup/"] .list-nav {
+    width: 100%;
+    border-bottom: 1px solid var(--ss-line);
+    background: var(--ss-surface-raised);
+}
+#body[data-ss-page^="School_Setup/"] .list-nav td {
+    padding: 12px;
+}
+#body[data-ss-page^="School_Setup/"] .list-wrapper {
+    border-top: 3px solid var(--ss-page-accent);
+    border-radius: 0;
+}
+#body[data-ss-page^="School_Setup/"] .widefat tbody tr:nth-child(even) td {
+    background-color: #f5f7fb;
+}
+#body[data-ss-page^="School_Setup/"] .widefat input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+#body[data-ss-page^="School_Setup/"] .widefat select {
+    min-width: 64px;
+}
+#body[data-ss-page="School_Setup/Schools"] .postbox table td {
+    padding: 8px;
+    vertical-align: top;
+}
+@media screen and (max-width: 874px) {
+    #body[data-ss-page^="School_Setup/"] .list-nav td { padding: 8px; }
+    #body[data-ss-page="School_Setup/MarkingPeriods"] .fixed-col {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+}
+@media print {
+    #body[data-ss-page^="School_Setup/"] .list-wrapper { border-top: 0; }
+    #body[data-ss-page^="School_Setup/"] .widefat tbody tr:nth-child(even) td { background: #fff; }
+}

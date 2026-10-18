@@ -1,0 +1,102 @@
+#ss-mobile-navigation, .ss-context-heading { display: none; }
+body.modules #BottomButtonMenu { display: none !important; }
+body.modules .adminmenu > .menu-module > .menu-top::after { content: none !important; display: none !important; }
+body.modules #menu-top > a:has(.logo) { display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 18px 12px 10px; text-decoration: none; }
+body.modules #menu-top > a .logo { width: 36px !important; height: 36px !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; object-fit: contain; }
+.ss-brand-name { color: #fff; font: 700 23px system-ui, sans-serif; }
+@media screen and (min-width: 701px) {
+    body.modules #menu { display: flex; flex-direction: column; overflow: visible; }
+    body.modules #menu-top { flex: 0 0 auto; }
+    body.modules #menu .adminmenu { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 12px; }
+    body.modules .adminmenu .wp-submenu::before { display: none; }
+    body.modules .wp-submenu .ss-context-heading {
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        position: sticky; top: -16px; z-index: 1; margin: -16px -12px 12px;
+        padding: 12px; background: #fff; border-bottom: 1px solid #dbe2ec;
+        color: #172333; font: 700 18px system-ui, sans-serif;
+    }
+    .ss-context-heading strong { min-width: 0; overflow-wrap: anywhere; }
+    .ss-context-close { flex: 0 0 44px; width: 44px; height: 44px; border: 1px solid #dbe2ec; border-radius: 5px; background: #fff; color: #172333; font-size: 26px; }
+    body.modules .adminmenu .wp-submenu { margin: 0 !important; }
+}
+@media screen and (max-width: 700px) {
+    body.modules { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+    #ss-mobile-navigation {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 1fr; align-items: stretch;
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+        min-height: 72px; box-sizing: border-box;
+        padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+        background: #fff; border-top: 1px solid #dbe2ec;
+    }
+    #ss-mobile-navigation a, #ss-mobile-navigation button {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        grid-row: 1; min-width: 0; box-sizing: border-box;
+        gap: 4px; min-height: 48px; margin: 0; padding: 4px; border: 0;
+        background: transparent; color: #123488; font: 11px system-ui, sans-serif;
+        text-decoration: none; border-radius: 5px;
+    }
+    #ss-mobile-navigation button:disabled { color: #516176; opacity: .6; cursor: not-allowed; }
+    #ss-mobile-navigation svg, #ss-mobile-navigation .module-icon { width: 22px; height: 22px; margin: 0; }
+    #ss-mobile-navigation svg { stroke: currentColor; stroke-width: 2; fill: none; flex-shrink: 0; }
+    #ss-mobile-navigation a > span:last-child, #ss-mobile-navigation button > span:last-child { text-align: center; overflow-wrap: anywhere; line-height: 1.3; }
+    #ss-mobile-navigation :focus-visible { outline: 3px solid #2174cb; outline-offset: -3px; }
+    body.modules #BottomButtonMenu { display: none !important; }
+    body.modules #body { margin-left: 0 !important; padding-bottom: 24px; }
+    body.modules #menu.slide {
+        display: flex !important; flex-direction: column; align-items: flex-start;
+        position: fixed !important; inset: 0 0 calc(72px + env(safe-area-inset-bottom)) !important;
+        width: 100% !important; height: auto !important; max-height: none !important;
+        padding: 0 !important; transform: none !important;
+        overflow: hidden; z-index: 90 !important; border-radius: 0;
+    }
+    body.modules #menu.slide #menu-top,
+    body.modules #menu.slide .adminmenu {
+        box-sizing: border-box; width: min(220px, calc(100% - 24px)) !important; margin: 0 !important;
+        border-radius: 0 !important; background: #123488;
+    }
+    body.modules #menu.slide #menu-top { flex: 0 0 auto; }
+    body.modules #menu.slide #ss-context-summary { width: 100%; box-sizing: border-box; white-space: normal; overflow-wrap: anywhere; text-align: left; line-height: 1.5; }
+    body.modules #menu.slide #menu-top > a:has(.logo) { padding: 12px; }
+    body.modules #menu.slide #menu-top .logo { width: 36px !important; height: 36px !important; margin: 0 !important; padding: 0 !important; }
+    body.modules #menu.slide .ss-brand-name { font-size: 20px; line-height: 1.3; }
+    body.modules #menu.slide .adminmenu { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px 0 8px !important; box-shadow: none; }
+    body.modules #menu.slide .adminmenu > .menu-module { margin: 0; }
+    body.modules #menu.slide .adminmenu > .menu-module > .menu-top {
+        display: flex; align-items: center; gap: 10px; box-sizing: border-box;
+        min-height: 44px; height: auto; margin: 0; padding: 8px 12px !important;
+        font: 400 14px/1.4 system-ui, sans-serif; text-transform: none;
+        border-radius: 0; white-space: normal; overflow-wrap: anywhere;
+    }
+    body.modules #menu.slide .adminmenu > .menu-module > .menu-top .module-icon {
+        flex: 0 0 20px; width: 20px !important; height: 20px !important;
+        margin: 0 !important; background-size: contain;
+    }
+    body.modules #menu.slide #ss-settings-button { flex: 0 0 auto; min-height: 44px; max-width: min(196px, calc(100% - 48px)); margin: 8px 12px; font-size: 14px; white-space: normal; overflow-wrap: anywhere; }
+    body.modules[data-ss-mobile-panel="primary"] #menu .adminmenu .wp-submenu { display: none !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu { background: #fff; overflow: hidden; }
+    body.modules[data-ss-mobile-panel="context"] #menu .logo,
+    body.modules[data-ss-mobile-panel="context"] #menu #menu-top,
+    body.modules[data-ss-mobile-panel="context"] #menu .ss-lang,
+    body.modules[data-ss-mobile-panel="context"] .adminmenu .menu-top,
+    body.modules[data-ss-mobile-panel="context"] .adminmenu > .menu-module:not(.ss-open) { display: none !important; }
+    body.modules[data-ss-mobile-panel="context"] .adminmenu { width: 100% !important; }
+    body.modules[data-ss-mobile-panel="context"] .ss-open > .wp-submenu {
+        display: block !important; position: fixed !important;
+        inset: 0 0 calc(72px + env(safe-area-inset-bottom)) !important;
+        width: 100% !important; height: auto !important; max-height: none !important;
+        margin: 0 !important; padding: 0 12px 16px !important; box-sizing: border-box;
+        overflow-y: auto !important; background: #fff !important;
+        border: 0 !important; border-top: 3px solid var(--ss-branch-ink, #2455c6) !important;
+    }
+    body.modules .wp-submenu .ss-context-heading {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        position: sticky; top: 0; z-index: 1; padding: 12px 0;
+        background: #fff; color: #172333; border-bottom: 1px solid #dbe2ec;
+    }
+    .ss-context-heading strong { font: 700 18px system-ui, sans-serif; overflow-wrap: anywhere; }
+    .ss-context-close { flex: 0 0 44px; width: 44px; height: 44px; border: 1px solid #dbe2ec; border-radius: 5px; background: #fff; color: #172333; font-size: 26px; }
+    body.modules .adminmenu .wp-submenu a { color: #172333 !important; background: transparent; padding: 12px; }
+    body.modules .adminmenu .wp-submenu #selectedMenuLink { background: #edf3ff; color: var(--ss-branch-ink, #2455c6) !important; }
+    body.modules .adminmenu .menu-inter { color: #516176; padding: 12px; }
+}
+@media print { #ss-mobile-navigation, .ss-context-heading { display: none !important; } }

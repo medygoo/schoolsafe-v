@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Fiche SchoolSafe</title>
+	<link rel="stylesheet" href="../tokens.css">
+	<link rel="stylesheet" href="../components.css">
+	<link rel="stylesheet" href="../animations.css">
+</head>
+<body>
+	<div class="ss-app">
+		<nav class="ss-sidebar" id="app-menu" aria-label="Modèles">
+			<img src="../../assets/themes/SchoolSafe/logo.png" alt="SchoolSafe">
+			<a href="index.html">Modèles</a>
+			<a href="dashboard.html">Tableau</a>
+			<a href="list-table.html">Liste</a>
+			<a href="detail.html" aria-current="page">Fiche</a>
+			<a href="form.html">Formulaire</a>
+			<a href="report.html">Rapport</a>
+		</nav>
+		<div class="ss-shell-main">
+			<header class="ss-topbar">
+				<button class="ss-btn ss-btn-ghost ss-icon-btn ss-menu-btn" type="button" aria-label="Ouvrir le menu" aria-controls="app-menu" data-menu>☰</button>
+				<strong>Ecole fictive</strong>
+				<details class="ss-dropdown">
+					<summary class="ss-profile">LM</summary>
+					<div class="ss-dropdown-panel">
+						<a href="form.html">Préférences</a>
+						<a href="index.html">Quitter la démo</a>
+					</div>
+				</details>
+			</header>
+			<div class="ss-shell-body">
+				<nav class="ss-crumbs" aria-label="Fil d’Ariane"><a href="index.html">Modèles</a><a href="list-table.html">Liste</a><span>Fiche</span></nav>
+				<div class="ss-content ss-rise">
+					<div class="ss-toolbar">
+						<div>
+							<p class="ss-kicker">Démonstration · personne fictive</p>
+							<h1>Léa Démo</h1>
+							<p class="ss-muted">Identifiant démo 100 · Niveau Démo A</p>
+						</div>
+						<div class="ss-row">
+							<a class="ss-btn ss-btn-secondary" href="list-table.html">Retour</a>
+							<a class="ss-btn ss-btn-primary" href="form.html">Modifier</a>
+						</div>
+					</div>
+					<div class="ss-grid">
+						<article class="ss-kpi"><span>Cours, démo</span><b>1</b><span>Fictif</span></article>
+						<article class="ss-kpi"><span>Statut</span><b>OK</b><span>Inscrit, fictif</span></article>
+					</div>
+					<div class="ss-tabs" role="tablist" aria-label="Sections">
+						<button type="button" role="tab" aria-selected="true">Général</button>
+						<button type="button" role="tab" aria-selected="false">Historique</button>
+					</div>
+					<section class="ss-card">
+						<h2>Identité</h2>
+						<p>Nom fictif : Léa Démo. Courriel : lea.demo@example.test.</p>
+					</section>
+					<section class="ss-card">
+						<h2>Scolarité</h2>
+						<p>Classe fictive Démo A. Aucun dossier réel n’est lu.</p>
+					</section>
+					<section class="ss-card">
+						<h2>Historique</h2>
+						<p>01 octobre 2026 · fiche de démonstration ouverte.</p>
+						<p>15 septembre 2026 · inscription fictive créée.</p>
+					</section>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		document.querySelectorAll("[data-menu]").forEach(function (button) {
+			button.addEventListener("click", function () {
+				var menu = document.getElementById(button.getAttribute("aria-controls"));
+				var open = menu.classList.toggle("is-open");
+				button.setAttribute("aria-expanded", open ? "true" : "false");
+			});
+		});
+	</script>
+</body>
+</html>

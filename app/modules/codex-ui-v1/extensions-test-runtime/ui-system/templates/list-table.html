@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Liste SchoolSafe</title>
+	<link rel="stylesheet" href="../tokens.css">
+	<link rel="stylesheet" href="../components.css">
+	<link rel="stylesheet" href="../animations.css">
+</head>
+<body>
+	<div class="ss-app">
+		<nav class="ss-sidebar" id="app-menu" aria-label="Modèles">
+			<img src="../../assets/themes/SchoolSafe/logo.png" alt="SchoolSafe">
+			<a href="index.html">Modèles</a>
+			<a href="dashboard.html">Tableau</a>
+			<a href="list-table.html" aria-current="page">Liste</a>
+			<a href="detail.html">Fiche</a>
+			<a href="form.html">Formulaire</a>
+			<a href="report.html">Rapport</a>
+		</nav>
+		<div class="ss-shell-main">
+			<header class="ss-topbar">
+				<button class="ss-btn ss-btn-ghost ss-icon-btn ss-menu-btn" type="button" aria-label="Ouvrir le menu" aria-controls="app-menu" data-menu>☰</button>
+				<strong>Ecole fictive</strong>
+				<details class="ss-dropdown">
+					<summary class="ss-profile">LM</summary>
+					<div class="ss-dropdown-panel">
+						<a href="form.html">Préférences</a>
+						<a href="index.html">Quitter la démo</a>
+					</div>
+				</details>
+			</header>
+			<div class="ss-shell-body">
+				<nav class="ss-crumbs" aria-label="Fil d’Ariane"><a href="index.html">Modèles</a><span>Liste</span></nav>
+				<div class="ss-content ss-rise">
+					<div class="ss-toolbar">
+						<div>
+							<p class="ss-kicker">Démonstration · données fictives</p>
+							<h1>Élèves</h1>
+						</div>
+						<a class="ss-btn ss-btn-primary" href="form.html">Ajouter</a>
+					</div>
+					<div class="ss-filters">
+						<label class="ss-search">Recherche
+							<input type="search" placeholder="Nom fictif">
+						</label>
+						<label class="ss-field">Niveau
+							<select class="ss-select"><option>Tous</option><option>Démo A</option></select>
+						</label>
+						<label class="ss-field">Statut
+							<select class="ss-select"><option>Tous</option><option>Inscrit</option></select>
+						</label>
+					</div>
+					<div class="ss-table-wrap">
+						<table class="ss-table">
+							<thead>
+								<tr><th>Nom</th><th>Niveau</th><th>Statut</th><th>Actions</th></tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>Léa Démo</td>
+									<td>Démo A</td>
+									<td><span class="ss-badge ss-badge-success">Inscrit</span></td>
+									<td class="ss-row"><a class="ss-btn ss-btn-secondary" href="detail.html">Voir</a></td>
+								</tr>
+								<tr>
+									<td>Marc Démo</td>
+									<td>Démo B</td>
+									<td><span class="ss-badge ss-badge-warning">À suivre</span></td>
+									<td class="ss-row"><a class="ss-btn ss-btn-secondary" href="detail.html">Voir</a></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<nav class="ss-pagination" aria-label="Pages">
+						<button class="ss-page-btn" type="button">Préc.</button>
+						<button class="ss-page-btn" type="button" aria-current="page">1</button>
+						<button class="ss-page-btn" type="button">2</button>
+						<button class="ss-page-btn" type="button">Suiv.</button>
+					</nav>
+					<div class="ss-grid">
+						<div class="ss-empty"><h2>Aucun résultat</h2><p>État vide. Aucune ligne fictive ne correspond au filtre.</p></div>
+						<div class="ss-loading ss-card"><div class="ss-spinner" role="status" aria-label="Chargement"></div><strong>Chargement</strong></div>
+						<div class="ss-error-state"><h2>Erreur</h2><p>La liste n’a pas pu être lue. Rien n’est affiché comme réussi.</p></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		document.querySelectorAll("[data-menu]").forEach(function (button) {
+			button.addEventListener("click", function () {
+				var menu = document.getElementById(button.getAttribute("aria-controls"));
+				var open = menu.classList.toggle("is-open");
+				button.setAttribute("aria-expanded", open ? "true" : "false");
+			});
+		});
+	</script>
+</body>
+</html>

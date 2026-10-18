@@ -1,0 +1,17 @@
+:root{font-family:Arial,sans-serif;color:#18263a;background:#fff;line-height:1.55}
+*{box-sizing:border-box}
+body{margin:0}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;background:#173b85;color:white}
+header strong{font-size:22px}header strong span{color:#ffc400}
+header a{color:white;text-decoration:none;min-height:44px;display:flex;align-items:center}
+main{max-width:1000px;margin:auto;padding:24px}
+nav{font-size:14px;color:#526173}
+h1{font-size:28px;margin:8px 0 24px}h2{font-size:20px;margin:0 0 12px}
+section{padding:20px 0;border-top:1px solid #dce3ed}
+p{margin:0 0 12px}li{margin-bottom:10px}
+ul,ol{padding-left:24px}
+.example{border-left:3px solid #173b85;padding:12px 16px;background:#f2f6fc}
+.state{border-top:3px solid #e2b629}
+a:focus-visible{outline:3px solid #ffc400;outline-offset:3px}
+form{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:12px 0}label{display:flex;flex-direction:column;gap:6px;flex:1;min-width:160px}input,select,textarea,button{font:inherit;padding:10px;border:1px solid #b8c5d8;border-radius:4px;max-width:100%}button{background:#173b85;color:white;min-height:44px;cursor:pointer}textarea{min-height:70px}.remediation-case{border-bottom:1px solid #dce3ed;padding:16px 0}h3{font-size:17px;margin:0 0 8px}
+@media(max-width:600px){header{padding:12px 16px}header strong{font-size:19px}header a{font-size:14px}main{padding:16px}h1{font-size:25px}h2{font-size:18px}}

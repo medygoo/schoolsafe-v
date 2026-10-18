@@ -1,0 +1,96 @@
+/* Context panel dimensions and hierarchy from the approved SchoolSafe model. */
+body.modules #menu .adminmenu > .menu-module > .menu-top {
+    box-sizing: border-box;
+    width: 100% !important;
+    padding-right: 8px !important;
+    white-space: nowrap !important;
+}
+body.modules #menu .adminmenu > .menu-module[data-ss-branch="security"] > .menu-top {
+    font-size: 13px !important;
+}
+body.modules #menu .adminmenu > .menu-module > .menu-top .module-icon {
+    flex-shrink: 0;
+}
+body.modules #menu .menu-module[data-ss-branch="pilotage"] { --ss-branch: #91b6ff; --ss-branch-ink: #2455c6; }
+.menu-module[data-ss-branch="school"] { --ss-branch: #7bddc5; --ss-branch-ink: #08766b; }
+.menu-module[data-ss-branch="pedagogy"] { --ss-branch: #d4b5ff; --ss-branch-ink: #7445a6; }
+.menu-module[data-ss-branch="security"] { --ss-branch: #ffa6b8; --ss-branch-ink: #a5324d; }
+.menu-module[data-ss-branch="finance"] { --ss-branch: #9fd38b; --ss-branch-ink: #23682d; }
+.menu-module[data-ss-branch="feeControl"] { --ss-branch: #f2cd7b; --ss-branch-ink: #8a5900; }
+.menu-module[data-ss-branch="accounting"] { --ss-branch: #adb6f4; --ss-branch-ink: #4e5990; }
+.menu-module[data-ss-branch="people"] { --ss-branch: #eab0d1; --ss-branch-ink: #9c446b; }
+.menu-module[data-ss-branch="inventory"] { --ss-branch: #efb98e; --ss-branch-ink: #9a4f20; }
+body.modules #menu .menu-module[data-ss-branch="communication"] { --ss-branch: #83d3eb; --ss-branch-ink: #066e93; }
+.menu-module[data-ss-branch="care"] { --ss-branch: #ffb8ce; --ss-branch-ink: #ad3d5b; }
+body.modules #menu .menu-module[data-ss-branch="administration"] { --ss-branch: #bfccd6; --ss-branch-ink: #526170; }
+body.modules #menu .menu-module[data-ss-branch="reports"] { --ss-branch: #d1db85; --ss-branch-ink: #5e6c1b; }
+body.modules #menu .adminmenu > .menu-module > .menu-top {
+    border: 1px solid color-mix(in srgb, var(--ss-branch) 26%, #123488) !important;
+    border-left: 3px solid var(--ss-branch) !important;
+}
+body.modules #menu .adminmenu > .ss-open > .menu-top {
+    border-color: var(--ss-branch-ink) !important;
+    color: var(--ss-branch-ink) !important;
+}
+body.modules #menu .adminmenu .wp-submenu {
+    background: #fff !important;
+    color: #172333;
+    scrollbar-width: thin;
+}
+body.modules #menu .adminmenu .wp-submenu .ss-context-heading {
+    min-height: 70px; box-sizing: border-box;
+    color: #172333; border-bottom: 1px solid #dbe2ec;
+}
+body.modules #menu .adminmenu .wp-submenu .menu-inter:not(.ss-context-heading) {
+    margin: 16px 0 4px !important; padding: 8px 8px 6px !important;
+    font: 700 12px/1.5 system-ui, sans-serif;
+    text-transform: none; color: var(--ss-branch-ink, #2455c6);
+    text-align: left; letter-spacing: 0;
+    background: #fff !important; border-radius: 0; box-shadow: none;
+    cursor: default;
+}
+body.modules #menu .adminmenu .wp-submenu .menu-inter:not(.ss-context-heading):not(:nth-child(2)) {
+    border-top: 1px solid #dbe2ec; padding-top: 16px !important;
+}
+body.modules #menu .adminmenu .wp-submenu a {
+    display: flex; align-items: flex-start; box-sizing: border-box;
+    min-height: 44px; width: 100%; margin: 0 0 3px !important;
+    padding: 10px 8px 10px 16px !important;
+    border: 1px solid transparent; border-left-width: 3px;
+    border-radius: 5px; background: transparent !important;
+    color: #172333 !important; font: 400 13px/1.5 system-ui, sans-serif;
+    white-space: normal; overflow-wrap: anywhere; text-decoration: none;
+}
+body.modules #menu .adminmenu .wp-submenu a:hover,
+body.modules #menu .adminmenu .wp-submenu a:focus-visible {
+    border-color: #dbe2ec; border-left-color: var(--ss-branch-ink, #2455c6);
+}
+body.modules #menu .adminmenu .wp-submenu a:focus-visible {
+    outline: 2px solid var(--ss-branch-ink, #2455c6); outline-offset: -2px;
+}
+body.modules #menu .adminmenu .wp-submenu #selectedMenuLink {
+    background: #edf3ff !important; color: var(--ss-branch-ink, #2455c6) !important;
+    border-left-color: var(--ss-branch-ink, #2455c6); font-weight: 700;
+    box-shadow: none !important;
+}
+@media screen and (min-width: 701px) {
+    body.modules #menu .adminmenu .wp-submenu { padding: 16px 10px !important; }
+    body.modules #menu .wp-submenu .ss-context-heading { margin: -16px -10px 12px; padding: 12px 16px; }
+}
+@media screen and (max-width: 700px) {
+    body.modules[data-ss-mobile-panel="context"] #menu { background: rgba(16, 24, 40, .4) !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu #menu-top { display: block !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu #menu-top .logo { display: block !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu .adminmenu { width: min(220px, calc(100% - 24px)) !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu .adminmenu > .menu-module { display: block !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu .adminmenu > .menu-module > .menu-top { display: flex !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu #ss-settings-button { visibility: hidden; }
+    body.modules[data-ss-mobile-panel="context"] #menu .ss-open > .wp-submenu {
+        inset: 12px auto calc(84px + env(safe-area-inset-bottom)) min(220px, max(12px, calc(100% - 244px))) !important;
+        width: min(220px, calc(100% - 24px)) !important;
+        padding: 0 10px 16px !important;
+        border: 1px solid var(--ss-branch-ink, #2455c6) !important; border-top: 3px solid var(--ss-branch-ink, #2455c6) !important;
+        border-radius: 6px; box-shadow: 0 8px 24px rgba(16, 24, 40, .2);
+    }
+    body.modules #menu .wp-submenu .ss-context-heading { padding: 12px 6px; }
+}
