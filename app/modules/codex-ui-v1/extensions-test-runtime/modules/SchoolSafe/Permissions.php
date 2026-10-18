@@ -43,6 +43,10 @@ function SchoolSafeNativeCommandPermission(string $key): bool
 {
     $definition = SchoolSafePermissionCatalog()[$key] ?? null;
     if (!$definition || !SchoolSafeNativePermission($key)) return false;
+    // A read-only (or suspended/expired) account never mutates, whatever its
+    // native grants say. Same rule as AllowEdit(), applied to the routes.
+    if ($definition['mutates'] && function_exists('SchoolSafeAccountBlocksWrite')
+        && SchoolSafeAccountBlocksWrite()) return false;
     // Native role screens expose edit checkboxes for admins; other profiles use
     // separate command programs, never ambient AllowEdit() state.
     return !$definition['mutates'] || User('PROFILE') !== 'admin'

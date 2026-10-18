@@ -30,6 +30,18 @@ function AllowEdit( $modname = false, $cache_all = false )
 {
 	global $_ROSARIO;
 
+	/**
+	 * SchoolSafe — compte en lecture seule (ou suspendu / expiré).
+	 * Point d'entrée unique de toutes les écritures : aucun écran ne doit
+	 * pouvoir écrire, quel que soit le profil ou les droits par module.
+	 */
+	if ( ! empty( $_SESSION['STAFF_ID'] )
+		&& function_exists( 'SchoolSafeAccountBlocksWrite' )
+		&& SchoolSafeAccountBlocksWrite() )
+	{
+		return false;
+	}
+
 	// Build cache only once.
 	static $cached_all = false;
 
@@ -278,6 +290,7 @@ function AllowUse( $modname = false, $cache_all = false )
 		return true;
 	}
 
+
 	$from_where_sql = User( 'PROFILE_ID' ) != '' ? // Beware, '0' is student!
 		"FROM profile_exceptions WHERE PROFILE_ID='" . User( 'PROFILE_ID' ) . "'" :
 		"FROM staff_exceptions WHERE USER_ID='" . User( 'STAFF_ID' ) . "'";
@@ -305,6 +318,7 @@ function AllowUse( $modname = false, $cache_all = false )
 
 	if ( ! $query_string )
 	{
+
 		return false;
 	}
 
@@ -318,6 +332,7 @@ function AllowUse( $modname = false, $cache_all = false )
 	}
 
 	$allow_modnames = array_keys( $allow_use );
+
 
 	foreach ( $allow_modnames as $allow_modname )
 	{

@@ -210,9 +210,41 @@ function GetStaffList( &$extra = [] )
 	$is_search_all_schools = isset( $_REQUEST['_search_all_schools'] )
 		&& $_REQUEST['_search_all_schools'] == 'Y';
 
+	/**
+	 * SchoolSafe — périmètre multi-écoles.
+	 *
+	 * Un administrateur délégué (périmètre limité à certaines écoles) ne voit
+	 * que les personnes de son périmètre : ni les comptes d'une autre école, ni
+	 * les comptes globaux (SCHOOLS NULL), qui sont les propriétaires de la
+	 * plateforme. Périmètre illisible => aucun résultat (échec fermé).
+	 */
+	$schoolsafe_scoped = User( 'PROFILE' ) === 'admin'
+		&& function_exists( 'SchoolSafeGlobalAdmin' )
+		&& ! SchoolSafeGlobalAdmin();
+
+	if ( $schoolsafe_scoped )
+	{
+		$schoolsafe_scope = SchoolSafeScopeParse( User( 'SCHOOLS' ) );
+
+		if ( ! is_array( $schoolsafe_scope )
+			|| ! $schoolsafe_scope )
+		{
+			$sql .= ' AND 1=0 ';
+		}
+		else
+		{
+			$schoolsafe_like = implode( ",' IN s.SCHOOLS)>0 OR position(',",
+				array_map( 'intval', $schoolsafe_scope ) );
+
+			$sql .= " AND s.SCHOOLS IS NOT NULL AND (position('," . $schoolsafe_like . ",' IN s.SCHOOLS)>0) ";
+		}
+	}
+
 	if ( ! $is_search_all_schools )
 	{
-		$sql .= " AND (s.SCHOOLS IS NULL OR position('," . UserSchool() . ",' IN s.SCHOOLS)>0) ";
+		$sql .= $schoolsafe_scoped ?
+			" AND position('," . UserSchool() . ",' IN s.SCHOOLS)>0 " :
+			" AND (s.SCHOOLS IS NULL OR position('," . UserSchool() . ",' IN s.SCHOOLS)>0) ";
 	}
 	// Search All Schools: if user is not assigned to "All Schools".
 	elseif ( trim( User( 'SCHOOLS' ), ',' ) )

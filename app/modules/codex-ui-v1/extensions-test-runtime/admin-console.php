@@ -9,7 +9,13 @@
  *  - meme INSERT staff que modules/Users/User.php (PROFILE_ID=1) ;
  *  - LAST_LOGIN NULL + FORCE_PASSWORD_CHANGE_ON_FIRST_LOGIN =>
  *    changement de mot de passe FORCE a la premiere connexion ;
- *  - suspension = PROFILE 'none' (mecanisme natif), PROFILE_ID conserve.
+ *  - etat de compte natif SchoolSafe : active / readonly / suspended / expired
+ *    (table schoolsafe_account_state, voir schoolsafe-remediation/014) ;
+ *  - revocation des sessions ouvertes (session_epoch) ;
+ *  - suspension historique par PROFILE 'none' toujours reconnue a l'affichage.
+ *
+ * Perimetre : administrateur de la plateforme = toutes les ecoles ; directeur
+ * (administrateur delegue) = uniquement les personnes de ses ecoles.
  *
  * Session Rosario requise + jeton CSRF de session sur chaque action.
  * Le mot de passe temporaire est affiche UNE SEULE FOIS (flash de session).
@@ -30,15 +36,81 @@ if ( ! User( 'STAFF_ID' )
 		. '<h2>Connexion requise</h2><p><a href="index.php" style="color:#126cac">Aller a la connexion</a></p></body></html>' );
 }
 
-$schools_raw = (string) User( 'SCHOOLS' );
+/**
+ * SchoolSafe — perimetre de la console.
+ *
+ * Administrateur de la plateforme (aucune ecole assignee) : toutes les ecoles.
+ * Directeur (administrateur delegue) : uniquement les personnes de ses ecoles.
+ * Perimetre illisible : refus (echec ferme).
+ */
+$schoolsafe_global_admin = SchoolSafeGlobalAdmin();
 
-if ( trim( $schools_raw, ',' ) !== '' )
+$schoolsafe_scope = $schoolsafe_global_admin ? null : SchoolSafeScopeParse( User( 'SCHOOLS' ) );
+
+if ( ! $schoolsafe_global_admin
+	&& ( ! is_array( $schoolsafe_scope ) || ! $schoolsafe_scope ) )
 {
 	http_response_code( 403 );
 	exit( '<!doctype html><html lang="fr"><meta charset="utf-8"><title>SchoolSafe</title>'
 		. '<body style="font-family:system-ui;background:#f4f7fa;color:#172d40;padding:48px;text-align:center">'
-		. '<h2>Console reservee a l\'administrateur de la plateforme</h2>'
+		. '<h2>Perimetre illisible : acces refuse</h2>'
 		. '<p><a href="Modules.php?modname=misc/Portal.php" style="color:#126cac">Retour au portail</a></p></body></html>' );
+}
+
+/**
+ * Restriction SQL : un directeur ne voit que ses ecoles, jamais les comptes
+ * globaux (proprietaires de la plateforme).
+ */
+$schoolsafe_scope_sql = '';
+
+if ( ! $schoolsafe_global_admin )
+{
+	$schoolsafe_like = implode( ",' IN s.SCHOOLS)>0 OR position(',",
+		array_map( 'intval', $schoolsafe_scope ) );
+
+	$schoolsafe_scope_sql = " AND s.SCHOOLS IS NOT NULL AND (position('," . $schoolsafe_like . ",' IN s.SCHOOLS)>0)";
+}
+
+/**
+ * Compte cible autorise ? Renvoie la ligne staff ou false.
+ */
+function SchoolSafeConsoleTarget( $staff_id, $syear, $scoped )
+{
+	$target = DBGet( DBQuery( "SELECT STAFF_ID,USERNAME,PROFILE,SCHOOLS
+		FROM staff WHERE STAFF_ID='" . (int) $staff_id . "'
+		AND SYEAR='" . (int) $syear . "'" ) );
+
+	if ( ! $target )
+	{
+		return false;
+	}
+
+	if ( $scoped && ! SchoolSafeStaffWithinScope( (int) $staff_id ) )
+	{
+		return false;
+	}
+
+	return $target[1];
+}
+
+/**
+ * Ecole sur laquelle porte le changement d'etat.
+ *
+ * Plateforme : 0 (toutes les ecoles de la personne).
+ * Directeur : l'ecole du compte qui appartient a son perimetre, sinon la sienne.
+ */
+function SchoolSafeConsoleSchoolsFor( $target, $global_admin, $scope )
+{
+	if ( $global_admin )
+	{
+		return 0;
+	}
+
+	$target_schools = array_filter( array_map( 'intval', explode( ',', (string) $target['SCHOOLS'] ) ) );
+
+	$in_scope = array_values( array_intersect( $target_schools, (array) $scope ) );
+
+	return $in_scope ? (int) $in_scope[0] : (int) $scope[0];
 }
 
 $syear = (int) UserSyear();
@@ -78,7 +150,13 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 		&& is_string( $_POST['console_token'] )
 		&& hash_equals( (string) $_SESSION['token'], (string) $_POST['console_token'] );
 
-	if ( ! $csrf_ok )
+	if ( SchoolSafeAccountBlocksWrite() )
+	{
+		// Meme regle que AllowEdit() : un compte en lecture seule n'ecrit rien,
+		// y compris depuis la console d'administration.
+		$error = 'Votre compte est en lecture seule : aucune modification possible.';
+	}
+	elseif ( ! $csrf_ok )
 	{
 		$error = 'Session expiree, veuillez reessayer.';
 	}
@@ -86,7 +164,11 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 	{
 		$action = $_POST['console_action'] ?? '';
 
-		if ( $action === 'create' )
+		if ( $action === 'create' && ! $schoolsafe_global_admin )
+		{
+			$error = "Seul le proprietaire de la plateforme peut creer un administrateur de plateforme. Creez vos comptes dans l'ecran Utilisateurs.";
+		}
+		elseif ( $action === 'create' )
 		{
 			$first_name = trim( (string) ( $_POST['first_name'] ?? '' ) );
 			$last_name = trim( (string) ( $_POST['last_name'] ?? '' ) );
@@ -162,73 +244,130 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 				}
 			}
 		}
-		elseif ( $action === 'reset' || $action === 'suspend' || $action === 'activate' )
+		elseif ( $action === 'reset' || $action === 'revoke' || $action === 'state'
+			|| $action === 'suspend' || $action === 'activate' )
 		{
 			$staff_id = (int) ( $_POST['staff_id'] ?? 0 );
 
-			$target = DBGet( DBQuery( "SELECT STAFF_ID,USERNAME,PROFILE
-				FROM staff WHERE STAFF_ID='" . $staff_id . "' AND SYEAR='" . $syear . "'" ) );
+			$target = SchoolSafeConsoleTarget( $staff_id, $syear, ! $schoolsafe_global_admin );
 
 			if ( ! $target )
 			{
-				$error = 'Compte introuvable.';
+				$error = 'Compte introuvable ou hors de votre perimetre.';
 			}
-			elseif ( (int) $target[1]['STAFF_ID'] === (int) User( 'STAFF_ID' )
+			elseif ( (int) $target['STAFF_ID'] === (int) User( 'STAFF_ID' )
 				&& $action !== 'reset' )
 			{
-				$error = 'Vous ne pouvez pas suspendre votre propre compte.';
+				$error = 'Vous ne pouvez pas modifier l\'acces de votre propre compte.';
 			}
 			elseif ( $action === 'reset' )
 			{
-				if ( $target[1]['PROFILE'] === 'none' )
+				$temp_password = SchoolSafeConsoleTempPassword();
+
+				DBQuery( "UPDATE staff
+					SET PASSWORD='" . DBEscapeString( encrypt_password( $temp_password ) ) . "',
+					LAST_LOGIN=NULL,FAILED_LOGIN=0
+					WHERE STAFF_ID='" . $staff_id . "' AND SYEAR='" . $syear . "'" );
+
+				// Un nouveau mot de passe temporaire coupe les sessions ouvertes.
+				SchoolSafeAccountRevoke( $target['USERNAME'],
+					SchoolSafeConsoleSchoolsFor( $target, $schoolsafe_global_admin, $schoolsafe_scope ) );
+
+				$_SESSION['schoolsafe_console_flash'] = [
+					'type' => 'created',
+					'username' => $target['USERNAME'],
+					'temp' => $temp_password,
+				];
+
+				header( 'Location: admin-console.php' );
+				exit;
+			}
+			elseif ( $action === 'revoke' )
+			{
+				SchoolSafeAccountRevoke( $target['USERNAME'],
+					SchoolSafeConsoleSchoolsFor( $target, $schoolsafe_global_admin, $schoolsafe_scope ) );
+
+				header( 'Location: admin-console.php' );
+				exit;
+			}
+			else
+			{
+				// Etat demande : 'state' explicite, ou anciens libelles suspend /
+				// activate conserves (le PROFILE natif n'est JAMAIS modifie ici).
+				$requested = (string) ( $_POST['state'] ?? '' );
+
+				if ( $action === 'suspend' )
 				{
-					$error = 'Compte suspendu : reactiver avant de reinitialiser.';
+					$requested = 'suspended';
+				}
+				elseif ( $action === 'activate' )
+				{
+					$requested = 'active';
+				}
+
+				$reason = trim( (string) ( $_POST['reason'] ?? '' ) );
+
+				$until = trim( (string) ( $_POST['until'] ?? '' ) );
+
+				if ( ! in_array( $requested, [ 'active', 'readonly', 'suspended', 'expired' ], true ) )
+				{
+					$error = 'Etat inconnu.';
+				}
+				elseif ( $until !== '' && ! preg_match( '/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $until ) )
+				{
+					$error = 'Date de fin invalide (AAAA-MM-JJ).';
+				}
+				elseif ( $requested === 'active' && $target['PROFILE'] === 'none' )
+				{
+					$error = "Ce compte a ete ferme par le mecanisme natif (profil No Access). Retablissez son profil dans l'ecran Utilisateurs : un etat ne peut pas inventer un profil.";
+				}
+				elseif ( ! SchoolSafeAccountSet( $target['USERNAME'],
+					SchoolSafeConsoleSchoolsFor( $target, $schoolsafe_global_admin, $schoolsafe_scope ),
+					$requested, $reason ?: null, $until ?: null ) )
+				{
+					$error = 'Etat non enregistre (migration 014 appliquee ?).';
 				}
 				else
 				{
-					$temp_password = SchoolSafeConsoleTempPassword();
-
-					DBQuery( "UPDATE staff
-						SET PASSWORD='" . DBEscapeString( encrypt_password( $temp_password ) ) . "',
-						LAST_LOGIN=NULL,FAILED_LOGIN=0
-						WHERE STAFF_ID='" . $staff_id . "' AND SYEAR='" . $syear . "'" );
-
-					$_SESSION['schoolsafe_console_flash'] = [
-						'type' => 'created',
-						'username' => $target[1]['USERNAME'],
-						'temp' => $temp_password,
-					];
-
 					header( 'Location: admin-console.php' );
 					exit;
 				}
 			}
-			elseif ( $action === 'suspend' )
+		}
+		elseif ( $action === 'school_state' )
+		{
+			// Etat d'un ETABLISSEMENT entier : reserve au proprietaire de la
+			// plateforme. Rien n'est supprime, seul l'accès est coupe.
+			if ( ! $schoolsafe_global_admin )
 			{
-				if ( $target[1]['PROFILE'] === 'none' )
-				{
-					$error = 'Compte deja suspendu.';
-				}
-				else
-				{
-					DBQuery( "UPDATE staff SET PROFILE='none'
-						WHERE STAFF_ID='" . $staff_id . "' AND SYEAR='" . $syear . "'" );
-
-					header( 'Location: admin-console.php' );
-					exit;
-				}
+				$error = "Seul le proprietaire de la plateforme peut suspendre, desactiver ou reactiver un etablissement.";
 			}
-			elseif ( $action === 'activate' )
+			else
 			{
-				if ( $target[1]['PROFILE'] !== 'none' )
+				$school_id = (int) ( $_POST['school_id'] ?? 0 );
+				$requested = (string) ( $_POST['school_state'] ?? '' );
+				$reason = trim( (string) ( $_POST['school_reason'] ?? '' ) );
+				$until = trim( (string) ( $_POST['school_until'] ?? '' ) );
+
+				if ( ! in_array( $requested, [ 'active', 'suspended', 'inactive' ], true ) )
 				{
-					$error = 'Compte deja actif.';
+					$error = "Etat d'etablissement inconnu.";
+				}
+				elseif ( $until !== '' && ! preg_match( '/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $until ) )
+				{
+					$error = 'Date de fin invalide (AAAA-MM-JJ).';
+				}
+				elseif ( ! DBGetOne( "SELECT 1 FROM schools
+					WHERE SYEAR='" . $syear . "' AND ID='" . $school_id . "'" ) )
+				{
+					$error = 'Etablissement introuvable.';
+				}
+				elseif ( ! SchoolSafeSchoolStateSet( $school_id, $requested, $reason ?: null, $until ?: null ) )
+				{
+					$error = "Etat d'etablissement non enregistre (migration 016 appliquee ?).";
 				}
 				else
 				{
-					DBQuery( "UPDATE staff SET PROFILE='admin'
-						WHERE STAFF_ID='" . $staff_id . "' AND SYEAR='" . $syear . "'" );
-
 					header( 'Location: admin-console.php' );
 					exit;
 				}
@@ -238,14 +377,101 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 }
 
 // --- Donnees ---
-$admins = DBGet( DBQuery( "SELECT STAFF_ID,USERNAME,FIRST_NAME,LAST_NAME,EMAIL,PROFILE,SCHOOLS,LAST_LOGIN
-	FROM staff
-	WHERE SYEAR='" . $syear . "'
-	AND ( (PROFILE='admin' AND PROFILE_ID=1) OR PROFILE='none' )
-	ORDER BY LAST_NAME,FIRST_NAME" ) );
+// Tous les comptes du perimetre : le directeur gere ses enseignants, parents,
+// surveillants et comptables, pas seulement les administrateurs.
+$accounts = DBGet( DBQuery( "SELECT s.STAFF_ID,s.USERNAME,s.FIRST_NAME,s.LAST_NAME,s.EMAIL,
+	s.PROFILE,s.PROFILE_ID,s.SCHOOLS,s.LAST_LOGIN
+	FROM staff s
+	WHERE s.SYEAR='" . $syear . "'" . $schoolsafe_scope_sql . "
+	ORDER BY s.LAST_NAME,s.FIRST_NAME" ) );
 
-$schools = DBGet( DBQuery( "SELECT ID,TITLE FROM schools
-	WHERE SYEAR='" . $syear . "' ORDER BY TITLE" ) );
+/**
+ * Etat effectif et libelle de chaque compte.
+ */
+function SchoolSafeConsoleState( $account )
+{
+	$schools = array_filter( array_map( 'intval', explode( ',', (string) $account['SCHOOLS'] ) ) );
+
+	$state = function_exists( 'SchoolSafeAccountEffective' )
+		? SchoolSafeAccountEffective( $account['USERNAME'], $schools ?: [ 0 ] )
+		: 'active';
+
+	if ( $account['PROFILE'] === 'none' && $state === 'active' )
+	{
+		// Suspension historique (profil No Access).
+		$state = 'suspended';
+	}
+
+	return $state;
+}
+
+/**
+ * Libelle metier lisible : proprietaire, directeur, enseignant, parent...
+ */
+function SchoolSafeConsoleProfileLabel( $account )
+{
+	$profile = (string) $account['PROFILE'];
+
+	if ( $profile === 'none' )
+	{
+		return 'No Access (ferme) — a retablir dans Utilisateurs';
+	}
+
+	if ( ! empty( $account['PROFILE_ID'] ) )
+	{
+		$title = DBGetOne( "SELECT TITLE FROM user_profiles
+			WHERE ID='" . (int) $account['PROFILE_ID'] . "'" );
+
+		if ( $title )
+		{
+			return $title;
+		}
+	}
+
+	$labels = [
+		'admin' => trim( (string) $account['SCHOOLS'] ) === ''
+			? 'Proprietaire de la plateforme'
+			: 'Directeur',
+		'teacher' => 'Enseignant',
+		'parent' => 'Parent',
+		'student' => 'Eleve',
+	];
+
+	return $labels[$profile] ?? $profile;
+}
+
+function SchoolSafeConsoleStateLabel( $state )
+{
+	$labels = [
+		'active' => 'Actif',
+		'readonly' => 'Lecture seule',
+		'suspended' => 'Suspendu',
+		'expired' => 'Expire',
+	];
+
+	return $labels[$state] ?? $state;
+}
+
+/**
+ * Libelle de l'etat d'un etablissement.
+ */
+function SchoolSafeConsoleSchoolStateLabel( $state )
+{
+	$labels = [
+		'active' => 'Actif',
+		'suspended' => 'Suspendu',
+		'inactive' => 'Desactive',
+	];
+
+	return $labels[$state] ?? $state;
+}
+
+$schools = $schoolsafe_global_admin
+	? DBGet( DBQuery( "SELECT ID,TITLE FROM schools
+		WHERE SYEAR='" . $syear . "' ORDER BY TITLE" ) )
+	: DBGet( DBQuery( "SELECT ID,TITLE FROM schools
+		WHERE SYEAR='" . $syear . "' AND ID IN (" . implode( ',', array_map( 'intval', $schoolsafe_scope ) ) . ")
+		ORDER BY TITLE" ) );
 
 ?>
 <!doctype html>
@@ -267,6 +493,9 @@ table.list td{padding:9px 10px;border-bottom:1px solid #e8eef3}
 .badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:13px}
 .badge.on{background:#e3f4e8;color:#1d7a3e}
 .badge.off{background:#fbe6e4;color:#b3261e}
+.badge.ro{background:#fff3d6;color:#8a6100}
+.list select,.list input[type=text]{width:auto;padding:5px 6px;font-size:14px;margin-right:4px}
+.list button{padding:6px 10px;font-size:14px}
 button{background:#126cac;color:#fff;border:0;border-radius:7px;padding:8px 14px;font-size:15px;cursor:pointer}
 button.secondary{background:#eef3f7;color:#172d40;border:1px solid #c8d6e0}
 button.danger{background:#b3261e}
@@ -280,6 +509,10 @@ input[type=text],input[type=email]{width:100%;max-width:420px;padding:9px 10px;b
 .flash code{font-size:20px;background:#172d40;color:#ffd66b;padding:4px 12px;border-radius:6px;display:inline-block;margin-top:6px}
 .err{background:#fbe6e4;border:1px solid #e0a9a5;color:#8c1d18;border-radius:10px;padding:14px 18px;margin-bottom:24px}
 .top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+table.schools-list form.school-action{display:block;margin:0 0 6px}
+table.schools-list form.school-action:last-child{margin-bottom:0}
+table.schools-list input[type=text]{display:block;width:100%;max-width:220px;padding:5px 6px;font-size:14px;margin:0 0 4px}
+table.schools-list button{padding:6px 12px;font-size:14px}
 .mut{color:#5b6b7b;font-size:14px}
 @media(max-width:760px){.inline{flex-direction:column}.inline>div{min-width:100%}}
 </style>
@@ -310,54 +543,157 @@ input[type=text],input[type=email]{width:100%;max-width:420px;padding:9px 10px;b
 	?>
 
 	<div class="card">
-		<h2 style="font-size:19px;margin-top:0">Comptes administrateurs</h2>
+		<h2 style="font-size:19px;margin-top:0">Comptes et acces<?php
+			echo $schoolsafe_global_admin
+				? ' — plateforme entiere'
+				: ' — vos ecoles uniquement';
+		?></h2>
+		<p class="mut">Quatre etats : <strong>Actif</strong> (acces normal), <strong>Lecture seule</strong> (consulte, n'ecrit plus), <strong>Suspendu</strong> (connexion refusee, donnees conservees), <strong>Expire</strong> (fin de validite atteinte). Une date de fin optionnelle : avec <em>Actif</em> elle expire le compte ce jour-la, avec <em>Suspendu</em> ou <em>Lecture seule</em> elle retablit l'acces a cette date.</p>
+		<div style="overflow-x:auto">
 		<table class="list">
-			<tr><th>ID</th><th>Utilisateur</th><th>Nom</th><th>Email</th><th>Statut</th><th>Derniere connexion</th><th>Actions</th></tr>
+			<tr><th>ID</th><th>Utilisateur</th><th>Nom</th><th>Profil</th><th>Etat</th><th>Derniere connexion</th><th>Actions</th></tr>
 			<?php
-			foreach ( $admins as $admin )
+			foreach ( $accounts as $account )
 			{
-				$suspended = $admin['PROFILE'] === 'none';
+				$state = SchoolSafeConsoleState( $account );
+
+				$is_self = (int) $account['STAFF_ID'] === (int) User( 'STAFF_ID' );
+
+				$badge = $state === 'active' ? 'on' : ( $state === 'readonly' ? 'ro' : 'off' );
+
 				echo '<tr>';
-				echo '<td>' . (int) $admin['STAFF_ID'] . '</td>';
-				echo '<td><strong>' . htmlspecialchars( $admin['USERNAME'], ENT_QUOTES, 'UTF-8' ) . '</strong></td>';
-				echo '<td>' . htmlspecialchars( $admin['FIRST_NAME'] . ' ' . $admin['LAST_NAME'], ENT_QUOTES, 'UTF-8' ) . '</td>';
-				echo '<td>' . htmlspecialchars( (string) $admin['EMAIL'], ENT_QUOTES, 'UTF-8' ) . '</td>';
-				echo '<td><span class="badge ' . ( $suspended ? 'off' : 'on' ) . '">' . ( $suspended ? 'Suspendu' : 'Actif' ) . '</span></td>';
-				echo '<td>' . ( $admin['LAST_LOGIN'] ? htmlspecialchars( $admin['LAST_LOGIN'], ENT_QUOTES, 'UTF-8' ) : '<em class="mut">jamais connecte</em>' ) . '</td>';
+				echo '<td>' . (int) $account['STAFF_ID'] . '</td>';
+				echo '<td><strong>' . htmlspecialchars( $account['USERNAME'], ENT_QUOTES, 'UTF-8' ) . '</strong></td>';
+				echo '<td>' . htmlspecialchars( $account['FIRST_NAME'] . ' ' . $account['LAST_NAME'], ENT_QUOTES, 'UTF-8' ) . '</td>';
+				echo '<td>' . htmlspecialchars( SchoolSafeConsoleProfileLabel( $account ), ENT_QUOTES, 'UTF-8' ) . '</td>';
+				echo '<td><span class="badge ' . $badge . '">' . htmlspecialchars( SchoolSafeConsoleStateLabel( $state ), ENT_QUOTES, 'UTF-8' ) . '</span></td>';
+				echo '<td>' . ( $account['LAST_LOGIN'] ? htmlspecialchars( $account['LAST_LOGIN'], ENT_QUOTES, 'UTF-8' ) : '<em class="mut">jamais connecte</em>' ) . '</td>';
 				echo '<td style="white-space:nowrap">';
-				echo '<form method="post" style="display:inline">';
+
+				// Changement d'etat.
+				echo '<form method="post" style="display:inline-block;margin:0 6px 0 0">';
+				echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
+				echo '<input type="hidden" name="console_action" value="state">';
+				echo '<input type="hidden" name="staff_id" value="' . (int) $account['STAFF_ID'] . '">';
+				echo '<select name="state" aria-label="Etat du compte"' . ( $is_self ? ' disabled' : '' ) . '>';
+
+				foreach ( [ 'active', 'readonly', 'suspended', 'expired' ] as $option )
+				{
+					echo '<option value="' . $option . '"' . ( $option === $state ? ' selected' : '' ) . '>'
+						. htmlspecialchars( SchoolSafeConsoleStateLabel( $option ), ENT_QUOTES, 'UTF-8' ) . '</option>';
+				}
+
+				echo '</select>';
+				echo '<input type="text" name="reason" size="10" maxlength="200" placeholder="motif" aria-label="Motif">';
+				echo '<input type="text" name="until" size="10" maxlength="10" placeholder="AAAA-MM-JJ" aria-label="Date de fin">';
+				echo '<button type="submit"' . ( $is_self ? ' disabled' : '' ) . '>Appliquer</button>';
+				echo '</form>';
+
+				// Deconnexion immediate des sessions ouvertes.
+				echo '<form method="post" style="display:inline-block;margin:0 6px 0 0">';
+				echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
+				echo '<input type="hidden" name="console_action" value="revoke">';
+				echo '<input type="hidden" name="staff_id" value="' . (int) $account['STAFF_ID'] . '">';
+				echo '<button type="submit" class="secondary"' . ( $is_self ? ' disabled' : '' ) . '>Deconnecter</button>';
+				echo '</form>';
+
+				// Nouveau mot de passe temporaire.
+				echo '<form method="post" style="display:inline-block">';
 				echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
 				echo '<input type="hidden" name="console_action" value="reset">';
-				echo '<input type="hidden" name="staff_id" value="' . (int) $admin['STAFF_ID'] . '">';
-				echo '<button type="submit"' . ( $suspended ? ' disabled' : '' ) . '>Reinitialiser</button> ';
+				echo '<input type="hidden" name="staff_id" value="' . (int) $account['STAFF_ID'] . '">';
+				echo '<button type="submit" class="secondary">Mot de passe</button>';
 				echo '</form>';
-				if ( $suspended )
-				{
-					echo '<form method="post" style="display:inline">';
-					echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
-					echo '<input type="hidden" name="console_action" value="activate">';
-					echo '<input type="hidden" name="staff_id" value="' . (int) $admin['STAFF_ID'] . '">';
-					echo '<button type="submit" class="secondary">Reactiver</button>';
-					echo '</form>';
-				}
-				else
-				{
-					echo '<form method="post" style="display:inline">';
-					echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
-					echo '<input type="hidden" name="console_action" value="suspend">';
-					echo '<input type="hidden" name="staff_id" value="' . (int) $admin['STAFF_ID'] . '">';
-					echo '<button type="submit" class="danger"' . ( (int) $admin['STAFF_ID'] === (int) User( 'STAFF_ID' ) ? ' disabled' : '' ) . '>Suspendre</button>';
-					echo '</form>';
-				}
+
 				echo '</td></tr>';
 			}
 			?>
 		</table>
-		<p class="mut">« Reinitialiser » donne un nouveau mot de passe temporaire : l'administrateur devra choisir le sien a sa prochaine connexion.</p>
+		</div>
+		<p class="mut">« Mot de passe » genere un mot de passe temporaire (affiche une seule fois) et deconnecte les sessions ouvertes : la personne choisira le sien a sa prochaine connexion.</p>
 	</div>
 
+	<?php if ( $schoolsafe_global_admin ) {
+		$school_states = SchoolSafeSchoolStateRows();
+		?>
 	<div class="card">
-		<h2 style="font-size:19px;margin-top:0">Creer un administrateur</h2>
+		<h2 style="font-size:19px;margin-top:0">Etablissements</h2>
+		<p class="mut">Trois etats, aucun effacement : <strong>Actif</strong> (en service), <strong>Suspendu</strong> (acces coupe pour tous ses utilisateurs, donnees conservees ; une date de fin rend l'acces tout seul a cette date), <strong>Desactive</strong> (etablissement ferme ou hors service, reactivation manuelle). Une ecole coupee ne perd rien : eleves, notes, paiements, comptes et historiques restent en place. Une personne affectee a plusieurs ecoles perd l'ecole coupee et garde les autres ; le proprietaire de la plateforme conserve l'acces pour administrer.</p>
+		<div style="overflow-x:auto">
+		<table class="list schools-list">
+			<tr><th>ID</th><th>Etablissement</th><th>Etat</th><th>Actions</th></tr>
+			<?php
+			foreach ( $schools as $school )
+			{
+				$school_state = SchoolSafeSchoolStateEffective( $school['ID'] );
+
+				$school_row = $school_states[(int) $school['ID']] ?? [];
+
+				echo '<tr>';
+				echo '<td>' . (int) $school['ID'] . '</td>';
+				echo '<td><strong>' . htmlspecialchars( $school['TITLE'], ENT_QUOTES, 'UTF-8' ) . '</strong></td>';
+				echo '<td><span class="badge ' . ( $school_state === 'active' ? 'on' : 'off' ) . '">'
+					. htmlspecialchars( SchoolSafeConsoleSchoolStateLabel( $school_state ), ENT_QUOTES, 'UTF-8' ) . '</span>';
+
+				if ( ! empty( $school_row['REASON'] ) || ! empty( $school_row['UNTIL'] ) )
+				{
+					echo '<br><span class="mut">' . htmlspecialchars( (string) $school_row['REASON'], ENT_QUOTES, 'UTF-8' );
+
+					if ( ! empty( $school_row['UNTIL'] ) )
+					{
+						echo ' &middot; jusqu\'au ' . htmlspecialchars( mb_substr( (string) $school_row['UNTIL'], 0, 10 ), ENT_QUOTES, 'UTF-8' );
+					}
+
+					echo '</span>';
+				}
+
+				echo '</td>';
+				echo '<td>';
+
+				if ( $school_state !== 'active' )
+				{
+					echo '<form method="post" class="school-action">';
+					echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
+					echo '<input type="hidden" name="console_action" value="school_state">';
+					echo '<input type="hidden" name="school_id" value="' . (int) $school['ID'] . '">';
+					echo '<input type="hidden" name="school_state" value="active">';
+					echo '<button type="submit">Reactiver</button></form>';
+				}
+
+				if ( $school_state !== 'suspended' )
+				{
+					echo '<form method="post" class="school-action">';
+					echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
+					echo '<input type="hidden" name="console_action" value="school_state">';
+					echo '<input type="hidden" name="school_id" value="' . (int) $school['ID'] . '">';
+					echo '<input type="hidden" name="school_state" value="suspended">';
+					echo '<input type="text" name="school_reason" maxlength="200" placeholder="motif" aria-label="Motif de suspension">';
+					echo '<input type="text" name="school_until" maxlength="10" placeholder="AAAA-MM-JJ (fin facultative)" aria-label="Date de fin facultative">';
+					echo '<button type="submit">Suspendre</button></form>';
+				}
+
+				if ( $school_state !== 'inactive' )
+				{
+					echo '<form method="post" class="school-action">';
+					echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
+					echo '<input type="hidden" name="console_action" value="school_state">';
+					echo '<input type="hidden" name="school_id" value="' . (int) $school['ID'] . '">';
+					echo '<input type="hidden" name="school_state" value="inactive">';
+					echo '<button type="submit" class="secondary">Desactiver</button></form>';
+				}
+
+				echo '</td></tr>';
+			}
+			?>
+		</table>
+		</div>
+		<p class="mut">Suspendre une ecole coupe l'acces de tous ses utilisateurs des la requete suivante : une session ouverte est fermee si l'ecole est la seule de la personne, sinon elle continue dans ses autres ecoles. Aucun enregistrement n'est supprime ni modifie dans les tables natives.</p>
+	</div>
+	<?php } ?>
+
+	<?php if ( $schoolsafe_global_admin ) { ?>
+	<div class="card">
+		<h2 style="font-size:19px;margin-top:0">Creer un administrateur de plateforme</h2>
 		<form method="post">
 			<input type="hidden" name="console_token" value="<?php echo htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ); ?>">
 			<input type="hidden" name="console_action" value="create">
@@ -383,6 +719,7 @@ input[type=text],input[type=email]{width:100%;max-width:420px;padding:9px 10px;b
 			<p class="mut">Un mot de passe temporaire sera genere : communiquez-le a la personne, elle choisira le sien a sa premiere connexion.</p>
 		</form>
 	</div>
+	<?php } ?>
 </main>
 </body>
 </html>

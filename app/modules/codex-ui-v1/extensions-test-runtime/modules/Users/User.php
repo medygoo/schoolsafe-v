@@ -1,5 +1,6 @@
 <?php
 
+
 require_once 'ProgramFunctions/FileUpload.fnc.php';
 require_once 'ProgramFunctions/Fields.fnc.php';
 require_once 'modules/Users/includes/User.fnc.php';
@@ -19,6 +20,22 @@ if ( User( 'PROFILE' ) !== 'admin'
 	}
 
 	exit;
+}
+
+// SchoolSafe — lecture : un administrateur délégué ne peut pas ouvrir la fiche
+// d'un utilisateur hors de son périmètre. L'écriture était déjà contrôlée ; la
+// consultation, elle, laissait voir nom, courriel et profil d'une autre école.
+if ( User( 'PROFILE' ) === 'admin'
+	&& function_exists( 'SchoolSafeGlobalAdmin' )
+	&& ! SchoolSafeGlobalAdmin()
+	&& ! empty( $_REQUEST['staff_id'] )
+	&& $_REQUEST['staff_id'] !== 'new'
+	&& (int) $_REQUEST['staff_id'] !== (int) User( 'STAFF_ID' )
+	&& ! SchoolSafeStaffWithinScope( (int) $_REQUEST['staff_id'] ) )
+{
+	SchoolSafeScopeDeny();
+
+	return;
 }
 
 $categories = [ '1' => 'General_Info', '2' => 'Schedule', 'Other_Info' => 'Other_Info' ];
@@ -88,6 +105,7 @@ if ( User( 'PROFILE' ) !== 'admin' )
 		$_ROSARIO['allow_edit'] = true;
 	}
 }
+
 
 if ( $_REQUEST['modfunc'] === 'update'
 	&& AllowEdit() )
@@ -211,14 +229,23 @@ if ( $_REQUEST['modfunc'] === 'update'
 		if ( User( 'PROFILE' ) === 'admin' && ! SchoolSafeGlobalAdmin() )
 		{
 			$default_profiles = [ 'admin' => 1, 'teacher' => 2, 'parent' => 3 ];
+
+			// A delegated administrator may only create/promote non-administrator
+			// accounts: the target profile is checked once, after resolution.
+			$submitted_kind = $_REQUEST['staff']['PROFILE'] ?? null;
 			$submitted_profile = $_REQUEST['staff']['PROFILE_ID'] ?? null;
-			if ( $submitted_profile !== null && ! SchoolSafeProfileDelegable( $submitted_profile ) )
+
+			if ( $submitted_profile === null
+				|| $submitted_profile === ''
+				|| $submitted_profile === '0' )
 			{
-				SchoolSafeScopeDeny(); return;
+				$submitted_profile = isset( $submitted_kind )
+					? ( $default_profiles[(string) $submitted_kind] ?? null )
+					: $submitted_profile;
 			}
-			if ( isset( $_REQUEST['staff']['PROFILE'] ) )
-				$submitted_profile = $default_profiles[$_REQUEST['staff']['PROFILE']] ?? $submitted_profile;
-			if ( $submitted_profile !== null && ! SchoolSafeProfileDelegable( $submitted_profile ) )
+
+			if ( $submitted_profile !== null
+				&& ! SchoolSafeProfileDelegable( $submitted_profile, $submitted_kind ) )
 			{
 				SchoolSafeScopeDeny(); return;
 			}

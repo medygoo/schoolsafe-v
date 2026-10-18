@@ -286,3 +286,22 @@ et SCHOOLSAFE_DIRECT_VPS_REPORT.md. Les sections anterieures restent historiques
 ## 29 septembre 2026 — durée indéterminée par école
 
 Le propriétaire demande une licence sans expiration pour son école. Représentation explicite : expires_at=null et perpetual=true dans le jeton signé ; aucune date artificielle, aucune activation globale. Les licences demeurent suspendables/révocables après synchronisation. Une migration additive préserve les données et FORCE RLS. La clé de signature et la confiance correspondante restent à provisionner, sans modifier les clés SSH.
+
+## 18 octobre 2026 — cycle de vie par école cliente (suspendre / désactiver)
+
+Décision : l'accès d'une école cliente entière se pilote depuis le tableau de bord du propriétaire
+(PRODELI), sans jamais supprimer de données. Trois états seulement, portés par l'école et non par la
+personne : `active`, `suspended` (accès coupé, date de fin facultative pour un retour automatique),
+`inactive` (établissement fermé, réactivation manuelle). Une personne affectée à plusieurs écoles
+perd l'école coupée et garde les autres ; le propriétaire de la plateforme conserve l'accès pour
+administrer. Seul un administrateur global peut couper une école : un directeur ne le peut pas. Une
+école coupée ne modifie aucune table native (élèves, notes, paiements, historiques intacts) et
+l'absence de la migration 016 laisse la fonctionnalité inerte : la règle est additive et jamais
+bloquante. Motif : éviter la suppression d'un compte ou d'une école pour couper un accès, et donner
+au propriétaire un levier réversible sur un établissement en défaut de paiement ou hors service.
+
+Extension (même jour) : cet état ferme aussi les **sessions élèves** (connexion et requêtes en cours)
+et les familles sont informées sur le portail — école nommée et motif lisible — sans perdre l'accès aux
+autres écoles ; quand toutes les écoles d'un parent sont coupées, sa connexion est refusée avec le même
+motif. Portée vérifiée sur l'environnement final : image `Dockerfile.vps` (PHP 8.3, configuration de
+production) et PostgreSQL 17.11 chargé avec `rosariosis.sql`, migrations 014–016 additives et idempotentes.

@@ -70,6 +70,13 @@ elseif ( date( 'H' ) < 18 )
 echo '<details class="ss-dashboard-login-info"><summary>Informations de connexion</summary>';
 DrawHeader( '<span id="salute">' . $salute . '</span>' );
 
+// SchoolSafe — etat d'etablissement : une famille dont une ecole est suspendue
+// doit le comprendre ici, meme si elle garde l'acces a une autre ecole.
+if ( function_exists( 'SchoolSafeSchoolNoticeHtml' ) )
+{
+	echo SchoolSafeSchoolNoticeHtml();
+}
+
 $welcome = [];
 
 if ( ! empty( $_SESSION['LAST_LOGIN'] ) )

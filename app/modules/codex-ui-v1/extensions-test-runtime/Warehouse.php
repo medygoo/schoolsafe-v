@@ -506,6 +506,26 @@ textdomain( 'rosariosis' );
 
 require_once 'ProgramFunctions/SchoolSafeLocale.fnc.php';
 require_once 'ProgramFunctions/SchoolSafeSchoolScope.fnc.php';
+require_once 'ProgramFunctions/SchoolSafeAccountState.fnc.php';
+require_once 'ProgramFunctions/SchoolSafeSchoolState.fnc.php';
+
+/**
+ * SchoolSafe — état de compte.
+ *
+ * Suspension, expiration et révocation de session vérifiées à CHAQUE requête,
+ * avant tout écran ou route. Function inerte tant que la migration 014 n'a pas
+ * été appliquée (aucune ligne => active).
+ */
+SchoolSafeAccountSessionGuard();
+
+/**
+ * SchoolSafe — état d'ÉTABLISSEMENT.
+ *
+ * Une école suspendue ou désactivée ferme l'accès à tous ses utilisateurs
+ * (données conservées). Vérifiée à CHAQUE requête, juste après l'état de
+ * compte. Function inerte tant que la migration 016 n'a pas été appliquée.
+ */
+SchoolSafeSchoolSessionGuard();
 
 if ( mb_internal_encoding() !== 'UTF-8' )
 {

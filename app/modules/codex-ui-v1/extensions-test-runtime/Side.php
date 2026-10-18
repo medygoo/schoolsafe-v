@@ -442,8 +442,22 @@ if ( ! isset( $_REQUEST['sidefunc'] )
 				( $schools ? " AND ID IN (" . $schools . ")" : '' ) .
 				" ORDER BY TITLE" );
 
+			// SchoolSafe — une ecole suspendue ou desactivee disparait du selecteur :
+			// elle reste administrable par le proprietaire de la plateforme, mais
+			// ses utilisateurs ne peuvent plus y entrer.
+			if ( function_exists( 'SchoolSafeSchoolAllowed' )
+				&& function_exists( 'SchoolSafeGlobalAdmin' )
+				&& ! SchoolSafeGlobalAdmin() )
+			{
+				$schools_RET = array_values( array_filter( (array) $schools_RET,
+					function ( $school ) {
+						return SchoolSafeSchoolAllowed( $school['ID'] );
+					} ) );
+			}
+
 			// Set current School.
-			if ( ! UserSchool() )
+			if ( ! UserSchool()
+				&& ! empty( $schools_RET ) )
 			{
 				$_SESSION['UserSchool'] = $schools_RET[1]['ID'];
 

@@ -115,7 +115,7 @@ elseif ( isset( $_POST['USERNAME'] )
 	unset( $_REQUEST['USERNAME'], $_POST['USERNAME'] );
 
 	// Lookup for user $username in DB.
-	$login_RET = DBGet( "SELECT USERNAME,PROFILE,STAFF_ID,LAST_LOGIN,FAILED_LOGIN,PASSWORD
+	$login_RET = DBGet( "SELECT USERNAME,PROFILE,STAFF_ID,LAST_LOGIN,FAILED_LOGIN,PASSWORD,SCHOOLS
 	FROM staff
 	WHERE SYEAR='" . Config( 'SYEAR' ) . "'
 	AND UPPER(USERNAME)=UPPER('" . $username . "')" );
@@ -197,8 +197,53 @@ elseif ( isset( $_POST['USERNAME'] )
 		}
 	}
 
+	// SchoolSafe — état de compte : suspension et expiration refusées ici,
+	// avant qu'une session ne soit ouverte.
+	$schoolsafe_state = 'active';
+
+	$schoolsafe_blocked = false;
+
+	// SchoolSafe — etat d'ETABLISSEMENT : une ecole coupee ferme l'acces a
+	// tous ses utilisateurs. Une personne presente dans plusieurs ecoles ne
+	// perd que l'ecole coupee : le blocage n'a lieu que si TOUTES sont coupees.
+	$schoolsafe_school_state = '';
+
+	if ( $login_RET )
+	{
+		$schoolsafe_schools = array_filter( array_map( 'intval',
+			explode( ',', (string) issetVal( $login_RET[1]['SCHOOLS'] ) ) ) );
+
+		$schoolsafe_state = SchoolSafeAccountEffective( $login_RET[1]['USERNAME'], $schoolsafe_schools );
+
+		if ( $schoolsafe_state === 'suspended'
+			|| $schoolsafe_state === 'expired' )
+		{
+			$schoolsafe_blocked = true;
+		}
+
+		if ( ! $schoolsafe_blocked )
+		{
+			// Un parent n'a aucune ecole assignee : ses ecoles sont celles de ses
+			// enfants. Une personne de plusieurs ecoles ne perd que l'ecole coupee.
+			$schoolsafe_school_state = SchoolSafeSchoolLoginBlock(
+				SchoolSafePersonSchools( $login_RET[1]['PROFILE'], $login_RET[1]['SCHOOLS'],
+					(int) $login_RET[1]['STAFF_ID'] ) );
+		}
+	}
+
+	// SchoolSafe — etat d'etablissement pour un ELEVE : ecole d'inscription.
+	if ( ! $schoolsafe_blocked
+		&& $schoolsafe_school_state === ''
+		&& $student_RET )
+	{
+		$schoolsafe_school_state = SchoolSafeSchoolLoginBlock(
+			SchoolSafeStudentSchools( (int) $student_RET[1]['STUDENT_ID'] ) );
+	}
+
 	// Admin, teacher or parent: initiate session.
 	if ( $login_RET
+		&& ! $schoolsafe_blocked
+		&& $schoolsafe_school_state === ''
 		&& ( $login_RET[1]['PROFILE'] === 'admin'
 			|| $login_RET[1]['PROFILE'] === 'teacher'
 			|| $login_RET[1]['PROFILE'] === 'parent' ) )
@@ -212,9 +257,34 @@ elseif ( isset( $_POST['USERNAME'] )
 
 		$_SESSION['LAST_LOGIN'] = $login_RET[1]['LAST_LOGIN'];
 
+		// SchoolSafe — état de compte : époque de session pour la révocation.
+		$_SESSION['SchoolSafeEpoch'] = SchoolSafeAccountEpoch( $login_RET[1]['USERNAME'] );
+
+		$_SESSION['SchoolSafeState'] = $schoolsafe_state;
+
 		$failed_login = $login_RET[1]['FAILED_LOGIN'];
 
 		$login_status = 'Y';
+	}
+
+	// SchoolSafe — compte suspendu ou expiré.
+	elseif ( $login_RET
+		&& $schoolsafe_blocked )
+	{
+		$error[] = SchoolSafeAccountLoginMessage( $schoolsafe_state );
+
+		// Statut journalisé distinct d'un échec de mot de passe.
+		$login_status = 'S';
+	}
+
+	// SchoolSafe — etablissement suspendu ou desactive.
+	elseif ( $login_RET
+		&& $schoolsafe_school_state !== '' )
+	{
+		$error[] = SchoolSafeSchoolLoginMessage( $schoolsafe_school_state );
+
+		// Statut journalisé distinct d'un échec de mot de passe.
+		$login_status = 'S';
 	}
 
 	// User with No access profile.
@@ -241,8 +311,19 @@ elseif ( isset( $_POST['USERNAME'] )
 			. _( 'You will be notified when it has been verified by a school administrator.' );
 	}
 
+	// SchoolSafe — etablissement de l'eleve suspendu ou desactive.
+	elseif ( $student_RET
+		&& $schoolsafe_school_state !== '' )
+	{
+		$error[] = SchoolSafeSchoolLoginMessage( $schoolsafe_school_state );
+
+		// Statut journalise distinct d'un echec de mot de passe.
+		$login_status = 'S';
+	}
+
 	// Student: initiate session.
-	elseif ( $student_RET )
+	elseif ( $student_RET
+		&& $schoolsafe_school_state === '' )
 	{
 		$_SESSION['STUDENT_ID'] = $student_RET[1]['STUDENT_ID'];
 
@@ -482,6 +563,28 @@ if ( empty( $_SESSION['STAFF_ID'] )
 		elseif ( $_REQUEST['reason'] == 'password_reset' )
 		{
 			$note[] = _( 'If you supplied a correct email address then please check your email for the password reset instructions.' );
+		}
+
+		// SchoolSafe — état de compte : suspension ou expiration.
+		elseif ( $_REQUEST['reason'] == 'account_suspended'
+			|| $_REQUEST['reason'] == 'account_expired' )
+		{
+			$note[] = SchoolSafeAccountLoginMessage(
+				$_REQUEST['reason'] == 'account_expired' ? 'expired' : 'suspended' );
+		}
+
+		// SchoolSafe — sessions revoquées par l'administration.
+		elseif ( $_REQUEST['reason'] == 'account_revoked' )
+		{
+			$note[] = "Votre session a ete fermee par l'administration. Reconnectez-vous : si votre compte reste actif, l'acces est immediatement retabli.";
+		}
+
+		// SchoolSafe — etat d'etablissement : acces coupe pour toute l'ecole.
+		elseif ( $_REQUEST['reason'] == 'school_suspended'
+			|| $_REQUEST['reason'] == 'school_inactive' )
+		{
+			$note[] = SchoolSafeSchoolLoginMessage(
+				$_REQUEST['reason'] == 'school_inactive' ? 'inactive' : 'suspended' );
 		}
 	}
 

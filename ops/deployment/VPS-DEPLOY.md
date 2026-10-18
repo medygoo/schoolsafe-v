@@ -74,11 +74,41 @@ dump `rosariosis.sql` par un opérateur. Les migrations `schoolsafe-remediation/
 applicables sur la base de production (testé : 0 erreur) ; `010..013` et le ledger
 `schoolsafe-attendance/001` portent un garde volontaire limité à la base de test locale
 `rosario_addons_test` : ils refusent toute autre base et ne doivent PAS être contournés.
+
+`014-account-state.sql`, `015-account-profiles.sql` et `016-school-state.sql` sont **additives et
+idempotentes** : elles ne modifient aucune table native (nouvelles tables `schoolsafe_account_*`
+et `schoolsafe_school_*`, plus trois profils nommés). Vérifié sur PostgreSQL 17.11 (image
+`postgres:17.11-bookworm`, celle de la stack) chargé avec `rosariosis.sql` : application sans
+erreur, puis rejeu sans erreur (NOTICE, aucune réécriture). Elles sont donc applicables en
+production, dans l'ordre, après sauvegarde. Tant qu'elles ne sont pas appliquées, l'application
+reste **inerte** : tout est `active` (aucun blocage), comportement voulu — jamais bloquant.
+
+**Quand** : ces migrations ne s'appliquent **jamais** automatiquement. Elles s'exécutent uniquement
+pendant un **déploiement explicitement autorisé** par le propriétaire, après la sauvegarde ci-dessous,
+dans l'ordre `014` → `015` → `016`. Aucun script de vérification n'applique de migration :
+`scripts/verify-production-image.mjs` refuse d'en appliquer, et le runner `deploy-isolated.ps1` reste
+borné à la base de test locale `rosario_addons_test`.
 Toute installation est une opération **validée par le propriétaire** ; le refus d'une base non
 prévue et le ledger d'installation restent la norme (cf. `docs/INSTALLATION_V2.md`).
 
 Une fois l'installation terminée : vérifier `diagnostic.php` en session admin (doit répondre
 « properly configured »), puis créer l'administrateur principal via le parcours SchoolSafe.
+
+### Vérifier une correction sur l'image de production (avant déploiement)
+
+Ces vérifications rejouent la suite QA du lot contre l'image réelle (`Dockerfile.vps`), pas seulement
+contre le conteneur de qualification :
+
+```bash
+node scripts/verify-production-image.mjs
+```
+
+Le script construit l'image, contrôle la syntaxe PHP des fichiers modifiés avec le PHP 8.3 de l'image,
+lance un conteneur **jetable** sur `127.0.0.1:<port libre>` avec `config.inc.production.php`, attend un
+`200` sur `index.php`, exécute `app/qa-l1-account-state.cjs` (`SCHOOLSAFE_L1_URL` pointé sur ce
+conteneur), puis supprime uniquement ce conteneur. Il ne touche ni à la pile en cours, ni à la base,
+ni à un environnement distant, n'applique aucune migration, et propage le code de sortie de la suite
+(`--suite` pour une autre suite, `--port`, `--image` pour changer de tag).
 
 ## 4. Durcissement et sécurité
 
