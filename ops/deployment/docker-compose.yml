@@ -1,0 +1,187 @@
+# SchoolSafe — stack applicative VPS (web RosarioSIS SchoolSafe + PostgreSQL + workers + Caddy optionnel)
+#
+# Harmonise en un seul fichier la stack prouvée en local (conteneurs codex-addons-web,
+# codex-addons-db, codex-arrival-worker, codex-dashboard-worker, codex-device-collector).
+# Le card-bridge et sa base cible restent un banc d'essai séparé (voir VPS-DEPLOY.md).
+#
+# Réseaux : frontend (Caddy <-> web) et backend (web, db, workers). Aucun port 5432 publié.
+# Le web n'écoute que sur 127.0.0.1:8080 côté hôte : l'entrée publique reste Caddy (hôte ou profil edge).
+
+name: schoolsafe-app
+
+services:
+  db:
+    image: ${POSTGRES_IMAGE:-postgres:17.11-bookworm}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Renseigner POSTGRES_DB dans .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Renseigner POSTGRES_USER dans .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Renseigner POSTGRES_PASSWORD dans .env}
+      TZ: ${SCHOOLSAFE_TIMEZONE:-Africa/Kinshasa}
+    volumes:
+      - schoolsafe-app_pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Aucun "ports:" : PostgreSQL reste interne au réseau backend.
+
+  web:
+    image: schoolsafe-app/web:local
+    build:
+      context: ../../app/modules/codex-ui-v1/extensions-test-runtime
+      dockerfile: Dockerfile.vps
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SCHOOLSAFE_DB_HOST: db
+      SCHOOLSAFE_DB_PORT: "5432"
+      SCHOOLSAFE_DEFAULT_SYEAR: ${SCHOOLSAFE_DEFAULT_SYEAR:-2026}
+      SCHOOLSAFE_TIMEZONE: ${SCHOOLSAFE_TIMEZONE:-Africa/Kinshasa}
+      SCHOOLSAFE_NOTIFY_EMAIL: ${SCHOOLSAFE_NOTIFY_EMAIL:-}
+      SCHOOLSAFE_ERRORS_EMAIL: ${SCHOOLSAFE_ERRORS_EMAIL:-}
+      # Jeton de service pour la console AppSmith (admin-console-bridge.php).
+      # Absent => l'endpoint repond 503 (echec ferme).
+      SCHOOLSAFE_CONSOLE_TOKEN: ${SCHOOLSAFE_CONSOLE_TOKEN:-}
+    volumes:
+      # Configuration production pilotée par l'environnement, aucun secret écrit dans le code.
+      - ../../ops/deployment/config.inc.production.php:/var/www/html/config.inc.php:ro
+    ports:
+      # Loopback uniquement : le proxy Caddy (hôte ou service edge) est la seule entrée publique.
+      # Sur le VPS cible, SCHOOLSAFE_WEB_BIND=127.0.0.1:18080 (Caddy pointe déjà 18080 ; 8080 y est pris par AppSmith).
+      - "${SCHOOLSAFE_WEB_BIND:-127.0.0.1:8080}:80"
+    networks:
+      - frontend
+      - backend
+
+  # Worker du registre d'arrivée. Profil "isolated-rig" : ses gardes internes exigent la
+  # base de test locale ; sur un VPS, ne pas démarrer sans revue (config privée requise,
+  # voir schoolsafe-attendance/TRANSFER-WORKER.md).
+  arrival-worker:
+    profiles: ["isolated-rig"]
+    image: schoolsafe-app/web:local
+    restart: unless-stopped
+    depends_on:
+      - web
+    entrypoint: ["php"]
+    command: ["/worker/arrival-worker-supervise.php"]
+    working_dir: /var/www/html
+    user: "33:33"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 32
+    mem_limit: 128M
+    cpus: 0.5
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: "3"
+    volumes:
+      - ../../app/modules/codex-ui-v1/extensions-test-runtime/schoolsafe-attendance:/worker:ro
+      - schoolsafe-attendance-private:/var/lib/schoolsafe-attendance
+    networks:
+      - backend
+
+  # Worker de projection du tableau de bord. Profil "isolated-rig" : garde
+  # ISOLATED_DATABASE_REQUIRED dans SchoolSafeDashboardDaily.php.
+  dashboard-worker:
+    profiles: ["isolated-rig"]
+    image: schoolsafe-app/web:local
+    restart: unless-stopped
+    depends_on:
+      - web
+    entrypoint: ["php"]
+    command: ["/var/www/html/ProgramFunctions/SchoolSafeDashboardWorker.php"]
+    working_dir: /var/www/html
+    user: "33:33"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: "3"
+    volumes:
+      - ../../app/modules/codex-ui-v1/extensions-test-runtime:/var/www/html:ro
+      - ../../ops/deployment/config.inc.production.php:/var/www/html/config.inc.php:ro
+    networks:
+      - backend
+
+  # Worker Device Hub (collecte terminaux). Profil "isolated-rig" : garde
+  # ISOLATED_DATABASE_REQUIRED dans schoolsafe-device-hub/worker.php.
+  device-collector:
+    profiles: ["isolated-rig"]
+    image: schoolsafe-app/web:local
+    restart: unless-stopped
+    depends_on:
+      - web
+    entrypoint: ["php"]
+    command: ["/var/www/html/schoolsafe-device-hub/worker.php", "--supervise"]
+    working_dir: /var/www/html
+    user: "33:33"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: "3"
+    volumes:
+      - ../../app/modules/codex-ui-v1/extensions-test-runtime:/var/www/html:ro
+      - schoolsafe-device-hub-private:/var/lib/schoolsafe-device-hub
+    networks:
+      - backend
+
+  # Edge optionnel : Caddy en conteneur (profil "edge").
+  # Sur le VPS cible, Caddy 2.11.4 tourne déjà sur l'hôte : ne pas activer ce profil
+  # là-bas (conflit 80/443). Le Caddyfile reste disponible pour un VPS sans Caddy hôte.
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["edge"]
+    restart: unless-stopped
+    depends_on:
+      - web
+    environment:
+      SCHOOLSAFE_DOMAIN: ${SCHOOLSAFE_DOMAIN:?Renseigner SCHOOLSAFE_DOMAIN dans .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - frontend
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  schoolsafe-app_pgdata:
+  schoolsafe-attendance-private:
+  schoolsafe-device-hub-private:
+  caddy_data:
+  caddy_config:

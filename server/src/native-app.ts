@@ -1,0 +1,192 @@
+import {createControlAdminClient} from "./authnative/control-client.js";
+import {createOnboardingSchoolService} from "./onboarding/school-service.js";
+import {createBrevoEmailService} from "./email/service.js";
+import {createRecoveryDelivery} from "./authnative/recovery-delivery.js";
+import {createMachineContextResolver} from "./devicehub/machine-context.js";
+import { buildApp } from "./app.js";
+import type { AppEnv } from "./config/env.js";
+import type { VerifiedPools } from "./db/startpools.js";
+import { createPgAuthDatabase } from "./db/auth-adapter.js";
+import { createAuthNativeService } from "./authnative/service.js";
+import { createStudentsNativeService } from "./studentsnative/service.js";
+import { createTrialNativeService } from "./trialnative/service.js";
+import { createSessionNativeService } from "./sessionnative/service.js";
+import { createAccessNativeService } from "./accessnative/service.js";
+import { createAdultProvisioner } from "./accessnative/provision.js";
+import { createSupabaseIdentityAdmin, verifySupabaseSubject } from "./accessnative/supabase-admin.js";
+import { createJaspeNativeService } from "./jaspenative/service.js";
+import { createLicenseNativeService } from "./licensenative/service.js";
+import { createActivationServiceClient } from "./licensenative/activation-client.js";
+import { loadInstallationKey } from "./licensenative/installation-key.js";
+import { registerLicenseGate } from "./licensenative/gate.js";
+import { createSupabaseSchoolAccessReader } from "./licensenative/school-access.js";
+import { createSetupNativeService } from "./setup/service.js";
+import { createFinanceNativeService } from "./financenative/service.js";
+import { createPedagogyNativeService } from "./pedagogynative/service.js";
+import { createControlPrintNativeService } from "./controlprintnative/service.js";
+import { createCardsNativeService } from "./cardsnative/service.js";
+import { createSchoolNativeService } from "./schoolnative/service.js";
+import { createCardsBatchService } from "./cardsnative/batches.js";
+import { createFamilyNativeService } from "./familynative/service.js";
+import { createFamilyImportService } from "./familynative/import.js";
+import { createDeviceHubService } from "./devicehub/service.js";
+import { createStudentRecordNativeService } from "./studentrecordnative/service.js";
+import { createSecurityService } from "./security/service.js";
+import { createScanControlService } from "./scancontrol/service.js";
+
+/** Assemble uniquement les services qui utilisent les sessions et pools du VPS. */
+export function buildNativeApp(env: AppEnv, pools: VerifiedPools) {
+  const controlAdmin = env.CONTROL_APP_URL && env.SCHOOLSAFE_BOOTSTRAP_SECRET ? createControlAdminClient(env.CONTROL_APP_URL,env.SCHOOLSAFE_BOOTSTRAP_SECRET) : undefined;
+  const onboardingDb = createPgAuthDatabase(pools.authPool);
+  const recovery = env.BREVO_API_KEY && env.BREVO_SENDER_EMAIL && env.AUTH_RECOVERY_URL
+    ? createRecoveryDelivery(createBrevoEmailService({apiKey: env.BREVO_API_KEY, senderEmail: env.BREVO_SENDER_EMAIL}), env.AUTH_RECOVERY_URL) : undefined;
+  const authService = createAuthNativeService({ db: createPgAuthDatabase(pools.authPool), emailDelivery: recovery, control: controlAdmin });
+
+  // Activation Service V1 — licence native (remplace Control pour licensenative uniquement).
+  let licenseService = undefined;
+  if (
+    env.ACTIVATION_SERVICE_URL &&
+    env.ACTIVATION_INSTALLATION_ID &&
+    env.ACTIVATION_INSTALLATION_PRIVATE_KEY_PATH &&
+    env.ACTIVATION_LICENSE_PUBLIC_KEYS_JSON
+  ) {
+    try {
+      const registryJson = JSON.parse(env.ACTIVATION_LICENSE_PUBLIC_KEYS_JSON) as Record<string, unknown>;
+      const publicKeyRegistry = new Map<string, string>();
+      for (const [keyId, pem] of Object.entries(registryJson)) {
+        if (typeof pem === "string") publicKeyRegistry.set(keyId, pem);
+      }
+      const installationKey = loadInstallationKey(env.ACTIVATION_INSTALLATION_PRIVATE_KEY_PATH);
+      const activationClient = createActivationServiceClient({ baseUrl: env.ACTIVATION_SERVICE_URL });
+      licenseService = createLicenseNativeService(
+        pools.businessPool,
+        activationClient,
+        publicKeyRegistry,
+        env.ACTIVATION_INSTALLATION_ID,
+        installationKey,
+      );
+    } catch {
+      // Configuration invalide → licence désactivée (fail-closed)
+      licenseService = undefined;
+    }
+  }
+
+  // Control config conservé pour Device Hub, impression et autres modules hérités.
+  const controlConfig = env.CONTROL_APP_URL && env.CONTROL_APP_INSTANCE_ID && env.CONTROL_APP_HMAC_SECRET
+    ? { url: env.CONTROL_APP_URL, instanceId: env.CONTROL_APP_INSTANCE_ID, hmacSecret: env.CONTROL_APP_HMAC_SECRET }
+    : undefined;
+
+  const app = buildApp({
+    onboarding: {
+      schoolService: createOnboardingSchoolService(onboardingDb, controlAdmin),
+      cookieSecure: env.NODE_ENV === "production",
+    },
+    readinessProbe: async () => {
+      try {
+        await Promise.all([pools.authPool.query("select 1"), pools.businessPool.query("select 1")]);
+        return { ready: true };
+      } catch {
+        return { ready: false, dependency: "postgresql" };
+      }
+    },
+    authNative: { service: authService, cookieSecure: env.NODE_ENV === "production" },
+    studentsNative: { authService: authService, service: createStudentsNativeService(pools.businessPool) },
+    trialNative: { authService: authService, service: createTrialNativeService(pools.businessPool) },
+    sessionNative: { authService: authService, service: createSessionNativeService(pools.businessPool) },
+    accessNative: {
+      authService: authService,
+      service: createAccessNativeService(pools.businessPool),
+      provisioner: createAdultProvisioner(
+        pools.businessPool,
+        env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
+          ? createSupabaseIdentityAdmin(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
+          : null,
+        env.SUPABASE_URL && env.SUPABASE_ANON_KEY
+          ? verifySupabaseSubject(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
+          : null,
+      ),
+    },
+    jaspeNative: { authService: authService, businessPool: pools.businessPool, service: createJaspeNativeService({
+      workerUrl: env.JASPE_WORKER_URL,
+      timeoutMs: env.JASPE_CHAT_TIMEOUT_MS,
+      ratePerMinute: env.JASPE_RATE_PER_MINUTE,
+    }) },
+    licenseNative: licenseService ? { authService: authService, service: licenseService } : undefined,
+    setup: {
+      service: createSetupNativeService(
+        pools.authPool,
+        pools.businessPool,
+        undefined,
+        false,
+        env.SUPABASE_URL && env.SUPABASE_ANON_KEY
+          ? { url: env.SUPABASE_URL, anonKey: env.SUPABASE_ANON_KEY }
+          : undefined,
+      ),
+    },
+    financeNative: { authService: authService, service: createFinanceNativeService(pools.businessPool) },
+    pedagogyNative: { authService: authService, service: createPedagogyNativeService(pools.businessPool) },
+    controlPrintNative: {
+      authService: authService,
+      businessPool: pools.businessPool,
+      controlConfig,
+      service: createControlPrintNativeService(pools.businessPool, controlConfig),
+    },
+    schoolNative: { authService: authService, service: createSchoolNativeService(pools.businessPool) },
+    cardsNative: {
+      authService: authService,
+      service: createCardsNativeService(pools.businessPool, env.R2_ENDPOINT ? {
+        endpoint: env.R2_ENDPOINT,
+        accessKeyId: env.R2_ACCESS_KEY_ID!,
+        secretAccessKey: env.R2_SECRET_ACCESS_KEY!,
+        bucket: env.R2_BUCKET_CARDS ?? "cards",
+      } : undefined, controlConfig),
+      batchService: createCardsBatchService(pools.businessPool, env.R2_ENDPOINT ? {
+        endpoint: env.R2_ENDPOINT,
+        accessKeyId: env.R2_ACCESS_KEY_ID!,
+        secretAccessKey: env.R2_SECRET_ACCESS_KEY!,
+        bucket: env.R2_BUCKET_CARDS ?? "cards",
+      } : undefined, controlConfig),
+      autoBatchEnabled: env.CARDS_AUTO_BATCH === true,
+    },
+    familyNative: {
+      authService: authService,
+      service: createFamilyNativeService(pools.businessPool),
+      importService: createFamilyImportService(pools.businessPool),
+    },
+    deviceHub: {
+      authService: authService,
+      service: createDeviceHubService(pools.businessPool, controlConfig),
+    },
+    deviceHubMachine: controlConfig ? {
+      service: createDeviceHubService(pools.businessPool, controlConfig),
+      hmacSecret: controlConfig.hmacSecret,
+      expectedInstanceId: controlConfig.instanceId,
+      resolveContext: createMachineContextResolver(pools.businessPool),
+    } : undefined,
+    studentRecordNative: {
+      authService: authService,
+      service: createStudentRecordNativeService(pools.businessPool),
+    },
+    scanControl: {
+      authService: authService,
+      service: createScanControlService(pools.businessPool, {
+        security: env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY && env.CARD_HMAC_SECRET
+          ? createSecurityService(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env.CARD_HMAC_SECRET)
+          : undefined,
+        deviceHub: createDeviceHubService(pools.businessPool, controlConfig),
+        family: createFamilyNativeService(pools.businessPool),
+        cards: createCardsNativeService(pools.businessPool),
+      }),
+    },
+  });
+  registerLicenseGate(app, {
+    authService: authService,
+    licenseService,
+    schoolAccess: createSupabaseSchoolAccessReader(pools.businessPool),
+    pilotSchoolId: env.PILOT_SCHOOL_ID,
+  });
+  app.addHook("onClose", async () => {
+    await Promise.allSettled([pools.authPool.end(), pools.businessPool.end()]);
+  });
+  return app;
+}

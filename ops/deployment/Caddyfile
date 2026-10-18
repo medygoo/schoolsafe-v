@@ -1,0 +1,17 @@
+# SchoolSafe — Caddy Edge (profil compose "edge" uniquement).
+# Sur le VPS cible, Caddy tourne déjà sur l'hôte : y recopier plutôt le bloc de site
+# documenté dans VPS-DEPLOY.md (reverse_proxy 127.0.0.1:8080).
+
+{$SCHOOLSAFE_DOMAIN} {
+	encode zstd gzip
+
+	# Pas de cache agressif : RosarioSIS gère ses propres en-têtes de session.
+	reverse_proxy web:80
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
