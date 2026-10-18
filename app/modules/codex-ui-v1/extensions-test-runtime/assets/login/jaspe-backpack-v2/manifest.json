@@ -1,0 +1,62 @@
+{
+  "version": 3,
+  "width": 1024,
+  "height": 1536,
+  "frames": [
+    {
+      "file": "pose-01.png",
+      "sha256": "335fb6d07af786272e01803cbfc89bfd58e7ed07600218d46b714dd76ec27f62"
+    },
+    {
+      "file": "pose-02.png",
+      "sha256": "63abb0b073551921556d5ab93559f8a99522f04319afc63dfff06182e10dca8a"
+    },
+    {
+      "file": "pose-03.png",
+      "sha256": "d2ea3f69317e89ec24cff12089cee0af4b682f9a456e6ea9618dd5e7db36f188"
+    },
+    {
+      "file": "pose-04.png",
+      "sha256": "a45639c5877bb21a135e03b68af76d6a3607930b2adc94ba5e486ad0cd21b99e"
+    },
+    {
+      "file": "pose-05.png",
+      "sha256": "24fa33ee1b2bb53779a1aded631b8ae98033b3a09487a4a5171626f16f8ad244"
+    },
+    {
+      "file": "pose-06.png",
+      "sha256": "7fa153cfe72bce464faac12c7943b40978c7fef0bd5358b126a064ddd027872d"
+    },
+    {
+      "file": "pose-07.png",
+      "sha256": "c4ac6cb037c6d682b3c45c9580f3a2260e1d31ae1b76d5528a1d39ab9139fd31"
+    },
+    {
+      "file": "pose-08.png",
+      "sha256": "b6344779fddde0b7cf5e2cbf35617bc48edbe16e83cc80bb399d72bc9057865c"
+    },
+    {
+      "file": "pose-09.png",
+      "sha256": "ba2279cde66c386cea3748191fefb2b958bc63822329aa542ca865d32f995302"
+    },
+    {
+      "file": "pose-10.png",
+      "sha256": "235e587de9bd1c31c74fdced3ed7aa092a07b8e313fef03616a74eab5f024ee8"
+    },
+    {
+      "file": "pose-11.png",
+      "sha256": "1f4934ec4c46f639281f34c88bdc788b247a2336c933134999cc8879be950ab7"
+    },
+    {
+      "file": "pose-12.png",
+      "sha256": "49296b9a28df6569df272cd13d187bf4c88e918ea0bccacc28f472ce6135da8a"
+    },
+    {
+      "file": "pose-13.png",
+      "sha256": "343df0a4c9757ead256f323c694105a10572884cb45bf4a46f21a4d4a8e74ec2"
+    },
+    {"file":"pose-14.png","sha256":"63610eeb6d2619d1bc36aedc1f309b9b410e7f7e0f3c9cd1037f0bfc8c6e6360"},
+    {"file":"pose-15.png","sha256":"e2ae1414e4d1c6ba52c476d1cfb5c48fda15fc6283d2682c2281dc65e96b67e0"},
+    {"file":"pose-16.png","sha256":"517248e9a2eb861f66f1f0b937b2d43a5d7b3ab29ba45827e42b8612fa628733"}
+  ]
+}

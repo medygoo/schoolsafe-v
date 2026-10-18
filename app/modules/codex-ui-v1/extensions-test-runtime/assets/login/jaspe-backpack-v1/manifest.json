@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "width": 1024,
+  "height": 1536,
+  "frames": [
+    {
+      "file": "pose-01.png",
+      "sha256": "bbd563c507500e8de515f8c4b100dc01754221630357384e25cc0b8251a5e37a"
+    },
+    {
+      "file": "pose-02.png",
+      "sha256": "63abb0b073551921556d5ab93559f8a99522f04319afc63dfff06182e10dca8a"
+    },
+    {
+      "file": "pose-03.png",
+      "sha256": "d2ea3f69317e89ec24cff12089cee0af4b682f9a456e6ea9618dd5e7db36f188"
+    },
+    {
+      "file": "pose-04.png",
+      "sha256": "5ccea144c8fea94f899645440fe16b134ac29af68358b41df74bb0ef8f73b73e"
+    },
+    {
+      "file": "pose-05.png",
+      "sha256": "fd5e7b2727181b85bdbb40265517031c10f00f009407c61ef543afb44f132a8e"
+    },
+    {
+      "file": "pose-06.png",
+      "sha256": "7fa153cfe72bce464faac12c7943b40978c7fef0bd5358b126a064ddd027872d"
+    },
+    {
+      "file": "pose-07.png",
+      "sha256": "c4ac6cb037c6d682b3c45c9580f3a2260e1d31ae1b76d5528a1d39ab9139fd31"
+    },
+    {
+      "file": "pose-08.png",
+      "sha256": "b6344779fddde0b7cf5e2cbf35617bc48edbe16e83cc80bb399d72bc9057865c"
+    },
+    {
+      "file": "pose-09.png",
+      "sha256": "8578a7fc5bfde3e744103e5fa44e671fb53e5766afc5d2b2a33b29ea11c45e4b"
+    },
+    {
+      "file": "pose-10.png",
+      "sha256": "13fdfd5ad2fce2f843a9f4f5eab8d1f24cab13ce5080a4e3bae9d0e89ae48013"
+    }
+  ]
+}

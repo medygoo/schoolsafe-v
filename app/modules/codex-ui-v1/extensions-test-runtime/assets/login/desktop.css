@@ -1,0 +1,68 @@
+/* One shared login form; only its placement changes on wide screens. */
+body.login #ss-login-reference .ss-login-panel {
+ border-radius:8px;background:var(--login-panel);padding:22px 24px;
+ border:1px solid var(--login-border);box-shadow:0 12px 28px #00000025;
+}
+body.login #ss-login-reference #loginform .ss-login-field {
+ min-height:52px;height:auto;border-radius:8px;background:var(--login-field);box-shadow:none;
+ transition:border-color 160ms ease-out,box-shadow 160ms ease-out;
+}
+body.login #ss-login-reference #loginform .ss-login-field:focus-within {
+ border-color:var(--login-accent);box-shadow:0 0 0 2px var(--login-border);
+}
+body.login #ss-login-reference .ss-login-submit {
+ min-height:50px;height:auto;border-radius:8px;font-size:17px;line-height:1.5;
+ transition:background-color 160ms ease-out,box-shadow 160ms ease-out;
+}
+body.login #ss-login-reference .ss-login-eye { min-width:44px;min-height:44px;flex-shrink:0; }
+body.login #ss-login-reference #loginform input:not([type=hidden]) { min-width:0; }
+body.login #ss-login-reference .ss-login-school { border-radius:8px;min-height:48px;font-size:15px; }
+body.login #ss-login-reference .ss-login-languages a { min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center; }
+body.login #ss-login-reference .ss-login-features { border-radius:8px; }
+body.login #ss-login-reference .ss-login-brand p { white-space:normal; }
+body.login #ss-login-reference #ss-login-form-slot :is(.updated,.note,.error){
+ margin:0 0 16px;padding:12px 14px;border-radius:6px;font-size:14px;line-height:1.5;overflow-wrap:break-word;
+}
+body.login #ss-login-reference #ss-login-form-slot :is(.updated,.note){
+ background:var(--login-field);color:var(--login-ink);border:1px solid var(--login-border);
+}
+body.login #ss-login-reference #ss-login-form-slot .error{background:#ffe4e6;color:#771c2e;border:1px solid #e2a6b0;}
+body.login #ss-login-reference[data-theme="night"] #ss-login-form-slot .error{background:#532138;color:#ffe6ed;border-color:#ad5973;}
+@media(max-width:500px){
+ body.login #ss-login-reference{padding:16px 16px 24px;}
+ body.login #ss-login-reference .ss-login-panel{padding:18px 16px;}
+ body.login #ss-login-reference .ss-login-welcome h2{font-size:30px;}
+ body.login #ss-login-reference .ss-login-welcome p{font-size:15px;line-height:1.5;}
+ body.login #ss-login-reference .ss-login-features{padding:14px 5px;}
+}
+@media(min-width:900px){
+ #ss-login-reference{max-width:1180px;padding:24px 48px 12px;background-size:cover;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;min-height:100svh;}
+ .ss-login-hero{height:500px;}
+ .ss-login-brand{width:42%;padding-top:0;}
+ body.login .ss-login-brand img{width:76px;height:76px;margin-bottom:-24px;}
+ .ss-login-brand h1{font-size:34px;margin-top:4px;}
+ .ss-login-brand p{font-size:12px;}
+ .ss-login-welcome{top:140px;bottom:auto;width:43%;}
+ .ss-login-welcome h2{font-size:34px;margin-bottom:6px;}
+ .ss-login-welcome p{font-size:17px;line-height:1.5;}
+ .ss-login-welcome p br{display:none;}
+ #ss-login-jaspe[data-engine^="backpack"]{right:-12px;top:0;width:49%;height:500px;}
+ #ss-login-form-slot{position:absolute;left:48px;top:250px;width:calc(46% - 48px);box-sizing:border-box;}
+ .ss-login-protection{top:210px;right:34px;}
+ .ss-login-message{top:75px;right:32px;}
+ .ss-login-features{margin:10px 0 0;padding:10px 12px;border:0;border-top:1px solid var(--login-border);border-radius:0;background:transparent!important;}
+ .ss-login-features span{width:42px;height:42px;}
+ .ss-login-features p{font-size:12px;margin-top:5px;}
+ .ss-login-slogan{font-size:22px;margin:10px 0 4px;}
+ .ss-login-languages{margin:4px auto;}
+ #ss-login-reference:not([data-theme="night"]) .ss-login-hero::before{inset:0;}
+}
+@media(min-width:900px) and (max-height:800px){
+ #ss-login-reference{padding-top:16px;align-content:start;}
+ .ss-login-hero{height:470px;}
+ #ss-login-jaspe[data-engine^="backpack"]{height:470px;}
+ .ss-login-welcome{top:126px;}
+ .ss-login-welcome h2{font-size:30px;}
+ #ss-login-form-slot{top:220px;}
+ .ss-login-slogan{font-size:20px;}
+}
