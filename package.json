@@ -22,6 +22,7 @@
     "test:no-guardian-screen": "node app/qa-no-guardian-screen.cjs",
     "test:visual-system": "node app/qa-responsive-visual-system.cjs && node app/qa-no-guardian-screen.cjs",
     "test:login-layout": "node app/qa-login-desktop-layout.cjs",
+    "test:parent-portal-layout": "node app/qa-parent-portal-layout.cjs",
     "supabase:start": "supabase start",
     "supabase:reset": "supabase db reset",
     "test:rls": "node scripts/run-rls-tests.mjs",

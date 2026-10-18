@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="assets/login/reference.css?v=7">
 <link rel="stylesheet" href="assets/login/login-themes.css?v=1">
-<link rel="stylesheet" href="assets/login/desktop.css?v=5">
+<link rel="stylesheet" href="assets/login/desktop.css?v=6">
 <link rel="stylesheet" href="assets/themes/SchoolSafeCodex/menu-logo.css?v=login-1">
 <section id="ss-login-reference" aria-label="Connexion SchoolSafe">
     <button type="button" class="ss-login-theme" aria-label="Changer le fond" title="Changer le fond"><i data-lucide="palette"></i></button>

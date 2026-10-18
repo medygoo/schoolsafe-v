@@ -36,6 +36,10 @@ body.login #ss-login-reference[data-theme="night"] #ss-login-form-slot .error{ba
  body.login #ss-login-reference .ss-login-features{padding:14px 5px;}
 }
 @media(min-width:900px){
+ /* Le cadre historique de Rosario (table.postbox) ajoutait 1 px de bordure en
+    haut et en bas : la page depassait l'ecran de 2 px et derivait. L'ecran de
+    connexion remplit la cellule, la bordure ne sert plus a rien. */
+ body.login #body .postbox{border:0;}
  #ss-login-reference{max-width:1180px;padding:24px 48px 12px;background-size:cover;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;min-height:100svh;}
  .ss-login-hero{height:500px;}
  .ss-login-brand{width:42%;padding-top:0;}
