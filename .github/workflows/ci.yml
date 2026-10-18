@@ -1,0 +1,95 @@
+name: CI
+on:
+  pull_request:
+    branches: [production]
+  push:
+    branches: [production, 'harness/**', 'codex/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run ci
+      - name: Recovery modal browser regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable)"
+          node app/server.mjs --port 4175 > /tmp/schoolsafe-recovery-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4175/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node app/qa-recovery-modal.cjs
+      - name: JASPE desktop launcher regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable)"
+          node app/server.mjs --port 4176 > /tmp/schoolsafe-jaspe-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4176/ > /dev/null; then break; fi
+            sleep 1
+          done
+          SCHOOLSAFE_URL=http://127.0.0.1:4176/ node app/qa-jaspe-dashboard.cjs
+      - name: Start disposable PostgreSQL 17.11
+        shell: bash
+        run: |
+          set -euo pipefail
+          for role in BOOTSTRAP API AUTH WORKER MIGRATOR; do
+            password=$(openssl rand -hex 40)
+            echo "::add-mask::$password"
+            printf 'SCHOOLSAFE_%s_PASSWORD=%s\n' "$role" "$password" >> "$GITHUB_ENV"
+          done
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+      - name: Qualify installation, rollback and RLS
+        shell: bash
+        run: |
+          set -euo pipefail
+          export POSTGRES_PASSWORD="$SCHOOLSAFE_BOOTSTRAP_PASSWORD"
+          docker run -d --name schoolsafe-test -e POSTGRES_PASSWORD -e POSTGRES_USER=schoolsafe_bootstrap -e POSTGRES_DB=schoolsafe_test_ci -p 127.0.0.1:55439:5432 postgres:17.11-bookworm postgres -c shared_preload_libraries=pg_stat_statements -c compute_query_id=auto
+          for attempt in $(seq 1 40); do
+            if pg_isready -h 127.0.0.1 -p 55439 -U schoolsafe_bootstrap -d schoolsafe_test_ci; then
+              break
+            fi
+            if [ "$attempt" -eq 40 ]; then
+              echo "PostgreSQL TCP endpoint did not become ready"
+              docker logs schoolsafe-test
+              exit 1
+            fi
+            sleep 1
+          done
+          export DATABASE_URL="postgresql://schoolsafe_bootstrap:$SCHOOLSAFE_BOOTSTRAP_PASSWORD@127.0.0.1:55439/schoolsafe_test_ci"
+          npm run test:installation
+      - name: Build and execute migrator with restrictive checkout permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod 600 scripts/migration-manifest.mjs
+          docker build --target db-migrator -t schoolsafe-db-migrator-ci .
+          node --input-type=module -e "import {loadInstallationPlan} from './scripts/installation-plan.mjs'; console.log(JSON.stringify(loadInstallationPlan().units.map(u=>({unit_order:u.order,file_name:u.file,sha256:u.sha256}))))" > /tmp/schoolsafe-test-ledger.json
+          units="$(node -e "console.log(require('/tmp/schoolsafe-test-ledger.json').length)")"
+          docker run --rm -i --network none schoolsafe-db-migrator-ci --installed-units "$units" < /tmp/schoolsafe-test-ledger.json > /tmp/schoolsafe-test-upgrade.sql
+          grep -q ALREADY_CURRENT /tmp/schoolsafe-test-upgrade.sql
+      - run: docker build -t schoolsafe-ci .
+      - if: always()
+        run: docker rm -f schoolsafe-test || true
