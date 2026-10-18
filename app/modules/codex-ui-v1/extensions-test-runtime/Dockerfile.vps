@@ -1,0 +1,50 @@
+# SchoolSafe — Image PHP de production (runtime RosarioSIS SchoolSafe)
+# Fidèle à l'image de qualification locale (PHP 8.3 / Apache / PostgreSQL / chromium),
+# avec durcissement production. Contexte de build : ce dossier (runtime).
+# Utilisé par ops/deployment/docker-compose.yml (service web + workers).
+
+FROM php:8.3-apache-bookworm
+
+# Extensions PHP identiques à l'image de qualification.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libpq-dev libicu-dev libonig-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev libzip-dev locales \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j2 pgsql pdo_pgsql intl mbstring gd zip gettext \
+    && echo 'fr_FR.UTF-8 UTF-8' >> /etc/locale.gen \
+    && echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen \
+    && locale-gen && rm -rf /var/lib/apt/lists/*
+
+# Outils production :
+#  - chromium : moteur PDF du pipeline SchoolSafe (SchoolSafeSchoolDocument.fnc.php).
+#  - postgresql-client : pg_dump/psql pour la sauvegarde base via l'interface.
+#  - curl : healthcheck du conteneur.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        chromium postgresql-client curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Apache : ServerName explicite, et IP client réelle derrière le proxy Caddy.
+RUN printf 'ServerName localhost\n' > /etc/apache2/conf-available/local-server.conf \
+    && a2enconf local-server \
+    && a2enmod remoteip \
+    && printf 'RemoteIPHeader X-Forwarded-For\nRemoteIPInternalProxy 172.16.0.0/12 10.0.0.0/8 192.168.0.0/16\n' \
+        > /etc/apache2/conf-available/remoteip-proxy.conf \
+    && a2enconf remoteip-proxy
+
+# Durcissement PHP (production) :
+#  - HttpOnly et strict mode sur les sessions ;
+#  - expose_php désactivé, aucune erreur PHP affichée au visiteur : les messages
+#    natifs de PHP (ex. pg_exec) contiennent la requête SQL, ils partent au journal ;
+#  - cookie_secure documenté dans ops/deployment/VPS-DEPLOY.md : à activer
+#    une fois l'accès HTTPS confirmé (décommenter la ligne).
+RUN printf 'expose_php = Off\ndisplay_errors = Off\nlog_errors = On\nsession.cookie_httponly = On\nsession.use_strict_mode = On\n; session.cookie_secure = On\nmemory_limit = 256M\nupload_max_filesize = 8M\npost_max_size = 12M\n' \
+        > /usr/local/etc/php/conf.d/zz-schoolsafe-prod.ini
+
+EXPOSE 80
+
+# Code applicatif intégré à l'image (image reproductible, règle n°3 de ops/deployment/README.md).
+# config.inc.php est exclu via .dockerignore : la configuration de production est fournie
+# par le montage lecture seule de ops/deployment/config.inc.production.php.
+COPY . /var/www/html/
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD curl -fsS -o /dev/null http://127.0.0.1/index.php || exit 1

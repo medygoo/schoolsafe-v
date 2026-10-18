@@ -1,0 +1,6 @@
+# Contexte de build Dockerfile.vps — exclusions.
+# La configuration locale de test ne doit JAMAIS entrer dans l'image de production :
+# la config VPS est montée en lecture seule par docker-compose.yml.
+config.inc.php
+Dockerfile.vps
+.dockerignore
