@@ -1,0 +1,14 @@
+{
+  "name": "schoolsafe/native-permission-catalog",
+  "description": "Native RosarioSIS SchoolSafe permission catalog and read-only entry programs.",
+  "type": "rosariosis-module",
+  "version": "1.0.0",
+  "require": {
+    "php": ">=7.4"
+  },
+  "extra": {
+    "require": {
+      "francoisjacquet/rosariosis": ">=12.5"
+    }
+  }
+}
