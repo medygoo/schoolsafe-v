@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "scope": "Unified overview only, simulated data",
+  "responsiveVariants": 20,
+  "checks": [
+    "180 enrolled / 89 girls / 91 boys / 140 on time / 40 absent",
+    "7 teachers present including 1 late out of 8 expected",
+    "One unified section, three desktop areas, mobile tabs and cycle disclosure",
+    "Keyboard arrows, Home, End, refresh preserves tab, resizing",
+    "Exact dossier access retained through disclosure",
+    "211 destinations, other roles unchanged, absent/incoherent DTO validation"
+  ],
+  "errors": [],
+  "nativeRequests": []
+}

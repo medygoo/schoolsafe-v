@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "date": "2026-10-11T12:41:45.235Z",
+  "destinations": 9,
+  "responsiveVariants": 90,
+  "checks": [
+    "Creation: two validated steps, recap, focusable linked errors, values retained on previous/theme, escaped content, no save",
+    "Import: filename/content validation, raw source escaping, no CSV interpretation, upload or commit",
+    "Admissions, classes, family: selection scopes details; notes/contact reset per record; lists and five protected family operations retained",
+    "90 responsive variants, 320-1920px, white/blue themes, labels, 44px fields, 200% text and forced colors",
+    "27 empty/error/denied destinations; scenario/role transitions erase drafts and deny unauthorized school routes",
+    "Live mode ignores preview workflow flag and never invokes fixtures"
+  ],
+  "errors": [],
+  "apiRequests": [],
+  "realBusinessIntegration": false
+}

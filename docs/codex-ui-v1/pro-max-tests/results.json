@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "date": "2026-10-11T12:46:57.023Z",
+  "scope": "Isolated UI with synthetic data only",
+  "checks": [
+    {
+      "name": "Shared stylesheet and semantic contrast in both themes",
+      "status": "PASS"
+    },
+    {
+      "name": "Readable text, labels and target sizes across consultation families",
+      "status": "PASS"
+    },
+    {
+      "name": "Mobile menu and submenu keep keyboard focus on visible controls",
+      "status": "PASS"
+    },
+    {
+      "name": "Small phone, landscape, tablet, desktop and 200 percent text",
+      "status": "PASS"
+    },
+    {
+      "name": "JASPE preview image, modal focus, landscape and reduced motion",
+      "status": "PASS"
+    },
+    {
+      "name": "Original JASPE markup with opt-in styling, engine not executed",
+      "status": "PASS"
+    }
+  ],
+  "errors": [],
+  "apiRequests": []
+}

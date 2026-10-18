@@ -1,0 +1,307 @@
+{
+  "reference": "CODEX_SCHOOL_WORKFLOWS_PREVIEW_V1",
+  "date": "2026-10-11T12:08:30.482Z",
+  "scope": "ISOLATED_PREVIEW_ONLY",
+  "sourceHead": "657aaef34c067173bd44a022d6b83a90010aea89",
+  "originalUncommittedChangesPreserved": true,
+  "sourceIntegrity": {
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "baselineIntegrity": {
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "sourceControls": [
+    {
+      "file": "../MANIFEST.json",
+      "bytes": 148109,
+      "sha256": "fb0878b7e72b40a04c829321506c212427d13ad83b355a80d09d72fceb9fdc2f"
+    },
+    {
+      "file": "../TREE.sha256",
+      "bytes": 112364,
+      "sha256": "9f2e601ed97247cdb3e575a3584b469edcf19ae1cc7e4ceaa6ca8d2cdd8dc003"
+    }
+  ],
+  "appFiles": [
+    {
+      "file": "app/modules/codex-ui-v1/catalog.js",
+      "bytes": 77208,
+      "sha256": "608f32933269763a7321fef1a48eec1c099a878897d5172135d957aba9f63da0",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/codex-ui-v1.js",
+      "bytes": 6306,
+      "sha256": "b13c99096e0f9385b432cec0165e2fd99b9e1c37dd58aaada72c9dc9aa4a04f5",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/demo-data.js",
+      "bytes": 13065,
+      "sha256": "70697a6c0b410ac4822f32c81ac2ba50e9c8a973c17c7f6b7873357136a64bed",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "bytes": 51942,
+      "sha256": "2f90f2e60255d31e7f4a732eacba036786f5d0df7393e3883796160f38c68c53",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.html",
+      "bytes": 1938,
+      "sha256": "fe3e098d1679019eb22b39e8b7ad15ccffbca143da0526e71667aec875d1f743",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.js",
+      "bytes": 1242,
+      "sha256": "122ee3e4b1bab56a07fa5be8fa44a0da8508c79c17efdcbede71c24915df2c07",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/read-adapter.js",
+      "bytes": 1490,
+      "sha256": "0e1b3f67f82bc1f15bfe394a1f9c77613e600eda1e67207083e25a2f409694f2",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/record-presentation.js",
+      "bytes": 3691,
+      "sha256": "84d7f149007409324153ae71df762afd8e7e9397af4f40220ad5d56d080259e7",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/school-workflows.js",
+      "bytes": 16272,
+      "sha256": "ab5bc167edad64cdb3a186bf62e4bdaea85f76c33f8cc528db34872487d324ab",
+      "change": "NEW"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/screen-specs.js",
+      "bytes": 123756,
+      "sha256": "6944b85d336e6c7558b786bb5dbf822f66d95a6656e9e01db9aa9a32c3f44e79",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "bytes": 35519,
+      "sha256": "14b415af9613f3d43dba6d7a67f5efbefb2df521ca41775b1ae86349dd568ea9",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/branch-presentation.css",
+      "bytes": 7043,
+      "sha256": "8598c495e4aa288b1d4cca5d926fbcbe56b9b7aadb31f2788516f9365a067628",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/codex-ui-v1.css",
+      "bytes": 14976,
+      "sha256": "8041d6dc548c73a40f88cb67838117c0677a4809aa1caccdbe748dbbc35347fa",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/jaspe-overlay.css",
+      "bytes": 5097,
+      "sha256": "0a0f0a5e0ee3e41c66ab7602568177ee7f0ab5012211ce975001d1a4d787bbf0",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/lot2-screens.css",
+      "bytes": 11999,
+      "sha256": "d16fe0edd3bd6235d19674250d3f2529252388bf377f50ea440ed18429b9d5a8",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/overview-composition.css",
+      "bytes": 7091,
+      "sha256": "b6651f466d260ae2f814addb946054e3e72e90a6a37b44dfdd24ac969e6bb96e",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/record-presentation.css",
+      "bytes": 4076,
+      "sha256": "81837113bbe5853259d65ecbafe66558602eed6c9b598e0f55f3c78984c54f83",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/school-workflows.css",
+      "bytes": 4240,
+      "sha256": "fd85da09438a1114402bd7e8c1256cf737146f904e2a571099fb06cd48b8654c",
+      "change": "NEW"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/ui-ux-pro-max.css",
+      "bytes": 15841,
+      "sha256": "2c74953cd59b1fb9b00386ee7c0d5a9c67c04e1a7dc22c0227cf18b198e70e50",
+      "change": "UNCHANGED"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "docs/codex-ui-v1/SCHOOL_WORKFLOWS_HANDOFF.md",
+      "bytes": 8290,
+      "sha256": "96663a9348e5ae0ecf20224f7122e5b9c354a642753c6084413b77b984c14e4c"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests.cjs",
+      "bytes": 10366,
+      "sha256": "9c71e647965f33db88cf78719b5453a9f02c07f654859ffc11c8aa563c96e765"
+    },
+    {
+      "file": "docs/codex-ui-v1/package-school-workflows.cjs",
+      "bytes": 3167,
+      "sha256": "dd931f70fdf40a99ae72ca49893f98d5c265e0e4c0fc3d88302c7fdaf7f6c15d"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/results.json",
+      "bytes": 885,
+      "sha256": "7d3fd3184694f6a913cdcacc4f66189fbe2a41c2eb6f07da9a89d9d47339d230"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-007-dark-1280.png",
+      "bytes": 140621,
+      "sha256": "b1bb4b4085170e4454e75c6b4cf6362bd76c3581d1f8c04243c2f8cb67f3409e"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-007-dark-390.png",
+      "bytes": 81326,
+      "sha256": "51c80b4055e99d86a8411105e90e7d36959643c6a4a9af9757599b30f547c33e"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-007-light-1280.png",
+      "bytes": 138796,
+      "sha256": "eed8ee95da4311d329a3895355ab23db7c26f6b928228c99c3977d2ce0d4165c"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-007-light-390.png",
+      "bytes": 80716,
+      "sha256": "e04f44bc109b9a896804cb9c3a7359ac2475d43b55184d306327d1dbf53b9cb4"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-008-dark-1280.png",
+      "bytes": 123591,
+      "sha256": "ec4c7b6d8147bec98b4ebba78ca36f291d1ff359577d4a38ef3d56798ed31f9c"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-008-dark-390.png",
+      "bytes": 66378,
+      "sha256": "d258716ec86f57a1780994fce9457076fc87ce0ec015c6a3129a324e076550d9"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-008-light-1280.png",
+      "bytes": 121949,
+      "sha256": "8c2b287d7d10c3a24af6cc74f132ad8653f62a5e80eeee86cac7c2063766de9f"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-008-light-390.png",
+      "bytes": 65671,
+      "sha256": "7744e4dd599c1ae0601fdfcbb2375fa6d8b263939b2cc6b76240b20042d84a95"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-012-dark-1280.png",
+      "bytes": 108922,
+      "sha256": "36bbb10327576b87b34805abfb5e2ccd7a743bebd47d7b27c4e7d5d3ad893a01"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-012-dark-390.png",
+      "bytes": 48541,
+      "sha256": "a90fe13ad804a442f392c2f3985a6149e469d524b21d32cce59954f7f64c51b5"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-012-light-1280.png",
+      "bytes": 107094,
+      "sha256": "3a648670d73025c48114fc0147d41c453031707fcd81a74bed74f15fb36f3ffe"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-012-light-390.png",
+      "bytes": 48068,
+      "sha256": "3e8ada6c5eb12de3f6328d017301eff89ceb5112adb99b340ab563f19a5fa9a8"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-149-dark-1280.png",
+      "bytes": 129796,
+      "sha256": "5ae6ccfe0af9ae1e73dfdffbcae1b3bec90f6e27e8091bf3929018c02133e4da"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-149-dark-390.png",
+      "bytes": 69008,
+      "sha256": "ccd350bf184748dd785891af05c4ee2c5d6a71ced64045feec022390c3f825ab"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-149-light-1280.png",
+      "bytes": 127941,
+      "sha256": "b98062d26e63b1698e5851c63f75ff306f795c2b29da07819317abe5f0d9fa7d"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-149-light-390.png",
+      "bytes": 68175,
+      "sha256": "ae3d3c6d5c89b435e53ada4d8e186c9ffd4e048da5a8844112cf72edebde81ef"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-152-dark-1280.png",
+      "bytes": 109442,
+      "sha256": "53fab12efee3d71af343ad3f70c1a49d2be657eacab1c923a74b72ce9e5aec2a"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-152-dark-390.png",
+      "bytes": 53877,
+      "sha256": "d120f6fd40c78580e6191f6a88af9f6098dc8cf1f281ebe295da0ca491627d60"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-152-light-1280.png",
+      "bytes": 107681,
+      "sha256": "e3da136f2b171da2cd06f164a940c32cc9e8d9e1a2b4b575faf879abdc1ea8c5"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-152-light-390.png",
+      "bytes": 53265,
+      "sha256": "a6cc8e4b7504e4f3041d62807c43ef8364df1462e83976778c437e4933c8cc5b"
+    }
+  ],
+  "testReports": [
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/results.json",
+      "bytes": 885,
+      "sha256": "7d3fd3184694f6a913cdcacc4f66189fbe2a41c2eb6f07da9a89d9d47339d230",
+      "date": "2026-10-11T12:01:34.407Z",
+      "status": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/results.json",
+      "bytes": 721,
+      "sha256": "6c6179a0416a1737b22090a00f0f88c5337905c10a43496cfb4c230fd52958a1",
+      "date": "2026-10-11T12:00:34.561Z",
+      "status": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/results.json",
+      "bytes": 2362,
+      "sha256": "cb6ffc9ed1b46850316f20dbfd038205f210157e7a378804fa7b4e8cf3f73c41",
+      "date": "2026-10-11T12:03:50.173Z",
+      "status": "PASS"
+    }
+  ],
+  "counts": {
+    "presentations": 5,
+    "destinations": 9,
+    "responsiveVariants": 90
+  },
+  "statuses": {
+    "visualBatch": "READY_FOR_OWNER_REVIEW",
+    "designComplete": false,
+    "realBusinessIntegration": "NOT_EXECUTED",
+    "cursorIntegration": "NOT_STARTED",
+    "changesRosario": "NONE"
+  },
+  "historicalAudit": {
+    "file": "docs/codex-ui-v1/SCHOOLSAFE_NON_RACCORDEMENT_CURSOR_V1.zip",
+    "bytes": 73795,
+    "sha256": "af4e74906e69de4406e7fef052d4aeb7baa7fdb0af98105340192ebb98f75ea4"
+  }
+}

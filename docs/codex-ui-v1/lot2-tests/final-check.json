@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-11T09:34:42.140Z",
+  "preview": "http://127.0.0.1:5187/modules/codex-ui-v1/preview.html",
+  "mode": "Synthetic data and explicit substituted adapters only; no live Rosario",
+  "dashboardCombinations": 0,
+  "screenCombinations": 0,
+  "results": [
+    {
+      "name": "Version finale rechargee: double ouverture bloquee pendant la requete",
+      "status": "PASS"
+    }
+  ],
+  "errors": [],
+  "apiRequests": []
+}

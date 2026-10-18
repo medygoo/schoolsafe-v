@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "date": "2026-10-11T10:52:05.569Z",
+  "scope": "Isolated domain presentation; synthetic fixtures and substituted adapters only",
+  "schemas": 23,
+  "customLayouts": 13,
+  "responsiveVariants": 230,
+  "checks": [
+    {
+      "name": "23 schemas: projected columns preserved, correct record and return, local search",
+      "status": "PASS"
+    },
+    {
+      "name": "All schemas at 320, 390, 768, 1280, 1920 pixels, both themes; family-specific screenshots",
+      "status": "PASS"
+    },
+    {
+      "name": "Parent child attendance presentation, authorized subset and exact dossier",
+      "status": "PASS"
+    },
+    {
+      "name": "New layouts: empty, error, denied, recovery and text at 200 percent",
+      "status": "PASS"
+    },
+    {
+      "name": "Substituted family DTO: pagination, status filter, malicious strings and long text",
+      "status": "PASS"
+    }
+  ],
+  "errors": [],
+  "apiRequests": []
+}

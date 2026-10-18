@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-11T09:22:11.331Z",
+  "mode": "file preview + explicit substituted adapters, no real backend",
+  "results": [
+    {
+      "name": "13 branches, 15 postes, aucun Palmares",
+      "status": "PASS"
+    },
+    {
+      "name": "Toutes les destinations sans faux succes",
+      "status": "PASS"
+    },
+    {
+      "name": "6 lectures, filtres, pagination et detail",
+      "status": "PASS"
+    },
+    {
+      "name": "Navigation fixe desktop et sous-menu independant",
+      "status": "PASS"
+    },
+    {
+      "name": "15 postes x 6 viewports x 2 themes",
+      "status": "PASS"
+    },
+    {
+      "name": "Menus et tableaux mobiles",
+      "status": "PASS"
+    },
+    {
+      "name": "JASPE image, modes indisponibles et focus",
+      "status": "PASS"
+    },
+    {
+      "name": "Mode reel: refus ferme sans adaptateur, y compris admin",
+      "status": "PASS"
+    },
+    {
+      "name": "Contrat GET, revision session, erreurs et reprise",
+      "status": "PASS"
+    },
+    {
+      "name": "Reponses tardives, revocation, projection et echappement",
+      "status": "PASS"
+    },
+    {
+      "name": "Read adapter: GET allowliste et validation des parametres",
+      "status": "PASS"
+    },
+    {
+      "name": "Staff financier: permission sans dependance au role demo",
+      "status": "PASS"
+    },
+    {
+      "name": "Schema exact SQL, compteurs invalides et legacy sans faux succes",
+      "status": "PASS"
+    },
+    {
+      "name": "Presentation opt-in sur le vrai markup JASPE (moteur non execute)",
+      "status": "PASS"
+    }
+  ],
+  "browserErrors": []
+}

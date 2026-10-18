@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-11",
+  "method": "Inspection manuelle du navigateur Codex avec cua_repl, etat d accessibilite observe",
+  "url": "http://127.0.0.1:5187/modules/codex-ui-v1/preview.html",
+  "role": "Administrateur principal de demonstration",
+  "scenario": "Donnees fictives",
+  "networkCapturePerformed": false,
+  "authenticatedSession": false,
+  "cases": [
+    {
+      "id": "B01",
+      "steps": ["Ecole", "Eleves"],
+      "observed": "Liste Dossiers des eleves, donnees fictives, 24 lignes chargees et message Interaction visuelle. Fonction metier non raccordee",
+      "result": "REPRODUCED",
+      "issueIds": ["NR-01", "NR-03"]
+    },
+    {
+      "id": "B02",
+      "steps": ["Ecole", "Eleves", "Ouvrir la fonction existante"],
+      "observed": "La liste reste presente; le statut devient Fonction non raccordee. Aucune operation effectuee",
+      "result": "REPRODUCED",
+      "issueIds": ["NR-01", "NR-02", "NR-04"]
+    },
+    {
+      "id": "B03",
+      "steps": ["Ecole", "Inscription", "Creer l eleve"],
+      "observed": "Titre Creer l eleve, mais contenu Dossiers des eleves identique a la liste, sans formulaire de creation; avertissement generique",
+      "result": "REPRODUCED",
+      "issueIds": ["NR-05"]
+    },
+    {
+      "id": "B04",
+      "steps": ["Ecole", "Organisation", "Import massif"],
+      "observed": "Page de destination school / Import massif, Etat Non raccorde dans la preview, bouton Ouvrir la fonction existante, sans parcours d import",
+      "result": "REPRODUCED",
+      "issueIds": ["NR-05", "NR-07"]
+    }
+  ],
+  "limits": "Quatre cas observes, pas 211 parcours executes. Aucun compte reel, appel API authentifie, PostgreSQL, appareil physique ou operation metier testes. Le non-appel du port d ouverture est etabli par le court-circuit source, pas par une capture reseau."
+}

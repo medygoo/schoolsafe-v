@@ -1,0 +1,79 @@
+{
+  "reference": "CODEX_SCHOOLSAFE_NON_RACCORDEMENT_DIAGNOSTIC_V1",
+  "generatedAt": "2026-10-11T11:45:39.668Z",
+  "root": "docs/codex-ui-v1/non-raccordement-v1",
+  "scope": "DOCUMENTATION_ONLY",
+  "manifestExcludedFromOwnHash": true,
+  "files": [
+    {
+      "file": "CURSOR_HANDOFF.md",
+      "bytes": 9644,
+      "sha256": "8ee6df4e86206063c85c1088ee8e8dacce996fefc4b8760f7b5bd3476639cd58"
+    },
+    {
+      "file": "INDEX.md",
+      "bytes": 580,
+      "sha256": "2babddcdc163f02d095c48ac37366d5b78a0e9bc8284d9027a1fddcd73f9f844"
+    },
+    {
+      "file": "REPORT.md",
+      "bytes": 21532,
+      "sha256": "d4ea015ddd00b1972b841a94a9ee4419f712731bc67ff9b97133e29958019984"
+    },
+    {
+      "file": "browser-observations.json",
+      "bytes": 1822,
+      "sha256": "6e2542ec9deda2d492dde29480411bd17e48fa8bcb9c006a7394260711bc390f"
+    },
+    {
+      "file": "build-audit.cjs",
+      "bytes": 23733,
+      "sha256": "36057411c3f6a1752b24c5bb0968b338d2ed55ba4e0ccb57b1b04ec07ceddc3e"
+    },
+    {
+      "file": "destinations.csv",
+      "bytes": 107645,
+      "sha256": "d92cbc6841c7b4ea4160b5fc1e9c7cfa057af96911fc8e48c48341ea34438066"
+    },
+    {
+      "file": "destinations.json",
+      "bytes": 642013,
+      "sha256": "13780af0853737088c8a1b1c55c8fa68efa8a08ed9129d14c8511e2475948bd7"
+    },
+    {
+      "file": "evidence.json",
+      "bytes": 16130,
+      "sha256": "cdaa4c6e0d2cbd2e1ae63fc9d54031bef78a56d3aedd4b7969091f0519d5d9ab"
+    },
+    {
+      "file": "findings.json",
+      "bytes": 15760,
+      "sha256": "1729d18a3d8fb578eaf057c5a64e9432dbfb49c5d57aee182ce24f6cc876ab9e"
+    },
+    {
+      "file": "secondary-controls.json",
+      "bytes": 6964,
+      "sha256": "0b1c36948d2f7e4fb20ec9f194869ac9e77d00c13a4aa6d37aebdd1980830727"
+    },
+    {
+      "file": "verification.json",
+      "bytes": 1186,
+      "sha256": "c7b616386f772f6ab09cc949482b6fd1bdc0617660903cb86f4b46833f9abe0d"
+    }
+  ],
+  "sourceHeadDeclared": "657aaef34c067173bd44a022d6b83a90010aea89",
+  "sourceIntegrity": {
+    "expected": 1017,
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "baselineIntegrity": {
+    "expected": 1017,
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "applicationChanges": [],
+  "cursorTransmission": "PREPARED_NOT_SENT"
+}

@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "date": "2026-10-11T12:38:53.765Z",
+  "destinations": 111,
+  "presentations": 53,
+  "forms": 20,
+  "responsiveVariants": 530,
+  "checks": [
+    "111 destinations: exact titles, specialized surfaces, search, filters, sorting, projected detail and list return",
+    "530 responsive variants: 53 presentations, five widths, both themes, icons, images and contained table scrolling",
+    "20 local forms: required and date-range validation, linked error focus, responsive fields, review, edit, escaping and discard",
+    "159 empty/error/denied cases, no stale fixture detail",
+    "15 roles across their authorized branches; parent cannot open payroll",
+    "All 53 presentations at 200% text, forced colors/reduced motion, session change clears drafts",
+    "Late demo response discarded; live mode does not activate feature preview or load fixtures"
+  ],
+  "errors": [],
+  "apiRequests": [],
+  "realBusinessIntegration": false
+}

@@ -1,0 +1,506 @@
+{
+  "status": "PASS",
+  "date": "2026-10-11T10:55:07.994Z",
+  "scope": "Isolated branch presentation, synthetic data only",
+  "branches": 13,
+  "destinations": 211,
+  "responsiveVariants": 130,
+  "checks": [
+    {
+      "name": "13 branch identities, icons and contrast in both themes",
+      "status": "PASS"
+    },
+    {
+      "name": "211 destinations retain their branch and exact title",
+      "status": "PASS"
+    },
+    {
+      "name": "Cards and family operations stay complete within labelled groups",
+      "status": "PASS"
+    },
+    {
+      "name": "13 branches x 5 widths x 2 themes, grouped commands and 200 percent text",
+      "status": "PASS"
+    },
+    {
+      "name": "Independent submenu scrolling and destination heading stay visible",
+      "status": "PASS"
+    },
+    {
+      "name": "Mobile navigation, forced colors and session reset preserve identification",
+      "status": "PASS"
+    }
+  ],
+  "contrasts": [
+    {
+      "branch": "pilotage",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 6.084709337215084
+    },
+    {
+      "branch": "pilotage",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 6.583367543914869
+    },
+    {
+      "branch": "pilotage",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.864655747108886
+    },
+    {
+      "branch": "school",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 5.088967943513775
+    },
+    {
+      "branch": "school",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 5.506022479405005
+    },
+    {
+      "branch": "school",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 4.904925353499426
+    },
+    {
+      "branch": "pedagogy",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 6.172507168660846
+    },
+    {
+      "branch": "pedagogy",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 6.678360642505621
+    },
+    {
+      "branch": "pedagogy",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.94927836887043
+    },
+    {
+      "branch": "security",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 6.135846982097446
+    },
+    {
+      "branch": "security",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 6.638696055587848
+    },
+    {
+      "branch": "security",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.913943998417571
+    },
+    {
+      "branch": "finance",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 6.282394508134406
+    },
+    {
+      "branch": "finance",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 6.797253543396182
+    },
+    {
+      "branch": "finance",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 6.05519163132268
+    },
+    {
+      "branch": "feeControl",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 5.530350437529948
+    },
+    {
+      "branch": "feeControl",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 5.983577449497993
+    },
+    {
+      "branch": "feeControl",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.330345244039335
+    },
+    {
+      "branch": "accounting",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 6.150735089203902
+    },
+    {
+      "branch": "accounting",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 6.654804282897163
+    },
+    {
+      "branch": "accounting",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.9282936769423
+    },
+    {
+      "branch": "people",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 5.62143419503683
+    },
+    {
+      "branch": "people",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 6.082125764580381
+    },
+    {
+      "branch": "people",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.418134956304455
+    },
+    {
+      "branch": "inventory",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 5.524607030331974
+    },
+    {
+      "branch": "inventory",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 5.9773633547166085
+    },
+    {
+      "branch": "inventory",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.324809547235286
+    },
+    {
+      "branch": "communication",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 5.303923905928204
+    },
+    {
+      "branch": "communication",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 5.738594657943583
+    },
+    {
+      "branch": "communication",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.11210743081556
+    },
+    {
+      "branch": "care",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 5.398368126421235
+    },
+    {
+      "branch": "care",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 5.840778834943028
+    },
+    {
+      "branch": "care",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.203136074880452
+    },
+    {
+      "branch": "administration",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 5.8769633566708475
+    },
+    {
+      "branch": "administration",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 6.35859622454735
+    },
+    {
+      "branch": "administration",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.664422902577456
+    },
+    {
+      "branch": "reports",
+      "theme": "light",
+      "surface": "bg",
+      "ratio": 5.3369490556691686
+    },
+    {
+      "branch": "reports",
+      "theme": "light",
+      "surface": "surface",
+      "ratio": 5.774326307047647
+    },
+    {
+      "branch": "reports",
+      "theme": "light",
+      "surface": "soft",
+      "ratio": 5.143938225598623
+    },
+    {
+      "branch": "pilotage",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 7.6143183892486315
+    },
+    {
+      "branch": "pilotage",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 5.909962993095709
+    },
+    {
+      "branch": "pilotage",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 4.508442475963017
+    },
+    {
+      "branch": "school",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 9.567317905714066
+    },
+    {
+      "branch": "school",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 7.42581172410517
+    },
+    {
+      "branch": "school",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 5.66481465866562
+    },
+    {
+      "branch": "pedagogy",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 8.729189330973295
+    },
+    {
+      "branch": "pedagogy",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 6.775286147558745
+    },
+    {
+      "branch": "pedagogy",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 5.168558227884491
+    },
+    {
+      "branch": "security",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 8.394592440639078
+    },
+    {
+      "branch": "security",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 6.51558394725776
+    },
+    {
+      "branch": "security",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 4.970443208838541
+    },
+    {
+      "branch": "finance",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 8.958778774348787
+    },
+    {
+      "branch": "finance",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 6.95348530401515
+    },
+    {
+      "branch": "finance",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 5.304498274732062
+    },
+    {
+      "branch": "feeControl",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 10.158674104697491
+    },
+    {
+      "branch": "feeControl",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 7.884801363501461
+    },
+    {
+      "branch": "feeControl",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 6.014957018050725
+    },
+    {
+      "branch": "accounting",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 7.93484608632324
+    },
+    {
+      "branch": "accounting",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 6.158745186213333
+    },
+    {
+      "branch": "accounting",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 4.698227117258582
+    },
+    {
+      "branch": "people",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 8.564480382316049
+    },
+    {
+      "branch": "people",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 6.6474449224570344
+    },
+    {
+      "branch": "people",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 5.0710339607949955
+    },
+    {
+      "branch": "inventory",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 8.837720120689585
+    },
+    {
+      "branch": "inventory",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 6.85952388468048
+    },
+    {
+      "branch": "inventory",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 5.232819373438587
+    },
+    {
+      "branch": "communication",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 9.192742850778119
+    },
+    {
+      "branch": "communication",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 7.135079894985178
+    },
+    {
+      "branch": "communication",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 5.4430285444293265
+    },
+    {
+      "branch": "care",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 9.573524276675055
+    },
+    {
+      "branch": "care",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 7.430628888403508
+    },
+    {
+      "branch": "care",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 5.668489454626558
+    },
+    {
+      "branch": "administration",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 9.443897007222162
+    },
+    {
+      "branch": "administration",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 7.330016814387223
+    },
+    {
+      "branch": "administration",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 5.591737070792738
+    },
+    {
+      "branch": "reports",
+      "theme": "dark",
+      "surface": "bg",
+      "ratio": 10.444691928341932
+    },
+    {
+      "branch": "reports",
+      "theme": "dark",
+      "surface": "surface",
+      "ratio": 8.106798220828992
+    },
+    {
+      "branch": "reports",
+      "theme": "dark",
+      "surface": "soft",
+      "ratio": 6.184308342631774
+    }
+  ],
+  "errors": [],
+  "apiRequests": []
+}

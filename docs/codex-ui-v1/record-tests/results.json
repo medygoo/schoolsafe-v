@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "date": "2026-10-11T12:43:54.633Z",
+  "schemas": 14,
+  "responsiveVariants": 140,
+  "checks": [
+    "14 schemas, every tab: exact projected fields and identifiers, reset filters and list return",
+    "140 detail layouts: 14 schemas, five widths, both themes, assets and overflow",
+    "Three local drafts: multiline inputs, inline errors, summary focus and field links, preserved values on theme changes, zero grade, close resets",
+    "List filters retained after detail, 200% text, forced colors and reduced motion",
+    "No row fallback, no cross-tab leak, denial clears identity, zero and escaped data preserved"
+  ],
+  "errors": [],
+  "apiRequests": [],
+  "realBusinessIntegration": false
+}

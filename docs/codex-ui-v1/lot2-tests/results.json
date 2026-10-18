@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-11T12:46:35.564Z",
+  "preview": "http://127.0.0.1:5187/modules/codex-ui-v1/preview.html",
+  "mode": "Synthetic data and explicit substituted adapters only; no live Rosario",
+  "dashboardCombinations": 150,
+  "screenCombinations": 180,
+  "results": [
+    {
+      "name": "HTTP ouvert, 211 destinations, 13 branches, 15 postes, aucun Palmares",
+      "status": "PASS"
+    },
+    {
+      "name": "15 dashboards x 5 largeurs x 2 themes, indicateurs/listes/notifications",
+      "status": "PASS"
+    },
+    {
+      "name": "211 boutons -> destination exacte, aucun succes metier fictif",
+      "status": "PASS"
+    },
+    {
+      "name": "Eleves: recherche, filtres, pagination, dossier et onglets clavier",
+      "status": "PASS"
+    },
+    {
+      "name": "Retour a la destination precedente et synthese -> dossier exact",
+      "status": "PASS"
+    },
+    {
+      "name": "Devoirs, notes et preparation: brouillons visuels valides, jamais publies",
+      "status": "PASS"
+    },
+    {
+      "name": "Cartes: 9 operations propres, selection et limites impression/ZIP",
+      "status": "PASS"
+    },
+    {
+      "name": "Familles: 5 operations, demande distincte de reactivation",
+      "status": "PASS"
+    },
+    {
+      "name": "Scanner: quatre modes, aucun QR/camera, frais sans droit de retrait",
+      "status": "PASS"
+    },
+    {
+      "name": "Six lectures, perimetres, actualisation, historique filtre et detail",
+      "status": "PASS"
+    },
+    {
+      "name": "Scenarios chargement, vide, erreur, refus et reprise",
+      "status": "PASS"
+    },
+    {
+      "name": "Ecrans prioritaires x 5 largeurs x 2 themes, menu fixe et retour mobile",
+      "status": "PASS"
+    },
+    {
+      "name": "Contrats substitues: refus detail famille, projections et session revoquee",
+      "status": "PASS"
+    },
+    {
+      "name": "Modes live substitues: refus pickup, delegation fees distincte du role",
+      "status": "PASS"
+    },
+    {
+      "name": "Operation familiale substituee: suspension refusee, demande seule ouverte",
+      "status": "PASS"
+    },
+    {
+      "name": "Validation donnees, XSS echappe, aucune API reelle ni erreur JS",
+      "status": "PASS"
+    },
+    {
+      "name": "Version finale rechargee: double ouverture bloquee pendant la requete",
+      "status": "PASS"
+    }
+  ],
+  "errors": [],
+  "apiRequests": []
+}

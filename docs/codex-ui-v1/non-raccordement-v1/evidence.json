@@ -1,0 +1,316 @@
+{
+  "evidence": [
+    {
+      "id": "E01",
+      "file": "app/modules/codex-ui-v1/preview.js",
+      "line": 4,
+      "excerpt": "var active={demo:true,role:'admin',schoolName:'Ecole de demonstration',revision:1};",
+      "meaning": "La session est explicitement fictive."
+    },
+    {
+      "id": "E02",
+      "file": "app/modules/codex-ui-v1/preview.js",
+      "line": 10,
+      "excerpt": "window.codexPreview=window.SchoolSafeCodexUiV1.mountApplication('#codexDashboardPreview',{demo:true,getSession:function(){return active;},demoData:fixtures});",
+      "meaning": "Seuls demo/getSession/demoData sont injectes; aucun port metier reel."
+    },
+    {
+      "id": "E03",
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "line": 83,
+      "excerpt": "function demo(s) { return !!(s && s.demo === true && options.demo === true); }",
+      "meaning": "Le mode demo exige les deux drapeaux session et options."
+    },
+    {
+      "id": "E04",
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "line": 259,
+      "excerpt": "message(demo(session())?'Interaction visuelle. Fonction metier non raccordee.':'Selectionnez Ouvrir pour acceder a la fonction existante.');",
+      "meaning": "Message emis pour toute selection de type existing en demonstration."
+    },
+    {
+      "id": "E05",
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "line": 297,
+      "excerpt": "if(demo(session())||typeof options.openExisting!=='function'){state.busy=false;message('Fonction non raccordee. Aucune operation effectuee.');return;}",
+      "meaning": "Court-circuit demo OU port absent, avant appel du port."
+    },
+    {
+      "id": "E06",
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "line": 301,
+      "excerpt": "message(result?.opened===true?'Ecran existant ouvert.':'Fonction non raccordee. Aucune operation effectuee.',result?.opened===true?'ready':'unavailable');",
+      "meaning": "Meme message si le port ne confirme pas opened:true."
+    },
+    {
+      "id": "E07",
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "line": 298,
+      "excerpt": "var result=await options.openExisting(route,session(),a,params);",
+      "meaning": "Le port est un point de raccordement injecte, pas le moteur Rosario."
+    },
+    {
+      "id": "E08",
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "line": 91,
+      "excerpt": "if (s.demo || !s.identityKey || !s.schoolId || typeof options.authorize !== 'function') return false;",
+      "meaning": "Hors demo, session et authorize explicite requis; aucun droit implicite."
+    },
+    {
+      "id": "E09",
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "line": 100,
+      "excerpt": "var loader=demo()?bridge.demoData?.consult:bridge.consult;",
+      "meaning": "Les consultations de preview utilisent les fixtures."
+    },
+    {
+      "id": "E10",
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "line": 101,
+      "excerpt": "if(typeof loader!=='function'){v.busy=false;notice('Consultation non raccordee. Aucune donnee disponible.','unavailable');return;}",
+      "meaning": "Port consult absent; different d un refus ou d une erreur reseau."
+    },
+    {
+      "id": "E11",
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "line": 86,
+      "excerpt": "if(typeof loader!=='function'){dash.busy=false;dash.message='Synthese non raccordee. Aucun chiffre disponible.';dash.kind='unavailable';redraw();return;}",
+      "meaning": "Port loadDashboard absent."
+    },
+    {
+      "id": "E12",
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "line": 272,
+      "excerpt": "if(typeof reader!=='function'){state.busy=false;message('Source de donnees non raccordee.');return;}",
+      "meaning": "Port read absent pour les six lectures."
+    },
+    {
+      "id": "E13",
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "line": 228,
+      "excerpt": "if(kind==='legacy')return '<section class=\"sscx-section sscx-legacy-target\"><h2>'+esc(a.label)+'</h2><p>'+esc(a.group)+' · '+esc(root.SchoolSafeCodexCatalog.branches.find(function(b){return b.id===a.branch;}).label)+'</p><dl class=\"sscx-data-list\"><dt>Destination existante</dt><dd>'+esc(a.legacy?.branch)+' / '+esc(a.legacy?.action)+'</dd><dt>Etat</dt><dd>Non raccorde dans la preview</dd><dt>Limite</dt><dd>'+esc(bridge.familyMessage(a))+'</dd></dl><div class=\"sscx-toolbar\">'+command('Ouvrir la fonction existante','data-command=\"open-existing\"')+'</div></section>';",
+      "meaning": "Page generique et mention non raccorde inscrite en dur."
+    },
+    {
+      "id": "E14",
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "line": 217,
+      "excerpt": "return '<section class=\"sscx-operation\"><div class=\"sscx-section-heading\"><h2>'+esc(op[1])+'</h2>'+tool('Fermer cette operation','data-lot2=\"operation-close\"','x')+'</div><form class=\"sscx-form\" data-lot2-operation-form><label for=\"lot2-operation-record\">'+(classMode?'Classe autorisee':'Dossier autorise')+'</label><select name=\"'+(classMode?'class_id':'record_id')+'\" id=\"lot2-operation-record\" required><option value=\"\">Selectionner</option>'+choices.map(function(r){return '<option value=\"'+esc(r.id)+'\" '+(v.checked.includes(r.id)?'selected':'')+'>'+esc(r.name||r.student||r.id)+'</option>';}).join('')+'</select>'+(['lost','replace','revoked','suspend','reactivation-request'].includes(op[0])?'<label for=\"lot2-operation-reason\">Motif</label><input name=\"reason\" id=\"lot2-operation-reason\" required maxlength=\"500\">':'')+'<p class=\"sscx-domain-note\">Non raccorde. '+(op[0]==='print'?'Impression / ZIP non valides. ':op[0]==='reactivation-request'?'Une demande ne reactive pas une autorisation. ':'')+'Aucune operation effectuee par ce formulaire.</p><div class=\"sscx-toolbar\"><button type=\"submit\">'+icon('arrow-up-right')+'<span>Ouvrir dans le moteur existant</span></button></div></form></section>';",
+      "meaning": "Notes des operations cartes/famille non conditionnees au raccordement."
+    },
+    {
+      "id": "E15",
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "line": 225,
+      "excerpt": "function html(a){",
+      "meaning": "Rendu par schema: une consultation ne prouve pas un parcours de creation complet."
+    },
+    {
+      "id": "E16",
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "line": 228,
+      "excerpt": "if(kind==='legacy')return '<section class=\"sscx-section sscx-legacy-target\"><h2>'+esc(a.label)+'</h2><p>'+esc(a.group)+' · '+esc(root.SchoolSafeCodexCatalog.branches.find(function(b){return b.id===a.branch;}).label)+'</p><dl class=\"sscx-data-list\"><dt>Destination existante</dt><dd>'+esc(a.legacy?.branch)+' / '+esc(a.legacy?.action)+'</dd><dt>Etat</dt><dd>Non raccorde dans la preview</dd><dt>Limite</dt><dd>'+esc(bridge.familyMessage(a))+'</dd></dl><div class=\"sscx-toolbar\">'+command('Ouvrir la fonction existante','data-command=\"open-existing\"')+'</div></section>';",
+      "meaning": "Bouton actif sur une page legacy meme en demonstration."
+    },
+    {
+      "id": "E17",
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "line": 334,
+      "excerpt": "case 'open-existing':openExisting();break;",
+      "meaning": "Le bouton generique ne transmet ni record_id ni onglet selectionne."
+    },
+    {
+      "id": "E18",
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "line": 284,
+      "excerpt": "if(form.matches('[data-lot2-operation-form]')){if(form.reportValidity()){var params=Object.fromEntries(new FormData(form)),op=operations[spec(active).kind]?.[v.operation];if(op){params.operation=op[0];params.selection_kind=op[0]==='class'?'class':'record';bridge.openOperation(active,params);}}return true;}",
+      "meaning": "Les formulaires cartes/famille transmettent au contraire des parametres explicites."
+    },
+    {
+      "id": "E19",
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "line": 288,
+      "excerpt": "if(Object.keys(v.draftErrors).length){v.message='';redraw();focus('.sscx-draft-errors');}else{notice('Brouillon verifie visuellement. Non sauvegarde et non transmis.','empty');focus('[data-lot2-draft] button[type=\"submit\"]');}return true;",
+      "meaning": "Les brouillons pedagogiques sont locaux, pas des ecritures metier."
+    },
+    {
+      "id": "E20",
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "line": 163,
+      "excerpt": "'<div class=\"sscx-overview-layout\">'+pupils+teachers+palmares+'</div><footer class=\"sscx-overview-footer sscx-overview-pending\"><section aria-label=\"Dernieres activites\">'+heading('Dernieres activites','history')+'<span class=\"sscx-badge\">Non raccorde</span><p>Aucune activite transmise.</p></section><section aria-label=\"Calendrier scolaire\">'+heading('Calendrier scolaire','calendar-days')+'<span class=\"sscx-badge\">Non raccorde</span><p>Aucun evenement transmis.</p></section></footer></section>';",
+      "meaning": "Activites/calendrier: zones de presentation sans chargement metier associe."
+    },
+    {
+      "id": "E21",
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "line": 311,
+      "excerpt": "if(typeof options.openJaspe!=='function'){message('Conversation JASPE non raccordee.');return;}",
+      "meaning": "Ouverture JASPE native exige un port distinct."
+    },
+    {
+      "id": "E22",
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "line": 337,
+      "excerpt": "case 'jaspe-text':case 'jaspe-audio':var d=b.closest('dialog');d.querySelectorAll('[data-command^=\"jaspe-\"]').forEach(function(btn){btn.setAttribute('aria-pressed',String(btn===b));});d.querySelector('.sscx-jaspe-status').textContent=b.dataset.command==='jaspe-audio'?'Audio indisponible dans la demonstration.':'Conversation ecrite indisponible dans la demonstration.';break;",
+      "meaning": "Dialogue JASPE demo: ni conversation ni voix natives."
+    },
+    {
+      "id": "E23",
+      "file": "docs/codex-ui-v1/preview-server.cjs",
+      "line": 8,
+      "excerpt": "if (!['GET','HEAD'].includes(req.method)) { res.writeHead(405); res.end(); return; }",
+      "meaning": "Serveur statique local, sans proxy API."
+    },
+    {
+      "id": "E24",
+      "file": "app/app.js",
+      "line": 3087,
+      "excerpt": "function openActionByBranch(branchKey, actionName) {",
+      "meaning": "Routeur historique present dans la copie; ne pas reconstruire un moteur."
+    },
+    {
+      "id": "E25",
+      "file": "app/modules/core/visual-wiring.js",
+      "line": 432,
+      "excerpt": "if (root.SchoolSafeVisualOutputP1 && root.SchoolSafeVisualOutputP1.open(branchKey, actionName, context)) return true;",
+      "meaning": "Ordre des couches historiques a respecter avant les replis de domaine."
+    },
+    {
+      "id": "E26",
+      "file": "app/modules/core/visual-output-p2c.js",
+      "line": 767,
+      "excerpt": "show(context, shell(\"report\", actionName, state(\"unavailable\", \"Bulletin\", \"REPORT_CARDS=BACKEND_GAP\")));",
+      "meaning": "Deux entrees bulletin explicitement arretees dans le code historique; pas preuve d absence universelle de fonction Rosario."
+    },
+    {
+      "id": "E27",
+      "file": "app/modules/core/visual-output-p2c.js",
+      "line": 15,
+      "excerpt": "\"pedagogy|Palmarès\": \"rankings\",",
+      "meaning": "Le palmares possede deja une cible historique rankings."
+    },
+    {
+      "id": "E28",
+      "file": "app/modules/core/visual-output-p2c.js",
+      "line": 525,
+      "excerpt": "request(scopedPath(context, \"palmarques.read\", \"/native/pedagogy/rankings?\")).then(function (body) {",
+      "meaning": "Un ecran historique lit les palmares existants."
+    },
+    {
+      "id": "E29",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 225,
+      "excerpt": "app.get(\"/native/pedagogy/rankings\", { preHandler: requireSession }, async (request) => {",
+      "meaning": "Route de liste des palmares presente dans le snapshot."
+    },
+    {
+      "id": "E30",
+      "file": "app/modules/core/visual-output-p2a.js",
+      "line": 224,
+      "excerpt": "function renderCreate(context) {",
+      "meaning": "Formulaire historique de creation eleve present."
+    },
+    {
+      "id": "E31",
+      "file": "app/modules/core/visual-output-p2a.js",
+      "line": 271,
+      "excerpt": "function renderImport(context) {",
+      "meaning": "Ecran historique d import present, alors que sa destination Codex est legacy."
+    },
+    {
+      "id": "E32",
+      "file": "docs/codex-ui-v1/LOT2_CURSOR_HANDOFF.md",
+      "line": 55,
+      "excerpt": "Les noms bridge sont des contrats frontend proposes, pas des fonctions natives exposees par Rosario. Cursor doit les implementer explicitement apres validation du proprietaire.",
+      "meaning": "Les ports proposes ne sont pas une facade Rosario deja exposee."
+    },
+    {
+      "id": "E33",
+      "file": "app/modules/codex-ui-v1/preview.html",
+      "line": 22,
+      "excerpt": "<script src=\"./demo-data.js\" defer></script>",
+      "meaning": "Entree preview charge explicitement les fixtures, pas app.js."
+    },
+    {
+      "id": "E34",
+      "file": "app/modules/codex-ui-v1/read-adapter.js",
+      "line": 3,
+      "excerpt": "var endpoints = {",
+      "meaning": "Six lecteurs GET existent comme adaptateur, sans transport authentifie fourni dans la preview."
+    }
+  ],
+  "sources": [
+    {
+      "file": "app/app.js",
+      "sha256": "5cd7bb3d5a5862c570b6dfb2792342a24e9216950ab32b4b30bad2d09345022a"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/catalog.js",
+      "sha256": "608f32933269763a7321fef1a48eec1c099a878897d5172135d957aba9f63da0"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "sha256": "321fcbe8beb5013c60616ce616daa846aacf926e032394774273627f0a07e21f"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.html",
+      "sha256": "0dcadebf330126082dad64ab100a0d241c5b2e15780a5bfd245502791069f76b"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.js",
+      "sha256": "2b3968d9839ed0d0386c100ee1047e9c672cc25078e8481700025f325d122879"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/read-adapter.js",
+      "sha256": "0e1b3f67f82bc1f15bfe394a1f9c77613e600eda1e67207083e25a2f409694f2"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/screen-specs.js",
+      "sha256": "6944b85d336e6c7558b786bb5dbf822f66d95a6656e9e01db9aa9a32c3f44e79"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "sha256": "3115eee7c3728fb0d962f8a6e80a27f98b6434ba103b4806e25d28e62eaece6a"
+    },
+    {
+      "file": "app/modules/core/visual-output-closure-a.js",
+      "sha256": "8177c7e88aadd321626804a9711b38d29c02600b437cc2ac9d9e3ea0e5f33e76"
+    },
+    {
+      "file": "app/modules/core/visual-output-closure-b1.js",
+      "sha256": "1be91e20b8a0a731fb5f6ade945ecf166ed4a19669f70d37f49097d46d270b6b"
+    },
+    {
+      "file": "app/modules/core/visual-output-p1.js",
+      "sha256": "cf438e3d344fd6cfab5c2315083745d14c3887687302cbb619f7597c7c9847b4"
+    },
+    {
+      "file": "app/modules/core/visual-output-p2a.js",
+      "sha256": "bd9242f38254523a8b799441b8c71f03f1a870f4cd96dd7186e6482973852afd"
+    },
+    {
+      "file": "app/modules/core/visual-output-p2b.js",
+      "sha256": "5905b95db41d760c9f8bdcbe0b82cc2a6b465dee0e0e8058eeeaddd93dda6155"
+    },
+    {
+      "file": "app/modules/core/visual-output-p2c.js",
+      "sha256": "170d86fbb077d897da9bfbe8bbfdf8c5ee9769117fc4b361908b6800118eed81"
+    },
+    {
+      "file": "app/modules/core/visual-wiring.js",
+      "sha256": "d8527699adadd3fe438fae1022dbf188573c782ad5c0263c84337cbe9d689bf2"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_CURSOR_HANDOFF.md",
+      "sha256": "b72d1b51fc5d3b3b9d60d8ec762d8258235c5a7a46069430725ca0a5df050064"
+    },
+    {
+      "file": "docs/codex-ui-v1/preview-server.cjs",
+      "sha256": "1d510ca99dfd295dbc574c9e3a29046c76978543460ca9a2e84da872de396f81"
+    },
+    {
+      "file": "server/src/pedagogynative/routes.ts",
+      "sha256": "81ff381bc0eab6cb63576c26c1aa08e861e346c8110a5692ff58332914aa5f1a"
+    }
+  ]
+}

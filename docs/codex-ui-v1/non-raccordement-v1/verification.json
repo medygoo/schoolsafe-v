@@ -1,0 +1,39 @@
+{
+  "reference": "CODEX_SCHOOLSAFE_NON_RACCORDEMENT_DIAGNOSTIC_V1",
+  "generatedAt": "2026-10-11T11:45:39.668Z",
+  "sourceBranchDeclared": "cursor/rosario-navigation-integration-v1",
+  "sourceHeadDeclared": "657aaef34c067173bd44a022d6b83a90010aea89",
+  "snapshotIncludesUncommittedChanges": true,
+  "gitRepositoryPresent": false,
+  "cursorCurrentCheckoutInspected": false,
+  "remoteHeadChecked": false,
+  "sourceIntegrity": {
+    "expected": 1017,
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "baselineIntegrity": {
+    "expected": 1017,
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "codexApplicationIntegrity": {
+    "checked": 17,
+    "modified": []
+  },
+  "checks": [
+    "211 ids uniques",
+    "Catalogues JSON et JavaScript concordants",
+    "Comptages 203/116/87/6/2 et permissions nulles 204",
+    "Ancres de preuves presentes",
+    "References des constats resolues",
+    "Integrite TREE et manifeste applicatif LOT2"
+  ],
+  "browserObservationCount": 4,
+  "automatedBrowserTestsThisAudit": false,
+  "backendCallsForAudit": false,
+  "authenticatedBusinessTests": false,
+  "status": "PASS_DOCUMENTARY_AUDIT_NOT_BUSINESS_CERTIFICATION"
+}
