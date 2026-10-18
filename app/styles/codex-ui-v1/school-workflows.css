@@ -1,0 +1,40 @@
+.sscx-school-workflow { min-width: 0; container-type: inline-size; }
+.sscx-school-workflow h2 { display: flex; align-items: center; gap: 10px; font-size: 1.125rem; }
+.sscx-school-workflow h2 svg { flex: 0 0 22px; color: var(--sscx-accent); }
+.sscx-school-workflow h3 { font-size: 1rem; margin: 20px 0 12px; }
+.sscx-school-boundary { border-inline-start: 3px solid var(--sscx-control-border); padding: 8px 12px; color: var(--sscx-muted); font-size: .875rem; line-height: 1.6; }
+.sscx-school-steps { padding: 0; margin: 24px 0; list-style: none; display: flex; flex-wrap: wrap; gap: 12px; }
+.sscx-school-steps li { flex: 1 1 170px; display: flex; align-items: center; gap: 8px; padding-block: 12px; border-bottom: 2px solid var(--sscx-border); color: var(--sscx-muted); }
+.sscx-school-steps li[aria-current] { color: var(--sscx-accent); border-color: var(--sscx-accent); }
+.sscx-school-steps li > span { display: grid; place-items: center; flex: 0 0 28px; height: 28px; border: 1px solid currentColor; border-radius: 50%; font-size: .875rem; }
+.sscx-school-steps strong { overflow-wrap: anywhere; font-size: .875rem; }
+.sscx-school-form { max-width: 900px; }
+.sscx-school-form fieldset { min-width: 0; margin: 20px 0; padding: 16px 0 0; border: 0; border-top: 1px solid var(--sscx-border); }
+.sscx-school-form legend { font-weight: 650; padding-inline-end: 14px; }
+.sscx-school-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px 24px; }
+.sscx-school-field, .sscx-school-picker { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin-block-end: 16px; }
+.sscx-school-picker { max-width: 540px; margin-block: 24px; }
+.sscx-school-field label, .sscx-school-picker label { font-weight: 600; font-size: .875rem; }
+.sscx-school-workflow input, .sscx-school-workflow select, .sscx-school-workflow textarea { width: 100%; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--sscx-control-border); border-radius: 6px; color: var(--sscx-text); background: var(--sscx-surface); font: inherit; }
+.sscx-school-workflow textarea { resize: vertical; line-height: 1.5; }
+.sscx-school-workflow [aria-invalid="true"] { border-color: var(--sscx-negative); }
+.sscx-school-errors { border-inline-start: 3px solid var(--sscx-negative); padding: 4px 16px; color: var(--sscx-negative); }
+.sscx-school-errors ul { list-style: none; padding: 0; }
+.sscx-school-errors button { text-align: start; color: inherit; margin-block: 4px; }
+.sscx-school-facts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); margin: 20px 0; gap: 0 24px; }
+.sscx-school-facts > div { min-width: 0; padding: 14px 0; border-bottom: 1px solid var(--sscx-border); }
+.sscx-school-facts dt { color: var(--sscx-muted); font-size: .875rem; }
+.sscx-school-facts dd { margin: 6px 0 0; font-weight: 600; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sscx-school-review ul, .sscx-school-roster { list-style: none; padding: 0; margin: 0; }
+.sscx-school-review li, .sscx-school-roster li { display: grid; grid-template-columns: 24px minmax(0,1fr) minmax(120px,auto); align-items: center; gap: 12px; padding-block: 14px; border-bottom: 1px solid var(--sscx-border); }
+.sscx-school-review li svg, .sscx-school-roster li svg { color: var(--sscx-accent); width: 20px; height: 20px; }
+.sscx-school-review li strong, .sscx-school-roster li span { font-size: .875rem; color: var(--sscx-muted); }
+.sscx-school-source { max-height: 320px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px; border: 1px solid var(--sscx-border); border-radius: 6px; background: var(--sscx-soft); color: var(--sscx-text); }
+.sscx-school-notice { padding: 14px 0; border-top: 1px solid var(--sscx-border); color: var(--sscx-text); }
+.sscx-school-existing { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--sscx-border); }
+@container (max-width: 600px) {
+  .sscx-school-grid, .sscx-school-facts { grid-template-columns: minmax(0,1fr); }
+  .sscx-school-review li, .sscx-school-roster li { grid-template-columns: 24px minmax(0,1fr); }
+  .sscx-school-review li strong, .sscx-school-roster li span { grid-column: 2; }
+  .sscx-school-steps li { flex-basis: 100%; padding-block: 8px; }
+}

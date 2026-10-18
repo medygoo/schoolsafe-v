@@ -1,0 +1,12 @@
+{
+  "schema": "schoolsafe-migrations-v2",
+  "name": "studentrecord",
+  "version": 2,
+  "units": [
+    {
+      "order": 1,
+      "file": "01_family_phone_and_photo.sql",
+      "sha256": "7f6255363c21427e95923d6c3a0b68ce3e217493a0963bb5d38f9350edfdd88e"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schema": "schoolsafe-migrations-v2",
+  "name": "family",
+  "version": 2,
+  "units": [
+    {
+      "order": 1,
+      "file": "01_pickup_person_controls.sql",
+      "sha256": "e987034b535e35bc32cad8d8b69e9303d6b74c1adeeee67958535220223b3e21"
+    }
+  ]
+}

@@ -1,0 +1,948 @@
+{
+  "date": "2026-10-11T12:50:31.1376388Z",
+  "file": "docs/codex-ui-v1/SCHOOLSAFE_VISUAL_V1_CURSOR_PACKAGE.zip",
+  "sha256": "63380a6facd639cba9b3825c9ff500dca1796c096a52ed756deddb6f44ad86bc",
+  "bytes": 13351765,
+  "entries": 234,
+  "entriesVerified": true,
+  "scope": "CODEX_VISUAL_FILES_AND_EVIDENCE_ONLY",
+  "integrationPerformed": false,
+  "files": [
+    {
+      "file": "app/modules/codex-ui-v1/catalog.js",
+      "sha256": "608f32933269763a7321fef1a48eec1c099a878897d5172135d957aba9f63da0"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/codex-ui-v1.js",
+      "sha256": "b13c99096e0f9385b432cec0165e2fd99b9e1c37dd58aaada72c9dc9aa4a04f5"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/demo-data.js",
+      "sha256": "0513d51a9f656894b417e08ebe9254d7febc72c079b31e191d3f4dd1d8880214"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/feature-catalog.js",
+      "sha256": "f2cccf0e9c28ce593d64cbca6a5034233bfdbd6e9529d31c792c08f310092133"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/feature-screens.js",
+      "sha256": "afb1aa825ff04b7088c78a924030bb9fb0f8fda6793104eb7f432ed83da1fa37"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "sha256": "30c80c10fcac6881d35663c2b46a8ac2f3f96d4d460a943f54f55f4008948595"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.html",
+      "sha256": "c94e42156bc8d9c79ae8830810046d7b1a0d4ba0c8320a034cd2a41b31eca994"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.js",
+      "sha256": "fe0a38db1602205657cba97b5126de43f2409bd55356376e8944590d7f6cacd6"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/read-adapter.js",
+      "sha256": "0e1b3f67f82bc1f15bfe394a1f9c77613e600eda1e67207083e25a2f409694f2"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/record-presentation.js",
+      "sha256": "1fa09ebb51c6d42c2da4cfba60cf42f4359bbd3db8578cfa604f29f1f4c23dba"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/school-workflows.js",
+      "sha256": "ab5bc167edad64cdb3a186bf62e4bdaea85f76c33f8cc528db34872487d324ab"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/screen-specs.js",
+      "sha256": "6944b85d336e6c7558b786bb5dbf822f66d95a6656e9e01db9aa9a32c3f44e79"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "sha256": "77d5ae6fcc9ffc8a46e6491cccd65b2c75d0411992fa3e6bec32f6f33077ec6d"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/branch-presentation.css",
+      "sha256": "8598c495e4aa288b1d4cca5d926fbcbe56b9b7aadb31f2788516f9365a067628"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/codex-ui-v1.css",
+      "sha256": "8041d6dc548c73a40f88cb67838117c0677a4809aa1caccdbe748dbbc35347fa"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/feature-screens.css",
+      "sha256": "09396d4ab340358be4e3b01a73dccc70869758329e15f6ca2f979724dd90fd57"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/jaspe-overlay.css",
+      "sha256": "0a0f0a5e0ee3e41c66ab7602568177ee7f0ab5012211ce975001d1a4d787bbf0"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/lot2-screens.css",
+      "sha256": "d16fe0edd3bd6235d19674250d3f2529252388bf377f50ea440ed18429b9d5a8"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/overview-composition.css",
+      "sha256": "b6651f466d260ae2f814addb946054e3e72e90a6a37b44dfdd24ac969e6bb96e"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/record-presentation.css",
+      "sha256": "81837113bbe5853259d65ecbafe66558602eed6c9b598e0f55f3c78984c54f83"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/school-workflows.css",
+      "sha256": "fd85da09438a1114402bd7e8c1256cf737146f904e2a571099fb06cd48b8654c"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/ui-ux-pro-max.css",
+      "sha256": "2c74953cd59b1fb9b00386ee7c0d5a9c67c04e1a7dc22c0227cf18b198e70e50"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-presentation-tests.cjs",
+      "sha256": "005d321376421dd47a0692d822eda9ae8ecc5a4029ab883aed204c45907b0549"
+    },
+    {
+      "file": "docs/codex-ui-v1/build-cursor-visual-package.ps1",
+      "sha256": "316e064f77c1e859c9eb0114bcc77a44bdbcf578db7379c7515b5b0707672212"
+    },
+    {
+      "file": "docs/codex-ui-v1/build-lot1-catalog.cjs",
+      "sha256": "e389d55c21d4dcdf70511dfb2885111b332d77d6a835b1622eb7c9eddb662dc9"
+    },
+    {
+      "file": "docs/codex-ui-v1/build-lot2-specs.cjs",
+      "sha256": "5e394980063811bddf89a45a73650937be1221d7be90796c1cf37e669ca692b1"
+    },
+    {
+      "file": "docs/codex-ui-v1/CURSOR_CODEX_PRE_INTEGRATION_AUDIT.md",
+      "sha256": "4aea4248eaa66e1d500ec3afde77064f88da8fee88632293fd167661f8041d8f"
+    },
+    {
+      "file": "docs/codex-ui-v1/CURSOR_HANDOFF.md",
+      "sha256": "610e4164912009333630e60f1e9b3ea390cfcdf0243ad01af07892ec936fe0de"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-presentation-tests.cjs",
+      "sha256": "b8f8744a8a5112dd1ebaa1d8f57f8d39a5ab63e6faac0d827bc27254f9b1e127"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-screens-tests.cjs",
+      "sha256": "6e2b37335c42b2b7d76cb43cb8de589c43834db01f7108333c8f7d3b5adcb400"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/agenda-dark-1280.png",
+      "sha256": "8c9056496f2e3f9474fec81f6e10e5caeec241a6ceaf00bc8ff4c4c4d32014f1"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/agenda-dark-390.png",
+      "sha256": "4ecdff23532c6a47a39f05310ecaa40bd086f0c86b3fa0ed8707708eca202707"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/agenda-light-1280.png",
+      "sha256": "46307de03131fa0f9396f9d347cadfeb768899abaf242afaf260747ee5c45437"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/agenda-light-390.png",
+      "sha256": "7e59900430c30f764704f43cd8311e7bb68a1b83d36b51886d3d3ad371de6d89"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/cases-dark-1280.png",
+      "sha256": "2f4d04c3c5e9b3961ed92fa25304e8a3406d8c340a522a3cdc17a83ce37af738"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/cases-dark-390.png",
+      "sha256": "e527b3427a0575c7095c013992901a247997d20e3f1c2d8908c58ff55fad30b1"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/cases-light-1280.png",
+      "sha256": "ba563dbe8b32ed85dd8f6bfd8b4de69151e51183d16eefa2ad97e2430c731c1c"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/cases-light-390.png",
+      "sha256": "fa38ffde2eb4f4c2f278b7dd8e2269341f919012712a22a917864c99b22b7aac"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/documents-dark-1280.png",
+      "sha256": "b96362102442858cb627eb78c9feab50a52b5d465f592a58bc93a094e38ebac0"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/documents-dark-390.png",
+      "sha256": "c69be85ef1ba03046b65ed20ff63bfb39c4293b63550cc272e53175da9592d4e"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/documents-light-1280.png",
+      "sha256": "9ea29334c6d08752b53c827cb69a009c088ddb0747795a3070a15a55939a9e46"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/documents-light-390.png",
+      "sha256": "13d13ba75c4a176be440deed18f2ed255ec84151da9d81e5eb58bc0ff1f793bd"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/equipment-dark-1280.png",
+      "sha256": "c9b61ce03aa136c7f439e5980280078d0e87b712d5c4f81d0079df882429f651"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/equipment-dark-390.png",
+      "sha256": "cf0d6116bd8b955d2cb8f7b4687c33ddead592747a042ea534cb1b9c6415c3e5"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/equipment-light-1280.png",
+      "sha256": "4543623ce6fc773bd0509202f11ef2542e77e7746e51edcd793ee0dfa537de5a"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/equipment-light-390.png",
+      "sha256": "84c9615b9f24dfd579eb868af34a5589f5944bfd3921fe418bb1e561074a5131"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/gallery-dark-1280.png",
+      "sha256": "b07ac05fdfcc903133d531d12053872aa3a91d4ef8a7cd74f66f2e94dc48967e"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/gallery-dark-390.png",
+      "sha256": "095132bfb9d1b43dc4987e8e44010996fb6ebd08a45146608a53d71772364a3d"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/gallery-light-1280.png",
+      "sha256": "562de1093bac3e4f13ccc86de258ea85f9788e1f55d2fd4bcf1e378aae749b69"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/gallery-light-390.png",
+      "sha256": "c86f37711833f996d4a776891d8a1dc6f9f994247dc6fd657da2f883cbb7c595"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/messages-dark-1280.png",
+      "sha256": "e6ef37a08ac497b1ac1e06503811d301ba413848839493967590468dc9d139fe"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/messages-dark-390.png",
+      "sha256": "5202ab7de8579054f0fe2048a6e9f551674ebb7ed9432037476688807ff0d1bd"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/messages-light-1280.png",
+      "sha256": "1c99002bb680f59eb789a0fee2c7f51a863c6f9a8a80cc11a25ae8b8ed095767"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/messages-light-390.png",
+      "sha256": "bb3a58a841c6f0f139db8e146056e555e6fd0e8a6d7448c1bfe9858443fdb311"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/register-dark-1280.png",
+      "sha256": "6ab55aeb5782de6cadcabe823be96c1d576d35f38d3b656d05facd5acc2c068c"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/register-dark-390.png",
+      "sha256": "3d6c2d83218a029f4eea7b516a63c8fa315381ea3be6b14dbdf89c3c6f2e3b61"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/register-light-1280.png",
+      "sha256": "071fa4bf869927c250118e117cdff69feeb3609117bee7dc6145b40e973ac3a8"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/register-light-390.png",
+      "sha256": "c77fe6aadb44b360f1dadb7f10290116eb728fca6f1595c8e88dd7079d1deb11"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/reports-dark-1280.png",
+      "sha256": "38a685022a776ea0a25a0a7bb42bb17c6994b359df60485a90762419c6db662c"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/reports-dark-390.png",
+      "sha256": "6c9f934d7bcd9af7c9e24fadb427190a655137165cff9fd0a694b6c528c88377"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/reports-light-1280.png",
+      "sha256": "6a28c31c82e42a1963aab9144c5b29cf26a6a0fb823a6bbd8d0f81264eff6d93"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/reports-light-390.png",
+      "sha256": "1d702b64f4d5128e16eccac0fd46dce42965b8c1e46c18b5b4879818b90c0221"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/results.json",
+      "sha256": "7009b31683ca5be729be77be3e4c0c80be12c1c70ac3ad7e3a9b05420d77e4f2"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/settings-dark-1280.png",
+      "sha256": "573a491a4b0514a131c4c8d0545a2632d4239eebb2693fc966ccb5e45925d2db"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/settings-dark-390.png",
+      "sha256": "9622703ff0ee20c2100572fca178f4ddf78ebf0c08edfeeddf5043f3738f47d3"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/settings-light-1280.png",
+      "sha256": "4e40e3f12444093b835f7c1954e53334dd3ba8ff8bf9342fe215af5abf925d63"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/settings-light-390.png",
+      "sha256": "11f261b8a2c15fc1eb1a2bcb2c2d868273a534bf6b85076b4295f362773ac973"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/statement-dark-1280.png",
+      "sha256": "cfc852ba56bfee89de83e7b05658d6df5bbf0642dbfad0b94fd72a6d13c5ac19"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/statement-dark-390.png",
+      "sha256": "2ae6f578a01091b3b33112374a3cabee55fe704a69cffc53eda2b44e1cf6b016"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/statement-light-1280.png",
+      "sha256": "939130327b2a80bbfe33cbd510e96b4222f68d2f7911086391d79109d0d6c5df"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/statement-light-390.png",
+      "sha256": "3bc16124ad3491e26c1a013d3ab69a4ef34294b673d01ffeab98aef6c2471497"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/timeline-dark-1280.png",
+      "sha256": "66c5fa5819a20698090a6e4b1cefaab1da2e831b0bbf97d25803680bc6041cd7"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/timeline-dark-390.png",
+      "sha256": "59112d73baf0db30bb3bea12436f5e6a50a2bdcdccbe47f16731616c22580c1f"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/timeline-light-1280.png",
+      "sha256": "d16a0f7cd4021dba369a62c46646667aa75cd5cbd117052bb23c5d7c63a74c8d"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/timeline-light-390.png",
+      "sha256": "f7325b9bc53ae0b40e4821489a134db9447e1497a03262fe8264a570b5ddde40"
+    },
+    {
+      "file": "docs/codex-ui-v1/FINAL_VISUAL_COVERAGE.csv",
+      "sha256": "f157d6f88b0df1134697933cadac63d3e41663e1f41f705842995f995530abf5"
+    },
+    {
+      "file": "docs/codex-ui-v1/FINAL_VISUAL_COVERAGE.json",
+      "sha256": "2a8bea6793c75d292d1dda2b2135ff162eda2abe23a0ba083afe1f6fe0600333"
+    },
+    {
+      "file": "docs/codex-ui-v1/FINAL_VISUAL_COVERAGE.md",
+      "sha256": "50c36a1c9e3feaa136734c15101ff546a6e8a2c55a860d944815a7fdd5d54f72"
+    },
+    {
+      "file": "docs/codex-ui-v1/FINAL_VISUAL_HANDOFF.md",
+      "sha256": "cdf817e82620ac6bf4d59d2bf0373679405c4b53930f589529cfc3e75c5916dc"
+    },
+    {
+      "file": "docs/codex-ui-v1/FINAL_VISUAL_MANIFEST.json",
+      "sha256": "935f552ee26e98a6b9c1ebd2795337b1e3ba17c5ebc3c7cc0fbf8ab5b5d1cc23"
+    },
+    {
+      "file": "docs/codex-ui-v1/INVENTAIRE.md",
+      "sha256": "5de9c67b2b5b38f4434f21ac936b20eb5b6d96cf5f3d9387572e4422c23bbf67"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_API_RPC.json",
+      "sha256": "5be4428cb0fafd805bff9b54795ae60a5d32b696b2f3f13b8968174e0e9a8713"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_BUTTONS.json",
+      "sha256": "86761715609e27d9c4c6dfecbe44502a1d543c02a61697d57faa66a89f57de3d"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_COMPOSANTS_EXISTANTS.md",
+      "sha256": "f84f5f9ed54fdeda144ca6e5bced31f587c75f04e162aba23cb3b2a3952283a0"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_COUNTS.json",
+      "sha256": "18bf6134ac6a03445fbcf67d2fe0cbd9742b63f04b81ee0c9c747e03bf529af6"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_ECRANS_INCOMPLETS.md",
+      "sha256": "1b89afd54c54ee7c56e5a38d578b087742429e18de56a1bed7d9fcbcfc4396c2"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_FONCTIONS_SANS_ECRAN.md",
+      "sha256": "3a1bfea887ca42a2aa4aaffac96070ac8fd5de4ab24caba2b8a37cacb4fbd9e7"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_MANIFEST.json",
+      "sha256": "c3ed2b5506208f85e175ccfa121456ff806e62f4a733193aa54a01594b835635"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_MATRICE_BOUTONS.md",
+      "sha256": "5e9e8fbdf7ecb9b94e47f303c917607d639929c59a983b6b42e8f5c1da619dbf"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_MENUS.json",
+      "sha256": "f10cd0707905a9fcd196aa746ea825e17a9a8dc16bc83afa9cf2c41383f353ed"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_ORGANISATION_ROLES.md",
+      "sha256": "891008e4d814e68555c1a532963a87c835bd098d4bd3275ff16c44c33084f889"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_RACCORDEMENTS.md",
+      "sha256": "d126ee9fab957de6df944b2fcc01270bc4489022a07c5f36d4b5f8639c3681d5"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_SOURCES.json",
+      "sha256": "629fc5224d34f0e1a694c4c1cefbceaf0db2fa0601d11f4fa4bdff40f7830ca7"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT0_VERIFICATION.md",
+      "sha256": "a0f77b4e562cdb87a50b43d46da9c070dded25427fca87294265d7fa5c1e6366"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot0-audit.cjs",
+      "sha256": "8be0927d5f744f07cbdd90188ea7819ca3c39648c0997e71caf996e5d25aa315"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT1_BUTTON_SCREEN_MAPPING.json",
+      "sha256": "ff195de61391ff828ce6ff92508e56af76e3a26f5cee474286a1db7af51fd3e7"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT1_CURSOR_INTEGRATION.md",
+      "sha256": "842a4a25a16e1a079b2974a150f6c5b57eaae8d22ce93fea0130fa291572ea98"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT1_DELIVERY.md",
+      "sha256": "b8ec9a2517f4c7912627f9109e2399e21ae109886cba27eee0ed967b11890a64"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT1_MANIFEST.json",
+      "sha256": "69774c77b15e75749ea0ea0b04c7636369c329e43a4cbb00b2e99bf62f97cc84"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT1_MATRICE_RACCORDEMENTS.md",
+      "sha256": "481707ea52691a86d6f13e51c97a2bb1e250481612dcb7334b2eab885ee3f8d5"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot1-browser-tests.cjs",
+      "sha256": "0f085ff1087d31882bc59fb0db32df395a079cf9f16a832d176a803306113a25"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_BROWSER_TEST_RESULTS.md",
+      "sha256": "8f18987cd0e1de15aa884ceeb9d7c7018d690c4a0569b825e281ef80c2097cb6"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_BUTTON_SCREEN_FUNCTIONAL_MATRIX.json",
+      "sha256": "4252d615079892f37abb76ad42d264a02423a54420b6f2b82889d330d5db3e64"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_BUTTON_SCREEN_FUNCTIONAL_MATRIX.md",
+      "sha256": "1811f0c3d4a796db456dd08f135a1d1de9021eea9942c647a8e29a5cb3bfeb76"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_CURSOR_HANDOFF.md",
+      "sha256": "b72d1b51fc5d3b3b9d60d8ec762d8258235c5a7a46069430725ca0a5df050064"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_DELIVERY.md",
+      "sha256": "196bb4c5cb7eaf09962b25696b888013d4e9984ac417a30aac1f9c0ad79283ee"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_MANIFEST.json",
+      "sha256": "0cf2232c5a2532eb5e81486b8bcd95f71b54fd59c6b26516f7efff6314e03f41"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_SCREEN_SPECS.json",
+      "sha256": "1ffb4fe9f812877764b840fa6f8718941b643114f3f493a253638e1cfcb598bb"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-browser-tests.cjs",
+      "sha256": "3dc401895f9faf05b2c52de0203f993fa1ebf15becf399919c76f62b4c243477"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-final-check.cjs",
+      "sha256": "fb8126e226a1847c78e61f6d4f41cea17e981b6d79c4385dd7e7c93d42756121"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/cartes.png",
+      "sha256": "30dc1359907459c9a85001b3b86ceaa455d60128a11243225c6bc71523f00b83"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-admin.png",
+      "sha256": "0519d84ea158b182b70cae747077cdd1e7fc6c169e9536cc98b5199e64a79457"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-finance.png",
+      "sha256": "d4c1e5c25d434aebb6b54df09a41eba0d371841d9b8a8c305a351d43a87e8944"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-guard.png",
+      "sha256": "4f113892a4de7cedf665639c35dfc2cf61da4f046360aea1cc6e3a8330c5e533"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-parent.png",
+      "sha256": "39996540c0b350633cbbe72486556ddd4a0c0d1a58307ec7ba303c09a7f3ebdf"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-school_head.png",
+      "sha256": "ed7397b96b722aad39b719d7bcfc3723a871e2834f4a016660e72f22ebabae17"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-teacher.png",
+      "sha256": "3b5fa3f82d353f0df40782c03f253f0b24690196f1875b4de5c2155b65067a0f"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dossier-famille.png",
+      "sha256": "f55034772dd7d4860fc5d8158e457e0c3638e51358d1697d3ced6edf8c43312a"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/eleves.png",
+      "sha256": "ae16467d38fc91c9d23f2d9af5c5fdfb49ebd804258a72ecc51503e55e520f15"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/etat-denied.png",
+      "sha256": "42aadcc6fdea442c6fa11a39dd86c28b48adfa1fc542481b9d5ad8b8fd7be9d9"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/etat-empty.png",
+      "sha256": "5a4a2ca390a3409df2617197804a9595c5bc472d4b9ad43828b20edfc143940a"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/etat-error.png",
+      "sha256": "30940aa0392cbab97e9eb29b58ef2038f8eb0d9bb51e9ce4355cfb110a38864a"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/familles.png",
+      "sha256": "be988b5cb3c12c1267b7ffae9c9fbae093ead439f69cee3e531fc4984effd1ec"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/final-check.json",
+      "sha256": "88f625c7f4ac329f28cc197a800f3c656decc8857e90d3c75f50c1245263823d"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/finance.png",
+      "sha256": "57c4596e759039893f707379276681de311af1359cc19d9c18aeff4e68c6e6af"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/jaspe.png",
+      "sha256": "f080204309d21dbfec54685b9354b71890044b5a01b0e5a282796154b2a3123c"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/mobile-eleves.png",
+      "sha256": "4b21229a335d5d3e4c70fa188a36a254d343b3ddda95dcacbdb6e4fe997593f5"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-admin-1280.png",
+      "sha256": "ed1e9ef43e89104329b9ea158488326d5585222a48fa4755b017880640519c93"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-admin-390.png",
+      "sha256": "7b5c0628132e2fa4b01da9b4770b73deefa39c4bbb8621abcb7023781e2bfd3f"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-school_head-1280.png",
+      "sha256": "9a712fb4b4ae114c274139f0622d65f66ff96c263db8e100e3328ec529ab0356"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-school_head-390.png",
+      "sha256": "d75206eb1519f9a406af64038843412ed271829749b8a9513c011fc2d5a1493a"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-unified-admin-1280.png",
+      "sha256": "2954f57306d567aba9fd0c2b0ef194055670988ab844cc49e1a53b5a7d8b1b8c"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-unified-admin-390.png",
+      "sha256": "f5a183b8262019c7183492e0e9d406e95afd63b794156f10af21a4f4487bc845"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-unified-results.json",
+      "sha256": "90afd1d7090cf3b95f008983855837dec49216a70ec28234532ca6aa4d78e003"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-unified-school_head-1280.png",
+      "sha256": "09a22392886c89e37a543b9ed95b921da9d06aa71749fe4fe9206f96253f8f7a"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-unified-school_head-390.png",
+      "sha256": "37538ba32e4a029c5861b4377ac3a5139f1db0b86f981e125035dac1272f26b7"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/pedagogie.png",
+      "sha256": "78c33c5a1c56c41c0c1940c1601a81f9b4289a2cd198693c7c8c808117082c1e"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/presences.png",
+      "sha256": "a8984797c5d4a86095fdb919b936b199617d7318c4aedb69316c521221c47e3b"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/results.json",
+      "sha256": "8ef4415a7697e1ff2fb056ea454f77bbc04a8cc3d94c0d060ac604ff839841a7"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/scanner.png",
+      "sha256": "745ed67cb2da1f697bdbb62e5a55a8343eda1e81c65d6c6b7c1cd1492346c9dd"
+    },
+    {
+      "file": "docs/codex-ui-v1/MANIFEST.json",
+      "sha256": "cae86aadcd996535f6066445c321c667f1f38d9259101583534fa854e2b13a5c"
+    },
+    {
+      "file": "docs/codex-ui-v1/OVERVIEW_COMPOSITION_HANDOFF.md",
+      "sha256": "a6c83a3e8118c04cabeeb8f9708bf932c49dc76b63a43e10cc88fee2189e62f4"
+    },
+    {
+      "file": "docs/codex-ui-v1/OVERVIEW_DETAIL_HANDOFF.md",
+      "sha256": "613596315e2f6e6dc53f2fb184b097db5db9325afc550695f9ff2db2b21fd51a"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests.cjs",
+      "sha256": "e891f516880f6f814d19fabf6d186fa4081080509b985aa20bfa8118f8bfbb6d"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/overview-dark-1440.png",
+      "sha256": "f169cb495e07eb1f219dedc9381daa22e4f3d854e5db9927c93b711550494482"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/overview-dark-390.png",
+      "sha256": "3a55e8944dd637bb2cba3fbbd3771f4089a0591c1cbde4731981cf7c29baed84"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/overview-light-1440.png",
+      "sha256": "0519d84ea158b182b70cae747077cdd1e7fc6c169e9536cc98b5199e64a79457"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/overview-light-390.png",
+      "sha256": "4c00f59d60419e57fa9f74c897efee5de263b4e7647171ff9908ee181de6fa62"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/results.json",
+      "sha256": "cdcd223abb62f9e206db7037585e0088793144d1e9b8328e7c0b6ddece666b39"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/viewport-dark-1440.png",
+      "sha256": "4c8387f528303fe9a4230aacc72e4d25095db853de6ce8c749d613d9875da185"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/viewport-dark-390.png",
+      "sha256": "3767a2e512eab333acf52a0f91b08ffba1b04a3b8ac0bf589c8f695c4a3dcb6b"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/viewport-light-1440.png",
+      "sha256": "0f2adb6a0d53d6f745a8b7bcfdb928f5beadba439b35f4acd0a27535061868dd"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/viewport-light-390.png",
+      "sha256": "e3c970f28bf78c6c359c36d932076940ed6b1a27f551818e366d48262b4405b9"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-detail-tests.cjs",
+      "sha256": "5019b9825a5c05979e35aa48b97cb12beb3cad1b2c9e2f4a51281afa7ad0e324"
+    },
+    {
+      "file": "docs/codex-ui-v1/package-final-visual.cjs",
+      "sha256": "4b4d963e9ffe39656868dc0d02301cab16d2d1fe0943241895fffb0b520388d6"
+    },
+    {
+      "file": "docs/codex-ui-v1/package-lot1.cjs",
+      "sha256": "15c5161aadbb81f3def94b39375c99cfa818c597f90f01e1b3bcce35f52f9406"
+    },
+    {
+      "file": "docs/codex-ui-v1/package-lot2.cjs",
+      "sha256": "2f87d6889ad8429dad1d64f0f19bcbae06180fd5e5591121e287cb63e9ba921a"
+    },
+    {
+      "file": "docs/codex-ui-v1/package-school-workflows.cjs",
+      "sha256": "dd931f70fdf40a99ae72ca49893f98d5c265e0e4c0fc3d88302c7fdaf7f6c15d"
+    },
+    {
+      "file": "docs/codex-ui-v1/preview-server.cjs",
+      "sha256": "1d510ca99dfd295dbc574c9e3a29046c76978543460ca9a2e84da872de396f81"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/contrast.json",
+      "sha256": "06965bee03e3ccbd15449eb30f8c7dcba0ab84d191b9498ac269d7b7b3fb4791"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/dashboard-dark-1440.png",
+      "sha256": "50fdf4610d96b5bd8eeaa34fcd234ad2c9fa5e99515454a8f05befaa568191c3"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/dashboard-dark-375.png",
+      "sha256": "04b2f39a175afbd456a5ab48f6d1e4dec9a123af8560d4345c1d40cfe832b65e"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/dashboard-light-1440.png",
+      "sha256": "53706387990055550078b68782b684ca38e2dd0f526df315bfd36d64161988ba"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/dashboard-light-375.png",
+      "sha256": "bf18d00d938b224bfff0dd32e647099a3d7a1ea44d6f5eda942a768d11c6ab1c"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-landscape.png",
+      "sha256": "1706527be2b453621a866349aab52bcee37040f119eccdafa41d54ac6f69fefd"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-dark-1440.png",
+      "sha256": "7625e5ca29cfe7f94fc1bd773137b2fa3e1abb439b11cb6291fa50639462b02d"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-dark-375.png",
+      "sha256": "be3e44b5093425be30097de14b4067c022e80505035e9b73bc98d9457e3c17bb"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-dark-768.png",
+      "sha256": "3e301356e7f068cffc0389e7e328fd74997c84c1aae2e6aa8d8bf0ef44b4add2"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-light-1440.png",
+      "sha256": "74d8d5fb0ea3855b19e795ef2a40147856601156c1ad3672713c27eff7a78e34"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-light-375.png",
+      "sha256": "1843e4ad247eef904b79f38568a51886a05fe3cdb0ddd51103fb3f6335e6bd72"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-light-768.png",
+      "sha256": "8882a10d0713362d222bf17ca94ddb212761b114ac0aae66035191068e1ed476"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/results.json",
+      "sha256": "6146ecd05a116c8b1ee4bb9d1adfc5582096267f9c4faec562ce6395d41491b7"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/rosario-006-dark-1440.png",
+      "sha256": "34e24a633f899d4e28fdf6eaffd7cb5da61a28d9d7b7b7e9be54243906d26ca8"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/rosario-006-dark-375.png",
+      "sha256": "f0c6f9fa3c50d2886a8c04e5cb1615819e44e1b415f4bbe2bbacbd4e9128af57"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/rosario-006-light-1440.png",
+      "sha256": "810c728309d95f0a8be7350490bcbc6be976af57fe3773bbf7ea195c7524df1b"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/rosario-006-light-375.png",
+      "sha256": "cd6603806154d31ac16fbad32a92f23d0cbb81de538a9bb2d5d6bf19a2843f37"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/text-200-percent.png",
+      "sha256": "e8cf0da071b1d99c96f80ed18092734796cd4b2ff3656e4300d4c3bd1a9bd0a9"
+    },
+    {
+      "file": "docs/codex-ui-v1/RECORD_PRESENTATION_HANDOFF.md",
+      "sha256": "460d5fdad7692dae26020bcf78207a1cbf90c97fc5435a7deae256fae87ef5c1"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-presentation-tests.cjs",
+      "sha256": "712cab0e307fd480ac33121135e8193c13550df6505cdda65aa4bdb8c6db50bf"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/assignments-dark-1280.png",
+      "sha256": "7315377f0ed22909ffe37448ac2d3fbe7393099ef2ccaeffadda665a7c460e6e"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/assignments-dark-390.png",
+      "sha256": "9c6176a13cc9c196e85ed8d552ba296b0a4996309a294297b6f2b4adf801da6b"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/assignments-light-1280.png",
+      "sha256": "087f8bbb814e602be1444f18d5a4c518b025ce8b9cae39bc3376bbce82273265"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/assignments-light-390.png",
+      "sha256": "0a6f6efa26a68a063a9c2d73d5c366262311514f39855f5ae8bcaf22ab211492"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-assignments-dark-1280.png",
+      "sha256": "d89352cc28f4d664179db65dcb436d9023165bf27c80ada912c8bb657cc540bd"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-assignments-dark-390.png",
+      "sha256": "6d46564d9990974749e94708906559c489f74b8f2776a2384eb09269ebb85529"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-assignments-light-1280.png",
+      "sha256": "e9063a9e840fac0a13dadd5ac5e41fb3b79757dbda53220521494692a5628edb"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-assignments-light-390.png",
+      "sha256": "4b1b2fad2a001a4049c1060c11ea0d3ea5c23293d379a9f3488c3ab4206658d6"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-grades-dark-1280.png",
+      "sha256": "1aca178acd76069e0ba7610aaed37c3fc6a0c435ab385c60b74bea59b6b0917f"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-grades-dark-390.png",
+      "sha256": "9168ffba0792355547779c25a1628ca7d77cc1bad83d269e70e9d883324bcc3a"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-grades-light-1280.png",
+      "sha256": "35e02e0bbc49412802791b9bc22f2415775feef8e9ddcf1a75d52b29b6b664b5"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-grades-light-390.png",
+      "sha256": "d2fac94c0047cdd3195f2ca54feaae2f81cd3365c91c9a3f11894fcf8aa4232f"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-lessons-dark-1280.png",
+      "sha256": "99f5800a11de5c095add6ab192f2331fed5792cde4bc8f6d42f591c06aded511"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-lessons-dark-390.png",
+      "sha256": "7826912b953cdda7309caa28429777673f989bcc9d657529555acb8283a3c15c"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-lessons-light-1280.png",
+      "sha256": "28f6494ab6601a13608e701b32a4adba64d2f2fb9b750dd0634654e74e197576"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-lessons-light-390.png",
+      "sha256": "598fa8d6adc1fa274938c8b411707b7a58761c016b936ba0ebdd30ccb3d9aaf3"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/family-dark-1280.png",
+      "sha256": "68e3e1cb821bd4d6ee77ab60cd8daa9acf937e2d8057bcdc3a17f23c2a7136de"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/family-dark-390.png",
+      "sha256": "e96fdfde8ccd14bd355d2ca3c8666a5fb200fae20d311a04246014be931ad3d8"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/family-light-1280.png",
+      "sha256": "bbacef0309f11f40d918ab12054eded0c80fdca6b2ab8e515233a1cb6a7d1312"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/family-light-390.png",
+      "sha256": "41197f3039345114f56e59e444ee6d25952513055dedcf3a99453786c8b67815"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/results.json",
+      "sha256": "9f995f3d9a9bd9c54a497d91ef432bc3260f0adf0b44b12762a0921cd9ec13dc"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/students-dark-1280.png",
+      "sha256": "89c5c30ef09316cfda7bf7c58306a1049099515ee0a17b3367a57f27c86f024b"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/students-dark-390.png",
+      "sha256": "254ae906749ddf2fd55354e02ba3740da1fd3beba43ac9c4abcce750987720c3"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/students-light-1280.png",
+      "sha256": "bcddc204cc9530be02cb8177e20f1468796139d54132e9a73ebd5f0033fcc93a"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/students-light-390.png",
+      "sha256": "a1f5c0807880134855a15b982517c639c2b74963052bff18517a8af82741024f"
+    },
+    {
+      "file": "docs/codex-ui-v1/SCHOOL_WORKFLOWS_HANDOFF.md",
+      "sha256": "96663a9348e5ae0ecf20224f7122e5b9c354a642753c6084413b77b984c14e4c"
+    },
+    {
+      "file": "docs/codex-ui-v1/SCHOOL_WORKFLOWS_MANIFEST.json",
+      "sha256": "10bf61fd0c273096cea3e4515bb497cd87ae184528fa75649111c9323487b59a"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests.cjs",
+      "sha256": "9c71e647965f33db88cf78719b5453a9f02c07f654859ffc11c8aa563c96e765"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/results.json",
+      "sha256": "5d9e536ddc3902e18050e1c27b1fb0839b399bb3f48354246db65b9b7c6e7f35"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-007-dark-1280.png",
+      "sha256": "b1bb4b4085170e4454e75c6b4cf6362bd76c3581d1f8c04243c2f8cb67f3409e"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-007-dark-390.png",
+      "sha256": "51c80b4055e99d86a8411105e90e7d36959643c6a4a9af9757599b30f547c33e"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-007-light-1280.png",
+      "sha256": "eed8ee95da4311d329a3895355ab23db7c26f6b928228c99c3977d2ce0d4165c"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-007-light-390.png",
+      "sha256": "e04f44bc109b9a896804cb9c3a7359ac2475d43b55184d306327d1dbf53b9cb4"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-008-dark-1280.png",
+      "sha256": "ec4c7b6d8147bec98b4ebba78ca36f291d1ff359577d4a38ef3d56798ed31f9c"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-008-dark-390.png",
+      "sha256": "d258716ec86f57a1780994fce9457076fc87ce0ec015c6a3129a324e076550d9"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-008-light-1280.png",
+      "sha256": "8c2b287d7d10c3a24af6cc74f132ad8653f62a5e80eeee86cac7c2063766de9f"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-008-light-390.png",
+      "sha256": "7744e4dd599c1ae0601fdfcbb2375fa6d8b263939b2cc6b76240b20042d84a95"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-012-dark-1280.png",
+      "sha256": "36bbb10327576b87b34805abfb5e2ccd7a743bebd47d7b27c4e7d5d3ad893a01"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-012-dark-390.png",
+      "sha256": "a90fe13ad804a442f392c2f3985a6149e469d524b21d32cce59954f7f64c51b5"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-012-light-1280.png",
+      "sha256": "3a648670d73025c48114fc0147d41c453031707fcd81a74bed74f15fb36f3ffe"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-012-light-390.png",
+      "sha256": "3e8ada6c5eb12de3f6328d017301eff89ceb5112adb99b340ab563f19a5fa9a8"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-149-dark-1280.png",
+      "sha256": "5ae6ccfe0af9ae1e73dfdffbcae1b3bec90f6e27e8091bf3929018c02133e4da"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-149-dark-390.png",
+      "sha256": "ccd350bf184748dd785891af05c4ee2c5d6a71ced64045feec022390c3f825ab"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-149-light-1280.png",
+      "sha256": "b98062d26e63b1698e5851c63f75ff306f795c2b29da07819317abe5f0d9fa7d"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-149-light-390.png",
+      "sha256": "ae3d3c6d5c89b435e53ada4d8e186c9ffd4e048da5a8844112cf72edebde81ef"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-152-dark-1280.png",
+      "sha256": "53fab12efee3d71af343ad3f70c1a49d2be657eacab1c923a74b72ce9e5aec2a"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-152-dark-390.png",
+      "sha256": "d120f6fd40c78580e6191f6a88af9f6098dc8cf1f281ebe295da0ca491627d60"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-152-light-1280.png",
+      "sha256": "e3da136f2b171da2cd06f164a940c32cc9e8d9e1a2b4b575faf879abdc1ea8c5"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/rosario-152-light-390.png",
+      "sha256": "a6cc8e4b7504e4f3041d62807c43ef8364df1462e83976778c437e4933c8cc5b"
+    },
+    {
+      "file": "docs/codex-ui-v1/SCHOOLSAFE_NON_RACCORDEMENT_CURSOR_V1.zip",
+      "sha256": "af4e74906e69de4406e7fef052d4aeb7baa7fdb0af98105340192ebb98f75ea4"
+    },
+    {
+      "file": "docs/codex-ui-v1/UI_UX_PRO_MAX_BRANCH_PRESENTATION.md",
+      "sha256": "f8bcb79a96f8219765cbf114637f9a19cdc3caddf390140a9fe93ceceeba528e"
+    },
+    {
+      "file": "docs/codex-ui-v1/UI_UX_PRO_MAX_DESIGN_SYSTEM.md",
+      "sha256": "ef0105d5eb37f2fa1b88a2320ec2890f75afdd03686b76c260ae7825090035f5"
+    },
+    {
+      "file": "docs/codex-ui-v1/UI_UX_PRO_MAX_DOMAIN_PRESENTATION.md",
+      "sha256": "e56b40adfde203d26386ecf50444ec6f1a1f4632daeffafcbf263d4a02fbb442"
+    },
+    {
+      "file": "docs/codex-ui-v1/UI_UX_PRO_MAX_REVIEW.md",
+      "sha256": "09d06068b230c46109d342afe6455b62c88e6d8ee06fc1e8b95a1e82299f3d5f"
+    },
+    {
+      "file": "docs/codex-ui-v1/ui-ux-pro-max-tests.cjs",
+      "sha256": "45a2629d77bbe409de11e1f44be2a1cd7795b32037cccf85a76a38370232c7dc"
+    }
+  ]
+}

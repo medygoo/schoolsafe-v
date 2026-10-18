@@ -1,0 +1,33 @@
+{
+  "package": "codex-ui-v1",
+  "superseded_by": "docs/codex-ui-v1/LOT1_MANIFEST.json",
+  "created_at": "2026-10-11",
+  "scope": "visual_additive_only",
+  "source_snapshot": {
+    "reference": "SCHOOLSAFE_CODEX_LOCAL_SNAPSHOT_V1",
+    "branch": "cursor/rosario-navigation-integration-v1",
+    "head": "657aaef34c067173bd44a022d6b83a90010aea89"
+  },
+  "new_files": [
+    "app/modules/codex-ui-v1/codex-ui-v1.js",
+    "app/modules/codex-ui-v1/preview.js",
+    "app/modules/codex-ui-v1/preview.html",
+    "app/styles/codex-ui-v1/codex-ui-v1.css",
+    "docs/codex-ui-v1/INVENTAIRE.md",
+    "docs/codex-ui-v1/CURSOR_HANDOFF.md",
+    "docs/codex-ui-v1/MANIFEST.json"
+  ],
+  "not_modified": [
+    "app/index.html",
+    "app/app.js",
+    "server/**",
+    "database/**",
+    "shared/permissions.json",
+    "app/modules/jaspe2d/**",
+    "app/modules/cards/**",
+    "app/modules/security/scan-control.js",
+    "app/modules/finance/**"
+  ],
+  "integration_owner": "Cursor Desktop",
+  "codex_statement": "Aucun raccordement final, commit, push, merge ou deploiement effectue."
+}

@@ -1,0 +1,571 @@
+{
+  "reference": "CODEX_SCHOOLSAFE_VISUAL_COVERAGE_V1",
+  "date": "2026-10-11T12:49:36.255Z",
+  "sourceHead": "657aaef34c067173bd44a022d6b83a90010aea89",
+  "originalUncommittedChangesPreserved": true,
+  "scope": "ISOLATED_CODEX_PREVIEW_ONLY",
+  "sourceIntegrity": {
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "baselineIntegrity": {
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "sourceControls": [
+    {
+      "file": "../MANIFEST.json",
+      "bytes": 148109,
+      "sha256": "fb0878b7e72b40a04c829321506c212427d13ad83b355a80d09d72fceb9fdc2f"
+    },
+    {
+      "file": "../TREE.sha256",
+      "bytes": 112364,
+      "sha256": "9f2e601ed97247cdb3e575a3584b469edcf19ae1cc7e4ceaa6ca8d2cdd8dc003"
+    }
+  ],
+  "appFiles": [
+    {
+      "file": "app/modules/codex-ui-v1/catalog.js",
+      "bytes": 77208,
+      "sha256": "608f32933269763a7321fef1a48eec1c099a878897d5172135d957aba9f63da0",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/codex-ui-v1.js",
+      "bytes": 6306,
+      "sha256": "b13c99096e0f9385b432cec0165e2fd99b9e1c37dd58aaada72c9dc9aa4a04f5",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/demo-data.js",
+      "bytes": 13535,
+      "sha256": "0513d51a9f656894b417e08ebe9254d7febc72c079b31e191d3f4dd1d8880214",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/feature-catalog.js",
+      "bytes": 26303,
+      "sha256": "f2cccf0e9c28ce593d64cbca6a5034233bfdbd6e9529d31c792c08f310092133",
+      "change": "NEW"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/feature-screens.js",
+      "bytes": 15973,
+      "sha256": "afb1aa825ff04b7088c78a924030bb9fb0f8fda6793104eb7f432ed83da1fa37",
+      "change": "NEW"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "bytes": 52518,
+      "sha256": "30c80c10fcac6881d35663c2b46a8ac2f3f96d4d460a943f54f55f4008948595",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.html",
+      "bytes": 2122,
+      "sha256": "c94e42156bc8d9c79ae8830810046d7b1a0d4ba0c8320a034cd2a41b31eca994",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.js",
+      "bytes": 1262,
+      "sha256": "fe0a38db1602205657cba97b5126de43f2409bd55356376e8944590d7f6cacd6",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/read-adapter.js",
+      "bytes": 1490,
+      "sha256": "0e1b3f67f82bc1f15bfe394a1f9c77613e600eda1e67207083e25a2f409694f2",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/record-presentation.js",
+      "bytes": 3993,
+      "sha256": "1fa09ebb51c6d42c2da4cfba60cf42f4359bbd3db8578cfa604f29f1f4c23dba",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/school-workflows.js",
+      "bytes": 16272,
+      "sha256": "ab5bc167edad64cdb3a186bf62e4bdaea85f76c33f8cc528db34872487d324ab",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/screen-specs.js",
+      "bytes": 123756,
+      "sha256": "6944b85d336e6c7558b786bb5dbf822f66d95a6656e9e01db9aa9a32c3f44e79",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "bytes": 35747,
+      "sha256": "77d5ae6fcc9ffc8a46e6491cccd65b2c75d0411992fa3e6bec32f6f33077ec6d",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/branch-presentation.css",
+      "bytes": 7043,
+      "sha256": "8598c495e4aa288b1d4cca5d926fbcbe56b9b7aadb31f2788516f9365a067628",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/codex-ui-v1.css",
+      "bytes": 14976,
+      "sha256": "8041d6dc548c73a40f88cb67838117c0677a4809aa1caccdbe748dbbc35347fa",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/feature-screens.css",
+      "bytes": 5627,
+      "sha256": "09396d4ab340358be4e3b01a73dccc70869758329e15f6ca2f979724dd90fd57",
+      "change": "NEW"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/jaspe-overlay.css",
+      "bytes": 5097,
+      "sha256": "0a0f0a5e0ee3e41c66ab7602568177ee7f0ab5012211ce975001d1a4d787bbf0",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/lot2-screens.css",
+      "bytes": 11999,
+      "sha256": "d16fe0edd3bd6235d19674250d3f2529252388bf377f50ea440ed18429b9d5a8",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/overview-composition.css",
+      "bytes": 7091,
+      "sha256": "b6651f466d260ae2f814addb946054e3e72e90a6a37b44dfdd24ac969e6bb96e",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/record-presentation.css",
+      "bytes": 4076,
+      "sha256": "81837113bbe5853259d65ecbafe66558602eed6c9b598e0f55f3c78984c54f83",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/school-workflows.css",
+      "bytes": 4240,
+      "sha256": "fd85da09438a1114402bd7e8c1256cf737146f904e2a571099fb06cd48b8654c",
+      "change": "UNCHANGED"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/ui-ux-pro-max.css",
+      "bytes": 15841,
+      "sha256": "2c74953cd59b1fb9b00386ee7c0d5a9c67c04e1a7dc22c0227cf18b198e70e50",
+      "change": "UNCHANGED"
+    }
+  ],
+  "documentation": [
+    {
+      "file": "docs/codex-ui-v1/FINAL_VISUAL_HANDOFF.md",
+      "bytes": 11107,
+      "sha256": "cdf817e82620ac6bf4d59d2bf0373679405c4b53930f589529cfc3e75c5916dc"
+    },
+    {
+      "file": "docs/codex-ui-v1/FINAL_VISUAL_COVERAGE.json",
+      "bytes": 186052,
+      "sha256": "2a8bea6793c75d292d1dda2b2135ff162eda2abe23a0ba083afe1f6fe0600333"
+    },
+    {
+      "file": "docs/codex-ui-v1/FINAL_VISUAL_COVERAGE.csv",
+      "bytes": 23155,
+      "sha256": "f157d6f88b0df1134697933cadac63d3e41663e1f41f705842995f995530abf5"
+    },
+    {
+      "file": "docs/codex-ui-v1/FINAL_VISUAL_COVERAGE.md",
+      "bytes": 18784,
+      "sha256": "50c36a1c9e3feaa136734c15101ff546a6e8a2c55a860d944815a7fdd5d54f72"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-screens-tests.cjs",
+      "bytes": 10850,
+      "sha256": "6e2b37335c42b2b7d76cb43cb8de589c43834db01f7108333c8f7d3b5adcb400"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests.cjs",
+      "bytes": 10366,
+      "sha256": "9c71e647965f33db88cf78719b5453a9f02c07f654859ffc11c8aa563c96e765"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-presentation-tests.cjs",
+      "bytes": 10440,
+      "sha256": "712cab0e307fd480ac33121135e8193c13550df6505cdda65aa4bdb8c6db50bf"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-browser-tests.cjs",
+      "bytes": 19847,
+      "sha256": "3dc401895f9faf05b2c52de0203f993fa1ebf15becf399919c76f62b4c243477"
+    },
+    {
+      "file": "docs/codex-ui-v1/ui-ux-pro-max-tests.cjs",
+      "bytes": 10416,
+      "sha256": "45a2629d77bbe409de11e1f44be2a1cd7795b32037cccf85a76a38370232c7dc"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests.cjs",
+      "bytes": 6792,
+      "sha256": "e891f516880f6f814d19fabf6d186fa4081080509b985aa20bfa8118f8bfbb6d"
+    },
+    {
+      "file": "docs/codex-ui-v1/package-final-visual.cjs",
+      "bytes": 6819,
+      "sha256": "4b4d963e9ffe39656868dc0d02301cab16d2d1fe0943241895fffb0b520388d6"
+    },
+    {
+      "file": "docs/codex-ui-v1/build-cursor-visual-package.ps1",
+      "bytes": 3953,
+      "sha256": "316e064f77c1e859c9eb0114bcc77a44bdbcf578db7379c7515b5b0707672212"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/agenda-dark-1280.png",
+      "bytes": 133490,
+      "sha256": "8c9056496f2e3f9474fec81f6e10e5caeec241a6ceaf00bc8ff4c4c4d32014f1"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/agenda-dark-390.png",
+      "bytes": 72789,
+      "sha256": "4ecdff23532c6a47a39f05310ecaa40bd086f0c86b3fa0ed8707708eca202707"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/agenda-light-1280.png",
+      "bytes": 131723,
+      "sha256": "46307de03131fa0f9396f9d347cadfeb768899abaf242afaf260747ee5c45437"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/agenda-light-390.png",
+      "bytes": 72176,
+      "sha256": "7e59900430c30f764704f43cd8311e7bb68a1b83d36b51886d3d3ad371de6d89"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/cases-dark-1280.png",
+      "bytes": 123287,
+      "sha256": "2f4d04c3c5e9b3961ed92fa25304e8a3406d8c340a522a3cdc17a83ce37af738"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/cases-dark-390.png",
+      "bytes": 60770,
+      "sha256": "e527b3427a0575c7095c013992901a247997d20e3f1c2d8908c58ff55fad30b1"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/cases-light-1280.png",
+      "bytes": 121401,
+      "sha256": "ba563dbe8b32ed85dd8f6bfd8b4de69151e51183d16eefa2ad97e2430c731c1c"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/cases-light-390.png",
+      "bytes": 59902,
+      "sha256": "fa38ffde2eb4f4c2f278b7dd8e2269341f919012712a22a917864c99b22b7aac"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/documents-dark-1280.png",
+      "bytes": 113824,
+      "sha256": "b96362102442858cb627eb78c9feab50a52b5d465f592a58bc93a094e38ebac0"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/documents-dark-390.png",
+      "bytes": 59059,
+      "sha256": "c69be85ef1ba03046b65ed20ff63bfb39c4293b63550cc272e53175da9592d4e"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/documents-light-1280.png",
+      "bytes": 111920,
+      "sha256": "9ea29334c6d08752b53c827cb69a009c088ddb0747795a3070a15a55939a9e46"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/documents-light-390.png",
+      "bytes": 58065,
+      "sha256": "13d13ba75c4a176be440deed18f2ed255ec84151da9d81e5eb58bc0ff1f793bd"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/equipment-dark-1280.png",
+      "bytes": 106243,
+      "sha256": "c9b61ce03aa136c7f439e5980280078d0e87b712d5c4f81d0079df882429f651"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/equipment-dark-390.png",
+      "bytes": 51576,
+      "sha256": "cf0d6116bd8b955d2cb8f7b4687c33ddead592747a042ea534cb1b9c6415c3e5"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/equipment-light-1280.png",
+      "bytes": 104494,
+      "sha256": "4543623ce6fc773bd0509202f11ef2542e77e7746e51edcd793ee0dfa537de5a"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/equipment-light-390.png",
+      "bytes": 50782,
+      "sha256": "84c9615b9f24dfd579eb868af34a5589f5944bfd3921fe418bb1e561074a5131"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/gallery-dark-1280.png",
+      "bytes": 302094,
+      "sha256": "b07ac05fdfcc903133d531d12053872aa3a91d4ef8a7cd74f66f2e94dc48967e"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/gallery-dark-390.png",
+      "bytes": 109263,
+      "sha256": "095132bfb9d1b43dc4987e8e44010996fb6ebd08a45146608a53d71772364a3d"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/gallery-light-1280.png",
+      "bytes": 301032,
+      "sha256": "562de1093bac3e4f13ccc86de258ea85f9788e1f55d2fd4bcf1e378aae749b69"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/gallery-light-390.png",
+      "bytes": 108796,
+      "sha256": "c86f37711833f996d4a776891d8a1dc6f9f994247dc6fd657da2f883cbb7c595"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/messages-dark-1280.png",
+      "bytes": 116820,
+      "sha256": "e6ef37a08ac497b1ac1e06503811d301ba413848839493967590468dc9d139fe"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/messages-dark-390.png",
+      "bytes": 62029,
+      "sha256": "5202ab7de8579054f0fe2048a6e9f551674ebb7ed9432037476688807ff0d1bd"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/messages-light-1280.png",
+      "bytes": 114595,
+      "sha256": "1c99002bb680f59eb789a0fee2c7f51a863c6f9a8a80cc11a25ae8b8ed095767"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/messages-light-390.png",
+      "bytes": 61247,
+      "sha256": "bb3a58a841c6f0f139db8e146056e555e6fd0e8a6d7448c1bfe9858443fdb311"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/register-dark-1280.png",
+      "bytes": 119330,
+      "sha256": "6ab55aeb5782de6cadcabe823be96c1d576d35f38d3b656d05facd5acc2c068c"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/register-dark-390.png",
+      "bytes": 51651,
+      "sha256": "3d6c2d83218a029f4eea7b516a63c8fa315381ea3be6b14dbdf89c3c6f2e3b61"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/register-light-1280.png",
+      "bytes": 117398,
+      "sha256": "071fa4bf869927c250118e117cdff69feeb3609117bee7dc6145b40e973ac3a8"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/register-light-390.png",
+      "bytes": 51029,
+      "sha256": "c77fe6aadb44b360f1dadb7f10290116eb728fca6f1595c8e88dd7079d1deb11"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/reports-dark-1280.png",
+      "bytes": 121281,
+      "sha256": "38a685022a776ea0a25a0a7bb42bb17c6994b359df60485a90762419c6db662c"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/reports-dark-390.png",
+      "bytes": 60933,
+      "sha256": "6c9f934d7bcd9af7c9e24fadb427190a655137165cff9fd0a694b6c528c88377"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/reports-light-1280.png",
+      "bytes": 119037,
+      "sha256": "6a28c31c82e42a1963aab9144c5b29cf26a6a0fb823a6bbd8d0f81264eff6d93"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/reports-light-390.png",
+      "bytes": 59979,
+      "sha256": "1d702b64f4d5128e16eccac0fd46dce42965b8c1e46c18b5b4879818b90c0221"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/results.json",
+      "bytes": 952,
+      "sha256": "7009b31683ca5be729be77be3e4c0c80be12c1c70ac3ad7e3a9b05420d77e4f2"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/settings-dark-1280.png",
+      "bytes": 107292,
+      "sha256": "573a491a4b0514a131c4c8d0545a2632d4239eebb2693fc966ccb5e45925d2db"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/settings-dark-390.png",
+      "bytes": 50810,
+      "sha256": "9622703ff0ee20c2100572fca178f4ddf78ebf0c08edfeeddf5043f3738f47d3"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/settings-light-1280.png",
+      "bytes": 105744,
+      "sha256": "4e40e3f12444093b835f7c1954e53334dd3ba8ff8bf9342fe215af5abf925d63"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/settings-light-390.png",
+      "bytes": 50178,
+      "sha256": "11f261b8a2c15fc1eb1a2bcb2c2d868273a534bf6b85076b4295f362773ac973"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/statement-dark-1280.png",
+      "bytes": 113539,
+      "sha256": "cfc852ba56bfee89de83e7b05658d6df5bbf0642dbfad0b94fd72a6d13c5ac19"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/statement-dark-390.png",
+      "bytes": 50396,
+      "sha256": "2ae6f578a01091b3b33112374a3cabee55fe704a69cffc53eda2b44e1cf6b016"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/statement-light-1280.png",
+      "bytes": 111577,
+      "sha256": "939130327b2a80bbfe33cbd510e96b4222f68d2f7911086391d79109d0d6c5df"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/statement-light-390.png",
+      "bytes": 49875,
+      "sha256": "3bc16124ad3491e26c1a013d3ab69a4ef34294b673d01ffeab98aef6c2471497"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/timeline-dark-1280.png",
+      "bytes": 122325,
+      "sha256": "66c5fa5819a20698090a6e4b1cefaab1da2e831b0bbf97d25803680bc6041cd7"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/timeline-dark-390.png",
+      "bytes": 62025,
+      "sha256": "59112d73baf0db30bb3bea12436f5e6a50a2bdcdccbe47f16731616c22580c1f"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/timeline-light-1280.png",
+      "bytes": 120468,
+      "sha256": "d16a0f7cd4021dba369a62c46646667aa75cd5cbd117052bb23c5d7c63a74c8d"
+    },
+    {
+      "file": "docs/codex-ui-v1/feature-tests/timeline-light-390.png",
+      "bytes": 61322,
+      "sha256": "f7325b9bc53ae0b40e4821489a134db9447e1497a03262fe8264a570b5ddde40"
+    }
+  ],
+  "sources": [
+    {
+      "file": "server/src/pedagogynative/routes.ts",
+      "bytes": 13276,
+      "sha256": "81ff381bc0eab6cb63576c26c1aa08e861e346c8110a5692ff58332914aa5f1a"
+    },
+    {
+      "file": "app/modules/core/visual-output-p2a.js",
+      "bytes": 41444,
+      "sha256": "bd9242f38254523a8b799441b8c71f03f1a870f4cd96dd7186e6482973852afd"
+    },
+    {
+      "file": "app/modules/accounting/accounting-treasury-demo.js",
+      "bytes": 42484,
+      "sha256": "6a5badf9076f84d5b002658b6bdf3fd4607707d0ba63b08415a924729536332e"
+    },
+    {
+      "file": "app/modules/core/visual-wiring.js",
+      "bytes": 26392,
+      "sha256": "d8527699adadd3fe438fae1022dbf188573c782ad5c0263c84337cbe9d689bf2"
+    },
+    {
+      "file": "app/modules/hr/hr-demo.js",
+      "bytes": 56144,
+      "sha256": "30dd3893357b00fe1d1ef39226fe2b908f98558287198943d658f89b438c1af7"
+    },
+    {
+      "file": "app/modules/inventory/inventory-demo.js",
+      "bytes": 39060,
+      "sha256": "ed6444359a7e01a5fc0409df193cf43e57c860c31adb2bb21ae30aac9a3cd65f"
+    },
+    {
+      "file": "app/modules/communication/communication-demo.js",
+      "bytes": 48333,
+      "sha256": "4fdfd7f5a9fbe67d3a7207252c9d9d797b86f691e17f88bec72ce5091c17c1e3"
+    },
+    {
+      "file": "app/modules/core/visual-output-closure-a.js",
+      "bytes": 34870,
+      "sha256": "8177c7e88aadd321626804a9711b38d29c02600b437cc2ac9d9e3ea0e5f33e76"
+    },
+    {
+      "file": "app/modules/core/visual-output-p1.js",
+      "bytes": 30269,
+      "sha256": "cf438e3d344fd6cfab5c2315083745d14c3887687302cbb619f7597c7c9847b4"
+    },
+    {
+      "file": "app/modules/document-center/document-center.js",
+      "bytes": 15926,
+      "sha256": "365a910649c7e6ace7e11e3aec274be67c45e476c590d149e071c1c0598f6ef8"
+    }
+  ],
+  "tests": [
+    {
+      "file": "docs/codex-ui-v1/feature-tests/results.json",
+      "bytes": 952,
+      "sha256": "7009b31683ca5be729be77be3e4c0c80be12c1c70ac3ad7e3a9b05420d77e4f2",
+      "date": "2026-10-11T12:38:53.765Z",
+      "status": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/results.json",
+      "bytes": 885,
+      "sha256": "5d9e536ddc3902e18050e1c27b1fb0839b399bb3f48354246db65b9b7c6e7f35",
+      "date": "2026-10-11T12:41:45.235Z",
+      "status": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/results.json",
+      "bytes": 720,
+      "sha256": "9f995f3d9a9bd9c54a497d91ef432bc3260f0adf0b44b12762a0921cd9ec13dc",
+      "date": "2026-10-11T12:43:54.633Z",
+      "status": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/results.json",
+      "bytes": 2362,
+      "sha256": "8ef4415a7697e1ff2fb056ea454f77bbc04a8cc3d94c0d060ac604ff839841a7",
+      "date": "2026-10-11T12:46:35.564Z",
+      "status": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/results.json",
+      "bytes": 859,
+      "sha256": "6146ecd05a116c8b1ee4bb9d1adfc5582096267f9c4faec562ce6395d41491b7",
+      "date": "2026-10-11T12:46:57.023Z",
+      "status": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/results.json",
+      "bytes": 650,
+      "sha256": "cdcd223abb62f9e206db7037585e0088793144d1e9b8328e7c0b6ddece666b39",
+      "date": "2026-10-11T12:47:10.204Z",
+      "status": "PASS"
+    }
+  ],
+  "counts": {
+    "catalogueDestinations": 211,
+    "branches": 13,
+    "roles": 15,
+    "newDedicatedDestinations": 87,
+    "enhancedDestinations": 24,
+    "presentations": 53,
+    "layouts": 11,
+    "localFormTypes": 20,
+    "responsiveVariants": 530,
+    "uncoveredLegacyDestinations": 0
+  },
+  "historicalDiagnostic": {
+    "file": "docs/codex-ui-v1/SCHOOLSAFE_NON_RACCORDEMENT_CURSOR_V1.zip",
+    "bytes": 73795,
+    "sha256": "af4e74906e69de4406e7fef052d4aeb7baa7fdb0af98105340192ebb98f75ea4"
+  },
+  "statuses": {
+    "visualCatalogue": "READY_FOR_OWNER_REVIEW",
+    "productionDesignAcceptance": "PENDING",
+    "businessOperational": false,
+    "rosarioNewChanges": "NONE",
+    "cursorIntegration": "NOT_STARTED",
+    "liveE2E": "NOT_EXECUTED"
+  }
+}

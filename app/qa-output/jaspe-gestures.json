@@ -1,0 +1,1434 @@
+{
+ "status": "passed",
+ "engine": "v12",
+ "available": 47,
+ "unavailable": [],
+ "vocabulary": [
+  "idle",
+  "listen",
+  "think",
+  "speak",
+  "explain",
+  "reassure",
+  "success",
+  "refuse",
+  "error",
+  "shy",
+  "proud",
+  "sad",
+  "laughing",
+  "grateful",
+  "relieved",
+  "embarrassed",
+  "confused",
+  "worried",
+  "tired",
+  "wave",
+  "thumbsUp",
+  "clap",
+  "jump",
+  "yes",
+  "no",
+  "guide",
+  "pointLeft",
+  "pointRight",
+  "curtsy",
+  "noseScratch",
+  "sendStanding",
+  "sendKneeling",
+  "insight",
+  "surpriseGesture",
+  "balance",
+  "fidget",
+  "hips",
+  "footTap",
+  "heelPlay",
+  "toePlay",
+  "sideStep",
+  "wink"
+ ],
+ "intents": [
+  {
+   "kind": "idle",
+   "expected": "idle",
+   "ms": 0,
+   "rest": "idle",
+   "mountMs": 1194,
+   "journal": [
+    "idle"
+   ]
+  },
+  {
+   "kind": "listen",
+   "expected": "attentive",
+   "ms": 650,
+   "rest": "idle",
+   "mountMs": 964,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "attentive"
+   ]
+  },
+  {
+   "kind": "think",
+   "expected": "deepThink",
+   "ms": 1515,
+   "rest": "idle",
+   "mountMs": 789,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "deepThink"
+   ]
+  },
+  {
+   "kind": "speak",
+   "expected": "guide",
+   "ms": 1484,
+   "rest": "idle",
+   "mountMs": 890,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "guide"
+   ]
+  },
+  {
+   "kind": "explain",
+   "expected": "guide",
+   "ms": 1397,
+   "rest": "idle",
+   "mountMs": 817,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "guide"
+   ]
+  },
+  {
+   "kind": "reassure",
+   "expected": "reassure",
+   "ms": 817,
+   "rest": "idle",
+   "mountMs": 910,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "reassure"
+   ]
+  },
+  {
+   "kind": "success",
+   "expected": "thumbsUp",
+   "ms": 1872,
+   "rest": "idle",
+   "mountMs": 960,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "thumbsUp"
+   ]
+  },
+  {
+   "kind": "refuse",
+   "expected": "worried",
+   "ms": 1559,
+   "rest": "idle",
+   "mountMs": 1735,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "worried"
+   ]
+  },
+  {
+   "kind": "error",
+   "expected": "worried",
+   "ms": 1439,
+   "rest": "idle",
+   "mountMs": 795,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "worried"
+   ]
+  },
+  {
+   "kind": "shy",
+   "expected": "shy",
+   "ms": 1625,
+   "rest": "idle",
+   "mountMs": 813,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "shy"
+   ]
+  },
+  {
+   "kind": "proud",
+   "expected": "proud",
+   "ms": 1695,
+   "rest": "idle",
+   "mountMs": 803,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "proud"
+   ]
+  },
+  {
+   "kind": "sad",
+   "expected": "sad",
+   "ms": 1910,
+   "rest": "idle",
+   "mountMs": 842,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "sad"
+   ]
+  },
+  {
+   "kind": "laughing",
+   "expected": "laughing",
+   "ms": 1775,
+   "rest": "idle",
+   "mountMs": 789,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "laughing"
+   ]
+  },
+  {
+   "kind": "grateful",
+   "expected": "grateful",
+   "ms": 1866,
+   "rest": "idle",
+   "mountMs": 1133,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "grateful"
+   ]
+  },
+  {
+   "kind": "relieved",
+   "expected": "relieved",
+   "ms": 1897,
+   "rest": "idle",
+   "mountMs": 863,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "relieved"
+   ]
+  },
+  {
+   "kind": "embarrassed",
+   "expected": "embarrassed",
+   "ms": 1663,
+   "rest": "idle",
+   "mountMs": 960,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "embarrassed"
+   ]
+  },
+  {
+   "kind": "confused",
+   "expected": "confused",
+   "ms": 1394,
+   "rest": "idle",
+   "mountMs": 935,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "confused"
+   ]
+  },
+  {
+   "kind": "worried",
+   "expected": "worried",
+   "ms": 1825,
+   "rest": "idle",
+   "mountMs": 898,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "worried"
+   ]
+  },
+  {
+   "kind": "tired",
+   "expected": "tired",
+   "ms": 1773,
+   "rest": "idle",
+   "mountMs": 781,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "tired"
+   ]
+  },
+  {
+   "kind": "wave",
+   "expected": "wave",
+   "ms": 1658,
+   "rest": "idle",
+   "mountMs": 893,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "wave"
+   ]
+  },
+  {
+   "kind": "thumbsUp",
+   "expected": "thumbsUp",
+   "ms": 1894,
+   "rest": "idle",
+   "mountMs": 775,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "thumbsUp"
+   ]
+  },
+  {
+   "kind": "clap",
+   "expected": "clap",
+   "ms": 1894,
+   "rest": "idle",
+   "mountMs": 783,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "clap"
+   ]
+  },
+  {
+   "kind": "jump",
+   "expected": "jump",
+   "ms": 1681,
+   "rest": "idle",
+   "mountMs": 826,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "jump"
+   ]
+  },
+  {
+   "kind": "yes",
+   "expected": "yes",
+   "ms": 1357,
+   "rest": "idle",
+   "mountMs": 999,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "yes"
+   ]
+  },
+  {
+   "kind": "no",
+   "expected": "no",
+   "ms": 1853,
+   "rest": "idle",
+   "mountMs": 1038,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "no"
+   ]
+  },
+  {
+   "kind": "guide",
+   "expected": "guide",
+   "ms": 1453,
+   "rest": "idle",
+   "mountMs": 1170,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "guide"
+   ]
+  },
+  {
+   "kind": "pointLeft",
+   "expected": "pointLeft",
+   "ms": 1329,
+   "rest": "idle",
+   "mountMs": 852,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "pointLeft"
+   ]
+  },
+  {
+   "kind": "pointRight",
+   "expected": "pointRight",
+   "ms": 1421,
+   "rest": "idle",
+   "mountMs": 1141,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "pointRight"
+   ]
+  },
+  {
+   "kind": "curtsy",
+   "expected": "curtsy",
+   "ms": 1974,
+   "rest": "idle",
+   "mountMs": 757,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "curtsy"
+   ]
+  },
+  {
+   "kind": "noseScratch",
+   "expected": "noseScratch",
+   "ms": 2342,
+   "rest": "idle",
+   "mountMs": 610,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "noseScratch"
+   ]
+  },
+  {
+   "kind": "sendStanding",
+   "expected": "sendStanding",
+   "ms": 1686,
+   "rest": "idle",
+   "mountMs": 956,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "sendStanding"
+   ]
+  },
+  {
+   "kind": "sendKneeling",
+   "expected": "sendKneeling",
+   "ms": 2587,
+   "rest": "idle",
+   "mountMs": 731,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "sendKneeling"
+   ]
+  },
+  {
+   "kind": "insight",
+   "expected": "insight",
+   "ms": 2556,
+   "rest": "idle",
+   "mountMs": 811,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "insight"
+   ]
+  },
+  {
+   "kind": "surpriseGesture",
+   "expected": "surpriseGesture",
+   "ms": 1368,
+   "rest": "idle",
+   "mountMs": 891,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "surpriseGesture"
+   ]
+  },
+  {
+   "kind": "balance",
+   "expected": "balance",
+   "ms": 2073,
+   "rest": "idle",
+   "mountMs": 1012,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "balance"
+   ]
+  },
+  {
+   "kind": "fidget",
+   "expected": "fidget",
+   "ms": 943,
+   "rest": "idle",
+   "mountMs": 789,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "fidget"
+   ]
+  },
+  {
+   "kind": "hips",
+   "expected": "hips",
+   "ms": 1239,
+   "rest": "idle",
+   "mountMs": 664,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "hips"
+   ]
+  },
+  {
+   "kind": "footTap",
+   "expected": "footTap",
+   "ms": 562,
+   "rest": "idle",
+   "mountMs": 1143,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "footTap"
+   ]
+  },
+  {
+   "kind": "heelPlay",
+   "expected": "heelPlay",
+   "ms": 393,
+   "rest": "idle",
+   "mountMs": 762,
+   "journal": [
+    "idle",
+    "idle",
+    "heelPlay"
+   ]
+  },
+  {
+   "kind": "toePlay",
+   "expected": "toePlay",
+   "ms": 485,
+   "rest": "idle",
+   "mountMs": 756,
+   "journal": [
+    "idle",
+    "idle",
+    "toePlay"
+   ]
+  },
+  {
+   "kind": "sideStep",
+   "expected": "sideStep",
+   "ms": 396,
+   "rest": "idle",
+   "mountMs": 845,
+   "journal": [
+    "idle",
+    "idle",
+    "sideStep"
+   ]
+  },
+  {
+   "kind": "wink",
+   "expected": "wink",
+   "ms": 378,
+   "rest": "idle",
+   "mountMs": 893,
+   "journal": [
+    "idle",
+    "idle",
+    "wink"
+   ]
+  }
+ ],
+ "actions": [
+  {
+   "id": "noseScratch",
+   "accepted": true,
+   "ms": 125,
+   "rest": "idle",
+   "mountMs": 799,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "noseScratch"
+   ]
+  },
+  {
+   "id": "intro",
+   "accepted": true,
+   "ms": 166,
+   "rest": "idle",
+   "mountMs": 813,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "intro"
+   ]
+  },
+  {
+   "id": "thumbsUp",
+   "accepted": true,
+   "ms": 130,
+   "rest": "idle",
+   "mountMs": 680,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "thumbsUp"
+   ]
+  },
+  {
+   "id": "deepThink",
+   "accepted": true,
+   "ms": 152,
+   "rest": "idle",
+   "mountMs": 820,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "deepThink"
+   ]
+  },
+  {
+   "id": "pointLeft",
+   "accepted": true,
+   "ms": 164,
+   "rest": "idle",
+   "mountMs": 742,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "pointLeft"
+   ]
+  },
+  {
+   "id": "pointRight",
+   "accepted": true,
+   "ms": 96,
+   "rest": "idle",
+   "mountMs": 818,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "pointRight"
+   ]
+  },
+  {
+   "id": "attentive",
+   "accepted": true,
+   "ms": 145,
+   "rest": "idle",
+   "mountMs": 767,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "attentive"
+   ]
+  },
+  {
+   "id": "surpriseGesture",
+   "accepted": true,
+   "ms": 145,
+   "rest": "idle",
+   "mountMs": 1117,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "surpriseGesture"
+   ]
+  },
+  {
+   "id": "footTap",
+   "accepted": true,
+   "ms": 128,
+   "rest": "idle",
+   "mountMs": 795,
+   "journal": [
+    "idle",
+    "idle",
+    "footTap"
+   ]
+  },
+  {
+   "id": "heelPlay",
+   "accepted": true,
+   "ms": 104,
+   "rest": "idle",
+   "mountMs": 751,
+   "journal": [
+    "idle",
+    "idle",
+    "heelPlay"
+   ]
+  },
+  {
+   "id": "toePlay",
+   "accepted": true,
+   "ms": 178,
+   "rest": "idle",
+   "mountMs": 876,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "toePlay"
+   ]
+  },
+  {
+   "id": "sideStep",
+   "accepted": true,
+   "ms": 117,
+   "rest": "idle",
+   "mountMs": 745,
+   "journal": [
+    "idle",
+    "idle",
+    "sideStep"
+   ]
+  },
+  {
+   "id": "angry",
+   "accepted": true,
+   "ms": 158,
+   "rest": "idle",
+   "mountMs": 1005,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "angry"
+   ]
+  },
+  {
+   "id": "compliment",
+   "accepted": true,
+   "ms": 100,
+   "rest": "idle",
+   "mountMs": 886,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "compliment"
+   ]
+  },
+  {
+   "id": "guide",
+   "accepted": true,
+   "ms": 129,
+   "rest": "idle",
+   "mountMs": 811,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "guide"
+   ]
+  },
+  {
+   "id": "reassure",
+   "accepted": true,
+   "ms": 131,
+   "rest": "idle",
+   "mountMs": 785,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "reassure"
+   ]
+  },
+  {
+   "id": "jump",
+   "accepted": true,
+   "ms": 135,
+   "rest": "idle",
+   "mountMs": 885,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "jump"
+   ]
+  },
+  {
+   "id": "walk",
+   "accepted": true,
+   "ms": 408,
+   "rest": "idle",
+   "mountMs": 754,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "walk"
+   ]
+  },
+  {
+   "id": "joySway",
+   "accepted": true,
+   "ms": 127,
+   "rest": "idle",
+   "mountMs": 731,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "joySway"
+   ]
+  },
+  {
+   "id": "curtsy",
+   "accepted": true,
+   "ms": 105,
+   "rest": "idle",
+   "mountMs": 866,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "curtsy"
+   ]
+  },
+  {
+   "id": "talkContinuous",
+   "accepted": true,
+   "ms": 161,
+   "rest": "idle",
+   "mountMs": 947,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "talkContinuous"
+   ]
+  },
+  {
+   "id": "idle",
+   "accepted": true,
+   "ms": 0,
+   "rest": "idle",
+   "mountMs": 752,
+   "journal": [
+    "idle",
+    "idle"
+   ]
+  },
+  {
+   "id": "fidget",
+   "accepted": true,
+   "ms": 153,
+   "rest": "idle",
+   "mountMs": 837,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "fidget"
+   ]
+  },
+  {
+   "id": "hips",
+   "accepted": true,
+   "ms": 149,
+   "rest": "idle",
+   "mountMs": 781,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "hips"
+   ]
+  },
+  {
+   "id": "balance",
+   "accepted": true,
+   "ms": 163,
+   "rest": "idle",
+   "mountMs": 1009,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "balance"
+   ]
+  },
+  {
+   "id": "yes",
+   "accepted": true,
+   "ms": 160,
+   "rest": "idle",
+   "mountMs": 719,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "yes"
+   ]
+  },
+  {
+   "id": "no",
+   "accepted": true,
+   "ms": 113,
+   "rest": "idle",
+   "mountMs": 619,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "no"
+   ]
+  },
+  {
+   "id": "beam",
+   "accepted": true,
+   "ms": 105,
+   "rest": "idle",
+   "mountMs": 949,
+   "journal": [
+    "idle",
+    "idle",
+    "beam"
+   ]
+  },
+  {
+   "id": "insight",
+   "accepted": true,
+   "ms": 139,
+   "rest": "idle",
+   "mountMs": 817,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "insight"
+   ]
+  },
+  {
+   "id": "sendStanding",
+   "accepted": true,
+   "ms": 100,
+   "rest": "idle",
+   "mountMs": 787,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "sendStanding"
+   ]
+  },
+  {
+   "id": "sendKneeling",
+   "accepted": true,
+   "ms": 167,
+   "rest": "idle",
+   "mountMs": 735,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "sendKneeling"
+   ]
+  },
+  {
+   "id": "blink",
+   "accepted": true,
+   "ms": 122,
+   "rest": "idle",
+   "mountMs": 789,
+   "journal": [
+    "idle",
+    "idle",
+    "blink"
+   ]
+  },
+  {
+   "id": "wink",
+   "accepted": true,
+   "ms": 136,
+   "rest": "idle",
+   "mountMs": 652,
+   "journal": [
+    "idle",
+    "idle",
+    "wink"
+   ]
+  },
+  {
+   "id": "wave",
+   "accepted": true,
+   "ms": 132,
+   "rest": "idle",
+   "mountMs": 744,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "wave"
+   ]
+  },
+  {
+   "id": "clap",
+   "accepted": true,
+   "ms": 107,
+   "rest": "idle",
+   "mountMs": 789,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "clap"
+   ]
+  },
+  {
+   "id": "think",
+   "accepted": true,
+   "ms": 174,
+   "rest": "idle",
+   "mountMs": 916,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "think"
+   ]
+  },
+  {
+   "id": "explain",
+   "accepted": true,
+   "ms": 102,
+   "rest": "idle",
+   "mountMs": 909,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "explain"
+   ]
+  },
+  {
+   "id": "shy",
+   "accepted": true,
+   "ms": 94,
+   "rest": "idle",
+   "mountMs": 700,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "shy"
+   ]
+  },
+  {
+   "id": "proud",
+   "accepted": true,
+   "ms": 111,
+   "rest": "idle",
+   "mountMs": 1221,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "proud"
+   ]
+  },
+  {
+   "id": "sad",
+   "accepted": true,
+   "ms": 150,
+   "rest": "idle",
+   "mountMs": 814,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "sad"
+   ]
+  },
+  {
+   "id": "laughing",
+   "accepted": true,
+   "ms": 110,
+   "rest": "idle",
+   "mountMs": 1181,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "laughing"
+   ]
+  },
+  {
+   "id": "grateful",
+   "accepted": true,
+   "ms": 130,
+   "rest": "idle",
+   "mountMs": 707,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "grateful"
+   ]
+  },
+  {
+   "id": "relieved",
+   "accepted": true,
+   "ms": 157,
+   "rest": "idle",
+   "mountMs": 907,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "relieved"
+   ]
+  },
+  {
+   "id": "embarrassed",
+   "accepted": true,
+   "ms": 136,
+   "rest": "idle",
+   "mountMs": 724,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "embarrassed"
+   ]
+  },
+  {
+   "id": "confused",
+   "accepted": true,
+   "ms": 120,
+   "rest": "idle",
+   "mountMs": 699,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "confused"
+   ]
+  },
+  {
+   "id": "worried",
+   "accepted": true,
+   "ms": 140,
+   "rest": "idle",
+   "mountMs": 751,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "worried"
+   ]
+  },
+  {
+   "id": "tired",
+   "accepted": true,
+   "ms": 172,
+   "rest": "idle",
+   "mountMs": 992,
+   "journal": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "tired"
+   ]
+  }
+ ],
+ "failures": []
+}

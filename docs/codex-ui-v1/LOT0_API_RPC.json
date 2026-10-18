@@ -1,0 +1,5233 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/native/access/role-editor",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 66,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/access/roles",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 74,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/access/roles/:roleId",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 80,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/access/profiles",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 87,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/access/roles",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 93,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/access/profiles/:profileId",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 99,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/access/roles/:roleId",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 108,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/access/profiles/:profileId/roles",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 117,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/access/users",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 128,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/access/users/link",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 139,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/access/profiles/:profileId/exceptions",
+      "file": "server/src/accessnative/routes.ts",
+      "line": 150,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "file": "server/src/app.ts",
+      "line": 126,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/ready",
+      "file": "server/src/app.ts",
+      "line": 128,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/__test/error",
+      "file": "server/src/app.ts",
+      "line": 279,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/__test/protected",
+      "file": "server/src/app.ts",
+      "line": 284,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/native/login",
+      "file": "server/src/authnative/routes.ts",
+      "line": 40,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/native/supabase/exchange",
+      "file": "server/src/authnative/routes.ts",
+      "line": 94,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/native/supabase/change-password",
+      "file": "server/src/authnative/routes.ts",
+      "line": 143,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/native/supabase/school",
+      "file": "server/src/authnative/routes.ts",
+      "line": 157,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/native/logout",
+      "file": "server/src/authnative/routes.ts",
+      "line": 170,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/native/me",
+      "file": "server/src/authnative/routes.ts",
+      "line": 179,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/native/profiles",
+      "file": "server/src/authnative/routes.ts",
+      "line": 206,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/native/switch-profile",
+      "file": "server/src/authnative/routes.ts",
+      "line": 222,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/native/forgot",
+      "file": "server/src/authnative/routes.ts",
+      "line": 248,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/native/reset",
+      "file": "server/src/authnative/routes.ts",
+      "line": 260,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/recover/parent",
+      "file": "server/src/authnative/routes.ts",
+      "line": 281,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/recover/profile",
+      "file": "server/src/authnative/routes.ts",
+      "line": 319,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/recovery/admin/generate",
+      "file": "server/src/authnative/routes.ts",
+      "line": 336,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/recovery/admin/redeem",
+      "file": "server/src/authnative/routes.ts",
+      "line": 384,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/session/bootstrap",
+      "file": "server/src/bootstrap/routes.ts",
+      "line": 27,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/cards/request-print",
+      "file": "server/src/cards/routes.ts",
+      "line": 18,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/cards/print-request",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 66,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/cards/students/:studentId/print",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 93,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/cards/print-requests",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 114,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/cards/class-card-config",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 126,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/cards/class-visual",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 131,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/cards/school-motto",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 136,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/cards/school-identity",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 141,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/cards/students/:studentId/academic-year",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 151,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/cards/print-requests/counts",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 164,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/cards/batches",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 170,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/cards/loss-report",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 186,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/cards/replace",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 199,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/cards/reprint",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 211,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/cards/students/:studentId/guardian-phones",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 221,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/cards/students/:studentId/credential",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 227,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/cards/students/:studentId/credential",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 237,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/cards/distribute",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 248,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/native/cards/print-requests/:id/status",
+      "file": "server/src/cardsnative/routes.ts",
+      "line": 258,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/control/print-request",
+      "file": "server/src/controlprintnative/routes.ts",
+      "line": 43,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/control/print-requests",
+      "file": "server/src/controlprintnative/routes.ts",
+      "line": 68,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/control/students/:studentId/print",
+      "file": "server/src/controlprintnative/routes.ts",
+      "line": 78,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/control/print/status",
+      "file": "server/src/controlprintnative/routes.ts",
+      "line": 112,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard/stats",
+      "file": "server/src/dashboard/routes.ts",
+      "line": 19,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/machine/devicehub/events",
+      "file": "server/src/devicehub/machine-routes.ts",
+      "line": 30,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/devicehub/devices",
+      "file": "server/src/devicehub/routes.ts",
+      "line": 34,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/devicehub/mappings",
+      "file": "server/src/devicehub/routes.ts",
+      "line": 50,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/devicehub/events",
+      "file": "server/src/devicehub/routes.ts",
+      "line": 63,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/devicehub/attendance/apply",
+      "file": "server/src/devicehub/routes.ts",
+      "line": 80,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/devicehub/sync-jobs/run",
+      "file": "server/src/devicehub/routes.ts",
+      "line": 90,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/documents/create",
+      "file": "server/src/documents/routes.ts",
+      "line": 23,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/documents/:id/issue",
+      "file": "server/src/documents/routes.ts",
+      "line": 57,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/email/send",
+      "file": "server/src/email/routes.ts",
+      "line": 24,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/guardians",
+      "file": "server/src/familynative/routes.ts",
+      "line": 44,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/pickup-authorizations",
+      "file": "server/src/familynative/routes.ts",
+      "line": 56,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/pickup-authorizations/:id/validate",
+      "file": "server/src/familynative/routes.ts",
+      "line": 70,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/pickup-authorizations/:id/revoke",
+      "file": "server/src/familynative/routes.ts",
+      "line": 77,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/pickup-confirm",
+      "file": "server/src/familynative/routes.ts",
+      "line": 93,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/students/:studentId/primary-transfer",
+      "file": "server/src/familynative/routes.ts",
+      "line": 107,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/student-imports",
+      "file": "server/src/familynative/routes.ts",
+      "line": 125,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/student-imports/:jobId/preview",
+      "file": "server/src/familynative/routes.ts",
+      "line": 142,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/student-imports/:jobId/commit",
+      "file": "server/src/familynative/routes.ts",
+      "line": 152,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/family/students/:studentId/pickup-authorizations",
+      "file": "server/src/familynative/routes.ts",
+      "line": 162,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/family/students/:studentId/pickup-authorizations/school",
+      "file": "server/src/familynative/routes.ts",
+      "line": 168,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/family/students/:studentId/pickup-authorizations/mine",
+      "file": "server/src/familynative/routes.ts",
+      "line": 174,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/students/:studentId/accredited",
+      "file": "server/src/familynative/routes.ts",
+      "line": 180,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/guardians/:guardianId/portrait",
+      "file": "server/src/familynative/routes.ts",
+      "line": 196,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/family/portrait-file/:filename",
+      "file": "server/src/familynative/routes.ts",
+      "line": 216,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/guardians/:guardianId/photo-review",
+      "file": "server/src/familynative/routes.ts",
+      "line": 228,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/pickup-authorizations/:id/parent-suspend",
+      "file": "server/src/familynative/routes.ts",
+      "line": 238,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/pickup-authorizations/:id/reactivation-request",
+      "file": "server/src/familynative/routes.ts",
+      "line": 245,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/pickup-authorizations/:id/reactivate",
+      "file": "server/src/familynative/routes.ts",
+      "line": 252,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/pickup-authorizations/:id/reactivation-refuse",
+      "file": "server/src/familynative/routes.ts",
+      "line": 258,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/guardians/:guardianId/parent-suspend",
+      "file": "server/src/familynative/routes.ts",
+      "line": 265,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/guardians/:guardianId/reactivation-request",
+      "file": "server/src/familynative/routes.ts",
+      "line": 272,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/family/guardians/:guardianId/reactivation-decide",
+      "file": "server/src/familynative/routes.ts",
+      "line": 279,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/finance/fee-structures",
+      "file": "server/src/finance/control/routes.ts",
+      "line": 36,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/finance/fee-structures",
+      "file": "server/src/finance/control/routes.ts",
+      "line": 46,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/finance/student-fees",
+      "file": "server/src/finance/control/routes.ts",
+      "line": 57,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/finance/fee-control/campaigns",
+      "file": "server/src/finance/control/routes.ts",
+      "line": 71,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/finance/fee-control/campaigns",
+      "file": "server/src/finance/control/routes.ts",
+      "line": 81,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/finance/fee-control/scans",
+      "file": "server/src/finance/control/routes.ts",
+      "line": 92,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/finance/student-fees/:studentFeeId",
+      "file": "server/src/finance/payments/routes.ts",
+      "line": 35,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/finance/payments",
+      "file": "server/src/finance/payments/routes.ts",
+      "line": 46,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/finance/payments/:id/cancel",
+      "file": "server/src/finance/payments/routes.ts",
+      "line": 57,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/finance/receipts/:paymentId",
+      "file": "server/src/finance/reports/routes.ts",
+      "line": 71,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/finance/reports/daily",
+      "file": "server/src/finance/reports/routes.ts",
+      "line": 95,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/finance/cash-register/close",
+      "file": "server/src/finance/reports/routes.ts",
+      "line": 106,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/finance/fee-structures",
+      "file": "server/src/financenative/routes.ts",
+      "line": 36,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/finance/fee-structures",
+      "file": "server/src/financenative/routes.ts",
+      "line": 41,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/finance/students/:studentId/fees",
+      "file": "server/src/financenative/routes.ts",
+      "line": 55,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/finance/students/:studentId/fees",
+      "file": "server/src/financenative/routes.ts",
+      "line": 61,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/finance/student-fees/:studentFeeId",
+      "file": "server/src/financenative/routes.ts",
+      "line": 71,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/finance/students/:studentId/payments",
+      "file": "server/src/financenative/routes.ts",
+      "line": 79,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/finance/payments",
+      "file": "server/src/financenative/routes.ts",
+      "line": 85,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/finance/payments/:paymentId/cancel",
+      "file": "server/src/financenative/routes.ts",
+      "line": 102,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/finance/receipts/:paymentId",
+      "file": "server/src/financenative/routes.ts",
+      "line": 111,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/finance/cash-register/open",
+      "file": "server/src/financenative/routes.ts",
+      "line": 119,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/finance/cash-register/close",
+      "file": "server/src/financenative/routes.ts",
+      "line": 124,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/finance/reports/daily",
+      "file": "server/src/financenative/routes.ts",
+      "line": 131,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/finance/fee-control/campaigns",
+      "file": "server/src/financenative/routes.ts",
+      "line": 138,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/finance/fee-control/campaigns",
+      "file": "server/src/financenative/routes.ts",
+      "line": 143,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/finance/fee-control/scans",
+      "file": "server/src/financenative/routes.ts",
+      "line": 157,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/shared/permissions.json",
+      "file": "server/src/index.ts",
+      "line": 64,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/jaspe/chat",
+      "file": "server/src/jaspenative/routes.ts",
+      "line": 32,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/license/status",
+      "file": "server/src/licensenative/routes.ts",
+      "line": 44,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/license/redeem",
+      "file": "server/src/licensenative/routes.ts",
+      "line": 64,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/license/refresh",
+      "file": "server/src/licensenative/routes.ts",
+      "line": 94,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/onboarding/me",
+      "file": "server/src/onboarding/routes.ts",
+      "line": 43,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/onboarding/logout",
+      "file": "server/src/onboarding/routes.ts",
+      "line": 49,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/onboarding/school",
+      "file": "server/src/onboarding/routes.ts",
+      "line": 55,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "file": "server/src/pedagogy/rankings/routes.ts",
+      "line": 128,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/:id",
+      "file": "server/src/pedagogy/rankings/routes.ts",
+      "line": 145,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/compute",
+      "file": "server/src/pedagogy/rankings/routes.ts",
+      "line": 164,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/:id/publish",
+      "file": "server/src/pedagogy/rankings/routes.ts",
+      "line": 187,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/:id/stars",
+      "file": "server/src/pedagogy/rankings/routes.ts",
+      "line": 212,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/:id/stars",
+      "file": "server/src/pedagogy/rankings/routes.ts",
+      "line": 226,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "DELETE",
+      "path": "/:id/stars/:studentId",
+      "file": "server/src/pedagogy/rankings/routes.ts",
+      "line": 252,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pedagogy/classes",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 88,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pedagogy/subjects",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 99,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pedagogy/subjects",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 109,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pedagogy/teacher-assignments",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 121,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pedagogy/teacher-assignments",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 131,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "DELETE",
+      "path": "/pedagogy/teacher-assignments/:id",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 142,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pedagogy/assignments",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 154,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pedagogy/assignments",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 169,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pedagogy/assignments/:id",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 180,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pedagogy/assignments/:id/publish",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 192,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pedagogy/assignments/:id/grades",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 204,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pedagogy/assignments/:id/grades",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 215,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pedagogy/assignments/:id/grades/publish",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 228,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pedagogy/lesson-plans",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 240,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pedagogy/lesson-plans",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 255,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pedagogy/lesson-plans/:id",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 266,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "DELETE",
+      "path": "/pedagogy/lesson-plans/:id",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 278,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pedagogy/parent/children",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 290,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pedagogy/parent/grades/:studentId",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 300,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pedagogy/students/:id/averages",
+      "file": "server/src/pedagogy/routes.ts",
+      "line": 311,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/classes",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 36,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/subjects",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 42,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/subjects",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 47,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/teacher-assignments",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 59,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/teacher-assignments",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 64,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/teacher-assignments/homeroom",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 78,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "DELETE",
+      "path": "/native/pedagogy/teacher-assignments/:id",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 92,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/assignments",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 100,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/assignments",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 106,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/native/pedagogy/assignments/:id",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 120,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/assignments/:id/publish",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 133,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/assignments/:id/grades",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 141,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/assignments/:id/grades",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 147,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/assignments/:id/grades/publish",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 160,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/lesson-plans",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 167,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/lesson-plans",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 173,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/native/pedagogy/lesson-plans/:id",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 186,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "DELETE",
+      "path": "/native/pedagogy/lesson-plans/:id",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 198,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/parent/children",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 206,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/parent/grades/:studentId",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 211,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/students/:studentId/averages",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 218,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/rankings",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 225,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/rankings/:id",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 231,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/rankings/compute",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 238,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/rankings/:id/publish",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 247,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/pedagogy/rankings/:id/stars",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 255,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/pedagogy/rankings/:id/stars",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 261,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "DELETE",
+      "path": "/native/pedagogy/rankings/:id/stars/:studentId",
+      "file": "server/src/pedagogynative/routes.ts",
+      "line": 268,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pilotage/alerts",
+      "file": "server/src/pilotage/alerts/routes.ts",
+      "line": 19,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pilotage/alerts/:id/acknowledge",
+      "file": "server/src/pilotage/alerts/routes.ts",
+      "line": 41,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pilotage/alerts/:id/resolve",
+      "file": "server/src/pilotage/alerts/routes.ts",
+      "line": 64,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pilotage/alerts/evaluate",
+      "file": "server/src/pilotage/alerts/routes.ts",
+      "line": 87,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pilotage/approvals",
+      "file": "server/src/pilotage/approvals/routes.ts",
+      "line": 18,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pilotage/approvals",
+      "file": "server/src/pilotage/approvals/routes.ts",
+      "line": 40,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pilotage/approvals/:id/decide",
+      "file": "server/src/pilotage/approvals/routes.ts",
+      "line": 62,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pilotage/dashboard",
+      "file": "server/src/pilotage/dashboard/routes.ts",
+      "line": 17,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/pilotage/snapshots/capture",
+      "file": "server/src/pilotage/snapshots/routes.ts",
+      "line": 23,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/pilotage/snapshots/trend",
+      "file": "server/src/pilotage/snapshots/routes.ts",
+      "line": 44,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/push/public-key",
+      "file": "server/src/push/routes.ts",
+      "line": 27,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/push/subscribe",
+      "file": "server/src/push/routes.ts",
+      "line": 37,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/scan-control/locations",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 52,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/scan-control/capabilities",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 57,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/scan-control/grants",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 61,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/scan-control/fees/module",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 65,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/fees/module",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 70,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/scan-control/fees/delegations",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 75,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/fees/delegations",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 80,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/grants",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 93,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/scan",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 103,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/campaigns/:campaignId/publish",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 118,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/campaigns/:campaignId/close",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 123,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/campaigns/:campaignId/cancel",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 128,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/scan-control/board/teacher",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 133,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/scan-control/board/school",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 137,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/scan-control/on-site",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 141,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/scan-control/audit",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 152,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/guardians/:guardianId/portrait",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 157,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/cards/issue",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 163,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/cards/loss",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 168,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/cards/:cardId/canonical-replace",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 177,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/cards/:cardId/reprint",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 182,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/scan-control/cards/:cardId/revoke",
+      "file": "server/src/scancontrol/routes.ts",
+      "line": 188,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/settings",
+      "file": "server/src/school/routes.ts",
+      "line": 32,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PUT",
+      "path": "/school/settings",
+      "file": "server/src/school/routes.ts",
+      "line": 44,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/staff",
+      "file": "server/src/school/routes.ts",
+      "line": 57,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/school/staff/invite",
+      "file": "server/src/school/routes.ts",
+      "line": 69,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/staff/:id",
+      "file": "server/src/school/routes.ts",
+      "line": 83,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/school/staff/:id/resend-invite",
+      "file": "server/src/school/routes.ts",
+      "line": 96,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PUT",
+      "path": "/school/staff/:id/roles",
+      "file": "server/src/school/routes.ts",
+      "line": 110,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/school/staff/:id/toggle",
+      "file": "server/src/school/routes.ts",
+      "line": 125,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/roles",
+      "file": "server/src/school/routes.ts",
+      "line": 140,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/permissions",
+      "file": "server/src/school/routes.ts",
+      "line": 149,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/academic-years",
+      "file": "server/src/school/routes.ts",
+      "line": 158,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/school/academic-years",
+      "file": "server/src/school/routes.ts",
+      "line": 170,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PUT",
+      "path": "/school/academic-years/:id",
+      "file": "server/src/school/routes.ts",
+      "line": 183,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/school/academic-years/:id/activate",
+      "file": "server/src/school/routes.ts",
+      "line": 197,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/cycles",
+      "file": "server/src/school/routes.ts",
+      "line": 210,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PUT",
+      "path": "/school/cycles/:key/toggle",
+      "file": "server/src/school/routes.ts",
+      "line": 222,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/classes/:id/students",
+      "file": "server/src/school/routes.ts",
+      "line": 236,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/school/logo",
+      "file": "server/src/school/routes.ts",
+      "line": 249,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/school/official-profile",
+      "file": "server/src/schoolnative/routes.ts",
+      "line": 65,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PUT",
+      "path": "/native/school/official-profile",
+      "file": "server/src/schoolnative/routes.ts",
+      "line": 75,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/school/logo",
+      "file": "server/src/schoolnative/routes.ts",
+      "line": 90,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/school/logo-file/:filename",
+      "file": "server/src/schoolnative/routes.ts",
+      "line": 115,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/security/scan",
+      "file": "server/src/security/routes.ts",
+      "line": 22,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/security/lockdown",
+      "file": "server/src/security/routes.ts",
+      "line": 64,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/security/events",
+      "file": "server/src/security/routes.ts",
+      "line": 86,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/session/bootstrap",
+      "file": "server/src/sessionnative/routes.ts",
+      "line": 20,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/config",
+      "file": "server/src/setup/routes.ts",
+      "line": 9,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/students/:id/record",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 96,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/students/:id/completeness",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 102,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/native/students/:id/identity",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 108,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/students/:id/photo",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 114,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/students/:id/family",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 150,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/students/:id/guardians",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 156,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/native/students/:id/guardians/:guardianId",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 162,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/students/:id/guardians/:guardianId/set-primary",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 168,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/students/:id/guardians/:guardianId/deactivate",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 174,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/students/:id/emergency-contacts",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 180,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PUT",
+      "path": "/native/students/:id/emergency-contacts/:slot",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 186,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/students/:id/health",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 201,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PUT",
+      "path": "/native/students/:id/health",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 207,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/students/:id/health/conditions",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 222,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/native/students/:id/health/conditions/:conditionId",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 229,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/students/:id/allergies",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 235,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/native/students/:id/allergies/:allergyId",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 248,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/students/:id/medications",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 254,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/native/students/:id/medications/:medicationId",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 267,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/students/:id/dietary",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 273,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PUT",
+      "path": "/native/students/:id/dietary",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 279,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/students/:id/dietary/restrictions",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 289,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/native/students/:id/dietary/restrictions/:restrictionId",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 300,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/students/:id/dietary/preferences",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 306,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PATCH",
+      "path": "/native/students/:id/dietary/preferences/:preferenceId",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 317,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PUT",
+      "path": "/native/students/:id/confirmations/:key",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 323,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "PUT",
+      "path": "/native/students/:id/consents/:key",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 331,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/canteen/students/:studentId/dietary",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 339,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/parent/children",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 345,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/parent/children/:studentId/record",
+      "file": "server/src/studentrecordnative/routes.ts",
+      "line": 350,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/school/students/drafts",
+      "file": "server/src/students/routes.ts",
+      "line": 22,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/students",
+      "file": "server/src/students/routes.ts",
+      "line": 35,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/students/:id",
+      "file": "server/src/students/routes.ts",
+      "line": 47,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/school/parents",
+      "file": "server/src/students/routes.ts",
+      "line": 59,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/students/:id",
+      "file": "server/src/studentsnative/routes.ts",
+      "line": 35,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/students",
+      "file": "server/src/studentsnative/routes.ts",
+      "line": 56,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "POST",
+      "path": "/native/students/drafts",
+      "file": "server/src/studentsnative/routes.ts",
+      "line": 80,
+      "status": "contrat present; execution non verifiee"
+    },
+    {
+      "method": "GET",
+      "path": "/native/trial/status",
+      "file": "server/src/trialnative/routes.ts",
+      "line": 39,
+      "status": "contrat present; execution non verifiee"
+    }
+  ],
+  "rpc": [
+    {
+      "name": "api.check_access",
+      "file": "server/src/accessnative/provision.ts",
+      "line": 99
+    },
+    {
+      "name": "api.provision_school_person_prepare",
+      "file": "server/src/accessnative/provision.ts",
+      "line": 125
+    },
+    {
+      "name": "api.provision_school_person",
+      "file": "server/src/accessnative/provision.ts",
+      "line": 138
+    },
+    {
+      "name": "api.provision_school_person",
+      "file": "server/src/accessnative/provision.ts",
+      "line": 179
+    },
+    {
+      "name": "api.provision_school_profile_link",
+      "file": "server/src/accessnative/provision.ts",
+      "line": 222
+    },
+    {
+      "name": "api.access_profiles_list",
+      "file": "server/src/accessnative/service.ts",
+      "line": 64
+    },
+    {
+      "name": "api.access_roles_list",
+      "file": "server/src/accessnative/service.ts",
+      "line": 67
+    },
+    {
+      "name": "api.access_profile_read",
+      "file": "server/src/accessnative/service.ts",
+      "line": 70
+    },
+    {
+      "name": "api.access_role_read",
+      "file": "server/src/accessnative/service.ts",
+      "line": 73
+    },
+    {
+      "name": "api.access_role_assign",
+      "file": "server/src/accessnative/service.ts",
+      "line": 76
+    },
+    {
+      "name": "api.access_role_editor",
+      "file": "server/src/accessnative/service.ts",
+      "line": 80
+    },
+    {
+      "name": "api.access_role_create",
+      "file": "server/src/accessnative/service.ts",
+      "line": 83
+    },
+    {
+      "name": "api.access_profile_exception",
+      "file": "server/src/accessnative/service.ts",
+      "line": 87
+    },
+    {
+      "name": "api.access_role_save",
+      "file": "server/src/accessnative/service.ts",
+      "line": 91
+    },
+    {
+      "name": "api.master_school_access_status",
+      "file": "server/src/authnative/service.ts",
+      "line": 119
+    },
+    {
+      "name": "api.auth_create_session",
+      "file": "server/src/authnative/service.ts",
+      "line": 147
+    },
+    {
+      "name": "api.auth_supabase_session_identity",
+      "file": "server/src/authnative/service.ts",
+      "line": 187
+    },
+    {
+      "name": "api.auth_is_locked",
+      "file": "server/src/authnative/service.ts",
+      "line": 230
+    },
+    {
+      "name": "api.auth_control_resolve_identity",
+      "file": "server/src/authnative/service.ts",
+      "line": 242
+    },
+    {
+      "name": "api.auth_create_onboarding_session",
+      "file": "server/src/authnative/service.ts",
+      "line": 247
+    },
+    {
+      "name": "api.auth_record_attempt",
+      "file": "server/src/authnative/service.ts",
+      "line": 250
+    },
+    {
+      "name": "api.auth_record_attempt",
+      "file": "server/src/authnative/service.ts",
+      "line": 269
+    },
+    {
+      "name": "api.auth_resolve_identity",
+      "file": "server/src/authnative/service.ts",
+      "line": 275
+    },
+    {
+      "name": "api.auth_control_link",
+      "file": "server/src/authnative/service.ts",
+      "line": 280
+    },
+    {
+      "name": "api.auth_record_attempt",
+      "file": "server/src/authnative/service.ts",
+      "line": 290
+    },
+    {
+      "name": "api.auth_list_profiles",
+      "file": "server/src/authnative/service.ts",
+      "line": 301
+    },
+    {
+      "name": "api.auth_resolve_session",
+      "file": "server/src/authnative/service.ts",
+      "line": 342
+    },
+    {
+      "name": "api.auth_control_link",
+      "file": "server/src/authnative/service.ts",
+      "line": 348
+    },
+    {
+      "name": "api.auth_control_revoke_sessions",
+      "file": "server/src/authnative/service.ts",
+      "line": 355
+    },
+    {
+      "name": "api.auth_touch_session",
+      "file": "server/src/authnative/service.ts",
+      "line": 373
+    },
+    {
+      "name": "api.auth_revoke_session",
+      "file": "server/src/authnative/service.ts",
+      "line": 381
+    },
+    {
+      "name": "api.auth_list_profiles",
+      "file": "server/src/authnative/service.ts",
+      "line": 390
+    },
+    {
+      "name": "api.auth_create_recovery_request",
+      "file": "server/src/authnative/service.ts",
+      "line": 442
+    },
+    {
+      "name": "api.auth_reset_password",
+      "file": "server/src/authnative/service.ts",
+      "line": 454
+    },
+    {
+      "name": "api.auth_create_email_verification",
+      "file": "server/src/authnative/service.ts",
+      "line": 483
+    },
+    {
+      "name": "api.auth_verify_email",
+      "file": "server/src/authnative/service.ts",
+      "line": 491
+    },
+    {
+      "name": "api.auth_create_phone_verification",
+      "file": "server/src/authnative/service.ts",
+      "line": 500
+    },
+    {
+      "name": "api.auth_verify_phone",
+      "file": "server/src/authnative/service.ts",
+      "line": 510
+    },
+    {
+      "name": "api.auth_create_recovery_request",
+      "file": "server/src/authnative/service.ts",
+      "line": 528
+    },
+    {
+      "name": "api.auth_admin_generate_recovery_code",
+      "file": "server/src/authnative/service.ts",
+      "line": 539
+    },
+    {
+      "name": "api.auth_resolve_admin_recovery_target",
+      "file": "server/src/authnative/service.ts",
+      "line": 547
+    },
+    {
+      "name": "api.auth_redeem_admin_recovery_code",
+      "file": "server/src/authnative/service.ts",
+      "line": 557
+    },
+    {
+      "name": "api.auth_recovery_normalize_phone",
+      "file": "server/src/authnative/service.ts",
+      "line": 571
+    },
+    {
+      "name": "api.auth_recover_parent_account",
+      "file": "server/src/authnative/service.ts",
+      "line": 576
+    },
+    {
+      "name": "api.auth_recover_profile_account",
+      "file": "server/src/authnative/service.ts",
+      "line": 584
+    },
+    {
+      "name": "api.auth_link_supabase_principal",
+      "file": "server/src/authnative/supabase-exchange.ts",
+      "line": 35
+    },
+    {
+      "name": "api.auth_supabase_password_pending",
+      "file": "server/src/authnative/supabase-exchange.ts",
+      "line": 41
+    },
+    {
+      "name": "api.auth_supabase_password_pending_subject",
+      "file": "server/src/authnative/supabase-password.ts",
+      "line": 60
+    },
+    {
+      "name": "api.auth_supabase_clear_password_change",
+      "file": "server/src/authnative/supabase-password.ts",
+      "line": 76
+    },
+    {
+      "name": "api.card_print_request_create",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 105
+    },
+    {
+      "name": "api.card_print_request_update_status",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 207
+    },
+    {
+      "name": "api.card_print_request_list",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 300
+    },
+    {
+      "name": "api.class_card_config_list",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 311
+    },
+    {
+      "name": "api.class_card_visual_list",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 320
+    },
+    {
+      "name": "api.school_card_motto",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 329
+    },
+    {
+      "name": "api.school_card_identity",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 338
+    },
+    {
+      "name": "api.card_academic_year",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 349
+    },
+    {
+      "name": "api.student_card_guardian_phones",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 363
+    },
+    {
+      "name": "api.card_print_request_counts",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 374
+    },
+    {
+      "name": "api.card_loss_report",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 389
+    },
+    {
+      "name": "api.card_replace",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 409
+    },
+    {
+      "name": "api.card_reprint_authorize",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 418
+    },
+    {
+      "name": "api.card_mark_distributed",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 425
+    },
+    {
+      "name": "api.student_card_read",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 432
+    },
+    {
+      "name": "api.scan_control_require",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 441
+    },
+    {
+      "name": "api.student_card_read",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 443
+    },
+    {
+      "name": "api.student_card_issue",
+      "file": "server/src/cardsnative/service.ts",
+      "line": 451
+    },
+    {
+      "name": "api.card_print_request_update_status",
+      "file": "server/src/controlprintnative/service.ts",
+      "line": 115
+    },
+    {
+      "name": "api.check_access",
+      "file": "server/src/db/access.ts",
+      "line": 27
+    },
+    {
+      "name": "api.set_request_context",
+      "file": "server/src/db/context.ts",
+      "line": 34
+    },
+    {
+      "name": "api.set_control_context",
+      "file": "server/src/db/control-authority.ts",
+      "line": 46
+    },
+    {
+      "name": "api.set_control_context",
+      "file": "server/src/db/control-authority.ts",
+      "line": 65
+    },
+    {
+      "name": "api.machine_device_context",
+      "file": "server/src/devicehub/machine-context.ts",
+      "line": 6
+    },
+    {
+      "name": "api.device_register",
+      "file": "server/src/devicehub/service.ts",
+      "line": 38
+    },
+    {
+      "name": "api.device_mapping_ensure",
+      "file": "server/src/devicehub/service.ts",
+      "line": 74
+    },
+    {
+      "name": "api.device_event_ingest",
+      "file": "server/src/devicehub/service.ts",
+      "line": 93
+    },
+    {
+      "name": "api.attendance_apply",
+      "file": "server/src/devicehub/service.ts",
+      "line": 105
+    },
+    {
+      "name": "api.device_sync_job_claim",
+      "file": "server/src/devicehub/service.ts",
+      "line": 117
+    },
+    {
+      "name": "api.import_prepare",
+      "file": "server/src/familynative/import.ts",
+      "line": 84
+    },
+    {
+      "name": "api.import_preview",
+      "file": "server/src/familynative/import.ts",
+      "line": 93
+    },
+    {
+      "name": "api.import_commit",
+      "file": "server/src/familynative/import.ts",
+      "line": 100
+    },
+    {
+      "name": "api.family_guardian_link",
+      "file": "server/src/familynative/service.ts",
+      "line": 42
+    },
+    {
+      "name": "api.pickup_authorization_request",
+      "file": "server/src/familynative/service.ts",
+      "line": 58
+    },
+    {
+      "name": "api.pickup_authorization_validate",
+      "file": "server/src/familynative/service.ts",
+      "line": 67
+    },
+    {
+      "name": "api.pickup_authorization_revoke",
+      "file": "server/src/familynative/service.ts",
+      "line": 79
+    },
+    {
+      "name": "api.pickup_authorization_list",
+      "file": "server/src/familynative/service.ts",
+      "line": 88
+    },
+    {
+      "name": "api.pickup_confirm",
+      "file": "server/src/familynative/service.ts",
+      "line": 105
+    },
+    {
+      "name": "api.family_primary_transfer",
+      "file": "server/src/familynative/service.ts",
+      "line": 127
+    },
+    {
+      "name": "api.pickup_school_authorization_list",
+      "file": "server/src/familynative/service.ts",
+      "line": 148
+    },
+    {
+      "name": "api.pickup_parent_authorization_list",
+      "file": "server/src/familynative/service.ts",
+      "line": 152
+    },
+    {
+      "name": "api.pickup_parent_suspend",
+      "file": "server/src/familynative/service.ts",
+      "line": 156
+    },
+    {
+      "name": "api.pickup_parent_reactivation_request",
+      "file": "server/src/familynative/service.ts",
+      "line": 160
+    },
+    {
+      "name": "api.pickup_authorization_reactivate",
+      "file": "server/src/familynative/service.ts",
+      "line": 164
+    },
+    {
+      "name": "api.pickup_reactivation_refuse",
+      "file": "server/src/familynative/service.ts",
+      "line": 168
+    },
+    {
+      "name": "api.pickup_parent_family_suspend",
+      "file": "server/src/familynative/service.ts",
+      "line": 172
+    },
+    {
+      "name": "api.pickup_parent_family_reactivation_request",
+      "file": "server/src/familynative/service.ts",
+      "line": 176
+    },
+    {
+      "name": "api.pickup_family_reactivation_decide",
+      "file": "server/src/familynative/service.ts",
+      "line": 180
+    },
+    {
+      "name": "api.pickup_photo_review",
+      "file": "server/src/familynative/service.ts",
+      "line": 184
+    },
+    {
+      "name": "api.pickup_external_register",
+      "file": "server/src/familynative/service.ts",
+      "line": 188
+    },
+    {
+      "name": "api.scan_control_portrait_set",
+      "file": "server/src/familynative/service.ts",
+      "line": 192
+    },
+    {
+      "name": "api.pickup_portrait_readable",
+      "file": "server/src/familynative/service.ts",
+      "line": 198
+    },
+    {
+      "name": "api.fee_structure_list",
+      "file": "server/src/financenative/service.ts",
+      "line": 84
+    },
+    {
+      "name": "api.fee_structure_create",
+      "file": "server/src/financenative/service.ts",
+      "line": 100
+    },
+    {
+      "name": "api.student_fee_list",
+      "file": "server/src/financenative/service.ts",
+      "line": 111
+    },
+    {
+      "name": "api.student_fee_create",
+      "file": "server/src/financenative/service.ts",
+      "line": 156
+    },
+    {
+      "name": "api.student_payment_list",
+      "file": "server/src/financenative/service.ts",
+      "line": 167
+    },
+    {
+      "name": "api.payment_create",
+      "file": "server/src/financenative/service.ts",
+      "line": 185
+    },
+    {
+      "name": "api.payment_cancel",
+      "file": "server/src/financenative/service.ts",
+      "line": 195
+    },
+    {
+      "name": "api.payment_receipt",
+      "file": "server/src/financenative/service.ts",
+      "line": 205
+    },
+    {
+      "name": "api.cash_register_open",
+      "file": "server/src/financenative/service.ts",
+      "line": 216
+    },
+    {
+      "name": "api.cash_register_close",
+      "file": "server/src/financenative/service.ts",
+      "line": 225
+    },
+    {
+      "name": "api.finance_daily_report",
+      "file": "server/src/financenative/service.ts",
+      "line": 236
+    },
+    {
+      "name": "api.fee_control_campaign_list",
+      "file": "server/src/financenative/service.ts",
+      "line": 247
+    },
+    {
+      "name": "api.fee_control_campaign_create",
+      "file": "server/src/financenative/service.ts",
+      "line": 263
+    },
+    {
+      "name": "api.scanner_fee_consult",
+      "file": "server/src/financenative/service.ts",
+      "line": 287
+    },
+    {
+      "name": "api.supabase_school_access_read",
+      "file": "server/src/licensenative/school-access.ts",
+      "line": 17
+    },
+    {
+      "name": "api.license_state_read",
+      "file": "server/src/licensenative/service.ts",
+      "line": 43
+    },
+    {
+      "name": "api.license_state_write",
+      "file": "server/src/licensenative/service.ts",
+      "line": 75
+    },
+    {
+      "name": "api.master_school_access_apply",
+      "file": "server/src/masteraccess/reconciler.ts",
+      "line": 34
+    },
+    {
+      "name": "api.master_school_access_targets",
+      "file": "server/src/masteraccess/reconciler.ts",
+      "line": 45
+    },
+    {
+      "name": "api.account_registration_prepare",
+      "file": "server/src/onboarding/account-registration-service.ts",
+      "line": 28
+    },
+    {
+      "name": "api.account_registration_issue_approval",
+      "file": "server/src/onboarding/account-registration-service.ts",
+      "line": 33
+    },
+    {
+      "name": "api.account_registration_mark_email_sent",
+      "file": "server/src/onboarding/account-registration-service.ts",
+      "line": 41
+    },
+    {
+      "name": "api.account_registration_cancel_delivery_failure",
+      "file": "server/src/onboarding/account-registration-service.ts",
+      "line": 48
+    },
+    {
+      "name": "api.account_registration_review",
+      "file": "server/src/onboarding/approval-service.ts",
+      "line": 17
+    },
+    {
+      "name": "api.account_registration_decide",
+      "file": "server/src/onboarding/approval-service.ts",
+      "line": 29
+    },
+    {
+      "name": "api.auth_resolve_onboarding_session",
+      "file": "server/src/onboarding/school-service.ts",
+      "line": 10
+    },
+    {
+      "name": "api.auth_control_revoke_sessions",
+      "file": "server/src/onboarding/school-service.ts",
+      "line": 16
+    },
+    {
+      "name": "api.auth_revoke_onboarding_session",
+      "file": "server/src/onboarding/school-service.ts",
+      "line": 35
+    },
+    {
+      "name": "api.auth_activate_school",
+      "file": "server/src/onboarding/school-service.ts",
+      "line": 44
+    },
+    {
+      "name": "api.auth_supabase_principal_create_school",
+      "file": "server/src/onboarding/supabase-school.ts",
+      "line": 28
+    },
+    {
+      "name": "api.class_list",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 127
+    },
+    {
+      "name": "api.subject_list",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 135
+    },
+    {
+      "name": "api.subject_create",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 143
+    },
+    {
+      "name": "api.teacher_assignment_list",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 154
+    },
+    {
+      "name": "api.teacher_assignment_create",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 163
+    },
+    {
+      "name": "api.teacher_homeroom_set",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 173
+    },
+    {
+      "name": "api.teacher_assignment_delete",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 183
+    },
+    {
+      "name": "api.assignment_list",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 193
+    },
+    {
+      "name": "api.assignment_create",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 206
+    },
+    {
+      "name": "api.assignment_update",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 216
+    },
+    {
+      "name": "api.assignment_publish",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 226
+    },
+    {
+      "name": "api.grades_get",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 236
+    },
+    {
+      "name": "api.grades_save",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 245
+    },
+    {
+      "name": "api.grades_publish",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 255
+    },
+    {
+      "name": "api.lesson_plan_list",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 265
+    },
+    {
+      "name": "api.lesson_plan_create",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 278
+    },
+    {
+      "name": "api.lesson_plan_update",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 288
+    },
+    {
+      "name": "api.lesson_plan_delete",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 298
+    },
+    {
+      "name": "api.parent_children_list",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 308
+    },
+    {
+      "name": "api.parent_student_grades",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 317
+    },
+    {
+      "name": "api.student_averages",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 327
+    },
+    {
+      "name": "api.ranking_list",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 337
+    },
+    {
+      "name": "api.ranking_get",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 346
+    },
+    {
+      "name": "api.ranking_compute",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 355
+    },
+    {
+      "name": "api.ranking_publish",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 364
+    },
+    {
+      "name": "api.star_list",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 374
+    },
+    {
+      "name": "api.star_add",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 383
+    },
+    {
+      "name": "api.star_remove",
+      "file": "server/src/pedagogynative/service.ts",
+      "line": 392
+    },
+    {
+      "name": "api.scan_control_note",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 87
+    },
+    {
+      "name": "api.scan_control_card_by_number",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 95
+    },
+    {
+      "name": "api.scan_control_presence",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 99
+    },
+    {
+      "name": "api.scan_control_location_check",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 106
+    },
+    {
+      "name": "api.scan_control_location_list",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 161
+    },
+    {
+      "name": "api.scan_control_my_capabilities",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 167
+    },
+    {
+      "name": "api.scan_control_grant_set",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 171
+    },
+    {
+      "name": "api.scan_control_grant_list",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 177
+    },
+    {
+      "name": "api.scan_control_teacher_board",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 181
+    },
+    {
+      "name": "api.scan_control_school_board",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 185
+    },
+    {
+      "name": "api.scan_control_on_site_student",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 189
+    },
+    {
+      "name": "api.scan_control_on_site_class",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 193
+    },
+    {
+      "name": "api.scan_control_on_site_school",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 197
+    },
+    {
+      "name": "api.scan_control_audit_read",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 201
+    },
+    {
+      "name": "api.scan_control_campaign_transition",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 205
+    },
+    {
+      "name": "api.scan_control_portrait_set",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 209
+    },
+    {
+      "name": "api.scan_control_card_replace",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 216
+    },
+    {
+      "name": "api.scan_control_card_revoke",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 226
+    },
+    {
+      "name": "api.scan_control_require",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 230
+    },
+    {
+      "name": "api.scan_control_require",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 235
+    },
+    {
+      "name": "api.scan_control_require",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 240
+    },
+    {
+      "name": "api.scanner_fee_module_get",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 245
+    },
+    {
+      "name": "api.scanner_fee_module_set",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 249
+    },
+    {
+      "name": "api.scanner_fee_delegation_list",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 253
+    },
+    {
+      "name": "api.scanner_fee_delegation_set",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 265
+    },
+    {
+      "name": "api.scan_control_require",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 293
+    },
+    {
+      "name": "api.scanner_card_lookup",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 308
+    },
+    {
+      "name": "api.scanner_fee_authorize",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 376
+    },
+    {
+      "name": "api.scanner_fee_consult",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 414
+    },
+    {
+      "name": "api.scanner_entry_record",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 427
+    },
+    {
+      "name": "api.scanner_pickup_people",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 457
+    },
+    {
+      "name": "api.scanner_pickup_prepare",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 473
+    },
+    {
+      "name": "api.scanner_pickup_confirm",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 500
+    },
+    {
+      "name": "api.scan_control_presence_mark",
+      "file": "server/src/scancontrol/service.ts",
+      "line": 506
+    },
+    {
+      "name": "api.school_official_profile_read",
+      "file": "server/src/schoolnative/service.ts",
+      "line": 23
+    },
+    {
+      "name": "api.school_official_profile_update",
+      "file": "server/src/schoolnative/service.ts",
+      "line": 34
+    },
+    {
+      "name": "api.session_bootstrap",
+      "file": "server/src/sessionnative/service.ts",
+      "line": 46
+    },
+    {
+      "name": "api.setup_stage_school",
+      "file": "server/src/setup/service.ts",
+      "line": 41
+    },
+    {
+      "name": "api.setup_complete_school",
+      "file": "server/src/setup/service.ts",
+      "line": 50
+    },
+    {
+      "name": "api.student_record_read",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 117
+    },
+    {
+      "name": "api.student_record_completeness",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 120
+    },
+    {
+      "name": "api.student_identity_update",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 123
+    },
+    {
+      "name": "api.student_photo_set",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 126
+    },
+    {
+      "name": "api.student_family_read",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 129
+    },
+    {
+      "name": "api.student_guardian_add",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 132
+    },
+    {
+      "name": "api.student_guardian_update",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 135
+    },
+    {
+      "name": "api.student_guardian_set_primary",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 138
+    },
+    {
+      "name": "api.student_guardian_deactivate",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 141
+    },
+    {
+      "name": "api.student_emergency_contacts_read",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 144
+    },
+    {
+      "name": "api.student_emergency_contact_upsert",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 149
+    },
+    {
+      "name": "api.student_health_read",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 157
+    },
+    {
+      "name": "api.student_health_profile_upsert",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 162
+    },
+    {
+      "name": "api.student_health_condition_add",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 170
+    },
+    {
+      "name": "api.student_health_condition_update",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 173
+    },
+    {
+      "name": "api.student_allergy_add",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 178
+    },
+    {
+      "name": "api.student_allergy_update",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 186
+    },
+    {
+      "name": "api.student_medication_add",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 191
+    },
+    {
+      "name": "api.student_medication_update",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 199
+    },
+    {
+      "name": "api.student_dietary_read",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 202
+    },
+    {
+      "name": "api.student_dietary_profile_upsert",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 207
+    },
+    {
+      "name": "api.student_dietary_restriction_add",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 217
+    },
+    {
+      "name": "api.student_dietary_restriction_update",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 225
+    },
+    {
+      "name": "api.student_food_preference_add",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 230
+    },
+    {
+      "name": "api.student_food_preference_update",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 238
+    },
+    {
+      "name": "api.student_record_confirmation_set",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 243
+    },
+    {
+      "name": "api.student_consent_set",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 253
+    },
+    {
+      "name": "api.canteen_student_dietary",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 261
+    },
+    {
+      "name": "api.parent_children",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 264
+    },
+    {
+      "name": "api.student_record_read",
+      "file": "server/src/studentrecordnative/service.ts",
+      "line": 267
+    },
+    {
+      "name": "api.student_read",
+      "file": "server/src/studentsnative/service.ts",
+      "line": 37
+    },
+    {
+      "name": "api.student_list",
+      "file": "server/src/studentsnative/service.ts",
+      "line": 55
+    },
+    {
+      "name": "api.student_create_draft",
+      "file": "server/src/studentsnative/service.ts",
+      "line": 84
+    },
+    {
+      "name": "api.trial_status_read",
+      "file": "server/src/trialnative/service.ts",
+      "line": 20
+    }
+  ],
+  "sql": [
+    {
+      "name": "api.school_provision_roles",
+      "file": "database/access/v1/02_provision_bridge.sql",
+      "line": 133
+    },
+    {
+      "name": "api.set_control_context",
+      "file": "database/access/v1/03_control_context.sql",
+      "line": 11
+    },
+    {
+      "name": "api.access_role_assign",
+      "file": "database/access/v1/04_role_assignments.sql",
+      "line": 90
+    },
+    {
+      "name": "api.access_role_editor",
+      "file": "database/access/v1/05_custom_roles.sql",
+      "line": 80
+    },
+    {
+      "name": "api.access_role_create",
+      "file": "database/access/v1/05_custom_roles.sql",
+      "line": 115
+    },
+    {
+      "name": "api.access_role_save",
+      "file": "database/access/v1/05_custom_roles.sql",
+      "line": 146
+    },
+    {
+      "name": "api.auth_resolve_identity",
+      "file": "database/auth/v1/02_auth_api.sql",
+      "line": 76
+    },
+    {
+      "name": "api.auth_list_profiles",
+      "file": "database/auth/v1/02_auth_api.sql",
+      "line": 152
+    },
+    {
+      "name": "api.auth_create_session",
+      "file": "database/auth/v1/02_auth_api.sql",
+      "line": 173
+    },
+    {
+      "name": "api.auth_resolve_session",
+      "file": "database/auth/v1/02_auth_api.sql",
+      "line": 232
+    },
+    {
+      "name": "api.auth_touch_session",
+      "file": "database/auth/v1/02_auth_api.sql",
+      "line": 266
+    },
+    {
+      "name": "api.auth_revoke_session",
+      "file": "database/auth/v1/02_auth_api.sql",
+      "line": 298
+    },
+    {
+      "name": "api.auth_record_attempt",
+      "file": "database/auth/v1/02_auth_api.sql",
+      "line": 320
+    },
+    {
+      "name": "api.auth_is_locked",
+      "file": "database/auth/v1/02_auth_api.sql",
+      "line": 347
+    },
+    {
+      "name": "api.auth_set_password",
+      "file": "database/auth/v1/02_auth_api.sql",
+      "line": 361
+    },
+    {
+      "name": "api.auth_create_recovery_request",
+      "file": "database/auth/v1/03_auth_reset.sql",
+      "line": 17
+    },
+    {
+      "name": "api.auth_attach_recovery_token",
+      "file": "database/auth/v1/03_auth_reset.sql",
+      "line": 56
+    },
+    {
+      "name": "api.auth_reset_password",
+      "file": "database/auth/v1/03_auth_reset.sql",
+      "line": 79
+    },
+    {
+      "name": "api.auth_create_recovery_request",
+      "file": "database/auth/v2/01_auth_reset.sql",
+      "line": 5
+    },
+    {
+      "name": "api.auth_reset_password",
+      "file": "database/auth/v2/01_auth_reset.sql",
+      "line": 28
+    },
+    {
+      "name": "api.auth_create_email_verification",
+      "file": "database/auth/v2/02_identity_verification.sql",
+      "line": 39
+    },
+    {
+      "name": "api.auth_verify_email",
+      "file": "database/auth/v2/02_identity_verification.sql",
+      "line": 85
+    },
+    {
+      "name": "api.auth_create_phone_verification",
+      "file": "database/auth/v2/02_identity_verification.sql",
+      "line": 121
+    },
+    {
+      "name": "api.auth_verify_phone",
+      "file": "database/auth/v2/02_identity_verification.sql",
+      "line": 164
+    },
+    {
+      "name": "api.auth_register_webauthn_credential",
+      "file": "database/auth/v2/03_webauthn_credentials.sql",
+      "line": 44
+    },
+    {
+      "name": "api.auth_revoke_webauthn_credential",
+      "file": "database/auth/v2/03_webauthn_credentials.sql",
+      "line": 89
+    },
+    {
+      "name": "api.auth_list_webauthn_credentials",
+      "file": "database/auth/v2/03_webauthn_credentials.sql",
+      "line": 111
+    },
+    {
+      "name": "api.auth_update_webauthn_sign_count",
+      "file": "database/auth/v2/03_webauthn_credentials.sql",
+      "line": 136
+    },
+    {
+      "name": "api.auth_has_active_webauthn",
+      "file": "database/auth/v2/03_webauthn_credentials.sql",
+      "line": 163
+    },
+    {
+      "name": "api.auth_admin_generate_recovery_code",
+      "file": "database/auth/v2/04_admin_recovery.sql",
+      "line": 42
+    },
+    {
+      "name": "api.auth_redeem_admin_recovery_code",
+      "file": "database/auth/v2/04_admin_recovery.sql",
+      "line": 116
+    },
+    {
+      "name": "api.auth_can_admin_recover",
+      "file": "database/auth/v2/04_admin_recovery.sql",
+      "line": 189
+    },
+    {
+      "name": "api.auth_recovery_normalize_phone",
+      "file": "database/auth/v2/05_parent_recovery.sql",
+      "line": 33
+    },
+    {
+      "name": "api.auth_recover_parent_account",
+      "file": "database/auth/v2/05_parent_recovery.sql",
+      "line": 54
+    },
+    {
+      "name": "api.auth_recover_profile_account",
+      "file": "database/auth/v2/05_parent_recovery.sql",
+      "line": 99
+    },
+    {
+      "name": "api.auth_resolve_admin_recovery_target",
+      "file": "database/auth/v2/06_admin_assisted_recovery.sql",
+      "line": 28
+    },
+    {
+      "name": "api.auth_can_admin_recover",
+      "file": "database/auth/v2/06_admin_assisted_recovery.sql",
+      "line": 45
+    },
+    {
+      "name": "api.auth_admin_generate_recovery_code",
+      "file": "database/auth/v2/06_admin_assisted_recovery.sql",
+      "line": 50
+    },
+    {
+      "name": "api.auth_redeem_admin_recovery_code",
+      "file": "database/auth/v2/06_admin_assisted_recovery.sql",
+      "line": 70
+    },
+    {
+      "name": "api.auth_redeem_admin_recovery_code",
+      "file": "database/auth/v2/06_admin_assisted_recovery.sql",
+      "line": 102
+    },
+    {
+      "name": "api.auth_reset_password",
+      "file": "database/auth/v2/06_admin_assisted_recovery.sql",
+      "line": 118
+    },
+    {
+      "name": "api.auth_resolve_identity",
+      "file": "database/auth/v3/01_inactive_school_auth_gate.sql",
+      "line": 11
+    },
+    {
+      "name": "api.auth_list_profiles",
+      "file": "database/auth/v3/01_inactive_school_auth_gate.sql",
+      "line": 48
+    },
+    {
+      "name": "api.auth_create_session",
+      "file": "database/auth/v3/01_inactive_school_auth_gate.sql",
+      "line": 68
+    },
+    {
+      "name": "api.auth_resolve_session",
+      "file": "database/auth/v3/01_inactive_school_auth_gate.sql",
+      "line": 137
+    },
+    {
+      "name": "api.auth_resolve_identity",
+      "file": "database/auth/v4/01_auth_resolve_identity_preauth.sql",
+      "line": 7
+    },
+    {
+      "name": "api.account_registration_prepare",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 58
+    },
+    {
+      "name": "api.account_registration_issue_approval",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 96
+    },
+    {
+      "name": "api.account_registration_mark_email_sent",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 112
+    },
+    {
+      "name": "api.account_registration_review",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 121
+    },
+    {
+      "name": "api.account_registration_decide",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 133
+    },
+    {
+      "name": "api.account_registration_cancel_delivery_failure",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 160
+    },
+    {
+      "name": "api.auth_resolve_onboarding_identity",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 198
+    },
+    {
+      "name": "api.auth_create_onboarding_session",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 209
+    },
+    {
+      "name": "api.auth_resolve_onboarding_session",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 224
+    },
+    {
+      "name": "api.auth_revoke_onboarding_session",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 236
+    },
+    {
+      "name": "api.account_onboarding_create_school",
+      "file": "database/auth/v5/01_account_registration_onboarding.sql",
+      "line": 244
+    },
+    {
+      "name": "api.auth_create_direct_identity",
+      "file": "database/auth/v6/01_direct_school_activation.sql",
+      "line": 42
+    },
+    {
+      "name": "api.auth_create_onboarding_session",
+      "file": "database/auth/v6/01_direct_school_activation.sql",
+      "line": 89
+    },
+    {
+      "name": "api.auth_resolve_onboarding_session",
+      "file": "database/auth/v6/01_direct_school_activation.sql",
+      "line": 104
+    },
+    {
+      "name": "api.auth_record_activation_attempt",
+      "file": "database/auth/v6/01_direct_school_activation.sql",
+      "line": 119
+    },
+    {
+      "name": "api.auth_activate_school",
+      "file": "database/auth/v6/01_direct_school_activation.sql",
+      "line": 141
+    },
+    {
+      "name": "api.auth_control_resolve_identity",
+      "file": "database/auth/v7/01_control_admin_links.sql",
+      "line": 20
+    },
+    {
+      "name": "api.auth_control_link",
+      "file": "database/auth/v7/01_control_admin_links.sql",
+      "line": 60
+    },
+    {
+      "name": "api.auth_control_revoke_sessions",
+      "file": "database/auth/v7/01_control_admin_links.sql",
+      "line": 69
+    },
+    {
+      "name": "api.auth_resolve_onboarding_session",
+      "file": "database/auth/v7/01_control_admin_links.sql",
+      "line": 83
+    },
+    {
+      "name": "api.auth_activate_school",
+      "file": "database/auth/v7/01_control_admin_links.sql",
+      "line": 106
+    },
+    {
+      "name": "api.auth_link_supabase_principal",
+      "file": "database/auth/v8/01_supabase_principal_link.sql",
+      "line": 6
+    },
+    {
+      "name": "api.auth_supabase_principal_create_school",
+      "file": "database/auth/v8/02_supabase_principal_school.sql",
+      "line": 7
+    },
+    {
+      "name": "api.auth_supabase_principal_create_school",
+      "file": "database/auth/v8/03_supabase_principal_bootstrap.sql",
+      "line": 69
+    },
+    {
+      "name": "api.auth_link_supabase_principal",
+      "file": "database/auth/v8/04_supabase_password_state.sql",
+      "line": 9
+    },
+    {
+      "name": "api.auth_supabase_password_pending",
+      "file": "database/auth/v8/04_supabase_password_state.sql",
+      "line": 83
+    },
+    {
+      "name": "api.auth_supabase_password_pending_subject",
+      "file": "database/auth/v8/04_supabase_password_state.sql",
+      "line": 99
+    },
+    {
+      "name": "api.auth_supabase_clear_password_change",
+      "file": "database/auth/v8/04_supabase_password_state.sql",
+      "line": 115
+    },
+    {
+      "name": "api.auth_resolve_session",
+      "file": "database/auth/v8/04_supabase_password_state.sql",
+      "line": 140
+    },
+    {
+      "name": "api.provision_school_adult_guard",
+      "file": "database/auth/v8/05_provision_school_adult.sql",
+      "line": 6
+    },
+    {
+      "name": "api.provision_school_adult_prepare",
+      "file": "database/auth/v8/05_provision_school_adult.sql",
+      "line": 58
+    },
+    {
+      "name": "api.provision_school_adult",
+      "file": "database/auth/v8/05_provision_school_adult.sql",
+      "line": 69
+    },
+    {
+      "name": "api.supabase_school_access_read",
+      "file": "database/auth/v8/06_supabase_school_access.sql",
+      "line": 26
+    },
+    {
+      "name": "api.auth_supabase_session_identity",
+      "file": "database/auth/v8/07_supabase_session_identity.sql",
+      "line": 8
+    },
+    {
+      "name": "api.person_display_name",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 124
+    },
+    {
+      "name": "api.card_class_teacher",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 143
+    },
+    {
+      "name": "api.provision_school_person_prepare",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 159
+    },
+    {
+      "name": "api.provision_school_person",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 226
+    },
+    {
+      "name": "api.provision_school_profile_link",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 369
+    },
+    {
+      "name": "api.family_guardian_link",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 477
+    },
+    {
+      "name": "api.student_guardian_add",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 539
+    },
+    {
+      "name": "api.teacher_assignment_create",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 603
+    },
+    {
+      "name": "api.teacher_homeroom_set",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 644
+    },
+    {
+      "name": "api.access_profile_exception",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 696
+    },
+    {
+      "name": "api.access_role_assign",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 749
+    },
+    {
+      "name": "api.pickup_authorization_request",
+      "file": "database/auth/v8/08_universal_people.sql",
+      "line": 806
+    },
+    {
+      "name": "api.master_school_access_targets",
+      "file": "database/auth/v9/01_master_school_access.sql",
+      "line": 112
+    },
+    {
+      "name": "api.master_school_access_status",
+      "file": "database/auth/v9/01_master_school_access.sql",
+      "line": 154
+    },
+    {
+      "name": "api.master_school_access_apply",
+      "file": "database/auth/v9/01_master_school_access.sql",
+      "line": 180
+    },
+    {
+      "name": "api.master_school_access_relink",
+      "file": "database/auth/v9/01_master_school_access.sql",
+      "line": 284
+    },
+    {
+      "name": "api.set_request_context",
+      "file": "database/baseline/v1/08_internal_functions.sql",
+      "line": 92
+    },
+    {
+      "name": "api.check_access",
+      "file": "database/baseline/v1/09_api_rpc.sql",
+      "line": 6
+    },
+    {
+      "name": "api.deactivate_other_academic_years",
+      "file": "database/baseline/v1/09_api_rpc.sql",
+      "line": 32
+    },
+    {
+      "name": "api.next_document_number",
+      "file": "database/baseline/v1/09_api_rpc.sql",
+      "line": 83
+    },
+    {
+      "name": "api.ensure_receipt_number",
+      "file": "database/baseline/v1/09_api_rpc.sql",
+      "line": 145
+    },
+    {
+      "name": "api.record_payment",
+      "file": "database/baseline/v1/09_api_rpc.sql",
+      "line": 192
+    },
+    {
+      "name": "api.cancel_payment",
+      "file": "database/baseline/v1/09_api_rpc.sql",
+      "line": 327
+    },
+    {
+      "name": "api.increment_card_print_count",
+      "file": "database/baseline/v1/09_api_rpc.sql",
+      "line": 444
+    },
+    {
+      "name": "api.create_student_draft",
+      "file": "database/baseline/v1/09_api_rpc.sql",
+      "line": 483
+    },
+    {
+      "name": "api.compensate_student_draft_creation",
+      "file": "database/baseline/v1/09_api_rpc.sql",
+      "line": 739
+    },
+    {
+      "name": "api.card_print_request_create",
+      "file": "database/cards/v1/01_cards_native.sql",
+      "line": 13
+    },
+    {
+      "name": "api.card_print_request_list",
+      "file": "database/cards/v1/01_cards_native.sql",
+      "line": 90
+    },
+    {
+      "name": "api.card_print_request_update_status",
+      "file": "database/cards/v1/01_cards_native.sql",
+      "line": 140
+    },
+    {
+      "name": "api.card_print_request_counts",
+      "file": "database/cards/v1/01_cards_native.sql",
+      "line": 175
+    },
+    {
+      "name": "api.class_card_config_list",
+      "file": "database/cards/v1/02_cards_classes.sql",
+      "line": 8
+    },
+    {
+      "name": "api.card_loss_report",
+      "file": "database/cards/v1/03_cards_lifecycle.sql",
+      "line": 18
+    },
+    {
+      "name": "api.card_replace",
+      "file": "database/cards/v1/03_cards_lifecycle.sql",
+      "line": 84
+    },
+    {
+      "name": "api.card_reprint_authorize",
+      "file": "database/cards/v1/03_cards_lifecycle.sql",
+      "line": 159
+    },
+    {
+      "name": "api.card_mark_distributed",
+      "file": "database/cards/v1/03_cards_lifecycle.sql",
+      "line": 208
+    },
+    {
+      "name": "api.class_card_visual_list",
+      "file": "database/cards/v2/01_class_config_and_credential.sql",
+      "line": 12
+    },
+    {
+      "name": "api.school_card_motto",
+      "file": "database/cards/v2/01_class_config_and_credential.sql",
+      "line": 48
+    },
+    {
+      "name": "api.student_card_read",
+      "file": "database/cards/v2/01_class_config_and_credential.sql",
+      "line": 65
+    },
+    {
+      "name": "api.student_card_issue",
+      "file": "database/cards/v2/01_class_config_and_credential.sql",
+      "line": 102
+    },
+    {
+      "name": "api.school_card_identity",
+      "file": "database/cards/v2/02_school_card_identity.sql",
+      "line": 10
+    },
+    {
+      "name": "api.card_academic_year",
+      "file": "database/cards/v2/03_card_year_and_school_profile.sql",
+      "line": 11
+    },
+    {
+      "name": "api.school_official_profile_read",
+      "file": "database/cards/v2/03_card_year_and_school_profile.sql",
+      "line": 67
+    },
+    {
+      "name": "api.school_official_profile_update",
+      "file": "database/cards/v2/03_card_year_and_school_profile.sql",
+      "line": 102
+    },
+    {
+      "name": "api.dashboard_parent",
+      "file": "database/dashboard/v1/01_dashboard.sql",
+      "line": 24
+    },
+    {
+      "name": "api.dashboard_child",
+      "file": "database/dashboard/v1/01_dashboard.sql",
+      "line": 74
+    },
+    {
+      "name": "api.dashboard_teacher",
+      "file": "database/dashboard/v1/01_dashboard.sql",
+      "line": 152
+    },
+    {
+      "name": "api.dashboard_admin",
+      "file": "database/dashboard/v1/01_dashboard.sql",
+      "line": 194
+    },
+    {
+      "name": "api.device_register",
+      "file": "database/devicehub/v1/02_devicehub_rpc.sql",
+      "line": 20
+    },
+    {
+      "name": "api.device_mapping_ensure",
+      "file": "database/devicehub/v1/02_devicehub_rpc.sql",
+      "line": 51
+    },
+    {
+      "name": "api.device_event_ingest",
+      "file": "database/devicehub/v1/02_devicehub_rpc.sql",
+      "line": 110
+    },
+    {
+      "name": "api.device_sync_job_claim",
+      "file": "database/devicehub/v1/02_devicehub_rpc.sql",
+      "line": 189
+    },
+    {
+      "name": "api.attendance_apply",
+      "file": "database/devicehub/v1/03_attendance.sql",
+      "line": 42
+    },
+    {
+      "name": "api.device_register",
+      "file": "database/devicehub/v2/02_devicehub_rpc.sql",
+      "line": 20
+    },
+    {
+      "name": "api.device_mapping_ensure",
+      "file": "database/devicehub/v2/02_devicehub_rpc.sql",
+      "line": 51
+    },
+    {
+      "name": "api.device_event_ingest",
+      "file": "database/devicehub/v2/02_devicehub_rpc.sql",
+      "line": 116
+    },
+    {
+      "name": "api.device_sync_job_claim",
+      "file": "database/devicehub/v2/02_devicehub_rpc.sql",
+      "line": 200
+    },
+    {
+      "name": "api.machine_device_context",
+      "file": "database/devicehub/v2/03_machine_bindings.sql",
+      "line": 39
+    },
+    {
+      "name": "api.pickup_authorization_request",
+      "file": "database/family/v1/01_pickup_authorizations.sql",
+      "line": 46
+    },
+    {
+      "name": "api.pickup_authorization_validate",
+      "file": "database/family/v1/01_pickup_authorizations.sql",
+      "line": 105
+    },
+    {
+      "name": "api.pickup_authorization_revoke",
+      "file": "database/family/v1/01_pickup_authorizations.sql",
+      "line": 172
+    },
+    {
+      "name": "api.pickup_authorization_list",
+      "file": "database/family/v1/01_pickup_authorizations.sql",
+      "line": 213
+    },
+    {
+      "name": "api.family_primary_transfer",
+      "file": "database/family/v1/02_primary_transfer.sql",
+      "line": 25
+    },
+    {
+      "name": "api.pickup_confirm",
+      "file": "database/family/v1/03_pickup_confirmation.sql",
+      "line": 16
+    },
+    {
+      "name": "api.import_prepare",
+      "file": "database/family/v1/04_student_import.sql",
+      "line": 65
+    },
+    {
+      "name": "api.import_preview",
+      "file": "database/family/v1/04_student_import.sql",
+      "line": 126
+    },
+    {
+      "name": "api.import_commit",
+      "file": "database/family/v1/04_student_import.sql",
+      "line": 216
+    },
+    {
+      "name": "api.pickup_current_photo",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 69
+    },
+    {
+      "name": "api.pickup_photo_accepted",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 92
+    },
+    {
+      "name": "api.pickup_photo_review",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 118
+    },
+    {
+      "name": "api.pickup_authorization_view",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 161
+    },
+    {
+      "name": "api.pickup_authorization_list",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 224
+    },
+    {
+      "name": "api.pickup_school_authorization_list",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 237
+    },
+    {
+      "name": "api.pickup_parent_authorization_list",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 250
+    },
+    {
+      "name": "api.pickup_authorization_validate",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 271
+    },
+    {
+      "name": "api.pickup_parent_actor",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 332
+    },
+    {
+      "name": "api.pickup_parent_suspend",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 353
+    },
+    {
+      "name": "api.pickup_parent_reactivation_request",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 398
+    },
+    {
+      "name": "api.pickup_authorization_reactivate",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 437
+    },
+    {
+      "name": "api.pickup_confirm",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 500
+    },
+    {
+      "name": "api.pickup_reactivation_refuse",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 592
+    },
+    {
+      "name": "api.pickup_parent_family_suspend",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 637
+    },
+    {
+      "name": "api.pickup_parent_family_reactivation_request",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 682
+    },
+    {
+      "name": "api.pickup_family_reactivation_decide",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 718
+    },
+    {
+      "name": "api.pickup_external_register",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 770
+    },
+    {
+      "name": "api.pickup_portrait_readable",
+      "file": "database/family/v2/01_pickup_person_controls.sql",
+      "line": 830
+    },
+    {
+      "name": "api.student_fee_list",
+      "file": "database/finance/v1/01_finance_native.sql",
+      "line": 12
+    },
+    {
+      "name": "api.student_payment_list",
+      "file": "database/finance/v1/01_finance_native.sql",
+      "line": 63
+    },
+    {
+      "name": "api.student_fee_create",
+      "file": "database/finance/v1/01_finance_native.sql",
+      "line": 112
+    },
+    {
+      "name": "api.payment_create",
+      "file": "database/finance/v1/01_finance_native.sql",
+      "line": 165
+    },
+    {
+      "name": "api.fee_structure_list",
+      "file": "database/finance/v1/02_finance_full.sql",
+      "line": 13
+    },
+    {
+      "name": "api.fee_structure_create",
+      "file": "database/finance/v1/02_finance_full.sql",
+      "line": 44
+    },
+    {
+      "name": "api.cash_register_open",
+      "file": "database/finance/v1/02_finance_full.sql",
+      "line": 74
+    },
+    {
+      "name": "api.cash_register_close",
+      "file": "database/finance/v1/02_finance_full.sql",
+      "line": 94
+    },
+    {
+      "name": "api.finance_daily_report",
+      "file": "database/finance/v1/02_finance_full.sql",
+      "line": 117
+    },
+    {
+      "name": "api.payment_cancel",
+      "file": "database/finance/v1/02_finance_full.sql",
+      "line": 153
+    },
+    {
+      "name": "api.payment_receipt",
+      "file": "database/finance/v1/02_finance_full.sql",
+      "line": 204
+    },
+    {
+      "name": "api.fee_control_campaign_list",
+      "file": "database/finance/v1/02_finance_full.sql",
+      "line": 258
+    },
+    {
+      "name": "api.fee_control_campaign_create",
+      "file": "database/finance/v1/02_finance_full.sql",
+      "line": 291
+    },
+    {
+      "name": "api.fee_control_scan_create",
+      "file": "database/finance/v1/02_finance_full.sql",
+      "line": 322
+    },
+    {
+      "name": "api.fee_structure_list",
+      "file": "database/finance/v2/01_finance_full.sql",
+      "line": 13
+    },
+    {
+      "name": "api.fee_structure_create",
+      "file": "database/finance/v2/01_finance_full.sql",
+      "line": 44
+    },
+    {
+      "name": "api.cash_register_open",
+      "file": "database/finance/v2/01_finance_full.sql",
+      "line": 74
+    },
+    {
+      "name": "api.cash_register_close",
+      "file": "database/finance/v2/01_finance_full.sql",
+      "line": 94
+    },
+    {
+      "name": "api.finance_daily_report",
+      "file": "database/finance/v2/01_finance_full.sql",
+      "line": 117
+    },
+    {
+      "name": "api.payment_cancel",
+      "file": "database/finance/v2/01_finance_full.sql",
+      "line": 153
+    },
+    {
+      "name": "api.payment_receipt",
+      "file": "database/finance/v2/01_finance_full.sql",
+      "line": 204
+    },
+    {
+      "name": "api.fee_control_campaign_list",
+      "file": "database/finance/v2/01_finance_full.sql",
+      "line": 258
+    },
+    {
+      "name": "api.fee_control_campaign_create",
+      "file": "database/finance/v2/01_finance_full.sql",
+      "line": 291
+    },
+    {
+      "name": "api.fee_control_scan_create",
+      "file": "database/finance/v2/01_finance_full.sql",
+      "line": 322
+    },
+    {
+      "name": "api.license_state_read",
+      "file": "database/license/v1/01_license.sql",
+      "line": 62
+    },
+    {
+      "name": "api.license_state_write",
+      "file": "database/license/v1/01_license.sql",
+      "line": 98
+    },
+    {
+      "name": "api.license_status_read",
+      "file": "database/license/v1/01_license.sql",
+      "line": 166
+    },
+    {
+      "name": "api.class_list",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 13
+    },
+    {
+      "name": "api.subject_list",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 40
+    },
+    {
+      "name": "api.subject_create",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 63
+    },
+    {
+      "name": "api.teacher_assignment_list",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 86
+    },
+    {
+      "name": "api.teacher_assignment_create",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 113
+    },
+    {
+      "name": "api.teacher_assignment_delete",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 132
+    },
+    {
+      "name": "api.assignment_list",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 152
+    },
+    {
+      "name": "api.assignment_create",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 181
+    },
+    {
+      "name": "api.assignment_update",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 202
+    },
+    {
+      "name": "api.assignment_publish",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 234
+    },
+    {
+      "name": "api.grades_get",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 265
+    },
+    {
+      "name": "api.grades_save",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 291
+    },
+    {
+      "name": "api.grades_publish",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 325
+    },
+    {
+      "name": "api.lesson_plan_list",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 357
+    },
+    {
+      "name": "api.lesson_plan_create",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 386
+    },
+    {
+      "name": "api.lesson_plan_update",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 405
+    },
+    {
+      "name": "api.lesson_plan_delete",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 436
+    },
+    {
+      "name": "api.parent_children_list",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 467
+    },
+    {
+      "name": "api.parent_student_grades",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 494
+    },
+    {
+      "name": "api.student_averages",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 548
+    },
+    {
+      "name": "api.ranking_list",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 596
+    },
+    {
+      "name": "api.ranking_get",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 622
+    },
+    {
+      "name": "api.ranking_compute",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 645
+    },
+    {
+      "name": "api.ranking_publish",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 690
+    },
+    {
+      "name": "api.star_list",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 710
+    },
+    {
+      "name": "api.star_add",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 735
+    },
+    {
+      "name": "api.star_remove",
+      "file": "database/pedagogy/v1/01_pedagogy_native.sql",
+      "line": 755
+    },
+    {
+      "name": "api.teacher_assignment_list",
+      "file": "database/pedagogy/v2/01_teacher_assignment_list.sql",
+      "line": 10
+    },
+    {
+      "name": "api.student_read",
+      "file": "database/projections/v1/01_student_read.sql",
+      "line": 11
+    },
+    {
+      "name": "api.session_bootstrap",
+      "file": "database/projections/v1/02_session_bootstrap.sql",
+      "line": 12
+    },
+    {
+      "name": "api.student_list",
+      "file": "database/projections/v1/02_student_list.sql",
+      "line": 10
+    },
+    {
+      "name": "api.student_create_draft",
+      "file": "database/projections/v1/02_student_list.sql",
+      "line": 101
+    },
+    {
+      "name": "api.access_profiles_list",
+      "file": "database/projections/v1/03_access_read.sql",
+      "line": 8
+    },
+    {
+      "name": "api.access_roles_list",
+      "file": "database/projections/v1/03_access_read.sql",
+      "line": 36
+    },
+    {
+      "name": "api.access_profile_read",
+      "file": "database/projections/v1/03_access_read.sql",
+      "line": 63
+    },
+    {
+      "name": "api.access_profiles_list",
+      "file": "database/projections/v1/04_access_assignment_views.sql",
+      "line": 8
+    },
+    {
+      "name": "api.access_roles_list",
+      "file": "database/projections/v1/04_access_assignment_views.sql",
+      "line": 36
+    },
+    {
+      "name": "api.access_profile_read",
+      "file": "database/projections/v1/04_access_assignment_views.sql",
+      "line": 63
+    },
+    {
+      "name": "api.access_role_read",
+      "file": "database/projections/v1/04_access_assignment_views.sql",
+      "line": 120
+    },
+    {
+      "name": "api.session_bootstrap",
+      "file": "database/projections/v1/05_session_validity.sql",
+      "line": 8
+    },
+    {
+      "name": "api.session_bootstrap",
+      "file": "database/projections/v1/07_targeted_denies.sql",
+      "line": 9
+    },
+    {
+      "name": "api.session_bootstrap",
+      "file": "database/projections/v1/08_session_denial_contract.sql",
+      "line": 9
+    },
+    {
+      "name": "api.student_list",
+      "file": "database/projections/v2/01_student_list.sql",
+      "line": 6
+    },
+    {
+      "name": "api.student_create_draft",
+      "file": "database/projections/v2/01_student_list.sql",
+      "line": 46
+    },
+    {
+      "name": "api.scan_control_require",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 76
+    },
+    {
+      "name": "api.scan_control_grant_set",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 100
+    },
+    {
+      "name": "api.scan_control_grant_list",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 158
+    },
+    {
+      "name": "api.scan_control_my_capabilities",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 189
+    },
+    {
+      "name": "api.scan_control_card_by_number",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 222
+    },
+    {
+      "name": "api.scan_control_presence",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 262
+    },
+    {
+      "name": "api.scan_control_presence_mark",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 299
+    },
+    {
+      "name": "api.scan_control_note",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 385
+    },
+    {
+      "name": "api.scan_control_audit_read",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 408
+    },
+    {
+      "name": "api.scan_control_on_site_student",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 457
+    },
+    {
+      "name": "api.scan_control_on_site_class",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 481
+    },
+    {
+      "name": "api.scan_control_on_site_school",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 502
+    },
+    {
+      "name": "api.scan_control_teacher_board",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 522
+    },
+    {
+      "name": "api.scan_control_school_board",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 577
+    },
+    {
+      "name": "api.scan_control_campaign_transition",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 629
+    },
+    {
+      "name": "api.scan_control_student_fees",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 666
+    },
+    {
+      "name": "api.scan_control_authorized_people",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 692
+    },
+    {
+      "name": "api.scan_control_portrait_set",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 740
+    },
+    {
+      "name": "api.scan_control_card_replace",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 768
+    },
+    {
+      "name": "api.scan_control_card_revoke",
+      "file": "database/scancontrol/v1/01_scan_control.sql",
+      "line": 820
+    },
+    {
+      "name": "api.scan_control_location_list",
+      "file": "database/scancontrol/v1/02_scan_control_locations.sql",
+      "line": 8
+    },
+    {
+      "name": "api.scan_control_location_check",
+      "file": "database/scancontrol/v1/02_scan_control_locations.sql",
+      "line": 45
+    },
+    {
+      "name": "api.scan_control_require",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 83
+    },
+    {
+      "name": "api.scan_control_my_capabilities",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 108
+    },
+    {
+      "name": "api.scanner_current_portal",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 145
+    },
+    {
+      "name": "api.scanner_bind_portal",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 165
+    },
+    {
+      "name": "api.scanner_card_lookup",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 192
+    },
+    {
+      "name": "api.scanner_entry_record",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 249
+    },
+    {
+      "name": "api.pickup_authorization_list",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 341
+    },
+    {
+      "name": "api.pickup_confirm",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 356
+    },
+    {
+      "name": "api.scanner_pickup_prepare",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 502
+    },
+    {
+      "name": "api.scanner_pickup_people",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 558
+    },
+    {
+      "name": "api.scanner_pickup_confirm",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 587
+    },
+    {
+      "name": "api.scanner_fee_module_set",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 621
+    },
+    {
+      "name": "api.scanner_fee_module_get",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 643
+    },
+    {
+      "name": "api.scanner_fee_delegation_set",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 662
+    },
+    {
+      "name": "api.scanner_fee_delegation_list",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 799
+    },
+    {
+      "name": "api.scanner_fee_authorize",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 841
+    },
+    {
+      "name": "api.scanner_fee_consult",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 919
+    },
+    {
+      "name": "api.fee_control_scan_create",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 1064
+    },
+    {
+      "name": "api.scan_control_presence_mark",
+      "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+      "line": 1088
+    },
+    {
+      "name": "api.setup_create_school",
+      "file": "database/setup/v1/01_setup_native.sql",
+      "line": 15
+    },
+    {
+      "name": "api.setup_create_admin",
+      "file": "database/setup/v1/01_setup_native.sql",
+      "line": 93
+    },
+    {
+      "name": "api.setup_stage_school",
+      "file": "database/setup/v2/01_setup_native.sql",
+      "line": 54
+    },
+    {
+      "name": "api.setup_complete_school",
+      "file": "database/setup/v2/01_setup_native.sql",
+      "line": 81
+    },
+    {
+      "name": "api.setup_stage_school",
+      "file": "database/setup/v3/02_bind_setup_resolver.sql",
+      "line": 7
+    },
+    {
+      "name": "api.setup_complete_school",
+      "file": "database/setup/v3/02_bind_setup_resolver.sql",
+      "line": 38
+    },
+    {
+      "name": "api.school_registration_prepare",
+      "file": "database/setup/v4/01_registration_pending.sql",
+      "line": 48
+    },
+    {
+      "name": "api.school_registration_issue_approval",
+      "file": "database/setup/v5/01_registration_approval.sql",
+      "line": 81
+    },
+    {
+      "name": "api.school_registration_mark_email_sent",
+      "file": "database/setup/v5/01_registration_approval.sql",
+      "line": 129
+    },
+    {
+      "name": "api.school_registration_review",
+      "file": "database/setup/v5/01_registration_approval.sql",
+      "line": 150
+    },
+    {
+      "name": "api.school_registration_decide",
+      "file": "database/setup/v5/01_registration_approval.sql",
+      "line": 214
+    },
+    {
+      "name": "api.student_record_completeness",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 12
+    },
+    {
+      "name": "api.canteen_student_dietary",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 161
+    },
+    {
+      "name": "api.parent_children",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 227
+    },
+    {
+      "name": "api.student_emergency_contact_upsert",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 265
+    },
+    {
+      "name": "api.student_health_profile_upsert",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 302
+    },
+    {
+      "name": "api.student_allergy_add",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 349
+    },
+    {
+      "name": "api.student_dietary_restriction_add",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 381
+    },
+    {
+      "name": "api.student_record_confirmation_set",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 410
+    },
+    {
+      "name": "api.student_consent_set",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 450
+    },
+    {
+      "name": "api.student_medication_add",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 487
+    },
+    {
+      "name": "api.student_food_preference_add",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 519
+    },
+    {
+      "name": "api.student_dietary_profile_upsert",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 548
+    },
+    {
+      "name": "api.student_record_read",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 587
+    },
+    {
+      "name": "api.student_identity_update",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 660
+    },
+    {
+      "name": "api.student_family_read",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 692
+    },
+    {
+      "name": "api.student_guardian_add",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 719
+    },
+    {
+      "name": "api.student_guardian_update",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 767
+    },
+    {
+      "name": "api.student_guardian_set_primary",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 804
+    },
+    {
+      "name": "api.student_guardian_deactivate",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 826
+    },
+    {
+      "name": "api.student_emergency_contacts_read",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 847
+    },
+    {
+      "name": "api.student_health_read",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 869
+    },
+    {
+      "name": "api.student_health_condition_add",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 891
+    },
+    {
+      "name": "api.student_health_condition_update",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 909
+    },
+    {
+      "name": "api.student_allergy_update",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 931
+    },
+    {
+      "name": "api.student_medication_update",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 962
+    },
+    {
+      "name": "api.student_dietary_read",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 987
+    },
+    {
+      "name": "api.student_dietary_restriction_update",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 1005
+    },
+    {
+      "name": "api.student_food_preference_update",
+      "file": "database/studentrecord/v1/04_student_record_rpc.sql",
+      "line": 1033
+    },
+    {
+      "name": "api.student_card_guardian_phones",
+      "file": "database/studentrecord/v2/01_family_phone_and_photo.sql",
+      "line": 10
+    },
+    {
+      "name": "api.student_photo_set",
+      "file": "database/studentrecord/v2/01_family_phone_and_photo.sql",
+      "line": 32
+    },
+    {
+      "name": "api.trial_status_read",
+      "file": "database/trial/v1/01_trial.sql",
+      "line": 168
+    }
+  ],
+  "noServerReference": [
+    {
+      "name": "api.school_provision_roles",
+      "declarations": [
+        {
+          "name": "api.school_provision_roles",
+          "file": "database/access/v1/02_provision_bridge.sql",
+          "line": 133
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_set_password",
+      "declarations": [
+        {
+          "name": "api.auth_set_password",
+          "file": "database/auth/v1/02_auth_api.sql",
+          "line": 361
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_attach_recovery_token",
+      "declarations": [
+        {
+          "name": "api.auth_attach_recovery_token",
+          "file": "database/auth/v1/03_auth_reset.sql",
+          "line": 56
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_register_webauthn_credential",
+      "declarations": [
+        {
+          "name": "api.auth_register_webauthn_credential",
+          "file": "database/auth/v2/03_webauthn_credentials.sql",
+          "line": 44
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_revoke_webauthn_credential",
+      "declarations": [
+        {
+          "name": "api.auth_revoke_webauthn_credential",
+          "file": "database/auth/v2/03_webauthn_credentials.sql",
+          "line": 89
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_list_webauthn_credentials",
+      "declarations": [
+        {
+          "name": "api.auth_list_webauthn_credentials",
+          "file": "database/auth/v2/03_webauthn_credentials.sql",
+          "line": 111
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_update_webauthn_sign_count",
+      "declarations": [
+        {
+          "name": "api.auth_update_webauthn_sign_count",
+          "file": "database/auth/v2/03_webauthn_credentials.sql",
+          "line": 136
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_has_active_webauthn",
+      "declarations": [
+        {
+          "name": "api.auth_has_active_webauthn",
+          "file": "database/auth/v2/03_webauthn_credentials.sql",
+          "line": 163
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_can_admin_recover",
+      "declarations": [
+        {
+          "name": "api.auth_can_admin_recover",
+          "file": "database/auth/v2/04_admin_recovery.sql",
+          "line": 189
+        },
+        {
+          "name": "api.auth_can_admin_recover",
+          "file": "database/auth/v2/06_admin_assisted_recovery.sql",
+          "line": 45
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_resolve_onboarding_identity",
+      "declarations": [
+        {
+          "name": "api.auth_resolve_onboarding_identity",
+          "file": "database/auth/v5/01_account_registration_onboarding.sql",
+          "line": 198
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.account_onboarding_create_school",
+      "declarations": [
+        {
+          "name": "api.account_onboarding_create_school",
+          "file": "database/auth/v5/01_account_registration_onboarding.sql",
+          "line": 244
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_create_direct_identity",
+      "declarations": [
+        {
+          "name": "api.auth_create_direct_identity",
+          "file": "database/auth/v6/01_direct_school_activation.sql",
+          "line": 42
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.auth_record_activation_attempt",
+      "declarations": [
+        {
+          "name": "api.auth_record_activation_attempt",
+          "file": "database/auth/v6/01_direct_school_activation.sql",
+          "line": 119
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.provision_school_adult_guard",
+      "declarations": [
+        {
+          "name": "api.provision_school_adult_guard",
+          "file": "database/auth/v8/05_provision_school_adult.sql",
+          "line": 6
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.provision_school_adult_prepare",
+      "declarations": [
+        {
+          "name": "api.provision_school_adult_prepare",
+          "file": "database/auth/v8/05_provision_school_adult.sql",
+          "line": 58
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.provision_school_adult",
+      "declarations": [
+        {
+          "name": "api.provision_school_adult",
+          "file": "database/auth/v8/05_provision_school_adult.sql",
+          "line": 69
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.person_display_name",
+      "declarations": [
+        {
+          "name": "api.person_display_name",
+          "file": "database/auth/v8/08_universal_people.sql",
+          "line": 124
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.card_class_teacher",
+      "declarations": [
+        {
+          "name": "api.card_class_teacher",
+          "file": "database/auth/v8/08_universal_people.sql",
+          "line": 143
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.master_school_access_relink",
+      "declarations": [
+        {
+          "name": "api.master_school_access_relink",
+          "file": "database/auth/v9/01_master_school_access.sql",
+          "line": 284
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.deactivate_other_academic_years",
+      "declarations": [
+        {
+          "name": "api.deactivate_other_academic_years",
+          "file": "database/baseline/v1/09_api_rpc.sql",
+          "line": 32
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.next_document_number",
+      "declarations": [
+        {
+          "name": "api.next_document_number",
+          "file": "database/baseline/v1/09_api_rpc.sql",
+          "line": 83
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.ensure_receipt_number",
+      "declarations": [
+        {
+          "name": "api.ensure_receipt_number",
+          "file": "database/baseline/v1/09_api_rpc.sql",
+          "line": 145
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.record_payment",
+      "declarations": [
+        {
+          "name": "api.record_payment",
+          "file": "database/baseline/v1/09_api_rpc.sql",
+          "line": 192
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.cancel_payment",
+      "declarations": [
+        {
+          "name": "api.cancel_payment",
+          "file": "database/baseline/v1/09_api_rpc.sql",
+          "line": 327
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.increment_card_print_count",
+      "declarations": [
+        {
+          "name": "api.increment_card_print_count",
+          "file": "database/baseline/v1/09_api_rpc.sql",
+          "line": 444
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.create_student_draft",
+      "declarations": [
+        {
+          "name": "api.create_student_draft",
+          "file": "database/baseline/v1/09_api_rpc.sql",
+          "line": 483
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.compensate_student_draft_creation",
+      "declarations": [
+        {
+          "name": "api.compensate_student_draft_creation",
+          "file": "database/baseline/v1/09_api_rpc.sql",
+          "line": 739
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.dashboard_parent",
+      "declarations": [
+        {
+          "name": "api.dashboard_parent",
+          "file": "database/dashboard/v1/01_dashboard.sql",
+          "line": 24
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.dashboard_child",
+      "declarations": [
+        {
+          "name": "api.dashboard_child",
+          "file": "database/dashboard/v1/01_dashboard.sql",
+          "line": 74
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.dashboard_teacher",
+      "declarations": [
+        {
+          "name": "api.dashboard_teacher",
+          "file": "database/dashboard/v1/01_dashboard.sql",
+          "line": 152
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.dashboard_admin",
+      "declarations": [
+        {
+          "name": "api.dashboard_admin",
+          "file": "database/dashboard/v1/01_dashboard.sql",
+          "line": 194
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.pickup_current_photo",
+      "declarations": [
+        {
+          "name": "api.pickup_current_photo",
+          "file": "database/family/v2/01_pickup_person_controls.sql",
+          "line": 69
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.pickup_photo_accepted",
+      "declarations": [
+        {
+          "name": "api.pickup_photo_accepted",
+          "file": "database/family/v2/01_pickup_person_controls.sql",
+          "line": 92
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.pickup_authorization_view",
+      "declarations": [
+        {
+          "name": "api.pickup_authorization_view",
+          "file": "database/family/v2/01_pickup_person_controls.sql",
+          "line": 161
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.pickup_parent_actor",
+      "declarations": [
+        {
+          "name": "api.pickup_parent_actor",
+          "file": "database/family/v2/01_pickup_person_controls.sql",
+          "line": 332
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.fee_control_scan_create",
+      "declarations": [
+        {
+          "name": "api.fee_control_scan_create",
+          "file": "database/finance/v1/02_finance_full.sql",
+          "line": 322
+        },
+        {
+          "name": "api.fee_control_scan_create",
+          "file": "database/finance/v2/01_finance_full.sql",
+          "line": 322
+        },
+        {
+          "name": "api.fee_control_scan_create",
+          "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+          "line": 1064
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.license_status_read",
+      "declarations": [
+        {
+          "name": "api.license_status_read",
+          "file": "database/license/v1/01_license.sql",
+          "line": 166
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.scan_control_student_fees",
+      "declarations": [
+        {
+          "name": "api.scan_control_student_fees",
+          "file": "database/scancontrol/v1/01_scan_control.sql",
+          "line": 666
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.scan_control_authorized_people",
+      "declarations": [
+        {
+          "name": "api.scan_control_authorized_people",
+          "file": "database/scancontrol/v1/01_scan_control.sql",
+          "line": 692
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.scanner_current_portal",
+      "declarations": [
+        {
+          "name": "api.scanner_current_portal",
+          "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+          "line": 145
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.scanner_bind_portal",
+      "declarations": [
+        {
+          "name": "api.scanner_bind_portal",
+          "file": "database/scancontrol/v2/01_scanner_four_modes.sql",
+          "line": 165
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.setup_create_school",
+      "declarations": [
+        {
+          "name": "api.setup_create_school",
+          "file": "database/setup/v1/01_setup_native.sql",
+          "line": 15
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.setup_create_admin",
+      "declarations": [
+        {
+          "name": "api.setup_create_admin",
+          "file": "database/setup/v1/01_setup_native.sql",
+          "line": 93
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.school_registration_prepare",
+      "declarations": [
+        {
+          "name": "api.school_registration_prepare",
+          "file": "database/setup/v4/01_registration_pending.sql",
+          "line": 48
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.school_registration_issue_approval",
+      "declarations": [
+        {
+          "name": "api.school_registration_issue_approval",
+          "file": "database/setup/v5/01_registration_approval.sql",
+          "line": 81
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.school_registration_mark_email_sent",
+      "declarations": [
+        {
+          "name": "api.school_registration_mark_email_sent",
+          "file": "database/setup/v5/01_registration_approval.sql",
+          "line": 129
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.school_registration_review",
+      "declarations": [
+        {
+          "name": "api.school_registration_review",
+          "file": "database/setup/v5/01_registration_approval.sql",
+          "line": 150
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    },
+    {
+      "name": "api.school_registration_decide",
+      "declarations": [
+        {
+          "name": "api.school_registration_decide",
+          "file": "database/setup/v5/01_registration_approval.sql",
+          "line": 214
+        }
+      ],
+      "status": "candidat sans facade serveur detectee; pas preuve de fonction utilisateur sans ecran"
+    }
+  ]
+}

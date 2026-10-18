@@ -1,0 +1,12 @@
+{
+  "schema": "schoolsafe-migrations-v2",
+  "name": "scancontrol",
+  "version": 2,
+  "units": [
+    {
+      "order": 1,
+      "file": "01_scanner_four_modes.sql",
+      "sha256": "e61fde1756a9b3341307e2208a20a38e60fd941c0685e8fb992c6b47af995f92"
+    }
+  ]
+}

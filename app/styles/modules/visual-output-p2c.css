@@ -1,0 +1,43 @@
+.p2c-screen {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: grid;
+  gap: 16px;
+}
+
+.p2c-screen form,
+.p2c-facts,
+.p2c-screen ul,
+.p2c-screen article {
+  display: grid;
+  gap: 12px;
+}
+
+.p2c-screen input,
+.p2c-screen select,
+.p2c-screen textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.p2c-facts div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 14rem) 1fr;
+  gap: 8px;
+}
+
+@media (min-width: 1440px) {
+  .p2c-screen { padding: 32px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .p2c-screen { padding: 20px; }
+}
+
+@media (max-width: 390px) {
+  .p2c-screen { padding: 12px; }
+  .p2c-screen button { width: 100% }
+  .p2c-facts div { grid-template-columns: 1fr; }
+}

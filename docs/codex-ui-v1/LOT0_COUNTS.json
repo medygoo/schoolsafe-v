@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-11",
+  "buttonsSource": 517,
+  "buttonsHtml": 186,
+  "buttonsDynamic": 331,
+  "menuRoleInstances": 274,
+  "menuUniqueActions": 207,
+  "misplacedConfirmed": 1,
+  "functionsWithoutDirectScreen": 6,
+  "functionsWithoutScreenCandidates": 48,
+  "incompleteScreenFamilies": 12,
+  "buttonsWithoutActionConfirmedPreview": 28,
+  "buttonsWithoutActionApplication": "indetermine: absence de gestionnaire non prouvable par recherche seule",
+  "unverifiedMenuFunctions": 205,
+  "routes": 275,
+  "sqlFunctions": 262
+}

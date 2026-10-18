@@ -1,0 +1,69 @@
+{
+  "reference": "CODEX_TO_CURSOR_VISUAL_HANDOFF_V1",
+  "verifiedAt": "2026-10-11T13:56:46.8753289Z",
+  "status": "PASS",
+  "package": {
+    "file": "docs/codex-ui-v1/SCHOOLSAFE_VISUAL_V1_CURSOR_PACKAGE.zip",
+    "sha256": "63380a6facd639cba9b3825c9ff500dca1796c096a52ed756deddb6f44ad86bc",
+    "bytes": 13351765,
+    "entriesChecked": 234
+  },
+  "deliveredFilesChecked": 234,
+  "sourceIntegrity": [
+    {
+      "path": "C:\\Users\\PC\\SchoolSafeCodex\\SCHOOLSAFE_CODEX_LOCAL_SNAPSHOT_V1\\workspace",
+      "filesChecked": 1017
+    },
+    {
+      "path": "C:\\Users\\PC\\SchoolSafeCodex\\SCHOOLSAFE_CODEX_LOCAL_SNAPSHOT_V1\\baseline",
+      "filesChecked": 1017
+    }
+  ],
+  "testsRerunDuringHandoff": false,
+  "testReports": [
+    {
+      "file": "docs/codex-ui-v1/feature-tests/results.json",
+      "executionDate": "2026-10-11T12:38:53.765Z",
+      "previouslyExecutedStatus": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/school-workflows-tests/results.json",
+      "executionDate": "2026-10-11T12:41:45.235Z",
+      "previouslyExecutedStatus": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/results.json",
+      "executionDate": "2026-10-11T12:43:54.633Z",
+      "previouslyExecutedStatus": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/results.json",
+      "executionDate": "2026-10-11T12:46:35.564Z",
+      "previouslyExecutedStatus": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/results.json",
+      "executionDate": "2026-10-11T12:46:57.023Z",
+      "previouslyExecutedStatus": "PASS"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/results.json",
+      "executionDate": "2026-10-11T12:47:10.204Z",
+      "previouslyExecutedStatus": "PASS"
+    }
+  ],
+  "handoffDocuments": [
+    {
+      "file": "CURSOR_RECEPTION_VISUELLE_V1.md",
+      "sha256": "5cf9fb4dd8306c32d307dfb4093e655ba2bd9828bd4911f1383369e27876e396"
+    },
+    {
+      "file": "verify-cursor-reception.ps1",
+      "sha256": "e63f16b98fef3297a0ec5d3739764c6f7debcc504533113b4dba488d9e3843a8"
+    }
+  ],
+  "issues": [],
+  "directMessageSent": false,
+  "cursorReceiptConfirmed": false,
+  "integrationPerformed": false
+}

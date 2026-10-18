@@ -1,0 +1,919 @@
+{
+  "reference": "CODEX_SCHOOLSAFE_INTERACTIVE_DASHBOARDS_LOT2_V1",
+  "sourceHead": "657aaef34c067173bd44a022d6b83a90010aea89",
+  "preview": "http://127.0.0.1:5187/modules/codex-ui-v1/preview.html",
+  "scope": "isolated_frontend_only",
+  "integration": "NOT_STARTED",
+  "changesRosario": "NONE",
+  "realBackendTested": false,
+  "sourceIntegrity": {
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "baselineIntegrity": {
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "appFiles": [
+    {
+      "file": "app/modules/codex-ui-v1/catalog.js",
+      "bytes": 77208,
+      "sha256": "608f32933269763a7321fef1a48eec1c099a878897d5172135d957aba9f63da0",
+      "change": "UNCHANGED_LOT1"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/codex-ui-v1.js",
+      "bytes": 6306,
+      "sha256": "b13c99096e0f9385b432cec0165e2fd99b9e1c37dd58aaada72c9dc9aa4a04f5",
+      "change": "UNCHANGED_LOT1"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/demo-data.js",
+      "bytes": 12512,
+      "sha256": "681a2730f71d7618a9cb33011c4fbaf76f0d28c08606b76291c363b62fdf16d1",
+      "change": "NEW"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/lot2-views.js",
+      "bytes": 51429,
+      "sha256": "321fcbe8beb5013c60616ce616daa846aacf926e032394774273627f0a07e21f",
+      "change": "NEW"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.html",
+      "bytes": 1805,
+      "sha256": "0dcadebf330126082dad64ab100a0d241c5b2e15780a5bfd245502791069f76b",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.js",
+      "bytes": 1221,
+      "sha256": "2b3968d9839ed0d0386c100ee1047e9c672cc25078e8481700025f325d122879",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/read-adapter.js",
+      "bytes": 1490,
+      "sha256": "0e1b3f67f82bc1f15bfe394a1f9c77613e600eda1e67207083e25a2f409694f2",
+      "change": "UNCHANGED_LOT1"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/record-presentation.js",
+      "bytes": 3691,
+      "sha256": "84d7f149007409324153ae71df762afd8e7e9397af4f40220ad5d56d080259e7",
+      "change": "NEW"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/screen-specs.js",
+      "bytes": 123756,
+      "sha256": "6944b85d336e6c7558b786bb5dbf822f66d95a6656e9e01db9aa9a32c3f44e79",
+      "change": "NEW"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "bytes": 35443,
+      "sha256": "3115eee7c3728fb0d962f8a6e80a27f98b6434ba103b4806e25d28e62eaece6a",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/branch-presentation.css",
+      "bytes": 7043,
+      "sha256": "8598c495e4aa288b1d4cca5d926fbcbe56b9b7aadb31f2788516f9365a067628",
+      "change": "NEW"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/codex-ui-v1.css",
+      "bytes": 14976,
+      "sha256": "8041d6dc548c73a40f88cb67838117c0677a4809aa1caccdbe748dbbc35347fa",
+      "change": "UNCHANGED_LOT1"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/jaspe-overlay.css",
+      "bytes": 5097,
+      "sha256": "0a0f0a5e0ee3e41c66ab7602568177ee7f0ab5012211ce975001d1a4d787bbf0",
+      "change": "MODIFIED_CODEX_ONLY"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/lot2-screens.css",
+      "bytes": 11999,
+      "sha256": "d16fe0edd3bd6235d19674250d3f2529252388bf377f50ea440ed18429b9d5a8",
+      "change": "NEW"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/overview-composition.css",
+      "bytes": 7091,
+      "sha256": "b6651f466d260ae2f814addb946054e3e72e90a6a37b44dfdd24ac969e6bb96e",
+      "change": "NEW"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/record-presentation.css",
+      "bytes": 4076,
+      "sha256": "81837113bbe5853259d65ecbafe66558602eed6c9b598e0f55f3c78984c54f83",
+      "change": "NEW"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/ui-ux-pro-max.css",
+      "bytes": 15841,
+      "sha256": "2c74953cd59b1fb9b00386ee7c0d5a9c67c04e1a7dc22c0227cf18b198e70e50",
+      "change": "NEW"
+    }
+  ],
+  "documentation": [
+    {
+      "file": "docs/codex-ui-v1/LOT2_BROWSER_TEST_RESULTS.md",
+      "bytes": 8236,
+      "sha256": "8f18987cd0e1de15aa884ceeb9d7c7018d690c4a0569b825e281ef80c2097cb6"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_BUTTON_SCREEN_FUNCTIONAL_MATRIX.json",
+      "bytes": 171069,
+      "sha256": "4252d615079892f37abb76ad42d264a02423a54420b6f2b82889d330d5db3e64"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_BUTTON_SCREEN_FUNCTIONAL_MATRIX.md",
+      "bytes": 110567,
+      "sha256": "1811f0c3d4a796db456dd08f135a1d1de9021eea9942c647a8e29a5cb3bfeb76"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_CURSOR_HANDOFF.md",
+      "bytes": 12508,
+      "sha256": "b72d1b51fc5d3b3b9d60d8ec762d8258235c5a7a46069430725ca0a5df050064"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_DELIVERY.md",
+      "bytes": 4895,
+      "sha256": "196bb4c5cb7eaf09962b25696b888013d4e9984ac417a30aac1f9c0ad79283ee"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT2_SCREEN_SPECS.json",
+      "bytes": 123683,
+      "sha256": "1ffb4fe9f812877764b840fa6f8718941b643114f3f493a253638e1cfcb598bb"
+    },
+    {
+      "file": "docs/codex-ui-v1/build-lot2-specs.cjs",
+      "bytes": 14439,
+      "sha256": "5e394980063811bddf89a45a73650937be1221d7be90796c1cf37e669ca692b1"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-browser-tests.cjs",
+      "bytes": 19847,
+      "sha256": "3dc401895f9faf05b2c52de0203f993fa1ebf15becf399919c76f62b4c243477"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-final-check.cjs",
+      "bytes": 71,
+      "sha256": "fb8126e226a1847c78e61f6d4f41cea17e981b6d79c4385dd7e7c93d42756121"
+    },
+    {
+      "file": "docs/codex-ui-v1/preview-server.cjs",
+      "bytes": 1372,
+      "sha256": "1d510ca99dfd295dbc574c9e3a29046c76978543460ca9a2e84da872de396f81"
+    },
+    {
+      "file": "docs/codex-ui-v1/package-lot2.cjs",
+      "bytes": 20550,
+      "sha256": "2f87d6889ad8429dad1d64f0f19bcbae06180fd5e5591121e287cb63e9ba921a"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-detail-tests.cjs",
+      "bytes": 5813,
+      "sha256": "5019b9825a5c05979e35aa48b97cb12beb3cad1b2c9e2f4a51281afa7ad0e324"
+    },
+    {
+      "file": "docs/codex-ui-v1/OVERVIEW_DETAIL_HANDOFF.md",
+      "bytes": 4290,
+      "sha256": "613596315e2f6e6dc53f2fb184b097db5db9325afc550695f9ff2db2b21fd51a"
+    },
+    {
+      "file": "docs/codex-ui-v1/ui-ux-pro-max-tests.cjs",
+      "bytes": 10416,
+      "sha256": "45a2629d77bbe409de11e1f44be2a1cd7795b32037cccf85a76a38370232c7dc"
+    },
+    {
+      "file": "docs/codex-ui-v1/UI_UX_PRO_MAX_DESIGN_SYSTEM.md",
+      "bytes": 5341,
+      "sha256": "ef0105d5eb37f2fa1b88a2320ec2890f75afdd03686b76c260ae7825090035f5"
+    },
+    {
+      "file": "docs/codex-ui-v1/UI_UX_PRO_MAX_REVIEW.md",
+      "bytes": 4697,
+      "sha256": "09d06068b230c46109d342afe6455b62c88e6d8ee06fc1e8b95a1e82299f3d5f"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-presentation-tests.cjs",
+      "bytes": 8509,
+      "sha256": "b8f8744a8a5112dd1ebaa1d8f57f8d39a5ab63e6faac0d827bc27254f9b1e127"
+    },
+    {
+      "file": "docs/codex-ui-v1/UI_UX_PRO_MAX_DOMAIN_PRESENTATION.md",
+      "bytes": 7080,
+      "sha256": "e56b40adfde203d26386ecf50444ec6f1a1f4632daeffafcbf263d4a02fbb442"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-presentation-tests.cjs",
+      "bytes": 9713,
+      "sha256": "005d321376421dd47a0692d822eda9ae8ecc5a4029ab883aed204c45907b0549"
+    },
+    {
+      "file": "docs/codex-ui-v1/UI_UX_PRO_MAX_BRANCH_PRESENTATION.md",
+      "bytes": 7086,
+      "sha256": "f8bcb79a96f8219765cbf114637f9a19cdc3caddf390140a9fe93ceceeba528e"
+    },
+    {
+      "file": "docs/codex-ui-v1/OVERVIEW_COMPOSITION_HANDOFF.md",
+      "bytes": 5265,
+      "sha256": "a6c83a3e8118c04cabeeb8f9708bf932c49dc76b63a43e10cc88fee2189e62f4"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests.cjs",
+      "bytes": 6792,
+      "sha256": "e891f516880f6f814d19fabf6d186fa4081080509b985aa20bfa8118f8bfbb6d"
+    },
+    {
+      "file": "docs/codex-ui-v1/RECORD_PRESENTATION_HANDOFF.md",
+      "bytes": 5076,
+      "sha256": "460d5fdad7692dae26020bcf78207a1cbf90c97fc5435a7deae256fae87ef5c1"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-presentation-tests.cjs",
+      "bytes": 10370,
+      "sha256": "baaf97300bb8e938926a6811373b207a427654eecc9579770c68154efc4510b9"
+    }
+  ],
+  "tests": [
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/cartes.png",
+      "bytes": 189103,
+      "sha256": "30dc1359907459c9a85001b3b86ceaa455d60128a11243225c6bc71523f00b83"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-admin.png",
+      "bytes": 213369,
+      "sha256": "0519d84ea158b182b70cae747077cdd1e7fc6c169e9536cc98b5199e64a79457"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-finance.png",
+      "bytes": 102382,
+      "sha256": "d4c1e5c25d434aebb6b54df09a41eba0d371841d9b8a8c305a351d43a87e8944"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-guard.png",
+      "bytes": 113456,
+      "sha256": "4f113892a4de7cedf665639c35dfc2cf61da4f046360aea1cc6e3a8330c5e533"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-parent.png",
+      "bytes": 104704,
+      "sha256": "39996540c0b350633cbbe72486556ddd4a0c0d1a58307ec7ba303c09a7f3ebdf"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-school_head.png",
+      "bytes": 194516,
+      "sha256": "ed7397b96b722aad39b719d7bcfc3723a871e2834f4a016660e72f22ebabae17"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dashboard-teacher.png",
+      "bytes": 101041,
+      "sha256": "3b5fa3f82d353f0df40782c03f253f0b24690196f1875b4de5c2155b65067a0f"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/dossier-famille.png",
+      "bytes": 106744,
+      "sha256": "f55034772dd7d4860fc5d8158e457e0c3638e51358d1697d3ced6edf8c43312a"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/eleves.png",
+      "bytes": 155507,
+      "sha256": "ae16467d38fc91c9d23f2d9af5c5fdfb49ebd804258a72ecc51503e55e520f15"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/etat-denied.png",
+      "bytes": 103955,
+      "sha256": "42aadcc6fdea442c6fa11a39dd86c28b48adfa1fc542481b9d5ad8b8fd7be9d9"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/etat-empty.png",
+      "bytes": 108027,
+      "sha256": "5a4a2ca390a3409df2617197804a9595c5bc472d4b9ad43828b20edfc143940a"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/etat-error.png",
+      "bytes": 104679,
+      "sha256": "30940aa0392cbab97e9eb29b58ef2038f8eb0d9bb51e9ce4355cfb110a38864a"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/familles.png",
+      "bytes": 161873,
+      "sha256": "be988b5cb3c12c1267b7ffae9c9fbae093ead439f69cee3e531fc4984effd1ec"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/final-check.json",
+      "bytes": 431,
+      "sha256": "88f625c7f4ac329f28cc197a800f3c656decc8857e90d3c75f50c1245263823d"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/finance.png",
+      "bytes": 111668,
+      "sha256": "57c4596e759039893f707379276681de311af1359cc19d9c18aeff4e68c6e6af"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/jaspe.png",
+      "bytes": 83378,
+      "sha256": "f080204309d21dbfec54685b9354b71890044b5a01b0e5a282796154b2a3123c"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/mobile-eleves.png",
+      "bytes": 78195,
+      "sha256": "4b21229a335d5d3e4c70fa188a36a254d343b3ddda95dcacbdb6e4fe997593f5"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-admin-1280.png",
+      "bytes": 215274,
+      "sha256": "ed1e9ef43e89104329b9ea158488326d5585222a48fa4755b017880640519c93"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-admin-390.png",
+      "bytes": 197230,
+      "sha256": "7b5c0628132e2fa4b01da9b4770b73deefa39c4bbb8621abcb7023781e2bfd3f"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-school_head-1280.png",
+      "bytes": 201651,
+      "sha256": "9a712fb4b4ae114c274139f0622d65f66ff96c263db8e100e3328ec529ab0356"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-school_head-390.png",
+      "bytes": 175684,
+      "sha256": "d75206eb1519f9a406af64038843412ed271829749b8a9513c011fc2d5a1493a"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-unified-admin-1280.png",
+      "bytes": 123470,
+      "sha256": "2954f57306d567aba9fd0c2b0ef194055670988ab844cc49e1a53b5a7d8b1b8c"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-unified-admin-390.png",
+      "bytes": 88324,
+      "sha256": "f5a183b8262019c7183492e0e9d406e95afd63b794156f10af21a4f4487bc845"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-unified-results.json",
+      "bytes": 575,
+      "sha256": "90afd1d7090cf3b95f008983855837dec49216a70ec28234532ca6aa4d78e003"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-unified-school_head-1280.png",
+      "bytes": 121906,
+      "sha256": "09a22392886c89e37a543b9ed95b921da9d06aa71749fe4fe9206f96253f8f7a"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/overview-unified-school_head-390.png",
+      "bytes": 86384,
+      "sha256": "37538ba32e4a029c5861b4377ac3a5139f1db0b86f981e125035dac1272f26b7"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/pedagogie.png",
+      "bytes": 127949,
+      "sha256": "78c33c5a1c56c41c0c1940c1601a81f9b4289a2cd198693c7c8c808117082c1e"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/presences.png",
+      "bytes": 97938,
+      "sha256": "a8984797c5d4a86095fdb919b936b199617d7318c4aedb69316c521221c47e3b"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/results.json",
+      "bytes": 2362,
+      "sha256": "3c7841c3514397c4e706dbb66b5eca1f3c5ffc76f05fffaba03b8e6da7918712"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot2-tests/scanner.png",
+      "bytes": 129769,
+      "sha256": "a45d6fbed34608313d0e28315b590dfba33f350d2236d4c22e1bf0eea2a964de"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/contrast.json",
+      "bytes": 3055,
+      "sha256": "06965bee03e3ccbd15449eb30f8c7dcba0ab84d191b9498ac269d7b7b3fb4791"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/dashboard-dark-1440.png",
+      "bytes": 113546,
+      "sha256": "50fdf4610d96b5bd8eeaa34fcd234ad2c9fa5e99515454a8f05befaa568191c3"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/dashboard-dark-375.png",
+      "bytes": 35709,
+      "sha256": "04b2f39a175afbd456a5ab48f6d1e4dec9a123af8560d4345c1d40cfe832b65e"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/dashboard-light-1440.png",
+      "bytes": 113639,
+      "sha256": "53706387990055550078b68782b684ca38e2dd0f526df315bfd36d64161988ba"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/dashboard-light-375.png",
+      "bytes": 35475,
+      "sha256": "bf18d00d938b224bfff0dd32e647099a3d7a1ea44d6f5eda942a768d11c6ab1c"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-landscape.png",
+      "bytes": 38515,
+      "sha256": "1706527be2b453621a866349aab52bcee37040f119eccdafa41d54ac6f69fefd"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-dark-1440.png",
+      "bytes": 27686,
+      "sha256": "7625e5ca29cfe7f94fc1bd773137b2fa3e1abb439b11cb6291fa50639462b02d"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-dark-375.png",
+      "bytes": 22599,
+      "sha256": "be3e44b5093425be30097de14b4067c022e80505035e9b73bc98d9457e3c17bb"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-dark-768.png",
+      "bytes": 22778,
+      "sha256": "3e301356e7f068cffc0389e7e328fd74997c84c1aae2e6aa8d8bf0ef44b4add2"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-light-1440.png",
+      "bytes": 27262,
+      "sha256": "74d8d5fb0ea3855b19e795ef2a40147856601156c1ad3672713c27eff7a78e34"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-light-375.png",
+      "bytes": 22154,
+      "sha256": "1843e4ad247eef904b79f38568a51886a05fe3cdb0ddd51103fb3f6335e6bd72"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/jaspe-original-light-768.png",
+      "bytes": 22362,
+      "sha256": "8882a10d0713362d222bf17ca94ddb212761b114ac0aae66035191068e1ed476"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/results.json",
+      "bytes": 859,
+      "sha256": "d8364f8f67be06a615f2c0512bba8b0d993ad659af5bf9edf8f45cda464a9381"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/rosario-006-dark-1440.png",
+      "bytes": 128101,
+      "sha256": "34e24a633f899d4e28fdf6eaffd7cb5da61a28d9d7b7b7e9be54243906d26ca8"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/rosario-006-dark-375.png",
+      "bytes": 34468,
+      "sha256": "f0c6f9fa3c50d2886a8c04e5cb1615819e44e1b415f4bbe2bbacbd4e9128af57"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/rosario-006-light-1440.png",
+      "bytes": 125824,
+      "sha256": "810c728309d95f0a8be7350490bcbc6be976af57fe3773bbf7ea195c7524df1b"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/rosario-006-light-375.png",
+      "bytes": 34177,
+      "sha256": "cd6603806154d31ac16fbad32a92f23d0cbb81de538a9bb2d5d6bf19a2843f37"
+    },
+    {
+      "file": "docs/codex-ui-v1/pro-max-tests/text-200-percent.png",
+      "bytes": 47251,
+      "sha256": "e8cf0da071b1d99c96f80ed18092734796cd4b2ff3656e4300d4c3bd1a9bd0a9"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/assignments-dark-1280.png",
+      "bytes": 177498,
+      "sha256": "5cd0fe78aa3846f6f0e52c6117fb90b060d3e05219f0dcf7ccc6f3d8b09f4a7c"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/assignments-dark-390.png",
+      "bytes": 67083,
+      "sha256": "eea7a4b7376747812bdcc9113b0e7f3521554f4ce9790c4aadc8583e97c7370c"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/assignments-light-1280.png",
+      "bytes": 172563,
+      "sha256": "1819e640dc531d90fe64342b2fa51d64475582bca9cce0ff6e1ccc5bf16946fd"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/assignments-light-390.png",
+      "bytes": 66232,
+      "sha256": "2684ed8c34fa45f4070579cce1e8d871d682ef5e7cdbe56e87c9fda95b35e5d9"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/children-dark-390.png",
+      "bytes": 65567,
+      "sha256": "aa40f39b6ac35a62e0ec552f6bd9f6acb73120e2afd8338ed168f889493fed91"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/classes-dark-1280.png",
+      "bytes": 164122,
+      "sha256": "5fa7f42a19f85b96f17d8fef13e4222605588049d177532ec760825a4b4e1c9e"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/classes-dark-390.png",
+      "bytes": 60407,
+      "sha256": "6d7b253772a14d25ece678018cec8238ca3fd65c97dbfc329c082a567209135c"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/classes-light-1280.png",
+      "bytes": 159266,
+      "sha256": "738e92064ba6f6e24456e637ec02e1aaa41841b89f038e51e210923e4ae64866"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/classes-light-390.png",
+      "bytes": 59663,
+      "sha256": "a51fb97a0e1568252b1580054d1883bea99a8bef8d5ad881db3e63d6c0cedca3"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/documents-dark-1280.png",
+      "bytes": 163968,
+      "sha256": "d39c0e3832acaac15e39bb484288c25803fb28e1d22cd2a2181aee7ad3d59c0e"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/documents-dark-390.png",
+      "bytes": 53862,
+      "sha256": "619efff624d271e4f9fcbd76f0894658e0bbec131fd1c3d8146fcd01c01b7b44"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/documents-light-1280.png",
+      "bytes": 159139,
+      "sha256": "91be943c78c0662e41d5c0aa13a2242505c7e37420056d1a7bab01490b62061c"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/documents-light-390.png",
+      "bytes": 53206,
+      "sha256": "6810d4f44649e01b37dfc42cd3c90d1730014831a6a19df2484cec2e984a0bd9"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/family-dark-1280.png",
+      "bytes": 205689,
+      "sha256": "1c268a14ea014c62d45867ce00db2da7f074a798a9139d8ba5e9423106bff0c1"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/family-dark-390.png",
+      "bytes": 101744,
+      "sha256": "ae0eb610b1393bea2f7d8e04f33c297c4fc614b4433568ec4a9c89e378b3517b"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/family-light-1280.png",
+      "bytes": 200514,
+      "sha256": "0d66869996635b92874a83437f0ee39a0a92b86c7c33760e97031c2198841aeb"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/family-light-390.png",
+      "bytes": 100263,
+      "sha256": "345943c61ca29effa9e600a760b9b00ca6c555d052dc32df1ef6fd50196532a7"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/payments-dark-1280.png",
+      "bytes": 213720,
+      "sha256": "a849d3d26ab43894066d5b4ac393e58a357beaf8b1039421e64d079ce21b18db"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/payments-dark-390.png",
+      "bytes": 80397,
+      "sha256": "d2f1e4776e4215ae442d9ce63a2b975ae6101ec9cc6cd3d6d9537901a5480de0"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/payments-light-1280.png",
+      "bytes": 208621,
+      "sha256": "1769f089d935bfda141ba691da8d2cebb446780c700b3d21f04978214cf655be"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/payments-light-390.png",
+      "bytes": 79419,
+      "sha256": "3ac39b0fcaa33a9c1e9427fa36000f6246dc2289c83a87f73d91d6b277101fb2"
+    },
+    {
+      "file": "docs/codex-ui-v1/domain-tests/results.json",
+      "bytes": 939,
+      "sha256": "ea7504d92dd9f7029c2b0eebc350e16fe6ec9cffcc7d4fe67cb77f2dbbb86f53"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-tests/classes-navigation-840.png",
+      "bytes": 79834,
+      "sha256": "b8a37eaf1d91bb77b2813454abefec404dedd051d350bf280998d6ff895ef994"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-tests/results.json",
+      "bytes": 10591,
+      "sha256": "55506bfaed0c1aa55a6f7a6ff67d679a288c5aa2e19d3c792c8d597bd2bb051b"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-tests/rosario-016-dark-1280.png",
+      "bytes": 198452,
+      "sha256": "f92bf89ec47560e74661dd3fad4ee978bdaf54637e5c0a1916796ac69f2df29e"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-tests/rosario-016-dark-390.png",
+      "bytes": 114507,
+      "sha256": "5f7421cb306c621ed68ab01fe41236c2b9fa78eb4237bca456a6648860e5b5f4"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-tests/rosario-016-light-1280.png",
+      "bytes": 195672,
+      "sha256": "6dcfeb6e10c0842f88d0cec04fae5d22cb34472b2e114fcaf15f034379273a3e"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-tests/rosario-016-light-390.png",
+      "bytes": 113311,
+      "sha256": "0e37b5ab9377984d8eed5e611dc13267106017cdb71c810baadfda9bc1366ef3"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-tests/rosario-201-dark-1280.png",
+      "bytes": 162117,
+      "sha256": "31e81d0c0844f68b7a1d58589a06947b4108382c8c1ccad574aa17a1914fc2f1"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-tests/rosario-201-dark-390.png",
+      "bytes": 105478,
+      "sha256": "d80f53990bb96a3757bd8edf926f9c7b7c9558d5de45db96c0d12d1c4aae42b3"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-tests/rosario-201-light-1280.png",
+      "bytes": 160022,
+      "sha256": "2a3db0cec8f72c4f9e641df3ce817253c96a9e07da0b58297b9294671a9a3fbc"
+    },
+    {
+      "file": "docs/codex-ui-v1/branch-tests/rosario-201-light-390.png",
+      "bytes": 103738,
+      "sha256": "02ba8e28ca3256219d457dd39426e04d35e6f4deedcc3f4a71a0a40603eae134"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/assignments-dark-1280.png",
+      "bytes": 121346,
+      "sha256": "147c54634b7c79aa198ded76a6da1c88a4cd0dea7fe7e18f631ccbc9fd6de950"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/assignments-dark-390.png",
+      "bytes": 59302,
+      "sha256": "9c6176a13cc9c196e85ed8d552ba296b0a4996309a294297b6f2b4adf801da6b"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/assignments-light-1280.png",
+      "bytes": 119692,
+      "sha256": "59e1db88751befcca8289d0a76950252970c60a76043b26faedb18dd514e2322"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/assignments-light-390.png",
+      "bytes": 58561,
+      "sha256": "0a6f6efa26a68a063a9c2d73d5c366262311514f39855f5ae8bcaf22ab211492"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-assignments-dark-1280.png",
+      "bytes": 117972,
+      "sha256": "d89352cc28f4d664179db65dcb436d9023165bf27c80ada912c8bb657cc540bd"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-assignments-dark-390.png",
+      "bytes": 54887,
+      "sha256": "805c7c1e4d1839b4867e74b0765edb77cc73221b2cf78aa0d3334d6a626cca62"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-assignments-light-1280.png",
+      "bytes": 116259,
+      "sha256": "e9063a9e840fac0a13dadd5ac5e41fb3b79757dbda53220521494692a5628edb"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-assignments-light-390.png",
+      "bytes": 54318,
+      "sha256": "0e6966e6c392426032f6161bceaceaf62f59fe1c49c5a7deba68afa67f80ee83"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-grades-dark-1280.png",
+      "bytes": 117492,
+      "sha256": "1aca178acd76069e0ba7610aaed37c3fc6a0c435ab385c60b74bea59b6b0917f"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-grades-dark-390.png",
+      "bytes": 54179,
+      "sha256": "7b82db68e19ac8c82fc8755890df3dd140a88407b02a448cd10335f999a5b790"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-grades-light-1280.png",
+      "bytes": 115515,
+      "sha256": "35e02e0bbc49412802791b9bc22f2415775feef8e9ddcf1a75d52b29b6b664b5"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-grades-light-390.png",
+      "bytes": 53522,
+      "sha256": "4f8265f8cbd937d9725e2da96306c4a5695c11af144543e96f44d5365654d9bf"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-lessons-dark-1280.png",
+      "bytes": 123227,
+      "sha256": "99f5800a11de5c095add6ab192f2331fed5792cde4bc8f6d42f591c06aded511"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-lessons-dark-390.png",
+      "bytes": 59430,
+      "sha256": "ffe310be70edd81701da1dffd62e979c97292273d36309626cb34ff6e83c1a12"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-lessons-light-1280.png",
+      "bytes": 121150,
+      "sha256": "28f6494ab6601a13608e701b32a4adba64d2f2fb9b750dd0634654e74e197576"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/draft-lessons-light-390.png",
+      "bytes": 58838,
+      "sha256": "598fa8d6adc1fa274938c8b411707b7a58761c016b936ba0ebdd30ccb3d9aaf3"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/family-dark-1280.png",
+      "bytes": 121810,
+      "sha256": "290deb22b3ba468c4d44748f9f569e2b37334a55926f7bc602f122f43c61dffc"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/family-dark-390.png",
+      "bytes": 66254,
+      "sha256": "3e15fa16df06eb9d07d94d7cfb375d1e5199cf3874dabbc144995816debb5d45"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/family-light-1280.png",
+      "bytes": 120351,
+      "sha256": "f320b38aa1b2c93b6880db8efeead6b3454e1fd1ba4edabca5bf4528fe05c163"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/family-light-390.png",
+      "bytes": 65243,
+      "sha256": "01a7dde01309e48295ec5be69afb383557e273713810c81309f56dd101ffd299"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/results.json",
+      "bytes": 721,
+      "sha256": "7ca259ba1d920425e4f957c74852c4521509988b31fdda1cd440cd2e23def131"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/students-dark-1280.png",
+      "bytes": 106737,
+      "sha256": "c88573b3551f2bdcf7939a50f3c5d2de5eb83ad229121aa698a2e6f9217c4d3e"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/students-dark-390.png",
+      "bytes": 45684,
+      "sha256": "254ae906749ddf2fd55354e02ba3740da1fd3beba43ac9c4abcce750987720c3"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/students-light-1280.png",
+      "bytes": 105171,
+      "sha256": "03a5637758a82d382fcd01a593ca9b13ad4ad6641c29caa45fa8e4e611aace55"
+    },
+    {
+      "file": "docs/codex-ui-v1/record-tests/students-light-390.png",
+      "bytes": 44917,
+      "sha256": "a1f5c0807880134855a15b982517c639c2b74963052bff18517a8af82741024f"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/overview-dark-1440.png",
+      "bytes": 214042,
+      "sha256": "f169cb495e07eb1f219dedc9381daa22e4f3d854e5db9927c93b711550494482"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/overview-dark-390.png",
+      "bytes": 151834,
+      "sha256": "3a55e8944dd637bb2cba3fbbd3771f4089a0591c1cbde4731981cf7c29baed84"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/overview-light-1440.png",
+      "bytes": 213369,
+      "sha256": "0519d84ea158b182b70cae747077cdd1e7fc6c169e9536cc98b5199e64a79457"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/overview-light-390.png",
+      "bytes": 150215,
+      "sha256": "4c00f59d60419e57fa9f74c897efee5de263b4e7647171ff9908ee181de6fa62"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/results.json",
+      "bytes": 650,
+      "sha256": "003dc1610ff009c7effb33bc78d5c2ec2ef71e19f51548eb8980d75a77a7cfa9"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/viewport-dark-1440.png",
+      "bytes": 113540,
+      "sha256": "4c8387f528303fe9a4230aacc72e4d25095db853de6ce8c749d613d9875da185"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/viewport-dark-390.png",
+      "bytes": 38049,
+      "sha256": "3767a2e512eab333acf52a0f91b08ffba1b04a3b8ac0bf589c8f695c4a3dcb6b"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/viewport-light-1440.png",
+      "bytes": 113632,
+      "sha256": "0f2adb6a0d53d6f745a8b7bcfdb928f5beadba439b35f4acd0a27535061868dd"
+    },
+    {
+      "file": "docs/codex-ui-v1/overview-composition-tests/viewport-light-390.png",
+      "bytes": 37778,
+      "sha256": "e3c970f28bf78c6c359c36d932076940ed6b1a27f551818e366d48262b4405b9"
+    }
+  ],
+  "lot1ArtifactsUpdatedByRegression": [
+    "docs/codex-ui-v1/lot1-tests/desktop-direction.png",
+    "docs/codex-ui-v1/lot1-tests/desktop-presence.png",
+    "docs/codex-ui-v1/lot1-tests/jaspe-existing-1024.png",
+    "docs/codex-ui-v1/lot1-tests/jaspe-existing-1440.png",
+    "docs/codex-ui-v1/lot1-tests/jaspe-existing-390.png",
+    "docs/codex-ui-v1/lot1-tests/mobile-history.png",
+    "docs/codex-ui-v1/lot1-tests/mobile-jaspe.png",
+    "docs/codex-ui-v1/lot1-tests/results.json",
+    "docs/codex-ui-v1/lot1-tests/tablet-presence.png"
+  ],
+  "counts": {
+    "destinations": 211,
+    "branches": 13,
+    "presentationPosts": 15,
+    "specializedDestinations": 116,
+    "existingModuleLaunchers": 87,
+    "reads": 6,
+    "unavailable": 2,
+    "kinds": {
+      "overview": 4,
+      "alerts": 5,
+      "students": 11,
+      "classes": 5,
+      "family": 6,
+      "years": 2,
+      "legacy": 87,
+      "documents": 9,
+      "cards": 1,
+      "staff": 6,
+      "subjects": 1,
+      "attendance": 12,
+      "assignments": 2,
+      "grades": 5,
+      "unavailable": 2,
+      "lessons": 3,
+      "scanner": 4,
+      "pickup": 8,
+      "fees": 4,
+      "cash": 12,
+      "receipts": 3,
+      "campaigns": 2,
+      "balances": 2,
+      "payments": 7,
+      "access": 2,
+      "read": 6
+    }
+  },
+  "statuses": {
+    "CODEX_LOT2_UI": "GREEN",
+    "PREVIEW_OPENED": "YES",
+    "DASHBOARDS_COMPLETE": "YES",
+    "ROSARIO_BUTTON_MATRIX": "COMPLETE",
+    "PRIORITY_SCREENS": "PARTIAL",
+    "SIX_READ_SCREENS": "GREEN",
+    "JASPE_PRESENTATION": "GREEN",
+    "RESPONSIVE": "GREEN",
+    "ROSARIO_LIVE_E2E": "NOT_EXECUTED",
+    "ROSARIO_NEW_CHANGES": "NONE",
+    "CURSOR_INTEGRATION": "NOT_STARTED"
+  },
+  "uiUxProMax": {
+    "reference": "SCHOOLSAFE_CODEX_UI_UX_PRO_MAX_V1",
+    "status": "PASS_ISOLATED_UI",
+    "fullSuiteGroups": 17,
+    "additionalGroups": 6,
+    "overviewResponsiveVariants": 20,
+    "skill": "C:/Users/PC/.codex/skills/ui-ux-pro-max/SKILL.md",
+    "realBusinessIntegration": false
+  },
+  "domainPresentation": {
+    "status": "PASS",
+    "schemas": 23,
+    "customLayouts": 13,
+    "responsiveVariants": 230,
+    "checks": 5,
+    "realBusinessIntegration": false
+  },
+  "branchPresentation": {
+    "status": "PASS",
+    "branches": 13,
+    "destinations": 211,
+    "responsiveVariants": 130,
+    "contrastPairs": 78,
+    "checks": 6,
+    "realBusinessIntegration": false
+  },
+  "overviewComposition": {
+    "status": "PASS",
+    "responsiveVariants": 28,
+    "checks": 6,
+    "newBusinessContracts": false,
+    "realBusinessIntegration": false
+  },
+  "recordPresentation": {
+    "status": "PASS",
+    "schemas": 9,
+    "responsiveVariants": 90,
+    "checks": 5,
+    "newBusinessContracts": false,
+    "realBusinessIntegration": false
+  }
+}

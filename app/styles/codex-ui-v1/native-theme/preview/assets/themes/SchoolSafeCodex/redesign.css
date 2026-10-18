@@ -1,0 +1,54 @@
+/* Presentation only. Keep native form names, actions, validation and visibility. */
+:root {
+    --ss-surface: #f4f7fc;
+    --ss-surface-raised: #ffffff;
+    --ss-text: #17263b;
+    --ss-text-secondary: #52647d;
+    --ss-line: #d6e1ee;
+    --ss-focus: #2174cb;
+}
+body { font-family: system-ui, Arial, sans-serif; letter-spacing: 0; }
+h1, h2, h3, h4, .header1 h2 { font-family: inherit; letter-spacing: 0; }
+#body { box-sizing: border-box; min-width: 0; }
+#body .postbox, #body fieldset { border: 1px solid var(--ss-line); border-radius: 6px; box-shadow: none; }
+#body .postbox h3, #body legend { font-size: 16px; line-height: 1.4; }
+#body input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="image"]),
+#body select, #body textarea, #cboxLoadedContent input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+#cboxLoadedContent select, #cboxLoadedContent textarea {
+    box-sizing: border-box; min-height: 44px; max-width: 100%;
+    border: 1px solid #bac9dc; border-radius: 6px;
+    font-family: inherit; font-size: 15px; color: var(--ss-text);
+}
+#body textarea { resize: vertical; }
+#body input[type="submit"], #body button, #cboxLoadedContent input[type="submit"] { min-height: 44px; }
+#body .widefat { border-color: var(--ss-line); }
+#body .widefat th { background: #edf4ff; color: var(--ss-text); white-space: normal; font-size: 13px; }
+#body .widefat td { padding: 10px 8px; border-color: var(--ss-line); }
+#body .list-wrapper { max-width: 100%; overflow-x: auto; }
+#body :focus-visible, #menu :focus-visible, #footer :focus-visible, #colorbox :focus-visible {
+    outline: 3px solid var(--ss-focus); outline-offset: 3px;
+}
+#colorbox { max-width: calc(100vw - 24px); }
+#cboxLoadedContent { max-width: 100%; box-sizing: border-box; }
+#cboxClose { min-width: 44px; min-height: 44px; }
+/* Branch accents are supplemental: native labels and icons remain visible. */
+.menu-module:has(.module-icon.School_Setup) { --ss-branch: #38b6dc; }
+.menu-module:has(.module-icon.Students) { --ss-branch: #40c29d; }
+.menu-module:has(.module-icon.Users) { --ss-branch: #b29ee9; }
+.menu-module:has(.module-icon.Scheduling) { --ss-branch: #efc65c; }
+.menu-module:has(.module-icon.Grades) { --ss-branch: #e8a7c5; }
+.menu-module:has(.module-icon.Attendance) { --ss-branch: #7cd3c3; }
+.menu-module:has(.module-icon.Accounting) { --ss-branch: #b2c8eb; }
+.menu-module > .menu-top { border-left: 3px solid var(--ss-branch, transparent); }
+@media (max-width: 874px) {
+    #body .widefat td { padding: 8px 6px; }
+    #body h2 { font-size: 21px; overflow-wrap: anywhere; }
+    #cboxLoadedContent textarea { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+@media print {
+    #body { background: #fff; color: #000; }
+    #body .list-wrapper { overflow: visible; }
+}

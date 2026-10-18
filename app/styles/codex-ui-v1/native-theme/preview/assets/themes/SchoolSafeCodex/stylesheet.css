@@ -1,0 +1,3 @@
+/* Native Rosario theme variant; the existing SchoolSafe theme remains a dependency. */
+@import url("../SchoolSafe/stylesheet.css");
+@import url("redesign.css");

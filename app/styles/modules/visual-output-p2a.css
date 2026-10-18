@@ -1,0 +1,43 @@
+.p2a-screen {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: grid;
+  gap: 16px;
+}
+
+.p2a-screen form,
+.p2a-facts,
+.p2a-screen ul,
+.p2a-screen article {
+  display: grid;
+  gap: 12px;
+}
+
+.p2a-screen input,
+.p2a-screen select,
+.p2a-screen textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.p2a-facts div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 14rem) 1fr;
+  gap: 8px;
+}
+
+@media (min-width: 1440px) {
+  .p2a-screen { padding: 32px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .p2a-screen { padding: 20px; }
+}
+
+@media (max-width: 390px) {
+  .p2a-screen { padding: 12px; }
+  .p2a-screen button { width: 100% }
+  .p2a-facts div { grid-template-columns: 1fr; }
+}

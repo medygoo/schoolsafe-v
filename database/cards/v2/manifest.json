@@ -1,0 +1,22 @@
+{
+  "schema": "schoolsafe-migrations-v2",
+  "name": "cards",
+  "version": 2,
+  "units": [
+    {
+      "order": 1,
+      "file": "01_class_config_and_credential.sql",
+      "sha256": "0d8634d16a0a4496c71859502f6f218f4c4400777717f432fe06433332003fb1"
+    },
+    {
+      "order": 2,
+      "file": "02_school_card_identity.sql",
+      "sha256": "a0ccac1f4125af1397df525833df1bc336cc9885b2e70c09cb1a7917365ee128"
+    },
+    {
+      "order": 3,
+      "file": "03_card_year_and_school_profile.sql",
+      "sha256": "49b5b59458e0ddc6d3b72f0195640593cb43dec38692b744d1b8ba6e58cc877a"
+    }
+  ]
+}

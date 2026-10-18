@@ -1,0 +1,33 @@
+.clb-screen {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: grid;
+  gap: 16px;
+}
+
+.clb-screen form,
+.clb-screen ul,
+.clb-screen dl {
+  display: grid;
+  gap: 12px;
+}
+
+.clb-screen input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1440px) {
+  .clb-screen { padding: 32px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .clb-screen { padding: 20px; }
+}
+
+@media (max-width: 390px) {
+  .clb-screen { padding: 12px; }
+  .clb-screen button { width: 100% }
+}

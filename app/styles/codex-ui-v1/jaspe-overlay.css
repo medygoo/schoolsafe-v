@@ -1,0 +1,48 @@
+/* Opt-in presentation of the existing dialog. No engine or governance override. */
+#jaspePanelOverlay[data-codex-ui-v1] {
+  --sscx-jaspe-border: #7e8fa6;
+  --sscx-jaspe-focus: #2455c6;
+  --sscx-jaspe-surface: #fff;
+  --sscx-jaspe-text: #172333;
+  --sscx-jaspe-muted: #485c73;
+  --sscx-jaspe-soft: #edf2fc;
+  width: min(760px, calc(100vw - 32px)); max-width: 760px;
+  max-height: calc(100dvh - 32px); overflow: auto; padding: 0;
+  border: 1px solid var(--ss-border, #dbe2ec); border-radius: 8px;
+  background: var(--ss-surface, #fff); color: var(--ss-text-primary, #172333);
+  font-family: system-ui, sans-serif; font-size: 1rem; line-height: 1.5; letter-spacing: 0;
+}
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__header { padding: 16px 20px; border-bottom: 1px solid #dbe2ec; gap: 12px; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__header h2 { font-family: 'Nunito Sans', system-ui, sans-serif; font-size: 1.25rem; letter-spacing: 0; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__close { width: 44px; height: 44px; flex-shrink: 0; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__modes { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 20px; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__modes button { min-height: 44px; border-radius: 6px; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__footer { padding: 12px 20px; border-top: 1px solid #dbe2ec; gap: 8px; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__footer input { min-width: 0; min-height: 44px; font-size: 1rem; border: 1px solid var(--sscx-jaspe-border); background: var(--sscx-jaspe-surface); color: var(--sscx-jaspe-text); }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__footer button { width: 44px; height: 44px; flex-shrink: 0; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__messages { overflow-wrap: anywhere; }
+#jaspePanelOverlay[data-codex-ui-v1] .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel { border-radius: 8px; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel { background: var(--sscx-jaspe-surface); color: var(--sscx-jaspe-text); border-color: var(--sscx-jaspe-border); box-shadow: none; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__header h2 { color: var(--sscx-jaspe-text); }
+#jaspePanelOverlay[data-codex-ui-v1] :is(.jaspe-panel__eyebrow,.jaspe-panel__status,.jaspe-message b,.jaspe-full-caption) { font-size: .75rem; color: var(--sscx-jaspe-muted); letter-spacing: 0; }
+#jaspePanelOverlay[data-codex-ui-v1] :is(.jaspe-panel__empty,.jaspe-message) { font-size: .875rem; color: var(--sscx-jaspe-text); }
+#jaspePanelOverlay[data-codex-ui-v1] :is(.jaspe-message,.jaspe-message--user,.jaspe-panel__status) { background: var(--sscx-jaspe-soft); border-color: var(--sscx-jaspe-border); }
+#jaspePanelOverlay[data-codex-ui-v1] :is(.jaspe-panel__modes button,.jaspe-panel__close,.jaspe-voice-controls button) { min-height: 44px; border-radius: 6px; font-size: .875rem; color: var(--sscx-jaspe-text); background: var(--sscx-jaspe-surface); }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__modes button[aria-pressed="true"] { background: var(--sscx-jaspe-soft); box-shadow: inset 0 -3px 0 var(--sscx-jaspe-focus); }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__footer input { border-radius: 6px; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__footer input::placeholder { color: var(--sscx-jaspe-muted); opacity: 1; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__footer button { border-radius: 6px; }
+#jaspePanelOverlay[data-codex-ui-v1] svg { width: 20px; height: 20px; }
+#jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__footer { flex-wrap: nowrap; }
+#jaspePanelOverlay[data-codex-ui-v1] :focus-visible { outline: 3px solid var(--sscx-jaspe-focus); outline-offset: 3px; }
+#jaspePanelOverlay[data-codex-ui-v1] :is(button,input) { touch-action: manipulation; scroll-margin-block: 80px; }
+[data-theme="dark"] #jaspePanelOverlay[data-codex-ui-v1] { --sscx-jaspe-border: #93afd1; --sscx-jaspe-focus: #ffdb8a; --sscx-jaspe-surface: #19375e; --sscx-jaspe-text: #f4f7fc; --sscx-jaspe-muted: #c6d4e8; --sscx-jaspe-soft: #254976; background: var(--sscx-jaspe-surface); color: var(--sscx-jaspe-text); border-color: #436184; }
+@media (max-width: 700px) {
+  #jaspePanelOverlay[data-codex-ui-v1] { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); }
+  #jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__header, #jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel__footer { padding: 12px; }
+  #jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel-layout { grid-template-columns: minmax(0, 1fr); }
+  #jaspePanelOverlay[data-codex-ui-v1] .jaspe-full-stage { height: 160px; margin-right: 0; }
+  #jaspePanelOverlay[data-codex-ui-v1] .jaspe-full-stage .jaspe-character-host :is(.jaspe2d > img, .jaspe2d__live-canvas, .jaspe-character-fallback) { width: 100%; left: 0; }
+  #jaspePanelOverlay[data-codex-ui-v1] .jaspe-panel { height: min(400px, calc(var(--jaspe-view-height, 100dvh) - 280px)); min-height: 250px; }
+}

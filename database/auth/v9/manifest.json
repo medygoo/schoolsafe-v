@@ -1,0 +1,12 @@
+{
+  "schema": "schoolsafe-migrations-v9",
+  "name": "auth",
+  "version": 9,
+  "units": [
+    {
+      "order": 1,
+      "file": "01_master_school_access.sql",
+      "sha256": "8e226743f5b34c1a7d0bfaf6661f3974d28fcdad90d98c4f4c0875ebaff6fed1"
+    }
+  ]
+}

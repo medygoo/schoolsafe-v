@@ -1,0 +1,10 @@
+/* Native Rosario theme variant; the existing SchoolSafe theme remains a dependency. */
+@import url("../SchoolSafe/stylesheet.css");
+@import url("redesign.css?v=10");
+@import url("school-forms.css?v=1");
+@import url("mobile-navigation.css?v=10");
+@import url("profile-settings.css?v=1");
+@import url("context-navigation.css?v=3.4");
+@import url("branch-icons.css?v=4");
+@import url("interior-screens.css?v=7");
+@import url("ecc-consistency.css?v=5");

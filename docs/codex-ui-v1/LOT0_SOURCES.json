@@ -1,0 +1,776 @@
+[
+  {
+    "file": "app/app.js",
+    "lines": 4704,
+    "sha256": "5cd7bb3d5a5862c570b6dfb2792342a24e9216950ab32b4b30bad2d09345022a",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/connexion-apercus.html",
+    "lines": 15,
+    "sha256": "271e24dffb4b911dca84543735611b34c33d564078a49d9359932cd5f824aedd",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/i18n.js",
+    "lines": 646,
+    "sha256": "cefd744867323d12517ed7ca44cebbbdf5f118f929d018e6373b32f6d0cc2683",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/index.html",
+    "lines": 1001,
+    "sha256": "3677fd5113cc3cfe9951aa2d3bd23ffea55bd74848686b1e3afcf7e7df3b34d2",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/jaspe-assise-preview.html",
+    "lines": 109,
+    "sha256": "02d27363c69c50edaeaf418cf766286f711f94dea381586cf0eea591176b3690",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/jaspe-attente.html",
+    "lines": 37,
+    "sha256": "f912fde01eacb74e1d39a20586a9eca8f8afecfeae0cec7e67888f5b7e19eb9f",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/jaspe-images.html",
+    "lines": 16,
+    "sha256": "515430ed7d6580f843e39b59546fe6d114302ef00832b84344badc3867b803cc",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/jaspe-movement-lab.html",
+    "lines": 4,
+    "sha256": "bb95d2b78dfc52e7ac59a5bc10ce21e22f0ddd3dc5ca3af71dea3ce402424f7c",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/accounting/accounting-treasury-demo.js",
+    "lines": 532,
+    "sha256": "6a5badf9076f84d5b002658b6bdf3fd4607707d0ba63b08415a924729536332e",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/administration/access-console.js",
+    "lines": 319,
+    "sha256": "65dd1bf99e07d9f9c1aca6885b19a0651b12dff3e644266d8dcd7a31c50891e8",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/administration/access-native.js",
+    "lines": 35,
+    "sha256": "00487b767eb3779df4a012a1ce5e22884903ff51c871605852573a2025638219",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/administration/access-role-editor.js",
+    "lines": 92,
+    "sha256": "70b63c9d346876ab557f991e048347e64b03d8e54892c541c298f1a1ba7366c8",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/administration/administration-demo.js",
+    "lines": 575,
+    "sha256": "0b70ac1e1d9193b5c03fbfe9e31b7f29db330d234f630c0f1c6abe7a53885f2a",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/authnative/auth-native.js",
+    "lines": 212,
+    "sha256": "5eba5c350e03e27adeab6f01bf96a7f57aed453d21d2b3c96e27e0b11b03c52f",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/cards/assets/card-data.js",
+    "lines": 188,
+    "sha256": "16c702c4be3621271fbe3662f4f6c21b0f19bb6426b7b9a8eaf9c3f3cc244824",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/cards/card-adapter.js",
+    "lines": 124,
+    "sha256": "717094f5e8bcd04b03371600b657bd5e622b04101cffc4904825703c813655aa",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/cards/card-renderer.js",
+    "lines": 308,
+    "sha256": "883e6163311592b22a6833d8aceeaa98218a84e5050c3d5049580902c6cffebc",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/cards/cards-module.js",
+    "lines": 1289,
+    "sha256": "823d59d55ea4a9623e45cd553e67dfdc3be53a87dadfdc6d6ffff4d9f8021d1b",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/cards/cards-native-api.js",
+    "lines": 146,
+    "sha256": "dd80bf623fe268da9e1ba903a1b1639de9abad5d2d087ad60db33e4e50ab40c7",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/cards/test-card.html",
+    "lines": 525,
+    "sha256": "7a8328bcc3a75bc4340d27a8ef98eae50bc486ae8dacaec192f06c7ecc8eeca6",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/communication/communication-demo.js",
+    "lines": 646,
+    "sha256": "4fdfd7f5a9fbe67d3a7207252c9d9d797b86f691e17f88bec72ce5091c17c1e3",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/core/access.js",
+    "lines": 352,
+    "sha256": "c83f55cc406941f35bc5334b1bfbf207d3daa396938fc6976b116585e8fabb54",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/core/school-context.js",
+    "lines": 37,
+    "sha256": "546c84ac91e0e5477a9f4cabe44aa8b66b29057e11e41fed108a6f7750b22878",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/core/ui-helpers.js",
+    "lines": 726,
+    "sha256": "6a1e89702a82240362c99f73a7d47815707804335f7e5c85dc892a98541f49bb",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/core/visual-output-closure-a.js",
+    "lines": 600,
+    "sha256": "8177c7e88aadd321626804a9711b38d29c02600b437cc2ac9d9e3ea0e5f33e76",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/core/visual-output-closure-b1.js",
+    "lines": 414,
+    "sha256": "1be91e20b8a0a731fb5f6ade945ecf166ed4a19669f70d37f49097d46d270b6b",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/core/visual-output-p1.js",
+    "lines": 538,
+    "sha256": "cf438e3d344fd6cfab5c2315083745d14c3887687302cbb619f7597c7c9847b4",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/core/visual-output-p2a.js",
+    "lines": 706,
+    "sha256": "bd9242f38254523a8b799441b8c71f03f1a870f4cd96dd7186e6482973852afd",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/core/visual-output-p2b.js",
+    "lines": 595,
+    "sha256": "5905b95db41d760c9f8bdcbe0b82cc2a6b465dee0e0e8058eeeaddd93dda6155",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/core/visual-output-p2c.js",
+    "lines": 792,
+    "sha256": "170d86fbb077d897da9bfbe8bbfdf8c5ee9769117fc4b361908b6800118eed81",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/core/visual-wiring.js",
+    "lines": 508,
+    "sha256": "d8527699adadd3fe438fae1022dbf188573c782ad5c0263c84337cbe9d689bf2",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/document-center/document-actions-runtime.js",
+    "lines": 323,
+    "sha256": "a91396fcad6e3036e9d662d0598345315516924d301a5a3fd3094ac1581de72c",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/document-center/document-assistant.js",
+    "lines": 128,
+    "sha256": "d58e41f363a7f32def117c3d95167d5f11cee34f8c2f7b8fa911bd24ea23ac68",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/document-center/document-center.js",
+    "lines": 290,
+    "sha256": "365a910649c7e6ace7e11e3aec274be67c45e476c590d149e071c1c0598f6ef8",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/document-center/finance-accounting-documents.js",
+    "lines": 97,
+    "sha256": "430c082ff4407a2a90d97a71cf6f8347070674cc088d3f236bd0792de397bcf9",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/document-center/operational-documents.js",
+    "lines": 123,
+    "sha256": "be285b297ce627d33aa032692cd6370ccf0b8e889bc4952698df188d16ff5130",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/document-center/school-pedagogy-documents.js",
+    "lines": 126,
+    "sha256": "d2f333195ad9c7bc885d6fd300706a17a4ad244991bcc7f35a4335fb528d6828",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/document-engine/access-gate.js",
+    "lines": 203,
+    "sha256": "ead288baaa6cbdf7d548f06bc9b63e8f5afd37141d42da503a6e23b0bd61e27c",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/bootstrap-templates.js",
+    "lines": 13,
+    "sha256": "05044d97783aab59876100470232cdd5c98e0597cc1b4e3f1edb688d90699c3a",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/contracts.js",
+    "lines": 159,
+    "sha256": "acab77cbc458436add27c2f163b302a62349cd28c52cfde230bf8abfa1520212",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/data-table.js",
+    "lines": 55,
+    "sha256": "ef66c2b5c40bcc45cd46afa65040e921e3227740bdebf048870ff76052740972",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/document-actions.js",
+    "lines": 136,
+    "sha256": "2cc99c250a7307f87694b195fc0a029136a911d0b88c950bba5ca7a22ec1aea7",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/document-data-resolver.js",
+    "lines": 89,
+    "sha256": "d939cc3ce32b417555143f14bf26ae5944e4d29424cf678d116f18abe1b2327d",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/document-engine.js",
+    "lines": 127,
+    "sha256": "58ff1854b3688e79e761358ac01f7ec5a5dddf897ea28eed20b0fdb5f2d22796",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/document-footer.js",
+    "lines": 38,
+    "sha256": "80f625246fd92deb0ff109a7d23b0c4ce39b5ffb5c5c0ab892dc77cbddf2ed07",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/document-header.js",
+    "lines": 106,
+    "sha256": "b6ffbdebbd6838db0fdbae4b8c4aa9ca7eb08f3843716d0dd20fa4ee4642405a",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/document-numbering-service.js",
+    "lines": 19,
+    "sha256": "b68a827e4bd213b4aca69b20ac5f18312f85ba6357975b87e6b0bcffae38ab34",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/file-policy.js",
+    "lines": 94,
+    "sha256": "ff1ffd8da26234016117e37cd10c4b07f331b45940e62556f7fa26010249fa4b",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/frontend-renderer.js",
+    "lines": 284,
+    "sha256": "c627d2cb2c157230152371b877d8097cd0f46b41c8b1a9a70d83109e8e62d111",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/identity-blocks.js",
+    "lines": 53,
+    "sha256": "9b980be79e22050a76a22a9fbf68c557792aa06f16d4703411e92f0959c60791",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/index.js",
+    "lines": 56,
+    "sha256": "67bf7cdcf793c95bf3ecae8600ffa0109ca52d913d69d2b7011a507959008b77",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/layout-engine.js",
+    "lines": 225,
+    "sha256": "0ee1e2c34ad5aa0c92d6266c2c89e253df4bfedadf854619f9c5e93b2227acce",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/payment-block.js",
+    "lines": 35,
+    "sha256": "4539286ea2b186eeb24c524cb83457d0e1c1fd7cff9738a79bd9794946061800",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/print-layout.js",
+    "lines": 25,
+    "sha256": "94fe89bb8b9a5e1ef5acedb10c3fc6812619849bfb5bb32c27aa91b9e375da30",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/qr-block.js",
+    "lines": 62,
+    "sha256": "c893171f2e3b01ee65168f298d98493a99162a5b44739d39a72055e4f645ea43",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/render-context.js",
+    "lines": 108,
+    "sha256": "3a7c7198143e09055c4582637d067485f69526cc1e60f4be54ddecb84934d119",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/school-identity-provider.js",
+    "lines": 85,
+    "sha256": "eed6e48ec74805427317672eb6671b83435bc5b1b4c8acf931725704e3ea26b1",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/schoolsafe-identity-provider.js",
+    "lines": 78,
+    "sha256": "4ad466d3b92426c71fe785f9ec4f25102fe078bf79b1aabf1988739c55ee32ea",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/signature-block.js",
+    "lines": 19,
+    "sha256": "464d63f037d916183ecf5485fd5f09ef387897b267dd7cd7e599e2cbcf046145",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/template-registry.js",
+    "lines": 100,
+    "sha256": "28b55b51aea603548815e1dcd205992cd9d0413e4186bdbd1f295bc9f9ceb0f2",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/templates/answer-sheet-template.js",
+    "lines": 83,
+    "sha256": "76908cdabc1e6135d7866de47a7d06209f4527933d304f70630d7cc13f5e2866",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/templates/assignment-template.js",
+    "lines": 159,
+    "sha256": "1063be2544e4b1c60416ecd64d22e9455fb120ac1c3e575d37c70c38d449520f",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/templates/receipt-template.js",
+    "lines": 336,
+    "sha256": "8e27e47dffb2b76b780b849a77c7ba3ef595e1e54c3650994257f273168a6186",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/document-engine/templates/universal-document-template.js",
+    "lines": 140,
+    "sha256": "f5b83b185a5d584b89c45e23ad7e8c35e691c50e4aca617f5f4d338b2833f821",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/finance/fee-control-module.js",
+    "lines": 300,
+    "sha256": "0b6b54e725c56c4d9a1b82ad9bd883a7e0bc7d4d25c6b3bf9ae56f6e99cf3fe2",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/finance/finance-api.js",
+    "lines": 108,
+    "sha256": "826308afb21b5af03d292889fbc73f139bd71f5d2b0af17ada6108332def1345",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/finance/finance-module.js",
+    "lines": 2400,
+    "sha256": "b5f6048ba55831e5d5bcdb47ec2e162e40e6d566eda849381c67e477d1fca2cf",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/hr/hr-demo.js",
+    "lines": 572,
+    "sha256": "30dd3893357b00fe1d1ef39226fe2b908f98558287198943d658f89b438c1af7",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/inventory/inventory-demo.js",
+    "lines": 410,
+    "sha256": "ed6444359a7e01a5fc0409df193cf43e57c860c31adb2bb21ae30aac9a3cd65f",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/jaspe2d/auth-layouts.js",
+    "lines": 46,
+    "sha256": "8d287a5dae3b1eb6e329e0af35b0122b24286cba0ba3bf4287148d6478c1fde0",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/jaspe2d/auth-portrait.js",
+    "lines": 70,
+    "sha256": "6e8871a1a5c8e7bf3970ef099ff741d3bf200d65279920c18cb0970a1f312e49",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/auth-presence.js",
+    "lines": 87,
+    "sha256": "24f4154b6f1e89ec1e8e9e03011c72d247077b068ee5748de982faabeb328965",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/jaspe2d/consistency-worker.js",
+    "lines": 20,
+    "sha256": "f3217db1f2c24f76f1e3e6198a5f796c6762dec2bd1a99700e7d220fcd1ee060",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/dashboard-companion.js",
+    "lines": 416,
+    "sha256": "514363f1612bf8ca625422c16f2c0516f9e95584367ec4fea9c374f7fe82d288",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/jaspe2d/display-matte.js",
+    "lines": 42,
+    "sha256": "18dc58dcf1382f0c920a9625ebfa52f9525963a1d3e1e525fac659fe7b392b59",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/greeting-motion.js",
+    "lines": 69,
+    "sha256": "803ddddd7fc3804833bc39ca69cc2484855e8cb70accab25ea5a29f3dc735fcc",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/greeting-renderer.js",
+    "lines": 74,
+    "sha256": "c78228f9a7f0d8d582c1d00d270dc902227c3ae92433cfcd998678fa807fd6e1",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/idle-planner.js",
+    "lines": 31,
+    "sha256": "268b4497ffbfc56f25d193f5282b6429a297559854980e4777222cf4d853e3f3",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/image-consistency.js",
+    "lines": 60,
+    "sha256": "1cd222d9e677835119158a1ee0a406dc1ec34486f7492a4d3aa7e9d30f28893a",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/jaspe2d.js",
+    "lines": 437,
+    "sha256": "cf371c9f767e8f48e0738e8e660b1097110a4ad42414653e3cc529f2048bc40d",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/jaspe2d/live-companion.js",
+    "lines": 205,
+    "sha256": "0cea57dec2ec77d57eb936edcbfb9155082a022aee9f235215087028ff9edf16",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/presentation-controller.js",
+    "lines": 165,
+    "sha256": "a3f003628bcd0a09edacca64c50971e072a0525cd6ddf806c80af816e31eca02",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/seated-companion.js",
+    "lines": 178,
+    "sha256": "af4bf8f22e9ab1d2e0ce90eed271fbe6c62acd10b77d8712646b0dacb821aaad",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/jaspe2d/uniformisation-lab.js",
+    "lines": 101,
+    "sha256": "eeaec10649c8be19e7936a8a48332c9efa241888f52df4dd6fff7ed8d54692f4",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/base-controller.js",
+    "lines": 170,
+    "sha256": "1e5ff0974ae6ed427571abb3c8d5a8f396a6f45b1e9e41a1380f7cdbe1007034",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/body-renderer-v9.js",
+    "lines": 71,
+    "sha256": "d1aeb34cd25ec46f135d245973640060a8322016599aa5b68c5beb1f370bac17",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/child-motion.js",
+    "lines": 72,
+    "sha256": "a6823122f70824496806db8154445659447a13aa84003e20a4ffe43afe04e38a",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/emotion-performances.js",
+    "lines": 47,
+    "sha256": "54fdf387d6b5e1734f9930e7a7537e067e37a749f01973552fe194021568434a",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/face-alignment.js",
+    "lines": 13,
+    "sha256": "b5640d207746fe90ef4b3e4a8a505e5219112b7aa2b2e1df3124e504ec4d8456",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/face-renderer.js",
+    "lines": 43,
+    "sha256": "97387a5cb6c0baa10ba72aeb1e774580f7184443a6b5bc223ce960f1c35f5871",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/gesture-profiles.js",
+    "lines": 83,
+    "sha256": "58d81070a346fbc45da95d6d7253b8c83a26bba8c41306b6a8b2592c6d54b368",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/motion.js",
+    "lines": 43,
+    "sha256": "accbc1c5443e4985f496f1deded24a96fad3cb37d2ad0ed7f43a7f34e7d89587",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/photo-renderer.js",
+    "lines": 64,
+    "sha256": "c941bba675ee1801ccc0b33692c2d2fb2a909e5aaeac928532a885c1bcc160c6",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/pose-registration.js",
+    "lines": 23,
+    "sha256": "eafed83f97cd81398ff320bd84b2c71b1da55e63c202cdc292bb9483bef37e2a",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/poses.js",
+    "lines": 69,
+    "sha256": "d7b1fd89556b6d9fe2a1fae887618646f75224d52ae224dd7d91e5780453dcf4",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/jaspe2d/v12/walk-timing.js",
+    "lines": 13,
+    "sha256": "840fa3fa990c8d067d60858ac34e62f26083f111f3642a470f411a00cc44ee47",
+    "loadedByIndex": false
+  },
+  {
+    "file": "app/modules/media/image-frame-math.js",
+    "lines": 48,
+    "sha256": "5800e9c9d1891da8a403d3319f39fe1ff1dc51b3b36c5100abd9b4d4493a8cf4",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/media/image-frame.js",
+    "lines": 169,
+    "sha256": "c5bc95ea4d491c995f782c769c735efa1ea78ffcd2cf84f65dd5bee97b9c03b9",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/parent/parent-portal-demo.js",
+    "lines": 834,
+    "sha256": "164a8a3c9894c0aacaede89d42417d53ac009c205d139f39a0eeaf86579048ef",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/pedagogy/palmares-api.js",
+    "lines": 79,
+    "sha256": "adff77aebf0354d2c4299c630754b8b0e8667b54e7dd621c6b0ac910d0752733",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/pedagogy/palmares-module.js",
+    "lines": 441,
+    "sha256": "24750c5d0ebc7d6c23baefee54fbaed34f71e0278b528497627a0b54f6628346",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/pedagogy/pedagogy-api.js",
+    "lines": 109,
+    "sha256": "0d7e84d8146c98f4177824e1d7e769db17df21cf666ba0c8cec113533fe66aec",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/pedagogy/pedagogy-module.js",
+    "lines": 1123,
+    "sha256": "c73ff14a362fea825f6070aa2f11332a07ef9eaaac8ad55d488210d69beaa3af",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/pedagogy/teacher-pedagogy-demo.js",
+    "lines": 983,
+    "sha256": "a1ce35b5f9c6593afbce724eac125a7ba1ba0e78bcf078c3d2eeab678d0b7693",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/pilotage/pilotage-api.js",
+    "lines": 78,
+    "sha256": "fded1d00aac2b9238637b49b98cd0a8d044611e5cb5068d29623687b10e95501",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/pilotage/pilotage-module.js",
+    "lines": 173,
+    "sha256": "ad87fe779b769f759a9562daebe527d659a0c4de3994601a9405ad32ffca1abb",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/reports/reports-demo.js",
+    "lines": 185,
+    "sha256": "35f35642bd88749b0185492f8d2724539a300136a3bc9fd3476693a2a7ed21d8",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/safe/jaspe-capability-router.js",
+    "lines": 115,
+    "sha256": "929a26da1bad03c600476482e9e169436d1889c04c6ba3f595cf053b3423d5e0",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/safe/jaspe-governance.js",
+    "lines": 98,
+    "sha256": "327e13ad2069c95b9e38f6bbaeb6046e3a043b58731c083d22527b93bc397e79",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/safe/safe-assistant.js",
+    "lines": 1168,
+    "sha256": "e29cb8555b5bec1ce4241838eb4102ff4f8bd3e9ee89c088be7729f64350d0fc",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/academic-structure-demo.js",
+    "lines": 205,
+    "sha256": "657aedab87b598cb3d66953a355507daade0034a4059cba386f4ed5fcb487840",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/school-api.js",
+    "lines": 185,
+    "sha256": "4d62ec742f30ed74fd4c825f8620902e0d3191cb05bec56059694a53eb5c51df",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/school-module.js",
+    "lines": 1427,
+    "sha256": "a4b23e4d0a245d0bb7bbf533dbdbaf82f8497393af7d9a0c8259de8eb802ed22",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/school-native-api.js",
+    "lines": 67,
+    "sha256": "a727a658d6534c77740038e6253692458775796282d98a07cb4e8a90edb45864",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/student-card-preparation-demo.js",
+    "lines": 281,
+    "sha256": "bbc278aeeb06b40a3acab7ccc720b2fea3a7358cb1c1de6d5837325a5d60cf32",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/student-dossier-demo.js",
+    "lines": 190,
+    "sha256": "b4f299a5d3816de47db64946a92336e2a029a7074be72788ba8e11753242ef52",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/student-family-demo.js",
+    "lines": 449,
+    "sha256": "63e99c8124baa6f5dd5b7a8c9175c83ddc56e72acff1143c16e00cbfc6d50862",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/student-lifecycle-demo.js",
+    "lines": 447,
+    "sha256": "91ec635fb5e0259943c851b9e45a0f2f938d4100c2e6b8bbfe0761ac52f9212a",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/student-pickup-demo.js",
+    "lines": 404,
+    "sha256": "efca287886bb2bb91da4d1d7e3aba7a27adacf7709a0441d0087f7f8c144570a",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/student-record-api.js",
+    "lines": 171,
+    "sha256": "5c688e947ad0a86bae07bd4cbf217112d73e9e7c8a3562c7d3b51a0407a39335",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/student-record-real.js",
+    "lines": 311,
+    "sha256": "ed75b2190f2030800d6d4f85ab88c7b0e34c569394ea42b3ca3f65555e16cd82",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/school/student-verification-demo.js",
+    "lines": 190,
+    "sha256": "ad565c6e409d2873b2ef98642bbef2d6701bb11635fcc480b2ddb9a1f75a325c",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/security/guard-security-demo.js",
+    "lines": 642,
+    "sha256": "b1e20cf12d3f64d659349e556856a86c344a0591f437873dc3599c01f6967ea5",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/security/scan-control.js",
+    "lines": 699,
+    "sha256": "c41e2961bb09dab43e27d4e1a8f68b52c68cd230e72e721324089966d5385896",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/security/security-api.js",
+    "lines": 64,
+    "sha256": "2e225c0a23d96181dd32d9041a99654cf0cd1dd17b856db98d831f509eb6546c",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/modules/security/security-module.js",
+    "lines": 463,
+    "sha256": "d048597d0464ecb0175a18f6ba817d7dc18a9ed3c7ea88841a5c5bd2fba54932",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/offline-sync.js",
+    "lines": 293,
+    "sha256": "416d096e27ea0a8a2b069cfc21032448754de4cb05f1b05df259e8a57068437b",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/sw-register.js",
+    "lines": 24,
+    "sha256": "f41fabf797c41cf5f93729ded9834ca9a54ff2822b589f4b4d929dec26da6748",
+    "loadedByIndex": true
+  },
+  {
+    "file": "app/sw.js",
+    "lines": 127,
+    "sha256": "cae9d72f1e321f4887658cb0c9cc4780c2c0784c5be03b89c173db098db003cd",
+    "loadedByIndex": false
+  }
+]

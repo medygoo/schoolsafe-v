@@ -1,0 +1,7629 @@
+[
+  {
+    "id": "rosario-001",
+    "branch": "pilotage",
+    "group": "Vue exécutive",
+    "label": "Tableau de bord",
+    "presentation": "overview",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "pilotage.dashboard.read; sources officielles",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pilotage/dashboard/routes.ts; app/app.js:675",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-002",
+    "branch": "pilotage",
+    "group": "Vue exécutive",
+    "label": "Statistiques",
+    "presentation": "overview",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "pilotage.dashboard.read; sources officielles",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pilotage/dashboard/routes.ts; app/app.js:675",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-003",
+    "branch": "pilotage",
+    "group": "Vue exécutive",
+    "label": "Alertes importantes",
+    "presentation": "alerts",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "pilotage.alerts.read / pilotage.approvals.read; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-004",
+    "branch": "pilotage",
+    "group": "Vue exécutive",
+    "label": "Indicateurs",
+    "presentation": "overview",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "pilotage.dashboard.read; sources officielles",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pilotage/dashboard/routes.ts; app/app.js:675",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-005",
+    "branch": "pilotage",
+    "group": "Vue exécutive",
+    "label": "Instantanés",
+    "presentation": "overview",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "pilotage.dashboard.read; sources officielles",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pilotage/dashboard/routes.ts; app/app.js:675",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-006",
+    "branch": "school",
+    "group": "Scolarité",
+    "label": "Élèves",
+    "presentation": "students",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-007",
+    "branch": "school",
+    "group": "Scolarité",
+    "label": "Classes",
+    "presentation": "classes",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "school.class.read / pedagogy.assignment.read; portee affectations",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:36,59",
+    "candidateContracts": [
+      "GET /native/pedagogy/classes",
+      "GET /native/pedagogy/teacher-assignments"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-008",
+    "branch": "school",
+    "group": "Scolarité",
+    "label": "Parent principal et tuteurs",
+    "presentation": "family",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Droits famille exacts + own_children / ecole; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/familynative/routes.ts:162-174,238-279",
+    "candidateContracts": [
+      "GET /native/family/students/:studentId/pickup-authorizations/mine",
+      "GET /native/family/students/:studentId/pickup-authorizations/school"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-009",
+    "branch": "school",
+    "group": "Scolarité",
+    "label": "Inscriptions et réinscriptions",
+    "presentation": "students + enrollment",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "year",
+        "label": "Année scolaire",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Début",
+        "type": "date"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "year",
+      "class",
+      "date"
+    ],
+    "source": "app/modules/core/visual-output-p2a.js",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-010",
+    "branch": "school",
+    "group": "Organisation",
+    "label": "Année scolaire",
+    "presentation": "years + schoolYear",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "school.manage; contrat individuel a confirmer",
+    "layout": "agenda",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Année scolaire",
+        "type": "text"
+      },
+      {
+        "key": "from",
+        "label": "Début",
+        "type": "date"
+      },
+      {
+        "key": "to",
+        "label": "Fin",
+        "type": "date"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "from",
+      "to"
+    ],
+    "source": "app/modules/core/visual-output-p2a.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-011",
+    "branch": "school",
+    "group": "Organisation",
+    "label": "Affectations",
+    "presentation": "classes + assignments",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "school.class.read / pedagogy.assignment.read; portee affectations",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Enseignant",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "subject",
+        "label": "Matière",
+        "type": "text"
+      },
+      {
+        "key": "from",
+        "label": "Début",
+        "type": "date"
+      },
+      {
+        "key": "to",
+        "label": "Fin",
+        "type": "date"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "class",
+      "subject",
+      "from",
+      "to"
+    ],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [
+      "GET /native/pedagogy/classes",
+      "GET /native/pedagogy/teacher-assignments"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-012",
+    "branch": "school",
+    "group": "Organisation",
+    "label": "Import massif",
+    "presentation": "school-workflow",
+    "surface": "SCHOOL_WORKFLOW_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-013",
+    "branch": "school",
+    "group": "Organisation",
+    "label": "Documents élèves",
+    "presentation": "documents + documentDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Droit documentaire exact a confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Titre",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Dossier concerné",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Nature",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Objet / contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "student",
+      "category",
+      "content"
+    ],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [
+      "POST /documents/create",
+      "POST /documents/:id/issue"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-014",
+    "branch": "school",
+    "group": "Organisation",
+    "label": "Identité de l'élève",
+    "presentation": "students",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-015",
+    "branch": "school",
+    "group": "Organisation",
+    "label": "Consentements",
+    "presentation": "family",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Droits famille exacts + own_children / ecole; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/familynative/routes.ts:162-174,238-279",
+    "candidateContracts": [
+      "GET /native/family/students/:studentId/pickup-authorizations/mine",
+      "GET /native/family/students/:studentId/pickup-authorizations/school"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-016",
+    "branch": "school",
+    "group": "Cartes scolaires",
+    "label": "Studio des cartes",
+    "presentation": "cards",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "admissions"
+    ],
+    "permission": null,
+    "permissionHint": "Droits cartes / capacites / licence par operation",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/cardsnative/routes.ts:114,227",
+    "candidateContracts": [
+      "GET /native/cards/print-requests",
+      "GET /native/cards/students/:studentId/credential"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-017",
+    "branch": "people",
+    "group": "Équipe",
+    "label": "Enseignants",
+    "presentation": "staff + staffDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "staff.read; contrats RH a confirmer",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Nom complet",
+        "type": "text"
+      },
+      {
+        "key": "post",
+        "label": "Fonction",
+        "type": "text"
+      },
+      {
+        "key": "service",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "email",
+        "label": "Adresse e-mail",
+        "type": "email"
+      },
+      {
+        "key": "note",
+        "label": "Observation",
+        "type": "textarea"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "post",
+      "service",
+      "email",
+      "note"
+    ],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-018",
+    "branch": "people",
+    "group": "Équipe",
+    "label": "Personnel",
+    "presentation": "staff + staffDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "hr"
+    ],
+    "permission": null,
+    "permissionHint": "staff.read; contrats RH a confirmer",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Nom complet",
+        "type": "text"
+      },
+      {
+        "key": "post",
+        "label": "Fonction",
+        "type": "text"
+      },
+      {
+        "key": "service",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "email",
+        "label": "Adresse e-mail",
+        "type": "email"
+      },
+      {
+        "key": "note",
+        "label": "Observation",
+        "type": "textarea"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "post",
+      "service",
+      "email",
+      "note"
+    ],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-019",
+    "branch": "people",
+    "group": "Équipe",
+    "label": "Affectations",
+    "presentation": "staff + staffDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "hr"
+    ],
+    "permission": null,
+    "permissionHint": "staff.read; contrats RH a confirmer",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Nom complet",
+        "type": "text"
+      },
+      {
+        "key": "post",
+        "label": "Fonction",
+        "type": "text"
+      },
+      {
+        "key": "service",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "email",
+        "label": "Adresse e-mail",
+        "type": "email"
+      },
+      {
+        "key": "note",
+        "label": "Observation",
+        "type": "textarea"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "post",
+      "service",
+      "email",
+      "note"
+    ],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-020",
+    "branch": "people",
+    "group": "Équipe",
+    "label": "Contrats",
+    "presentation": "contracts",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "hr"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Contrat",
+        "type": "text"
+      },
+      {
+        "key": "person",
+        "label": "Personnel",
+        "type": "text"
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "type": "text"
+      },
+      {
+        "key": "from",
+        "label": "Début",
+        "type": "date"
+      },
+      {
+        "key": "to",
+        "label": "Fin",
+        "type": "date"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "person",
+      "type",
+      "from",
+      "to"
+    ],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-021",
+    "branch": "people",
+    "group": "Temps et paie",
+    "label": "Présence du personnel",
+    "presentation": "staff + staffAttendance",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "staff.read; contrats RH a confirmer",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Personnel",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "entry",
+        "label": "Entrée",
+        "type": "text"
+      },
+      {
+        "key": "exit",
+        "label": "Sortie",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Présence",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-022",
+    "branch": "people",
+    "group": "Temps et paie",
+    "label": "Biométrie",
+    "presentation": "devices",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "hr"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "equipment",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Terminal",
+        "type": "text"
+      },
+      {
+        "key": "site",
+        "label": "Emplacement",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Connexion",
+        "type": "text"
+      },
+      {
+        "key": "sync",
+        "label": "Dernière synchronisation",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-023",
+    "branch": "people",
+    "group": "Temps et paie",
+    "label": "Salaires",
+    "presentation": "payroll",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "hr"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rubrique",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-024",
+    "branch": "people",
+    "group": "Temps et paie",
+    "label": "Avances, primes et retenues",
+    "presentation": "payroll",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rubrique",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-025",
+    "branch": "pedagogy",
+    "group": "Organisation pédagogique",
+    "label": "Matières",
+    "presentation": "subjects + subjects",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.subject.read/manage",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Matière",
+        "type": "text"
+      },
+      {
+        "key": "code",
+        "label": "Code",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "code"
+    ],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [
+      "GET /native/pedagogy/subjects"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-026",
+    "branch": "pedagogy",
+    "group": "Organisation pédagogique",
+    "label": "Emplois du temps",
+    "presentation": "schedule",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "agenda",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Cours",
+        "type": "text"
+      },
+      {
+        "key": "day",
+        "label": "Jour",
+        "type": "text"
+      },
+      {
+        "key": "time",
+        "label": "Horaire",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "teacher",
+        "label": "Enseignant",
+        "type": "text"
+      },
+      {
+        "key": "room",
+        "label": "Salle",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-027",
+    "branch": "pedagogy",
+    "group": "Organisation pédagogique",
+    "label": "Présences, absences et retards",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-028",
+    "branch": "pedagogy",
+    "group": "Organisation pédagogique",
+    "label": "Devoirs et corrections",
+    "presentation": "assignments",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "teacher",
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.assignment.read/manage; affectations; publication parent",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:100-160",
+    "candidateContracts": [
+      "GET /native/pedagogy/assignments"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-029",
+    "branch": "pedagogy",
+    "group": "Évaluation",
+    "label": "Évaluations et notes",
+    "presentation": "grades",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "teacher",
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.grade.read/manage; affectations / own_children",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:141,211,218",
+    "candidateContracts": [
+      "GET /native/pedagogy/assignments/:id/grades",
+      "GET /native/pedagogy/parent/grades/:studentId",
+      "GET /native/pedagogy/students/:studentId/averages"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-030",
+    "branch": "pedagogy",
+    "group": "Évaluation",
+    "label": "Moyennes et coefficients",
+    "presentation": "grades",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.grade.read/manage; affectations / own_children",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:141,211,218",
+    "candidateContracts": [
+      "GET /native/pedagogy/assignments/:id/grades",
+      "GET /native/pedagogy/parent/grades/:studentId",
+      "GET /native/pedagogy/students/:studentId/averages"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-031",
+    "branch": "pedagogy",
+    "group": "Évaluation",
+    "label": "Bulletins",
+    "presentation": "bulletins",
+    "surface": "EXPLICIT_UNAVAILABLE_SCREEN",
+    "roles": [
+      "admin",
+      "school_head",
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "A confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Document",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-032",
+    "branch": "pedagogy",
+    "group": "Accompagnement",
+    "label": "Rattrapage pédagogique",
+    "presentation": "support",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "teacher",
+      "school_head",
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Accompagnement",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "subject",
+        "label": "Matière",
+        "type": "text"
+      },
+      {
+        "key": "objective",
+        "label": "Objectif",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Suivi",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-033",
+    "branch": "pedagogy",
+    "group": "Accompagnement",
+    "label": "Cahiers de préparation",
+    "presentation": "lessons",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.lesson-plan.read/manage; affectations",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:167",
+    "candidateContracts": [
+      "GET /native/pedagogy/lesson-plans"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-034",
+    "branch": "pedagogy",
+    "group": "Épreuves certificatives",
+    "label": "ENAFEP",
+    "presentation": "exams",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier candidat",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "session",
+        "label": "Session",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État des pièces",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-035",
+    "branch": "pedagogy",
+    "group": "Épreuves certificatives",
+    "label": "TENASOSP",
+    "presentation": "exams",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier candidat",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "session",
+        "label": "Session",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État des pièces",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-036",
+    "branch": "pedagogy",
+    "group": "Épreuves certificatives",
+    "label": "EXETAT",
+    "presentation": "exams",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier candidat",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "session",
+        "label": "Session",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État des pièces",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-037",
+    "branch": "security",
+    "group": "Action et contrôle",
+    "label": "Scanner un QR",
+    "presentation": "scanner",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_ENTRY / SCAN_PICKUP / SCAN_FEES / SCAN_VERIFY; par mode",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:10,48,52,102",
+    "candidateContracts": [
+      "POST /native/scan-control/scan",
+      "GET /native/scan-control/locations",
+      "GET /native/scan-control/capabilities"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-038",
+    "branch": "security",
+    "group": "Action et contrôle",
+    "label": "Entrées",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-039",
+    "branch": "security",
+    "group": "Action et contrôle",
+    "label": "Sorties",
+    "presentation": "pickup",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+    "candidateContracts": [
+      "POST /native/scan-control/scan (mode pickup)"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-040",
+    "branch": "security",
+    "group": "Action et contrôle",
+    "label": "Préparer une sortie",
+    "presentation": "pickup",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+    "candidateContracts": [
+      "POST /native/scan-control/scan (mode pickup)"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-041",
+    "branch": "security",
+    "group": "Autorisation et suivi",
+    "label": "Personnes autorisées",
+    "presentation": "family",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "Droits famille exacts + own_children / ecole; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/familynative/routes.ts:162-174,238-279",
+    "candidateContracts": [
+      "GET /native/family/students/:studentId/pickup-authorizations/mine",
+      "GET /native/family/students/:studentId/pickup-authorizations/school"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-042",
+    "branch": "security",
+    "group": "Autorisation et suivi",
+    "label": "Confirmer ou refuser une sortie",
+    "presentation": "pickup",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+    "candidateContracts": [
+      "POST /native/scan-control/scan (mode pickup)"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-043",
+    "branch": "security",
+    "group": "Autorisation et suivi",
+    "label": "Alertes et anomalies",
+    "presentation": "alerts",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "pilotage.alerts.read / pilotage.approvals.read; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-044",
+    "branch": "security",
+    "group": "Autorisation et suivi",
+    "label": "Historique des passages",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-045",
+    "branch": "security",
+    "group": "Autorisation et suivi",
+    "label": "Lockdown",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-046",
+    "branch": "finance",
+    "group": "Frais et caisse",
+    "label": "Structure des frais",
+    "presentation": "fees",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "finance.fee.read/manage; portee eleve/classe",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:36,55",
+    "candidateContracts": [
+      "GET /native/finance/fee-structures",
+      "GET /native/finance/students/:studentId/fees"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-047",
+    "branch": "finance",
+    "group": "Frais et caisse",
+    "label": "Encaissements",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-048",
+    "branch": "finance",
+    "group": "Frais et caisse",
+    "label": "Reçus PDF",
+    "presentation": "receipts",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "finance.receipt.read; paiement reel",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:111",
+    "candidateContracts": [
+      "GET /native/finance/receipts/:paymentId"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-049",
+    "branch": "finance",
+    "group": "Frais et caisse",
+    "label": "Contrôle des frais",
+    "presentation": "campaigns",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "finance.control.scan/manage; delegation et portee",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:138; server/src/scancontrol/routes.ts:65",
+    "candidateContracts": [
+      "GET /native/finance/fee-control/campaigns",
+      "GET /native/scan-control/fees/delegations"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-050",
+    "branch": "finance",
+    "group": "Frais et caisse",
+    "label": "Impayés et soldes",
+    "presentation": "balances",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "finance.fee.read; portee eleve / own_children",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:55",
+    "candidateContracts": [
+      "GET /native/finance/students/:studentId/fees"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-051",
+    "branch": "finance",
+    "group": "Trésorerie",
+    "label": "Recettes et dépenses",
+    "presentation": "payments",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "finance.payment.record / finance.report.read; caisse et eleve",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:79,85,102,131",
+    "candidateContracts": [
+      "GET /native/finance/students/:studentId/payments",
+      "GET /native/finance/reports/daily"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-052",
+    "branch": "finance",
+    "group": "Trésorerie",
+    "label": "Rapports de caisse",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-053",
+    "branch": "finance",
+    "group": "Trésorerie",
+    "label": "Clôtures",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-054",
+    "branch": "finance",
+    "group": "Trésorerie",
+    "label": "Exports financiers",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-055",
+    "branch": "accounting",
+    "group": "Écritures",
+    "label": "Plan comptable",
+    "presentation": "accounts",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Compte",
+        "type": "text"
+      },
+      {
+        "key": "code",
+        "label": "Code",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Classe comptable",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-056",
+    "branch": "accounting",
+    "group": "Écritures",
+    "label": "Journal comptable",
+    "presentation": "ledger",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "finance",
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Libellé",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Pièce",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "account",
+        "label": "Compte",
+        "type": "text"
+      },
+      {
+        "key": "debit",
+        "label": "Débit",
+        "type": "text"
+      },
+      {
+        "key": "credit",
+        "label": "Crédit",
+        "type": "text"
+      },
+      {
+        "key": "currency",
+        "label": "Devise",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-057",
+    "branch": "accounting",
+    "group": "Écritures",
+    "label": "Grand livre",
+    "presentation": "ledger",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "finance",
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Libellé",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Pièce",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "account",
+        "label": "Compte",
+        "type": "text"
+      },
+      {
+        "key": "debit",
+        "label": "Débit",
+        "type": "text"
+      },
+      {
+        "key": "credit",
+        "label": "Crédit",
+        "type": "text"
+      },
+      {
+        "key": "currency",
+        "label": "Devise",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-058",
+    "branch": "accounting",
+    "group": "Écritures",
+    "label": "Écritures comptables",
+    "presentation": "ledger",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Libellé",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Pièce",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "account",
+        "label": "Compte",
+        "type": "text"
+      },
+      {
+        "key": "debit",
+        "label": "Débit",
+        "type": "text"
+      },
+      {
+        "key": "credit",
+        "label": "Crédit",
+        "type": "text"
+      },
+      {
+        "key": "currency",
+        "label": "Devise",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-059",
+    "branch": "accounting",
+    "group": "États",
+    "label": "Balance",
+    "presentation": "statements",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "finance",
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rubrique",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "currency",
+        "label": "Devise",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-060",
+    "branch": "accounting",
+    "group": "États",
+    "label": "Rapprochements",
+    "presentation": "reconciliation",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Point de contrôle",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "source",
+        "label": "Source",
+        "type": "text"
+      },
+      {
+        "key": "reason",
+        "label": "Observation",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-061",
+    "branch": "accounting",
+    "group": "États",
+    "label": "États financiers",
+    "presentation": "statements",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rubrique",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "currency",
+        "label": "Devise",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-062",
+    "branch": "accounting",
+    "group": "États",
+    "label": "Rapports SYSCOHADA",
+    "presentation": "statements",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "finance",
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rubrique",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "currency",
+        "label": "Devise",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-063",
+    "branch": "inventory",
+    "group": "Stock",
+    "label": "Stock / Inventaire",
+    "presentation": "inventory",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Article",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Code",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Catégorie",
+        "type": "text"
+      },
+      {
+        "key": "unit",
+        "label": "Unité",
+        "type": "text"
+      },
+      {
+        "key": "location",
+        "label": "Emplacement",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "reference",
+      "category",
+      "unit"
+    ],
+    "source": "app/modules/inventory/inventory-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-064",
+    "branch": "inventory",
+    "group": "Stock",
+    "label": "Catalogue articles",
+    "presentation": "inventory",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Article",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Code",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Catégorie",
+        "type": "text"
+      },
+      {
+        "key": "unit",
+        "label": "Unité",
+        "type": "text"
+      },
+      {
+        "key": "location",
+        "label": "Emplacement",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "reference",
+      "category",
+      "unit"
+    ],
+    "source": "app/modules/inventory/inventory-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-065",
+    "branch": "inventory",
+    "group": "Stock",
+    "label": "Emplacements et seuils",
+    "presentation": "stockLevels",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Article",
+        "type": "text"
+      },
+      {
+        "key": "location",
+        "label": "Emplacement",
+        "type": "text"
+      },
+      {
+        "key": "quantity",
+        "label": "Quantité",
+        "type": "text"
+      },
+      {
+        "key": "threshold",
+        "label": "Seuil",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/inventory/inventory-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-066",
+    "branch": "inventory",
+    "group": "Stock",
+    "label": "Mouvements",
+    "presentation": "movements",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Article",
+        "type": "text"
+      },
+      {
+        "key": "type",
+        "label": "Mouvement",
+        "type": "select"
+      },
+      {
+        "key": "quantity",
+        "label": "Quantité",
+        "type": "number"
+      },
+      {
+        "key": "source",
+        "label": "Origine",
+        "type": "text"
+      },
+      {
+        "key": "destination",
+        "label": "Destination",
+        "type": "text"
+      },
+      {
+        "key": "reason",
+        "label": "Motif",
+        "type": "textarea"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "type",
+      "quantity",
+      "source",
+      "destination",
+      "reason"
+    ],
+    "source": "app/modules/inventory/inventory-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-067",
+    "branch": "inventory",
+    "group": "Achats internes",
+    "label": "Demandes d’achat",
+    "presentation": "procurement",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Article",
+        "type": "text"
+      },
+      {
+        "key": "service",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "quantity",
+        "label": "Quantité",
+        "type": "number"
+      },
+      {
+        "key": "supplier",
+        "label": "Fournisseur proposé",
+        "type": "text"
+      },
+      {
+        "key": "reason",
+        "label": "Motif",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "service",
+      "quantity",
+      "reason"
+    ],
+    "source": "app/modules/inventory/inventory-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-068",
+    "branch": "inventory",
+    "group": "Achats internes",
+    "label": "Commandes",
+    "presentation": "procurement",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Article",
+        "type": "text"
+      },
+      {
+        "key": "service",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "quantity",
+        "label": "Quantité",
+        "type": "number"
+      },
+      {
+        "key": "supplier",
+        "label": "Fournisseur proposé",
+        "type": "text"
+      },
+      {
+        "key": "reason",
+        "label": "Motif",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "service",
+      "quantity",
+      "reason"
+    ],
+    "source": "app/modules/inventory/inventory-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-069",
+    "branch": "inventory",
+    "group": "Achats internes",
+    "label": "Réceptions",
+    "presentation": "receiving",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Article",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Commande",
+        "type": "text"
+      },
+      {
+        "key": "quantity",
+        "label": "Quantité constatée",
+        "type": "number"
+      },
+      {
+        "key": "condition",
+        "label": "État constaté",
+        "type": "select"
+      },
+      {
+        "key": "note",
+        "label": "Observation",
+        "type": "textarea"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "reference",
+      "quantity",
+      "condition",
+      "note"
+    ],
+    "source": "app/modules/inventory/inventory-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-070",
+    "branch": "inventory",
+    "group": "Achats internes",
+    "label": "Rapports Stock",
+    "presentation": "stockReports",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "reports",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rapport",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/inventory/inventory-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-071",
+    "branch": "communication",
+    "group": "Échanges",
+    "label": "Messages",
+    "presentation": "messages",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "secretary",
+      "communication",
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "messages",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Objet",
+        "type": "text"
+      },
+      {
+        "key": "recipient",
+        "label": "Destinataire",
+        "type": "select"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "content",
+        "label": "Message",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "recipient",
+      "name",
+      "content"
+    ],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-072",
+    "branch": "communication",
+    "group": "Échanges",
+    "label": "Notifications",
+    "presentation": "notifications",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "teacher",
+      "communication",
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Notification",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Catégorie",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "content",
+        "label": "Contenu",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-073",
+    "branch": "communication",
+    "group": "Échanges",
+    "label": "E-mail",
+    "presentation": "messages",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "messages",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Objet",
+        "type": "text"
+      },
+      {
+        "key": "recipient",
+        "label": "Destinataire",
+        "type": "select"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "content",
+        "label": "Message",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "recipient",
+      "name",
+      "content"
+    ],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-074",
+    "branch": "communication",
+    "group": "Échanges",
+    "label": "Annonces",
+    "presentation": "announcements",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "secretary",
+      "communication"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Titre",
+        "type": "text"
+      },
+      {
+        "key": "audience",
+        "label": "Public",
+        "type": "select"
+      },
+      {
+        "key": "from",
+        "label": "Début",
+        "type": "date"
+      },
+      {
+        "key": "to",
+        "label": "Fin",
+        "type": "date"
+      },
+      {
+        "key": "content",
+        "label": "Contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "audience",
+      "from",
+      "to",
+      "content"
+    ],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-075",
+    "branch": "communication",
+    "group": "Échanges",
+    "label": "Convocations",
+    "presentation": "appointments",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "communication",
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "agenda",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Objet",
+        "type": "text"
+      },
+      {
+        "key": "recipient",
+        "label": "Destinataire",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "date"
+      },
+      {
+        "key": "time",
+        "label": "Heure",
+        "type": "time"
+      },
+      {
+        "key": "place",
+        "label": "Lieu",
+        "type": "text"
+      },
+      {
+        "key": "note",
+        "label": "Observation",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "recipient",
+      "date",
+      "time",
+      "place",
+      "note"
+    ],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-076",
+    "branch": "communication",
+    "group": "Publication",
+    "label": "Site public et WebSync",
+    "presentation": "publication",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Page",
+        "type": "text"
+      },
+      {
+        "key": "audience",
+        "label": "Visibilité",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "Publication",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "content"
+    ],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-077",
+    "branch": "communication",
+    "group": "Publication",
+    "label": "Événements",
+    "presentation": "events",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin",
+      "communication"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "agenda",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Événement",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "date"
+      },
+      {
+        "key": "time",
+        "label": "Heure",
+        "type": "time"
+      },
+      {
+        "key": "place",
+        "label": "Lieu",
+        "type": "text"
+      },
+      {
+        "key": "content",
+        "label": "Programme",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "Publication",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "date",
+      "time",
+      "place",
+      "content"
+    ],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-078",
+    "branch": "administration",
+    "group": "Configuration",
+    "label": "École & Personnel",
+    "presentation": "identity",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "settings",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Établissement",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Code public",
+        "type": "text"
+      },
+      {
+        "key": "year",
+        "label": "Année scolaire",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-closure-a.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-079",
+    "branch": "administration",
+    "group": "Scanner",
+    "label": "Gestion des autorisations",
+    "presentation": "access",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Droits IAM precis; aucune creation locale",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/accessnative/routes.ts:87,93,128",
+    "candidateContracts": [
+      "GET /native/access/profiles",
+      "GET /native/access/roles"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-080",
+    "branch": "administration",
+    "group": "Administration",
+    "label": "Documents R2",
+    "presentation": "documents + documentDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Droit documentaire exact a confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Titre",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Dossier concerné",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Nature",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Objet / contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "student",
+      "category",
+      "content"
+    ],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [
+      "POST /documents/create",
+      "POST /documents/:id/issue"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-081",
+    "branch": "administration",
+    "group": "Administration",
+    "label": "Archives",
+    "presentation": "documents + documentDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "admissions",
+      "secretary"
+    ],
+    "permission": null,
+    "permissionHint": "Droit documentaire exact a confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Titre",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Dossier concerné",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Nature",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Objet / contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "student",
+      "category",
+      "content"
+    ],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [
+      "POST /documents/create",
+      "POST /documents/:id/issue"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-082",
+    "branch": "administration",
+    "group": "Administration",
+    "label": "Paramètres",
+    "presentation": "settings",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "settings",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Paramètre",
+        "type": "text"
+      },
+      {
+        "key": "value",
+        "label": "Valeur",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-closure-a.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-083",
+    "branch": "administration",
+    "group": "Administration",
+    "label": "Comptes et droits",
+    "presentation": "access",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Droits IAM precis; aucune creation locale",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/accessnative/routes.ts:87,93,128",
+    "candidateContracts": [
+      "GET /native/access/profiles",
+      "GET /native/access/roles"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-084",
+    "branch": "administration",
+    "group": "Administration",
+    "label": "Cycles",
+    "presentation": "years + cycles",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "school.manage; contrat individuel a confirmer",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Cycle",
+        "type": "text"
+      },
+      {
+        "key": "code",
+        "label": "Code",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "code"
+    ],
+    "source": "app/modules/core/visual-output-p2a.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-085",
+    "branch": "administration",
+    "group": "Administration",
+    "label": "Licence",
+    "presentation": "license",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "settings",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Contrat",
+        "type": "text"
+      },
+      {
+        "key": "school",
+        "label": "École",
+        "type": "text"
+      },
+      {
+        "key": "expiry",
+        "label": "Échéance",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Vérification",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-closure-a.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-086",
+    "branch": "administration",
+    "group": "Documents",
+    "label": "Centre documentaire",
+    "presentation": "documents + documentDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "admissions",
+      "secretary"
+    ],
+    "permission": null,
+    "permissionHint": "Droit documentaire exact a confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Titre",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Dossier concerné",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Nature",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Objet / contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "student",
+      "category",
+      "content"
+    ],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [
+      "POST /documents/create",
+      "POST /documents/:id/issue"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-087",
+    "branch": "administration",
+    "group": "Plateforme",
+    "label": "Français et anglais",
+    "presentation": "languages",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "settings",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Langue",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-closure-a.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-088",
+    "branch": "administration",
+    "group": "Plateforme",
+    "label": "Mode hors ligne",
+    "presentation": "offline",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "equipment",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "data",
+        "label": "Données locales",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Dernière synchronisation",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-closure-a.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-089",
+    "branch": "administration",
+    "group": "Plateforme",
+    "label": "Séparation public et privé",
+    "presentation": "visibility",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "settings",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Ressource",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Contrôle",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-closure-a.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-090",
+    "branch": "reports",
+    "group": "Traçabilité",
+    "label": "Historiques",
+    "presentation": "audit",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Action",
+        "type": "text"
+      },
+      {
+        "key": "person",
+        "label": "Acteur",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-wiring.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-091",
+    "branch": "reports",
+    "group": "Traçabilité",
+    "label": "Audit des actions",
+    "presentation": "audit",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Action",
+        "type": "text"
+      },
+      {
+        "key": "person",
+        "label": "Acteur",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-wiring.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-092",
+    "branch": "reports",
+    "group": "Traçabilité",
+    "label": "Rapports administratifs",
+    "presentation": "reports",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "reports",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rapport",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-wiring.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-093",
+    "branch": "reports",
+    "group": "Traçabilité",
+    "label": "Exports PDF et Excel",
+    "presentation": "exports",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "admin"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "reports",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Export",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "format",
+        "label": "Format",
+        "type": "select"
+      },
+      {
+        "key": "from",
+        "label": "Du",
+        "type": "date"
+      },
+      {
+        "key": "to",
+        "label": "Au",
+        "type": "date"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "scope",
+      "format",
+      "from",
+      "to"
+    ],
+    "source": "app/modules/core/visual-wiring.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-094",
+    "branch": "security",
+    "group": "Action immédiate",
+    "label": "Enregistrer une entrée",
+    "presentation": "scanner",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_ENTRY / SCAN_PICKUP / SCAN_FEES / SCAN_VERIFY; par mode",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:10,48,52,102",
+    "candidateContracts": [
+      "POST /native/scan-control/scan",
+      "GET /native/scan-control/locations",
+      "GET /native/scan-control/capabilities"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-095",
+    "branch": "security",
+    "group": "Action immédiate",
+    "label": "Enregistrer une sortie",
+    "presentation": "pickup",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+    "candidateContracts": [
+      "POST /native/scan-control/scan (mode pickup)"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-096",
+    "branch": "security",
+    "group": "Contrôle",
+    "label": "Vérifier l’identité",
+    "presentation": "scanner",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_ENTRY / SCAN_PICKUP / SCAN_FEES / SCAN_VERIFY; par mode",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:10,48,52,102",
+    "candidateContracts": [
+      "POST /native/scan-control/scan",
+      "GET /native/scan-control/locations",
+      "GET /native/scan-control/capabilities"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-097",
+    "branch": "security",
+    "group": "Contrôle",
+    "label": "Autoriser une sortie",
+    "presentation": "pickup",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+    "candidateContracts": [
+      "POST /native/scan-control/scan (mode pickup)"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-098",
+    "branch": "security",
+    "group": "Contrôle",
+    "label": "Refuser une sortie",
+    "presentation": "pickup",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+    "candidateContracts": [
+      "POST /native/scan-control/scan (mode pickup)"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-099",
+    "branch": "security",
+    "group": "Surveillance",
+    "label": "Élèves dans l’école",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-100",
+    "branch": "security",
+    "group": "Surveillance",
+    "label": "Sorties en attente",
+    "presentation": "pickup",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+    "candidateContracts": [
+      "POST /native/scan-control/scan (mode pickup)"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-101",
+    "branch": "security",
+    "group": "Historique",
+    "label": "Passages précédents",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-102",
+    "branch": "security",
+    "group": "Historique",
+    "label": "Incidents",
+    "presentation": "alerts",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard",
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "pilotage.alerts.read / pilotage.approvals.read; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-103",
+    "branch": "security",
+    "group": "Historique",
+    "label": "Rechercher",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-104",
+    "branch": "security",
+    "group": "Historique",
+    "label": "Recherche de passage",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "guard"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-105",
+    "branch": "school",
+    "group": "Périmètre affecté",
+    "label": "Élèves de mes classes",
+    "presentation": "students",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-106",
+    "branch": "school",
+    "group": "Périmètre affecté",
+    "label": "Structure de mes classes",
+    "presentation": "classes + assignments",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "school.class.read / pedagogy.assignment.read; portee affectations",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Enseignant",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "subject",
+        "label": "Matière",
+        "type": "text"
+      },
+      {
+        "key": "from",
+        "label": "Début",
+        "type": "date"
+      },
+      {
+        "key": "to",
+        "label": "Fin",
+        "type": "date"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "class",
+      "subject",
+      "from",
+      "to"
+    ],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [
+      "GET /native/pedagogy/classes",
+      "GET /native/pedagogy/teacher-assignments"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-107",
+    "branch": "pedagogy",
+    "group": "Mes classes",
+    "label": "Emploi du temps",
+    "presentation": "schedule",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "agenda",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Cours",
+        "type": "text"
+      },
+      {
+        "key": "day",
+        "label": "Jour",
+        "type": "text"
+      },
+      {
+        "key": "time",
+        "label": "Horaire",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "teacher",
+        "label": "Enseignant",
+        "type": "text"
+      },
+      {
+        "key": "room",
+        "label": "Salle",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-108",
+    "branch": "pedagogy",
+    "group": "Travail pédagogique",
+    "label": "Cahier de préparation de l’enseignant",
+    "presentation": "lessons",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.lesson-plan.read/manage; affectations",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:167",
+    "candidateContracts": [
+      "GET /native/pedagogy/lesson-plans"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-109",
+    "branch": "pedagogy",
+    "group": "Suivi des élèves",
+    "label": "Résultats et moyennes",
+    "presentation": "grades",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.grade.read/manage; affectations / own_children",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:141,211,218",
+    "candidateContracts": [
+      "GET /native/pedagogy/assignments/:id/grades",
+      "GET /native/pedagogy/parent/grades/:studentId",
+      "GET /native/pedagogy/students/:studentId/averages"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-110",
+    "branch": "pedagogy",
+    "group": "Suivi des élèves",
+    "label": "Difficultés",
+    "presentation": "support",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Accompagnement",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "subject",
+        "label": "Matière",
+        "type": "text"
+      },
+      {
+        "key": "objective",
+        "label": "Objectif",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Suivi",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-111",
+    "branch": "pedagogy",
+    "group": "Suivi des élèves",
+    "label": "Bulletins à consulter",
+    "presentation": "bulletins",
+    "surface": "EXPLICIT_UNAVAILABLE_SCREEN",
+    "roles": [
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "A confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Document",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-112",
+    "branch": "pedagogy",
+    "group": "Suivi des élèves",
+    "label": "Préparation aux épreuves certificatives",
+    "presentation": "exams",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier candidat",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "session",
+        "label": "Session",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État des pièces",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-113",
+    "branch": "communication",
+    "group": "Communication",
+    "label": "Direction",
+    "presentation": "messages",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "messages",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Objet",
+        "type": "text"
+      },
+      {
+        "key": "recipient",
+        "label": "Destinataire",
+        "type": "select"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "content",
+        "label": "Message",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "recipient",
+      "name",
+      "content"
+    ],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-114",
+    "branch": "communication",
+    "group": "Communication",
+    "label": "Parents autorisés",
+    "presentation": "messages",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "teacher"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "messages",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Objet",
+        "type": "text"
+      },
+      {
+        "key": "recipient",
+        "label": "Destinataire",
+        "type": "select"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "content",
+        "label": "Message",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "recipient",
+      "name",
+      "content"
+    ],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-115",
+    "branch": "finance",
+    "group": "Action immédiate",
+    "label": "Enregistrer un paiement",
+    "presentation": "payments",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "cashier"
+    ],
+    "permission": null,
+    "permissionHint": "finance.payment.record / finance.report.read; caisse et eleve",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:79,85,102,131",
+    "candidateContracts": [
+      "GET /native/finance/students/:studentId/payments",
+      "GET /native/finance/reports/daily"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-116",
+    "branch": "finance",
+    "group": "Action immédiate",
+    "label": "Versement de rattrapage",
+    "presentation": "payments",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "cashier",
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "finance.payment.record / finance.report.read; caisse et eleve",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:79,85,102,131",
+    "candidateContracts": [
+      "GET /native/finance/students/:studentId/payments",
+      "GET /native/finance/reports/daily"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-117",
+    "branch": "finance",
+    "group": "Action immédiate",
+    "label": "Rechercher un élève",
+    "presentation": "students",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "cashier"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-118",
+    "branch": "finance",
+    "group": "Action immédiate",
+    "label": "Produire un reçu PDF",
+    "presentation": "receipts",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "cashier"
+    ],
+    "permission": null,
+    "permissionHint": "finance.receipt.read; paiement reel",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:111",
+    "candidateContracts": [
+      "GET /native/finance/receipts/:paymentId"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-119",
+    "branch": "finance",
+    "group": "Contrôle",
+    "label": "Vérifier un paiement",
+    "presentation": "payments",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "cashier"
+    ],
+    "permission": null,
+    "permissionHint": "finance.payment.record / finance.report.read; caisse et eleve",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:79,85,102,131",
+    "candidateContracts": [
+      "GET /native/finance/students/:studentId/payments",
+      "GET /native/finance/reports/daily"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-120",
+    "branch": "finance",
+    "group": "Contrôle",
+    "label": "Consulter le solde et les impayés",
+    "presentation": "balances",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "cashier"
+    ],
+    "permission": null,
+    "permissionHint": "finance.fee.read; portee eleve / own_children",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:55",
+    "candidateContracts": [
+      "GET /native/finance/students/:studentId/fees"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-121",
+    "branch": "finance",
+    "group": "Contrôle",
+    "label": "Historique du jour",
+    "presentation": "payments",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "cashier"
+    ],
+    "permission": null,
+    "permissionHint": "finance.payment.record / finance.report.read; caisse et eleve",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:79,85,102,131",
+    "candidateContracts": [
+      "GET /native/finance/students/:studentId/payments",
+      "GET /native/finance/reports/daily"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-122",
+    "branch": "finance",
+    "group": "Contrôle",
+    "label": "Demander l’annulation d’un paiement",
+    "presentation": "payments",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "cashier"
+    ],
+    "permission": null,
+    "permissionHint": "finance.payment.record / finance.report.read; caisse et eleve",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:79,85,102,131",
+    "candidateContracts": [
+      "GET /native/finance/students/:studentId/payments",
+      "GET /native/finance/reports/daily"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-123",
+    "branch": "finance",
+    "group": "Clôture",
+    "label": "Rapport de caisse",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "cashier"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-124",
+    "branch": "finance",
+    "group": "Clôture",
+    "label": "Soumettre la journée",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "cashier"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-125",
+    "branch": "pilotage",
+    "group": "Décision",
+    "label": "Alertes",
+    "presentation": "alerts",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "pilotage.alerts.read / pilotage.approvals.read; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-126",
+    "branch": "pilotage",
+    "group": "Décision",
+    "label": "Approbations",
+    "presentation": "alerts",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "pilotage.alerts.read / pilotage.approvals.read; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pilotage/alerts/routes.ts; server/src/pilotage/approvals/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-127",
+    "branch": "school",
+    "group": "École",
+    "label": "Élèves et classes",
+    "presentation": "students",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-128",
+    "branch": "school",
+    "group": "École",
+    "label": "Inscriptions",
+    "presentation": "students + enrollment",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "year",
+        "label": "Année scolaire",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Début",
+        "type": "date"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "year",
+      "class",
+      "date"
+    ],
+    "source": "app/modules/core/visual-output-p2a.js",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-129",
+    "branch": "school",
+    "group": "École",
+    "label": "Personnel",
+    "presentation": "staff + staffDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "staff.read; contrats RH a confirmer",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Nom complet",
+        "type": "text"
+      },
+      {
+        "key": "post",
+        "label": "Fonction",
+        "type": "text"
+      },
+      {
+        "key": "service",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "email",
+        "label": "Adresse e-mail",
+        "type": "email"
+      },
+      {
+        "key": "note",
+        "label": "Observation",
+        "type": "textarea"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "post",
+      "service",
+      "email",
+      "note"
+    ],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-130",
+    "branch": "pedagogy",
+    "group": "Résultats",
+    "label": "Présences",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-131",
+    "branch": "pedagogy",
+    "group": "Résultats",
+    "label": "Résultats",
+    "presentation": "grades",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.grade.read/manage; affectations / own_children",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:141,211,218",
+    "candidateContracts": [
+      "GET /native/pedagogy/assignments/:id/grades",
+      "GET /native/pedagogy/parent/grades/:studentId",
+      "GET /native/pedagogy/students/:studentId/averages"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-132",
+    "branch": "pedagogy",
+    "group": "Résultats",
+    "label": "Épreuves certificatives",
+    "presentation": "exams",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier candidat",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "session",
+        "label": "Session",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État des pièces",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-133",
+    "branch": "security",
+    "group": "Contrôle",
+    "label": "Entrées et sorties",
+    "presentation": "pickup",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "SCAN_PICKUP; preuve serveur et confirmation humaine",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:102; app/modules/security/scan-control.js",
+    "candidateContracts": [
+      "POST /native/scan-control/scan (mode pickup)"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-134",
+    "branch": "finance",
+    "group": "Lecture seule",
+    "label": "Recettes",
+    "presentation": "payments",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "finance.payment.record / finance.report.read; caisse et eleve",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:79,85,102,131",
+    "candidateContracts": [
+      "GET /native/finance/students/:studentId/payments",
+      "GET /native/finance/reports/daily"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-135",
+    "branch": "finance",
+    "group": "Lecture seule",
+    "label": "Statistiques",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-136",
+    "branch": "finance",
+    "group": "Lecture seule",
+    "label": "Imprimer les rapports",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-137",
+    "branch": "reports",
+    "group": "Contrôle",
+    "label": "Rapports",
+    "presentation": "reports",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "reports",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rapport",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-wiring.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-138",
+    "branch": "reports",
+    "group": "Contrôle",
+    "label": "Audit",
+    "presentation": "audit",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "school_head"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Action",
+        "type": "text"
+      },
+      {
+        "key": "person",
+        "label": "Acteur",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-wiring.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-139",
+    "branch": "pedagogy",
+    "group": "Pilotage",
+    "label": "Pilotage pédagogique",
+    "presentation": "pedagogyReports",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "reports",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rapport",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-140",
+    "branch": "pedagogy",
+    "group": "Organisation",
+    "label": "Classes",
+    "presentation": "classes + assignments",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "school.class.read / pedagogy.assignment.read; portee affectations",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Enseignant",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "subject",
+        "label": "Matière",
+        "type": "text"
+      },
+      {
+        "key": "from",
+        "label": "Début",
+        "type": "date"
+      },
+      {
+        "key": "to",
+        "label": "Fin",
+        "type": "date"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "class",
+      "subject",
+      "from",
+      "to"
+    ],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [
+      "GET /native/pedagogy/classes",
+      "GET /native/pedagogy/teacher-assignments"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-141",
+    "branch": "pedagogy",
+    "group": "Organisation",
+    "label": "Affectations",
+    "presentation": "classes + assignments",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "school.class.read / pedagogy.assignment.read; portee affectations",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Enseignant",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "subject",
+        "label": "Matière",
+        "type": "text"
+      },
+      {
+        "key": "from",
+        "label": "Début",
+        "type": "date"
+      },
+      {
+        "key": "to",
+        "label": "Fin",
+        "type": "date"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "class",
+      "subject",
+      "from",
+      "to"
+    ],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [
+      "GET /native/pedagogy/classes",
+      "GET /native/pedagogy/teacher-assignments"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-142",
+    "branch": "pedagogy",
+    "group": "Présence et travail",
+    "label": "Présences élèves",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-143",
+    "branch": "pedagogy",
+    "group": "Présence et travail",
+    "label": "Absences et retards",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-144",
+    "branch": "pedagogy",
+    "group": "Présence et travail",
+    "label": "Cahiers de préparation des enseignants",
+    "presentation": "lessons",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.lesson-plan.read/manage; affectations",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:167",
+    "candidateContracts": [
+      "GET /native/pedagogy/lesson-plans"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-145",
+    "branch": "pedagogy",
+    "group": "Accompagnement",
+    "label": "Activité enseignants",
+    "presentation": "teacherActivity",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Activité",
+        "type": "text"
+      },
+      {
+        "key": "person",
+        "label": "Enseignant",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-146",
+    "branch": "finance",
+    "group": "Régularité scolaire",
+    "label": "Voir les élèves en ordre ou à régulariser",
+    "presentation": "campaigns",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "finance.control.scan/manage; delegation et portee",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:138; server/src/scancontrol/routes.ts:65",
+    "candidateContracts": [
+      "GET /native/finance/fee-control/campaigns",
+      "GET /native/scan-control/fees/delegations"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-147",
+    "branch": "reports",
+    "group": "Rapports",
+    "label": "Statistiques pédagogiques",
+    "presentation": "pedagogyReports",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "reports",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rapport",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-148",
+    "branch": "reports",
+    "group": "Rapports",
+    "label": "Résultats des épreuves certificatives",
+    "presentation": "exams",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "pedagogy"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier candidat",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "session",
+        "label": "Session",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État des pièces",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-149",
+    "branch": "school",
+    "group": "Demandes",
+    "label": "Préinscriptions",
+    "presentation": "students",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admissions"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-150",
+    "branch": "school",
+    "group": "Demandes",
+    "label": "Vérifier les dossiers",
+    "presentation": "students",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admissions"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-151",
+    "branch": "school",
+    "group": "Demandes",
+    "label": "Accepter ou refuser",
+    "presentation": "school-workflow",
+    "surface": "SCHOOL_WORKFLOW_PREVIEW",
+    "roles": [
+      "admissions"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "LOT0_MENUS.json; LOT0_RACCORDEMENTS.md",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-152",
+    "branch": "school",
+    "group": "Inscription",
+    "label": "Créer l’élève",
+    "presentation": "school-workflow",
+    "surface": "SCHOOL_WORKFLOW_PREVIEW",
+    "roles": [
+      "admissions"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-153",
+    "branch": "school",
+    "group": "Inscription",
+    "label": "Parents et tuteurs",
+    "presentation": "family",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admissions"
+    ],
+    "permission": null,
+    "permissionHint": "Droits famille exacts + own_children / ecole; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/familynative/routes.ts:162-174,238-279",
+    "candidateContracts": [
+      "GET /native/family/students/:studentId/pickup-authorizations/mine",
+      "GET /native/family/students/:studentId/pickup-authorizations/school"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-154",
+    "branch": "school",
+    "group": "Inscription",
+    "label": "Personnes autorisées",
+    "presentation": "family",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admissions",
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Droits famille exacts + own_children / ecole; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/familynative/routes.ts:162-174,238-279",
+    "candidateContracts": [
+      "GET /native/family/students/:studentId/pickup-authorizations/mine",
+      "GET /native/family/students/:studentId/pickup-authorizations/school"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-155",
+    "branch": "school",
+    "group": "Inscription",
+    "label": "Importer des dossiers",
+    "presentation": "school-workflow",
+    "surface": "SCHOOL_WORKFLOW_PREVIEW",
+    "roles": [
+      "admissions"
+    ],
+    "permission": null,
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/studentsnative/routes.ts:56; server/src/studentrecordnative/routes.ts:96",
+    "candidateContracts": [
+      "GET /native/students",
+      "GET /native/students/:id/record"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-156",
+    "branch": "administration",
+    "group": "Documents",
+    "label": "Attestations",
+    "presentation": "documents + documentDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admissions",
+      "secretary"
+    ],
+    "permission": null,
+    "permissionHint": "Droit documentaire exact a confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Titre",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Dossier concerné",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Nature",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Objet / contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "student",
+      "category",
+      "content"
+    ],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [
+      "POST /documents/create",
+      "POST /documents/:id/issue"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-157",
+    "branch": "administration",
+    "group": "Documents",
+    "label": "Rechercher",
+    "presentation": "documents + documentDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admissions"
+    ],
+    "permission": null,
+    "permissionHint": "Droit documentaire exact a confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Titre",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Dossier concerné",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Nature",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Objet / contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "student",
+      "category",
+      "content"
+    ],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [
+      "POST /documents/create",
+      "POST /documents/:id/issue"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-158",
+    "branch": "administration",
+    "group": "Production",
+    "label": "Certificats",
+    "presentation": "documents + documentDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "secretary"
+    ],
+    "permission": null,
+    "permissionHint": "Droit documentaire exact a confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Titre",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Dossier concerné",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Nature",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Objet / contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "student",
+      "category",
+      "content"
+    ],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [
+      "POST /documents/create",
+      "POST /documents/:id/issue"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-159",
+    "branch": "administration",
+    "group": "Production",
+    "label": "Convocations",
+    "presentation": "documents + documentDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "secretary"
+    ],
+    "permission": null,
+    "permissionHint": "Droit documentaire exact a confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Titre",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Dossier concerné",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Nature",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Objet / contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "student",
+      "category",
+      "content"
+    ],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [
+      "POST /documents/create",
+      "POST /documents/:id/issue"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-160",
+    "branch": "administration",
+    "group": "Dossiers nationaux",
+    "label": "Dossiers ENAFEP, TENASOSP et EXETAT",
+    "presentation": "exams",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "secretary"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier candidat",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "session",
+        "label": "Session",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État des pièces",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-161",
+    "branch": "administration",
+    "group": "Dossiers nationaux",
+    "label": "Contrôle des identités candidats",
+    "presentation": "exams",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "secretary"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier candidat",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "session",
+        "label": "Session",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État des pièces",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-162",
+    "branch": "communication",
+    "group": "Communication",
+    "label": "Rendez-vous",
+    "presentation": "appointments",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "secretary"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "agenda",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Objet",
+        "type": "text"
+      },
+      {
+        "key": "recipient",
+        "label": "Destinataire",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "date"
+      },
+      {
+        "key": "time",
+        "label": "Heure",
+        "type": "time"
+      },
+      {
+        "key": "place",
+        "label": "Lieu",
+        "type": "text"
+      },
+      {
+        "key": "note",
+        "label": "Observation",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "recipient",
+      "date",
+      "time",
+      "place",
+      "note"
+    ],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-163",
+    "branch": "finance",
+    "group": "Supervision",
+    "label": "Tableau financier",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-164",
+    "branch": "finance",
+    "group": "Supervision",
+    "label": "Rapports financiers",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-165",
+    "branch": "finance",
+    "group": "Paramétrage",
+    "label": "Types de frais",
+    "presentation": "fees",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "finance.fee.read/manage; portee eleve/classe",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:36,55",
+    "candidateContracts": [
+      "GET /native/finance/fee-structures",
+      "GET /native/finance/students/:studentId/fees"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-166",
+    "branch": "finance",
+    "group": "Paramétrage",
+    "label": "Échéances",
+    "presentation": "fees",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "finance",
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "finance.fee.read/manage; portee eleve/classe",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:36,55",
+    "candidateContracts": [
+      "GET /native/finance/fee-structures",
+      "GET /native/finance/students/:studentId/fees"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-167",
+    "branch": "finance",
+    "group": "Paramétrage",
+    "label": "Caisses",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-168",
+    "branch": "finance",
+    "group": "Trésorerie",
+    "label": "Exports",
+    "presentation": "cash",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "finance"
+    ],
+    "permission": null,
+    "permissionHint": "finance.report.read; ouverture/cloture distinctes",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:119-131",
+    "candidateContracts": [
+      "GET /native/finance/reports/daily",
+      "POST /native/finance/cash-register/open",
+      "POST /native/finance/cash-register/close"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-169",
+    "branch": "accounting",
+    "group": "Référentiel",
+    "label": "Pièces comptables",
+    "presentation": "supportingDocs",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Pièce",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Nature",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-170",
+    "branch": "accounting",
+    "group": "Écritures",
+    "label": "Rapprochement",
+    "presentation": "reconciliation",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Point de contrôle",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "source",
+        "label": "Source",
+        "type": "text"
+      },
+      {
+        "key": "reason",
+        "label": "Observation",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-171",
+    "branch": "accounting",
+    "group": "États",
+    "label": "Compte de résultat",
+    "presentation": "statements",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rubrique",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "currency",
+        "label": "Devise",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-172",
+    "branch": "accounting",
+    "group": "États",
+    "label": "Bilan",
+    "presentation": "statements",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rubrique",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "currency",
+        "label": "Devise",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/accounting/accounting-treasury-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-173",
+    "branch": "accounting",
+    "group": "États",
+    "label": "Exports PDF et Excel",
+    "presentation": "exports",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "accountant"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "reports",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Export",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "format",
+        "label": "Format",
+        "type": "select"
+      },
+      {
+        "key": "from",
+        "label": "Du",
+        "type": "date"
+      },
+      {
+        "key": "to",
+        "label": "Au",
+        "type": "date"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "scope",
+      "format",
+      "from",
+      "to"
+    ],
+    "source": "app/modules/core/visual-wiring.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-174",
+    "branch": "people",
+    "group": "Dossiers",
+    "label": "Absences",
+    "presentation": "staffAbsence",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "hr"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "agenda",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Demande",
+        "type": "text"
+      },
+      {
+        "key": "person",
+        "label": "Personnel",
+        "type": "text"
+      },
+      {
+        "key": "from",
+        "label": "Début",
+        "type": "date"
+      },
+      {
+        "key": "to",
+        "label": "Fin",
+        "type": "date"
+      },
+      {
+        "key": "reason",
+        "label": "Motif non sensible",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "person",
+      "from",
+      "to",
+      "reason"
+    ],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-175",
+    "branch": "people",
+    "group": "Temps",
+    "label": "Présence personnel",
+    "presentation": "staff + staffAttendance",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "hr"
+    ],
+    "permission": null,
+    "permissionHint": "staff.read; contrats RH a confirmer",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Personnel",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "entry",
+        "label": "Entrée",
+        "type": "text"
+      },
+      {
+        "key": "exit",
+        "label": "Sortie",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Présence",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-176",
+    "branch": "people",
+    "group": "Rémunération",
+    "label": "Primes",
+    "presentation": "payroll",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "hr"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rubrique",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-177",
+    "branch": "people",
+    "group": "Rémunération",
+    "label": "Avances",
+    "presentation": "payroll",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "hr"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rubrique",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-178",
+    "branch": "people",
+    "group": "Rémunération",
+    "label": "Retenues",
+    "presentation": "payroll",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "hr"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Rubrique",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/hr/hr-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-179",
+    "branch": "care",
+    "group": "Action immédiate",
+    "label": "Enregistrer un passage",
+    "presentation": "healthVisits",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "nurse"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Passage",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "time",
+        "label": "Heure",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Suivi",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-180",
+    "branch": "care",
+    "group": "Action immédiate",
+    "label": "Incident médical",
+    "presentation": "healthVisits",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "nurse"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Passage",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "time",
+        "label": "Heure",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Suivi",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-181",
+    "branch": "care",
+    "group": "Action immédiate",
+    "label": "Contacter le parent",
+    "presentation": "healthContact",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "nurse"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "contact",
+        "label": "Contact",
+        "type": "text"
+      },
+      {
+        "key": "relationship",
+        "label": "Lien",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Disponibilité",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-182",
+    "branch": "care",
+    "group": "Suivi",
+    "label": "Dossiers santé",
+    "presentation": "healthRecord",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "nurse"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier",
+        "type": "text"
+      },
+      {
+        "key": "allergy",
+        "label": "Allergies",
+        "type": "text"
+      },
+      {
+        "key": "treatment",
+        "label": "Traitements autorisés",
+        "type": "text"
+      },
+      {
+        "key": "instruction",
+        "label": "Consigne",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-183",
+    "branch": "care",
+    "group": "Suivi",
+    "label": "Allergies",
+    "presentation": "healthRecord",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "nurse",
+      "canteen"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier",
+        "type": "text"
+      },
+      {
+        "key": "allergy",
+        "label": "Allergies",
+        "type": "text"
+      },
+      {
+        "key": "treatment",
+        "label": "Traitements autorisés",
+        "type": "text"
+      },
+      {
+        "key": "instruction",
+        "label": "Consigne",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-184",
+    "branch": "care",
+    "group": "Suivi",
+    "label": "Traitements autorisés",
+    "presentation": "healthRecord",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "nurse"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier",
+        "type": "text"
+      },
+      {
+        "key": "allergy",
+        "label": "Allergies",
+        "type": "text"
+      },
+      {
+        "key": "treatment",
+        "label": "Traitements autorisés",
+        "type": "text"
+      },
+      {
+        "key": "instruction",
+        "label": "Consigne",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-185",
+    "branch": "care",
+    "group": "Suivi",
+    "label": "Historique",
+    "presentation": "healthVisits",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "nurse",
+      "canteen"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "timeline",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Passage",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "time",
+        "label": "Heure",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Suivi",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-186",
+    "branch": "care",
+    "group": "Aujourd’hui",
+    "label": "Présences repas",
+    "presentation": "mealRegister",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "canteen"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "service",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Présence",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-187",
+    "branch": "care",
+    "group": "Aujourd’hui",
+    "label": "Service des repas",
+    "presentation": "mealRegister",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "canteen"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "service",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Présence",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-188",
+    "branch": "care",
+    "group": "Organisation",
+    "label": "Menus",
+    "presentation": "mealMenus",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "canteen"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "agenda",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Menu",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "service",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "content",
+        "label": "Composition",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Validation",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-189",
+    "branch": "care",
+    "group": "Organisation",
+    "label": "Bénéficiaires",
+    "presentation": "mealRegister",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "canteen"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "text"
+      },
+      {
+        "key": "service",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Présence",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-190",
+    "branch": "care",
+    "group": "Finance cantine",
+    "label": "Liaison financière",
+    "presentation": "mealFinance",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "canteen"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "statement",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier",
+        "type": "text"
+      },
+      {
+        "key": "period",
+        "label": "Période",
+        "type": "text"
+      },
+      {
+        "key": "amount",
+        "label": "Montant",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Source",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/core/visual-output-p1.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-191",
+    "branch": "communication",
+    "group": "Publication",
+    "label": "Site public",
+    "presentation": "publication",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "communication"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Page",
+        "type": "text"
+      },
+      {
+        "key": "audience",
+        "label": "Visibilité",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "Publication",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "content"
+    ],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-192",
+    "branch": "communication",
+    "group": "Publication",
+    "label": "Galerie",
+    "presentation": "gallery",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "communication"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "gallery",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Ressource",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Catégorie",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Utilisation",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-193",
+    "branch": "communication",
+    "group": "Publication",
+    "label": "Synchronisation",
+    "presentation": "sync",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "communication"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "equipment",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Service",
+        "type": "text"
+      },
+      {
+        "key": "scope",
+        "label": "Périmètre",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Dernier échange",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Connexion",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "app/modules/communication/communication-demo.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-194",
+    "branch": "school",
+    "group": "Suivi quotidien",
+    "label": "Présence et passages",
+    "presentation": "attendance",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Resoudre le droit de la destination historique",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "app/modules/security/scan-control.js; six lectures dans read-adapter.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-195",
+    "branch": "school",
+    "group": "Suivi quotidien",
+    "label": "Emploi du temps",
+    "presentation": "schedule",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "agenda",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Cours",
+        "type": "text"
+      },
+      {
+        "key": "day",
+        "label": "Jour",
+        "type": "text"
+      },
+      {
+        "key": "time",
+        "label": "Horaire",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "teacher",
+        "label": "Enseignant",
+        "type": "text"
+      },
+      {
+        "key": "room",
+        "label": "Salle",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-196",
+    "branch": "school",
+    "group": "Suivi quotidien",
+    "label": "Devoirs",
+    "presentation": "assignments",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.assignment.read/manage; affectations; publication parent",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:100-160",
+    "candidateContracts": [
+      "GET /native/pedagogy/assignments"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-197",
+    "branch": "school",
+    "group": "Suivi quotidien",
+    "label": "Résultats",
+    "presentation": "grades",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "pedagogy.grade.read/manage; affectations / own_children",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts:141,211,218",
+    "candidateContracts": [
+      "GET /native/pedagogy/assignments/:id/grades",
+      "GET /native/pedagogy/parent/grades/:studentId",
+      "GET /native/pedagogy/students/:studentId/averages"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-198",
+    "branch": "school",
+    "group": "Suivi quotidien",
+    "label": "Rattrapage pédagogique",
+    "presentation": "support",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Accompagnement",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "subject",
+        "label": "Matière",
+        "type": "text"
+      },
+      {
+        "key": "objective",
+        "label": "Objectif",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "Suivi",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-199",
+    "branch": "school",
+    "group": "Suivi quotidien",
+    "label": "Épreuves certificatives",
+    "presentation": "exams",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "register",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Dossier candidat",
+        "type": "text"
+      },
+      {
+        "key": "reference",
+        "label": "Référence",
+        "type": "text"
+      },
+      {
+        "key": "class",
+        "label": "Classe",
+        "type": "text"
+      },
+      {
+        "key": "session",
+        "label": "Session",
+        "type": "text"
+      },
+      {
+        "key": "status",
+        "label": "État des pièces",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [],
+    "source": "server/src/pedagogynative/routes.ts",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-200",
+    "branch": "school",
+    "group": "Démarches",
+    "label": "Justifier une absence",
+    "presentation": "absenceRequest",
+    "surface": "NEW_DEDICATED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Non etablie; refus jusqu a resolution",
+    "layout": "cases",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Justificatif",
+        "type": "text"
+      },
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "date"
+      },
+      {
+        "key": "student",
+        "label": "Élève",
+        "type": "text"
+      },
+      {
+        "key": "reason",
+        "label": "Motif",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "date",
+      "student",
+      "reason"
+    ],
+    "source": "app/modules/core/visual-output-p2a.js",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-201",
+    "branch": "school",
+    "group": "Démarches",
+    "label": "Personnes autorisées de mes enfants",
+    "presentation": "family",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Droits famille exacts + own_children / ecole; decision distincte",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/familynative/routes.ts:162-174,238-279",
+    "candidateContracts": [
+      "GET /native/family/students/:studentId/pickup-authorizations/mine",
+      "GET /native/family/students/:studentId/pickup-authorizations/school"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-202",
+    "branch": "school",
+    "group": "Démarches",
+    "label": "Documents",
+    "presentation": "documents + documentDraft",
+    "surface": "ENHANCED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "Droit documentaire exact a confirmer",
+    "layout": "documents",
+    "fields": [
+      {
+        "key": "name",
+        "label": "Titre",
+        "type": "text"
+      },
+      {
+        "key": "student",
+        "label": "Dossier concerné",
+        "type": "text"
+      },
+      {
+        "key": "category",
+        "label": "Nature",
+        "type": "select"
+      },
+      {
+        "key": "content",
+        "label": "Objet / contenu",
+        "type": "textarea"
+      },
+      {
+        "key": "status",
+        "label": "État",
+        "type": "text"
+      }
+    ],
+    "localDraftFields": [
+      "name",
+      "student",
+      "category",
+      "content"
+    ],
+    "source": "app/modules/document-center/document-center.js",
+    "candidateContracts": [
+      "POST /documents/create",
+      "POST /documents/:id/issue"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-203",
+    "branch": "finance",
+    "group": "Paiements",
+    "label": "Frais scolaires",
+    "presentation": "fees",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "finance.fee.read/manage; portee eleve/classe",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:36,55",
+    "candidateContracts": [
+      "GET /native/finance/fee-structures",
+      "GET /native/finance/students/:studentId/fees"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "rosario-204",
+    "branch": "finance",
+    "group": "Paiements",
+    "label": "Reçus",
+    "presentation": "receipts",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "parent"
+    ],
+    "permission": null,
+    "permissionHint": "finance.receipt.read; paiement reel",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/financenative/routes.ts:111",
+    "candidateContracts": [
+      "GET /native/finance/receipts/:paymentId"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "presence-teacher",
+    "branch": "pedagogy",
+    "group": "Synthese de presence",
+    "label": "Ma journee",
+    "presentation": "read",
+    "surface": "PRESERVED_READ_PREVIEW",
+    "roles": [
+      "teacher",
+      "pedagogy"
+    ],
+    "permission": "school.student.read",
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:133-154",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "presence-school",
+    "branch": "pilotage",
+    "group": "Vue executive",
+    "label": "Presence de l'ecole",
+    "presentation": "read",
+    "surface": "PRESERVED_READ_PREVIEW",
+    "roles": [
+      "admin",
+      "school_head"
+    ],
+    "permission": "pilotage.dashboard.read",
+    "permissionHint": "pilotage.dashboard.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:133-154",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "presence-student",
+    "branch": "school",
+    "group": "Suivi",
+    "label": "Presence d'un eleve",
+    "presentation": "read",
+    "surface": "PRESERVED_READ_PREVIEW",
+    "roles": [
+      "admin",
+      "teacher",
+      "school_head",
+      "admissions",
+      "parent"
+    ],
+    "permission": "school.student.read",
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:133-154",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "presence-class",
+    "branch": "pedagogy",
+    "group": "Mes classes",
+    "label": "Presence d'une classe",
+    "presentation": "read",
+    "surface": "PRESERVED_READ_PREVIEW",
+    "roles": [
+      "admin",
+      "teacher",
+      "school_head",
+      "pedagogy"
+    ],
+    "permission": "school.student.read",
+    "permissionHint": "school.student.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:133-154",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "presence-school-count",
+    "branch": "pilotage",
+    "group": "Indicateurs",
+    "label": "Eleves sur site",
+    "presentation": "read",
+    "surface": "PRESERVED_READ_PREVIEW",
+    "roles": [
+      "admin",
+      "school_head"
+    ],
+    "permission": "pilotage.dashboard.read",
+    "permissionHint": "pilotage.dashboard.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:133-154",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "scan-history",
+    "branch": "security",
+    "group": "Historique",
+    "label": "Trace des controles",
+    "presentation": "read",
+    "surface": "PRESERVED_READ_PREVIEW",
+    "roles": [
+      "admin",
+      "guard",
+      "school_head"
+    ],
+    "permission": "security.events.read",
+    "permissionHint": "security.events.read",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:133-154",
+    "candidateContracts": [],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  },
+  {
+    "id": "scan-fees",
+    "branch": "feeControl",
+    "group": "Consultation",
+    "label": "Scanner les frais",
+    "presentation": "scanner",
+    "surface": "PRESERVED_SPECIALIZED_PREVIEW",
+    "roles": [
+      "admin",
+      "cashier",
+      "finance"
+    ],
+    "permission": "finance.control.scan",
+    "permissionHint": "finance.control.scan",
+    "layout": null,
+    "fields": [],
+    "localDraftFields": [],
+    "source": "server/src/scancontrol/routes.ts:10,48,52,102",
+    "candidateContracts": [
+      "POST /native/scan-control/scan",
+      "GET /native/scan-control/locations",
+      "GET /native/scan-control/capabilities"
+    ],
+    "contractValidation": "NOT_VERIFIED_LIVE",
+    "businessOperational": false
+  }
+]

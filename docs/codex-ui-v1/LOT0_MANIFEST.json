@@ -1,0 +1,46 @@
+{
+  "reference": "CODEX_ROSARIO_UI_AUDIT_CLOSURE_V1",
+  "status": "READY_FOR_OWNER_REVIEW",
+  "lot1": "NOT_AUTHORIZED",
+  "integration": "NON_COMMENCEE",
+  "newAuditFiles": [
+    "docs/codex-ui-v1/CURSOR_CODEX_PRE_INTEGRATION_AUDIT.md",
+    "docs/codex-ui-v1/lot0-audit.cjs",
+    "docs/codex-ui-v1/LOT0_API_RPC.json",
+    "docs/codex-ui-v1/LOT0_BUTTONS.json",
+    "docs/codex-ui-v1/LOT0_COMPOSANTS_EXISTANTS.md",
+    "docs/codex-ui-v1/LOT0_COUNTS.json",
+    "docs/codex-ui-v1/LOT0_ECRANS_INCOMPLETS.md",
+    "docs/codex-ui-v1/LOT0_FONCTIONS_SANS_ECRAN.md",
+    "docs/codex-ui-v1/LOT0_MATRICE_BOUTONS.md",
+    "docs/codex-ui-v1/LOT0_MENUS.json",
+    "docs/codex-ui-v1/LOT0_ORGANISATION_ROLES.md",
+    "docs/codex-ui-v1/LOT0_RACCORDEMENTS.md",
+    "docs/codex-ui-v1/LOT0_SOURCES.json",
+    "docs/codex-ui-v1/LOT0_VERIFICATION.md",
+    "docs/codex-ui-v1/LOT0_MANIFEST.json"
+  ],
+  "preservedVisualFiles": [
+    {
+      "file": "app/modules/codex-ui-v1/codex-ui-v1.js",
+      "sha256": "753d21a6c71b36b203bdc87118f859eac9e85f962d62637302c2a3350abaab7a"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.js",
+      "sha256": "01c3b7a89378f2dc9e0f4155614434ac3d5749ec029ea584da400f27d04668ea"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.html",
+      "sha256": "29acbe258c903abdbd336ea8dfa6fda564278fe56a4045fabb734bf66e3e3781"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/codex-ui-v1.css",
+      "sha256": "d65106c0f547aea8933d0e0c1d5b06c246aff14a40acdd9761e02eb69c5a6a14"
+    }
+  ],
+  "limitations": [
+    "Audit statique; correspondances individuelles non toutes etablies",
+    "Aucun test navigateur authentifie ou PostgreSQL",
+    "Extraction par motifs: pas preuve de completude DOM"
+  ]
+}

@@ -1,0 +1,158 @@
+{
+  "reference": "CODEX_SCHOOLSAFE_UNIFIED_INTERFACES_LOT1_V1",
+  "scope": "isolated_frontend_only",
+  "sourceHead": "657aaef34c067173bd44a022d6b83a90010aea89",
+  "integrationOwner": "Cursor Desktop",
+  "integration": "PENDING",
+  "authorization": "LOT 1 uniquement; integration finale non autorisee",
+  "sourceIntegrity": {
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "baselineIntegrity": {
+    "checked": 1017,
+    "modified": [],
+    "missing": []
+  },
+  "appFiles": [
+    {
+      "file": "app/modules/codex-ui-v1/codex-ui-v1.js",
+      "bytes": 6306,
+      "sha256": "b13c99096e0f9385b432cec0165e2fd99b9e1c37dd58aaada72c9dc9aa4a04f5"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.js",
+      "bytes": 2147,
+      "sha256": "489de3f7f8af15045d3e5d2c8e75e981b26480fda848782f910993c5a0287027"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/preview.html",
+      "bytes": 939,
+      "sha256": "3b4753cec8f0f7d39c4e2a5d085c9cd3cbaf71372574523c3a01f566599030a6"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/catalog.js",
+      "bytes": 77208,
+      "sha256": "608f32933269763a7321fef1a48eec1c099a878897d5172135d957aba9f63da0"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/read-adapter.js",
+      "bytes": 1490,
+      "sha256": "0e1b3f67f82bc1f15bfe394a1f9c77613e600eda1e67207083e25a2f409694f2"
+    },
+    {
+      "file": "app/modules/codex-ui-v1/unified-interface.js",
+      "bytes": 27890,
+      "sha256": "1de5bc4beeee14e11b87ccac4751a34d657cc82a31ef87b0f7d99abf35706acc"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/codex-ui-v1.css",
+      "bytes": 14976,
+      "sha256": "8041d6dc548c73a40f88cb67838117c0677a4809aa1caccdbe748dbbc35347fa"
+    },
+    {
+      "file": "app/styles/codex-ui-v1/jaspe-overlay.css",
+      "bytes": 2767,
+      "sha256": "c188be63bf33111d16d60b7f11ba04fb31cf0916d6e07e0331021435ec023411"
+    }
+  ],
+  "documentation": [
+    {
+      "file": "docs/codex-ui-v1/LOT1_BUTTON_SCREEN_MAPPING.json",
+      "bytes": 77135,
+      "sha256": "ff195de61391ff828ce6ff92508e56af76e3a26f5cee474286a1db7af51fd3e7"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT1_CURSOR_INTEGRATION.md",
+      "bytes": 7944,
+      "sha256": "842a4a25a16e1a079b2974a150f6c5b57eaae8d22ce93fea0130fa291572ea98"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT1_DELIVERY.md",
+      "bytes": 5710,
+      "sha256": "b8ec9a2517f4c7912627f9109e2399e21ae109886cba27eee0ed967b11890a64"
+    },
+    {
+      "file": "docs/codex-ui-v1/LOT1_MATRICE_RACCORDEMENTS.md",
+      "bytes": 49678,
+      "sha256": "481707ea52691a86d6f13e51c97a2bb1e250481612dcb7334b2eab885ee3f8d5"
+    },
+    {
+      "file": "docs/codex-ui-v1/build-lot1-catalog.cjs",
+      "bytes": 3796,
+      "sha256": "e389d55c21d4dcdf70511dfb2885111b332d77d6a835b1622eb7c9eddb662dc9"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot1-browser-tests.cjs",
+      "bytes": 14587,
+      "sha256": "0f085ff1087d31882bc59fb0db32df395a079cf9f16a832d176a803306113a25"
+    },
+    {
+      "file": "docs/codex-ui-v1/package-lot1.cjs",
+      "bytes": 4388,
+      "sha256": "15c5161aadbb81f3def94b39375c99cfa818c597f90f01e1b3bcce35f52f9406"
+    }
+  ],
+  "tests": [
+    {
+      "file": "docs/codex-ui-v1/lot1-tests/desktop-direction.png",
+      "bytes": 72136,
+      "sha256": "ebb8b90b889be8e3730c446d6f494f90e7cb6464564bb1df0d38950bcb563556"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot1-tests/desktop-presence.png",
+      "bytes": 81386,
+      "sha256": "d7c60104a8bc819fdc20367c42f078aa0772bf4caf11f94d68093d3ad5e66b30"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot1-tests/jaspe-existing-1024.png",
+      "bytes": 30718,
+      "sha256": "d0870b82e823f82f6516255da378119fc7ced97e7fb54dca7e5fbd08cccca60b"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot1-tests/jaspe-existing-1440.png",
+      "bytes": 32183,
+      "sha256": "d31b7709e293755f7f61d66199d85322ec545c8798c9aa5117e2aa48092f057e"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot1-tests/jaspe-existing-390.png",
+      "bytes": 22943,
+      "sha256": "00c469f63e0a14a3a32e2ca78a5c568ad609dbb1719762e10bbd7efd90c0eff4"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot1-tests/mobile-history.png",
+      "bytes": 55346,
+      "sha256": "259368b64cc8752725dc251323f6875cb0449dc35ab7190ce78adc66db558664"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot1-tests/mobile-jaspe.png",
+      "bytes": 44772,
+      "sha256": "ffbe40f81685aaf7093c20f501808fc2ba1c2293c24c5ee85812bb7116edbf63"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot1-tests/results.json",
+      "bytes": 1582,
+      "sha256": "9a6df15a2e0716b6515155122c905e4fd3d8d4cb17c3e540617fb9b01f150613"
+    },
+    {
+      "file": "docs/codex-ui-v1/lot1-tests/tablet-presence.png",
+      "bytes": 80017,
+      "sha256": "48230413526eef3d7cb2c3731323b19910890e91802ddaa703891eca1df9bd5f"
+    }
+  ],
+  "counts": {
+    "branches": 13,
+    "roles": 15,
+    "destinations": 211,
+    "reads": 6,
+    "unavailable": 2,
+    "existingScreenPorts": 203
+  },
+  "realBackendTested": false,
+  "changesRosario": "NONE",
+  "excluded": [
+    "Palmares: hors LOT 1",
+    "6e A et 5e A: exemples fixes remplaces par liste des classes autorisees dans presence-class"
+  ]
+}

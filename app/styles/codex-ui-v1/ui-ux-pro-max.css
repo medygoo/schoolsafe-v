@@ -1,0 +1,219 @@
+/* SchoolSafe presentation tokens. Load after the two existing Codex stylesheets. */
+.sscx-app {
+  --sscx-bg: #f4f6fa;
+  --sscx-surface: #ffffff;
+  --sscx-text: #172333;
+  --sscx-muted: #485c73;
+  --sscx-accent: #2455c6;
+  --sscx-soft: #edf2fc;
+  --sscx-border: #d4deeb;
+  --sscx-control-border: #7e8fa6;
+  --sscx-focus: #2455c6;
+  --sscx-positive: #146b50;
+  --sscx-negative: #aa3046;
+  --sscx-caution: #855600;
+  --sscx-error-bg: #fff0f2;
+  --sscx-success-bg: #e9f6ef;
+  --sscx-shadow: 0 16px 48px rgb(12 32 64 / 18%);
+  --sscx-space-1: 4px;
+  --sscx-space-2: 8px;
+  --sscx-space-3: 12px;
+  --sscx-space-4: 16px;
+  --sscx-space-6: 24px;
+  --sscx-space-8: 32px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.sscx-app[data-theme="dark"] {
+  --sscx-bg: #102444;
+  --sscx-surface: #19375e;
+  --sscx-text: #f4f7fc;
+  --sscx-muted: #c6d4e8;
+  --sscx-accent: #b8d2ff;
+  --sscx-soft: #254976;
+  --sscx-border: #436184;
+  --sscx-control-border: #93afd1;
+  --sscx-focus: #ffdb8a;
+  --sscx-positive: #9be4c1;
+  --sscx-negative: #ffbcc7;
+  --sscx-caution: #f7d28b;
+  --sscx-error-bg: #462d47;
+  --sscx-success-bg: #183f42;
+  --sscx-shadow: 0 16px 48px rgb(0 0 0 / 28%);
+  color-scheme: dark;
+}
+.sscx-app h1 { font-size: 1.625rem; line-height: 1.3; }
+.sscx-app h2 { font-size: 1.125rem; line-height: 1.4; }
+.sscx-app h3 { font-size: 1rem; }
+.sscx-app :is(h1,h2,h3,h4,p,dt,dd,span,strong,small,label) { overflow-wrap: anywhere; }
+.sscx-app :is(button,input,select,summary) { touch-action: manipulation; }
+.sscx-app button { min-height: 44px; font-size: .875rem; transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease; }
+.sscx-app button:active:not(:disabled) { background: var(--sscx-soft); border-color: var(--sscx-accent); }
+.sscx-app button:disabled { opacity: .6; }
+.sscx-app :focus-visible { outline: 3px solid var(--sscx-focus); outline-offset: 3px; }
+.sscx-app :is(button,input,select,summary,[tabindex="0"]) { scroll-margin-block: 88px 100px; }
+.sscx-app .sscx-primary :focus-visible { outline-color: #ffdb8a; outline-offset: -3px; }
+.sscx-app .sscx-primary button { min-height: 44px; font-size: .875rem; padding: 10px 12px; }
+.sscx-app .sscx-primary button:active:not(:disabled) { background: #244d9e; }
+.sscx-app .sscx-primary button[aria-current] { box-shadow: inset 3px 0 0 #78b9ff; }
+.sscx-app .sscx-primary button[aria-current]:is(:hover,:active):not(:disabled) { background: #edf2fc; color: #173b90; }
+.sscx-app .sscx-primary-footer > span, .sscx-app .sscx-school { font-size: .75rem; }
+.sscx-app .sscx-primary-footer > span { color: #d8e5ff; }
+.sscx-app .sscx-context h2 { font-size: .75rem; text-transform: none; margin-bottom: 4px; }
+.sscx-app .sscx-context button:not(.sscx-icon) { font-size: .875rem; line-height: 1.45; }
+.sscx-app .sscx-context button[aria-current] { box-shadow: inset 3px 0 0 var(--sscx-accent); }
+.sscx-context header { z-index: 1; }
+.sscx-app .sscx-content { padding: 28px 32px; }
+.sscx-page-title { gap: 16px; margin-bottom: 20px; }
+.sscx-app .sscx-page-title p { font-size: .875rem; }
+.sscx-app .sscx-eyebrow, .sscx-app .sscx-breadcrumb { font-size: .75rem; }
+.sscx-app .sscx-badge { font-size: .75rem; line-height: 1.5; font-weight: 700; padding: 3px 8px; }
+.sscx-app .sscx-demo-banner { font-size: .75rem; border-radius: 0 4px 4px 0; padding: 10px 12px; }
+.sscx-app .sscx-section { margin-bottom: 24px; padding-bottom: 24px; }
+.sscx-section-heading { flex-wrap: wrap; gap: 12px; }
+.sscx-app .sscx-module { min-height: 84px; }
+.sscx-module span small { font-size: .75rem; }
+.sscx-app .sscx-shortcuts { gap: 8px; }
+.sscx-app .sscx-metric { border-top-width: 2px; padding: 16px; }
+.sscx-app .sscx-metric > strong { font-size: 1.75rem; font-variant-numeric: tabular-nums; line-height: 1.3; }
+.sscx-app .sscx-metric > span, .sscx-app .sscx-metric > small { font-size: .8125rem; }
+.sscx-app .sscx-form { max-width: 680px; }
+.sscx-app :is(input,select) { border-color: var(--sscx-control-border); font-size: 1rem; min-height: 44px; }
+.sscx-app .sscx-form label, .sscx-app .sscx-list-filters label { font-size: .875rem; font-weight: 600; }
+.sscx-list-filters { gap: 16px; padding: 16px 0; border-block: 1px solid var(--sscx-border); }
+.sscx-app :is(.sscx-view-status,.sscx-dashboard-state,.sscx-state) { gap: 10px; padding: 12px 14px; margin-block: 16px; border-left: 3px solid var(--sscx-control-border); background: var(--sscx-soft); font-size: .875rem; align-items: flex-start; }
+.sscx-app :is(.sscx-view-status,.sscx-dashboard-state,.sscx-state) svg { flex-shrink: 0; margin-top: 2px; }
+.sscx-app .sscx-state--error, .sscx-app .sscx-state--denied { color: var(--sscx-negative); border-color: var(--sscx-negative); background: var(--sscx-error-bg); }
+.sscx-app .sscx-state--ready { color: var(--sscx-positive); border-color: var(--sscx-positive); background: var(--sscx-success-bg); }
+.sscx-app .sscx-state--loading svg { animation: sscx-loading 1s linear infinite; }
+@keyframes sscx-loading { to { transform: rotate(360deg); } }
+.sscx-app table { font-size: .875rem; font-variant-numeric: tabular-nums; }
+.sscx-app .sscx-table-scroll { border-radius: 4px; scrollbar-width: thin; scrollbar-color: var(--sscx-control-border) var(--sscx-soft); }
+.sscx-app caption { font-size: .75rem; padding: 12px 16px; }
+.sscx-app th { font-weight: 700; }
+.sscx-app td { line-height: 1.5; }
+.sscx-app tbody tr:hover td, .sscx-app tbody tr:focus-within td { background: var(--sscx-soft); }
+.sscx-app .sscx-pagination { font-size: .8125rem; flex-wrap: wrap; }
+.sscx-app .sscx-tabs { gap: 8px; }
+.sscx-app .sscx-tabs button { font-size: .875rem; padding: 10px 12px; }
+.sscx-app .sscx-data-list { gap: 12px 24px; padding: 20px 0; font-size: .875rem; }
+.sscx-app .sscx-data-list dt { font-weight: 600; }
+.sscx-app .sscx-record-list p, .sscx-app .sscx-domain-note { font-size: .8125rem; }
+.sscx-record-list li { padding: 16px 0; }
+.sscx-app .sscx-dialog { padding: 24px; box-shadow: var(--sscx-shadow); font-size: 1rem; }
+.sscx-dialog header { align-items: flex-start; gap: 16px; }
+.sscx-dialog-actions { flex-wrap: wrap; }
+.sscx-app .sscx-jaspe-stage { height: 200px; background: var(--sscx-soft); margin-bottom: 16px; }
+.sscx-app .sscx-jaspe-stage img { width: 190px; height: 196px; }
+.sscx-dialog .sscx-form { margin: 20px 0 0; }
+.sscx-jaspe-status:empty { display: none; }
+.sscx-app .sscx-school-overview .sscx-overview-header h2 { font-size: 1.375rem; }
+.sscx-app .sscx-school-overview h3 { font-size: 1rem; }
+.sscx-app .sscx-school-overview .sscx-metric { padding: 16px; min-height: 124px; }
+.sscx-app .sscx-school-overview .sscx-metric > span { font-size: .8125rem; }
+.sscx-app .sscx-school-overview .sscx-metric > small { font-size: .75rem; }
+.sscx-app .sscx-school-overview .sscx-metric > strong { font-size: 1.75rem; }
+.sscx-app .sscx-school-overview .sscx-class-table table { font-size: .8125rem; min-width: 570px; }
+.sscx-app .sscx-school-overview .sscx-class-table :is(th,td) { padding: 12px 8px; }
+.sscx-app .sscx-school-overview .sscx-class-table .sscx-cycle-row th { font-size: .8125rem; }
+.sscx-app .sscx-cycle-row span { font-size: .75rem; }
+.sscx-app :is(.sscx-overview-note,.sscx-overview-header p,.sscx-teacher-list p,.sscx-teacher-list small,.sscx-palmares p) { font-size: .75rem; }
+.sscx-app .sscx-teacher-list li { font-size: .8125rem; }
+.sscx-app .sscx-teacher-state { flex-basis: 108px; }
+.sscx-app .sscx-teacher-scroll { scrollbar-color: var(--sscx-control-border) var(--sscx-soft); }
+.sscx-app .sscx-school-overview [data-presence] { font-size: .75rem; }
+.sscx-app .sscx-school-overview [data-presence="present"] { color: var(--sscx-positive); }
+.sscx-app .sscx-school-overview [data-presence="absent"] { color: var(--sscx-negative); }
+.sscx-app .sscx-school-overview [data-presence="late"] { color: var(--sscx-caution); }
+.sscx-app .sscx-palmares h4 { font-size: .875rem; }
+.sscx-app .sscx-overview-footer .sscx-shortcuts button { font-size: .8125rem; }
+.sscx-app .sscx-overview-followup summary { font-size: .875rem; }
+.sscx-app .sscx-overview-tabs button { font-size: .875rem; padding: 10px 6px; }
+.sscx-preview-controls { font-size: .8125rem; gap: 12px; }
+.sscx-preview-controls :is(label,select) { min-width: 0; }
+.sscx-preview-controls select { min-height: 44px; border: 1px solid #7e8fa6; border-radius: 4px; background: white; color: #172333; }
+/* Domain layouts use the same projected records and consultation controls. */
+.sscx-priority-screen { container-type: inline-size; }
+.sscx-app .sscx-domain-title { display: flex; align-items: center; gap: 12px; }
+.sscx-domain-title svg { color: var(--sscx-accent); flex: 0 0 24px; }
+.sscx-app .sscx-record-source { margin: 12px 0; color: var(--sscx-muted); font-size: .75rem; }
+.sscx-app .sscx-domain-list { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--sscx-border); }
+.sscx-domain-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--sscx-border); }
+.sscx-domain-item > * { min-width: 0; }
+.sscx-record-heading { display: flex; align-items: flex-start; gap: 10px; }
+.sscx-record-heading svg { width: 20px; height: 20px; flex: 0 0 20px; margin-top: 2px; color: var(--sscx-accent); }
+.sscx-app .sscx-record-heading h3 { margin: 0; font-size: 1rem; line-height: 1.5; }
+.sscx-app .sscx-record-fields { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 12px 0 0; }
+.sscx-record-fields > div { min-width: 0; }
+.sscx-app :is(.sscx-record-fields,.sscx-record-date,.sscx-record-period,.sscx-record-amount) dt { color: var(--sscx-muted); font-size: .75rem; margin-bottom: 4px; }
+.sscx-app :is(.sscx-record-fields,.sscx-record-date,.sscx-record-period,.sscx-record-amount) dd { margin: 0; font-size: .875rem; }
+.sscx-record-end { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; max-width: 260px; }
+.sscx-record-end .sscx-badge { max-width: 180px; }
+.sscx-app .sscx-domain-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; border: 0; }
+.sscx-domain-tiles .sscx-domain-item { display: flex; flex-direction: column; align-items: stretch; gap: 0; border: 1px solid var(--sscx-border); border-radius: 6px; background: var(--sscx-surface); padding: 20px; }
+.sscx-domain-tiles .sscx-record-fields { flex-direction: column; margin-bottom: 20px; }
+.sscx-domain-tiles footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--sscx-border); }
+.sscx-domain-tiles[data-presentation="classes"] .sscx-domain-item { border-top: 3px solid var(--sscx-positive); }
+.sscx-domain-tiles[data-presentation="children"] .sscx-domain-item { border-top: 3px solid var(--sscx-accent); }
+.sscx-domain-tiles[data-presentation="subjects"] .sscx-domain-item { border-top: 3px solid var(--sscx-caution); }
+.sscx-domain-tiles[data-presentation="overview"] .sscx-domain-item { border-left: 3px solid var(--sscx-accent); }
+.sscx-app .sscx-record-value { font-size: 1.5rem; font-variant-numeric: tabular-nums; margin-top: 16px; line-height: 1.4; }
+.sscx-domain-list[data-presentation="family"] .sscx-domain-item { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(100px, .65fr); }
+.sscx-app .sscx-person p { font-size: .8125rem; color: var(--sscx-muted); margin: 8px 0 0 30px; }
+.sscx-app .sscx-family-child { margin: 0; padding-left: 20px; border-left: 2px solid var(--sscx-border); }
+.sscx-domain-list:is([data-presentation="assignments"],[data-presentation="lessons"],[data-presentation="campaigns"]) .sscx-domain-item { grid-template-columns: 132px minmax(0, 1fr) minmax(100px, .5fr); }
+.sscx-record-date { margin: 0; border-left: 3px solid var(--sscx-accent); padding: 10px 12px; background: var(--sscx-soft); align-self: start; }
+.sscx-domain-list[data-presentation="lessons"] .sscx-record-date { border-color: var(--sscx-positive); }
+.sscx-domain-list[data-presentation="campaigns"] .sscx-record-date { border-color: var(--sscx-caution); }
+.sscx-app .sscx-record-date dd { font-variant-numeric: tabular-nums; font-weight: 700; }
+.sscx-domain-list[data-presentation="documents"] .sscx-record-heading svg { color: var(--sscx-positive); }
+.sscx-domain-list[data-presentation="alerts"] .sscx-record-heading svg { color: var(--sscx-caution); }
+.sscx-domain-list[data-presentation="years"] .sscx-domain-item { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+.sscx-record-period { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 0; border-bottom: 2px solid var(--sscx-border); padding-bottom: 12px; font-variant-numeric: tabular-nums; }
+.sscx-record-amount { margin: 0; width: 100%; text-align: right; }
+.sscx-app .sscx-record-amount dd { font-weight: 700; font-variant-numeric: tabular-nums; }
+.sscx-app .sscx-priority-screen td[data-field="name"] { font-weight: 600; }
+.sscx-app .sscx-priority-screen :is(td,th):is([data-field="amount"],[data-field="balance"],[data-field="grade"],[data-field="coefficient"]) { text-align: right; font-variant-numeric: tabular-nums; }
+.sscx-app .sscx-priority-screen td:is([data-field="amount"],[data-field="balance"],[data-field="grade"]) { font-weight: 700; background: var(--sscx-soft); }
+.sscx-app .sscx-priority-screen td[data-field="reference"] { font-family: ui-monospace, monospace; font-size: .8125rem; }
+.sscx-priority-screen[data-screen-kind="attendance"] td[data-field="date"] { font-variant-numeric: tabular-nums; }
+.sscx-priority-screen[data-screen-kind="pickup"] td[data-field="guardian"] { border-left: 2px solid var(--sscx-border); }
+.sscx-priority-screen[data-screen-kind="access"] td[data-field="scope"] { font-weight: 600; }
+@container (max-width: 620px) {
+  .sscx-domain-list .sscx-domain-item:not(.sscx-domain-tiles .sscx-domain-item) { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .sscx-record-end { max-width: none; width: 100%; justify-content: space-between; }
+  .sscx-record-end .sscx-badge { max-width: calc(100% - 56px); }
+  .sscx-app .sscx-family-child { margin-left: 30px; padding-left: 12px; }
+  .sscx-record-date { width: fit-content; max-width: 100%; box-sizing: border-box; }
+  .sscx-app .sscx-record-fields { gap: 12px 20px; }
+  .sscx-record-amount { text-align: left; }
+}
+@media (max-width: 1199px) {
+  .sscx-app .sscx-content { padding: 24px; }
+}
+@media (max-width: 700px) {
+  .sscx-app .sscx-content { padding: 20px 16px; }
+  .sscx-app h1 { font-size: 1.375rem; }
+  .sscx-app .sscx-topbar strong { font-size: .875rem; }
+  .sscx-app .sscx-top-tools { max-width: 164px; gap: 8px; }
+  .sscx-app .sscx-mobile button { font-size: .75rem; min-height: 48px; }
+  .sscx-app .sscx-mobile { gap: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+  .sscx-app .sscx-school-overview .sscx-metric { padding: 12px 10px; }
+  .sscx-app .sscx-school-overview .sscx-metric > strong { font-size: 1.5rem; }
+  .sscx-app .sscx-school-overview .sscx-overview-header h2 { font-size: 1.25rem; }
+  .sscx-app .sscx-class-label { font-size: .875rem; flex-wrap: wrap; }
+  .sscx-app .sscx-cycle-group :is(summary span,li p,dt) { font-size: .75rem; }
+  .sscx-app .sscx-cycle-group summary { font-size: .875rem; }
+  .sscx-app .sscx-cycle-group dd { font-size: 1rem; }
+  .sscx-app .sscx-dialog { padding: 16px; }
+  .sscx-app .sscx-dialog dl { grid-template-columns: minmax(0,1fr); gap: 4px; }
+  .sscx-app .sscx-dialog dd { margin-bottom: 12px; }
+  .sscx-preview-controls label { flex: 1 1 240px; }
+}
+@media (max-height: 500px) {
+  .sscx-app .sscx-jaspe-stage { height: 100px; }
+  .sscx-app .sscx-jaspe-stage img { width: 94px; height: 98px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sscx-app *, .sscx-app *::before, .sscx-app *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

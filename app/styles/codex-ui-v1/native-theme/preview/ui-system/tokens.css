@@ -1,0 +1,93 @@
+/*
+ * SchoolSafe tokens. The only place brand colors are defined.
+ * Measured from assets/themes/SchoolSafe/logo.png:
+ * shield #01268D, brighter blue #023FBF, word Safe #F0B515, word School #FCFCFC.
+ * State colors are the logo blocks and are used only for meaning.
+ * --ss-primary-dark is the shield pressed one step darker. It is not a new logo color.
+ */
+
+:root {
+	--ss-primary: #01268d;
+	--ss-primary-dark: #011f74;
+	--ss-primary-light: #023fbf;
+	--ss-accent: #f0b515;
+	--ss-surface: #fcfcfc;
+	--ss-surface-alt: #f4f7fb;
+	--ss-text: #1a1a1a;
+	--ss-text-muted: #5c6775;
+	--ss-text-on-primary: #fcfcfc;
+	--ss-border: #e4e9ef;
+	--ss-success: #0ba473;
+	--ss-success-bg: #e7f6ef;
+	--ss-success-text: #086348;
+	--ss-warning: #fc6f06;
+	--ss-warning-bg: #fff6ee;
+	--ss-warning-text: #8a3a00;
+	--ss-danger: #e32822;
+	--ss-danger-bg: #fdeceb;
+	--ss-ai: #7940f3;
+	--ss-ai-bg: #f3eeff;
+	--ss-ai-text: #5b2cc4;
+
+	/* Annonces. Always shown with the name and the mailbox icon. */
+	--ss-branch-annonces: #1f6f8b;
+
+	/* Sondages. Always shown with the name and the clipboard icon. */
+	--ss-branch-sondages: #4c3d72;
+
+	/* Calendrier. Always shown with the name and the calendar icon. */
+	--ss-branch-calendrier: #5c4032;
+
+	/* Périodes. Always shown with the name and the clock icon. */
+	--ss-branch-periodes: #3a5c4e;
+
+	/* Créneaux. Always shown with the name and the label icon. */
+	--ss-branch-creneaux: #2f4660;
+
+	/* Niveaux. Always shown with the name and the user icon. */
+	--ss-branch-niveaux: #5c3d55;
+
+	/* Établissement. Always shown with the name and the house icon. */
+	--ss-branch-etablissement: #3c6b74;
+
+	/* Paramètres. Always shown with the name and the settings icon. */
+	--ss-branch-parametres: #5e6a3d;
+
+	/* Année. Always shown with the name and the next icon. */
+	--ss-branch-annee: #8a5a44;
+
+	/* Journal. Always shown with the name and the lock icon. */
+	--ss-branch-journal: #7a4b5c;
+
+	/* Dossier. Always shown with the name and the folder icon. */
+	--ss-branch-dossier: #2c6b8a;
+
+	/* Inscription. Always shown with the name and the add icon. */
+	--ss-branch-inscription: #3f6f62;
+	--ss-focus: var(--ss-primary);
+
+	--ss-space-1: 4px;
+	--ss-space-2: 8px;
+	--ss-space-3: 16px;
+	--ss-space-4: 24px;
+	--ss-space-5: 32px;
+	--ss-space-6: 48px;
+
+	--ss-radius-sm: 8px;
+	--ss-radius: 12px;
+	--ss-radius-lg: 16px;
+
+	--ss-shadow: 0 1px 2px rgba(1, 38, 141, 0.06);
+	--ss-shadow-raised: 0 8px 24px rgba(1, 38, 141, 0.08);
+
+	--ss-font-title: Poppins, Inter, Lato, sans-serif;
+	--ss-font-ui: Inter, Lato, sans-serif;
+	--ss-font-size: 16px;
+	--ss-line: 1.5;
+
+	--ss-sidebar-width: 240px;
+	--ss-topbar-height: 56px;
+	--ss-page-max: 1120px;
+	--ss-control-height: 40px;
+	--ss-duration: 160ms;
+}
