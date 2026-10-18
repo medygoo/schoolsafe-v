@@ -69,6 +69,53 @@ function SchoolSafeScopeDeny()
     echo ErrorMessage( [ _( 'You\'re not allowed to use this program!' ) ] );
 }
 
+/**
+ * Vrai si les droits du profil $target sont STRICTEMENT contenus dans ceux du
+ * profil $reference : chaque droit du premier existe chez le second, et le
+ * second en possede au moins un que le premier n'a pas. Deux profils aux droits
+ * identiques ne sont donc pas delegables l'un a l'autre (un Directeur ne peut
+ * pas nommer un pair). NULL et '' designent le meme droit absent.
+ *
+ * @param int $target    Profil nomme a attribuer.
+ * @param int $reference Profil nomme de l'acteur.
+ *
+ * @return bool
+ */
+function SchoolSafeProfileStrictlyWithin( $target, $reference )
+{
+    $target = (int) $target;
+    $reference = (int) $reference;
+
+    if ( $target < 1 || $reference < 1 || $target === $reference ) return false;
+
+    $rows = DBGet( "SELECT PROFILE_ID,MODNAME,COALESCE(CAN_USE,'') AS CAN_USE,COALESCE(CAN_EDIT,'') AS CAN_EDIT
+        FROM profile_exceptions
+        WHERE PROFILE_ID IN (" . $target . "," . $reference . ")" );
+
+    $target_rights = [];
+
+    $reference_rights = [];
+
+    foreach ( (array) $rows as $row )
+    {
+        $right = $row['MODNAME'] . '|' . $row['CAN_USE'] . '|' . $row['CAN_EDIT'];
+
+        if ( (int) $row['PROFILE_ID'] === $target ) $target_rights[$right] = true;
+        else $reference_rights[$right] = true;
+    }
+
+    // Un profil sans aucun droit n'est pas une delegation : rien a contenir.
+    if ( ! $target_rights ) return false;
+
+    foreach ( array_keys( $target_rights ) as $right )
+    {
+        if ( ! isset( $reference_rights[$right] ) ) return false;
+    }
+
+    // Strictement : l'acteur doit posseder au moins un droit de plus.
+    return (bool) array_diff_key( $reference_rights, $target_rights );
+}
+
 function SchoolSafeProfileDelegable( $profile_id, $profile = null )
 {
     if ( SchoolSafeGlobalAdmin() ) return true;
@@ -91,12 +138,19 @@ function SchoolSafeProfileDelegable( $profile_id, $profile = null )
     $kind = (string) $target_kind[1]['PROFILE'];
 
     // Administrator profiles (platform admin, director, accountant...) manage
-    // schools and permissions: only a global administrator may hand one out.
-    if ( $kind === 'admin' ) return false;
+    // schools and permissions. A global administrator hands out any of them; a
+    // scoped administrator only one whose rights are STRICTLY narrower than
+    // theirs: a director may name an accountant, never a peer director and
+    // never a platform administrator (identical or wider rights are refused).
+    if ( $kind === 'admin'
+        && ! SchoolSafeProfileStrictlyWithin( (int) $profile_id, (int) User( 'PROFILE_ID' ) ) )
+    {
+        return false;
+    }
 
-    // Only the three native role families are delegable: a bespoke profile can
-    // carry arbitrary permissions nobody audited.
-    if ( ! in_array( $kind, [ 'teacher', 'parent', 'student' ], true ) ) return false;
+    // Families without a native counterpart are still refused: a bespoke
+    // profile can carry arbitrary permissions nobody audited.
+    if ( $kind !== 'admin' && ! in_array( $kind, [ 'teacher', 'parent', 'student' ], true ) ) return false;
 
     // Defence in depth: a native family whose permissions were edited must not
     // be able to reach the screens reserved to global administrators.

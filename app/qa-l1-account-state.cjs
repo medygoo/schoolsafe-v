@@ -392,36 +392,107 @@ function client() {
     }
   });
 
-  await checkAsync('directeur delegue : ne peut ni voir ni forger le profil Directeur', async () => {
+  await checkAsync('directeur ecole 2 : nomme un Comptable dans sa propre ecole (C3)', async () => {
     const c = client();
     await c.login('l1.directeur2');
     const form = await c.request('/Modules.php?modname=Users/User.php&staff_id=new&category_id=1');
-    assert.ok(form.status === 200, 'formulaire rendu au directeur');
-    assert.doesNotMatch(form.body, new RegExp('value="' + directorProfileId + '"'), 'profil nomme admin non propose');
+    assert.match(form.body, /value="5"[^>]*>Comptable/, 'Comptable propose au directeur');
 
     const action = (form.body.match(/<form[^>]*action="([^"]*Users\/User\.php[^"]*)"/) || [])[1];
     const url = action.replace(/&amp;/g, '&');
     const token = (url.match(/token=([^&"]+)/) || [])[1];
-    const username = 'l1.forged.' + Date.now();
+    const username = 'l1.comptable.' + Date.now();
     try {
       const post = await c.request('/' + url, {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-Token': token },
         form: {
-          'staff[FIRST_NAME]': 'Forge', 'staff[LAST_NAME]': 'Directeur',
+          'staff[FIRST_NAME]': 'Comptable', 'staff[LAST_NAME]': 'Ecole 2',
           'staff[USERNAME]': username, 'staff[PASSWORD]': PASSWORD,
-          'staff[PROFILE]': 'admin', 'staff[PROFILE_ID]': directorProfileId,
+          'staff[PROFILE]': 'teacher', 'staff[PROFILE_ID]': '5',
           'staff[SCHOOLS][2]': 'Y',
         },
       });
-      const created = sql(`SELECT COALESCE(PROFILE,'-')||'|'||COALESCE(PROFILE_ID::text,'-')
+      assert.notEqual(post.status, 403, 'nomination acceptee');
+
+      const created = sql(`SELECT PROFILE||'|'||PROFILE_ID||'|'||COALESCE(SCHOOLS,'')
         FROM staff WHERE SYEAR='2026' AND USERNAME='${username}'`);
-      assert.equal(created, '', 'aucun compte cree par le directeur avec ce profil');
-      assert.equal(post.status, 403, 'refus de perimetre explicite');
-      return 'option absente + forge refusee (403)';
+      assert.equal(created, 'admin|5|,2,', 'Comptable nomme et borne a l\'ecole du directeur');
+
+      sql(`UPDATE staff SET LAST_LOGIN=CURRENT_TIMESTAMP,
+        PASSWORD=(SELECT PASSWORD FROM staff WHERE USERNAME='l1.proprietaire' LIMIT 1)
+        WHERE SYEAR='2026' AND USERNAME='${username}'`);
+      const login = await client().login(username);
+      assert.ok(login.location.includes('modname='), 'le Comptable nomme se connecte');
+      return 'admin|5|, ecole 2, connexion verifiee';
     } finally {
       sql(`DELETE FROM staff WHERE SYEAR='2026' AND USERNAME='${username}'`);
     }
+  });
+
+  await checkAsync('directeur ecole 2 : un Comptable ne peut pas naitre dans l\'ecole 1', async () => {
+    const c = client();
+    await c.login('l1.directeur2');
+    const form = await c.request('/Modules.php?modname=Users/User.php&staff_id=new&category_id=1');
+    const action = (form.body.match(/<form[^>]*action="([^"]*Users\/User\.php[^"]*)"/) || [])[1];
+    const url = action.replace(/&amp;/g, '&');
+    const token = (url.match(/token=([^&"]+)/) || [])[1];
+    const username = 'l1.horsscope.' + Date.now();
+    try {
+      const post = await c.request('/' + url, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-Token': token },
+        form: {
+          'staff[FIRST_NAME]': 'Hors', 'staff[LAST_NAME]': 'Perimetre',
+          'staff[USERNAME]': username, 'staff[PASSWORD]': PASSWORD,
+          // Profil delegable, mais ecole hors perimetre : c'est la portee qui doit refuser.
+          'staff[PROFILE]': 'teacher', 'staff[PROFILE_ID]': '5',
+          'staff[SCHOOLS][1]': 'Y',
+        },
+      });
+      assert.equal(post.status, 403, 'portee hors perimetre refusee');
+      assert.equal(sql(`SELECT COUNT(1) FROM staff WHERE SYEAR='2026' AND USERNAME='${username}'`), '0',
+        'aucun Comptable cree dans une ecole qui n\'est pas la sienne');
+      return 'Comptable delegable mais ecole 1 refusee (403)';
+    } finally {
+      sql(`DELETE FROM staff WHERE SYEAR='2026' AND USERNAME='${username}'`);
+    }
+  });
+
+  await checkAsync('directeur delegue : ni Directeur (pair) ni Administrateur (plus large), meme forge', async () => {
+    const c = client();
+    await c.login('l1.directeur2');
+    const form = await c.request('/Modules.php?modname=Users/User.php&staff_id=new&category_id=1');
+    assert.ok(form.status === 200, 'formulaire rendu au directeur');
+    assert.doesNotMatch(form.body, new RegExp('value="' + directorProfileId + '"'), 'profil Directeur non propose');
+    assert.doesNotMatch(form.body, /value="1"[^>]*>Administrator/, 'profil Administrator non propose non plus');
+
+    const action = (form.body.match(/<form[^>]*action="([^"]*Users\/User\.php[^"]*)"/) || [])[1];
+    const url = action.replace(/&amp;/g, '&');
+    const token = (url.match(/token=([^&"]+)/) || [])[1];
+
+    for (const forbidden of [directorProfileId, '1']) {
+      const username = 'l1.forged.' + forbidden + '.' + Date.now();
+      try {
+        const post = await c.request('/' + url, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-Token': token },
+          form: {
+            'staff[FIRST_NAME]': 'Forge', 'staff[LAST_NAME]': 'Elevation',
+            'staff[USERNAME]': username, 'staff[PASSWORD]': PASSWORD,
+            'staff[PROFILE]': 'admin', 'staff[PROFILE_ID]': forbidden,
+            'staff[SCHOOLS][2]': 'Y',
+          },
+        });
+        assert.equal(post.status, 403, 'refus de perimetre pour le profil ' + forbidden);
+        assert.equal(sql(`SELECT COUNT(1) FROM staff WHERE SYEAR='2026' AND USERNAME='${username}'`), '0',
+          'aucun compte cree avec le profil ' + forbidden);
+      } finally {
+        sql(`DELETE FROM staff WHERE SYEAR='2026' AND USERNAME='${username}'`);
+      }
+    }
+
+    return 'pair et profil plus large : options absentes, forge 403, 0 compte';
   });
 
   // --- 8. Console : le directeur ne peut pas creer d'administrateur --------
