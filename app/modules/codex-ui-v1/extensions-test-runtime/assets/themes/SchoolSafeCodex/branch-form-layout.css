@@ -1,0 +1,110 @@
+/* Reflow simple native forms, never grade matrices or log tables. */
+#body[data-ss-section]:not([data-ss-section=""]):not([data-ss-section="pilotage"]) :is(.header2,.tabs) { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+#body[data-ss-section]:not([data-ss-section=""]):not([data-ss-section="pilotage"]) :is(input,select,textarea) { caret-color: var(--school-accent); }
+#body[data-ss-section]:not([data-ss-section=""]):not([data-ss-section="pilotage"]) :is(a,button,input,select,textarea,summary):focus-visible { outline: 2px solid var(--school-focus); outline-offset: 2px; }
+#body[data-ss-section]:not([data-ss-section=""]):not([data-ss-section="pilotage"]) .ss-page-explanation { max-width: 75ch; margin: 0 0 20px; padding: 12px 16px; line-height: 1.6; color: var(--school-ink); background: var(--school-wash); border: 1px solid var(--school-line); border-radius: 5px; }
+.ss-school-tool:is([data-ss-tool-section="security"],[data-ss-tool-section="finance"]) > header { background: var(--school-accent) !important; color: #fff; padding: 8px 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.ss-school-tool:is([data-ss-tool-section="security"],[data-ss-tool-section="finance"]) > header :is(h1,h2) { font-size: 18px; margin: 0; color: #fff; }
+.ss-school-tool:is([data-ss-tool-section="security"],[data-ss-tool-section="finance"]) > header a { color: #fff; }
+.ss-school-tool[data-ss-tool-section="finance"] #fee-model-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-items: end; }
+.ss-school-tool[data-ss-tool-section="finance"] #fee-model-form > label { display: grid; gap: 8px; min-width: 0; }
+.ss-school-tool[data-ss-tool-section="finance"] #fee-model-form input { width: 100%; }
+.ss-school-tool[data-ss-tool-section="finance"] #fee-model-form button { justify-self: start; }
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]), .ss-school-tool:is([data-ss-tool-section="school"],[data-ss-tool-section="pedagogy"],[data-ss-tool-section="security"],[data-ss-tool-section="finance"]) {
+    font-family: system-ui, Arial, sans-serif;
+}
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) fieldset,
+.ss-school-tool:is([data-ss-tool-section="school"],[data-ss-tool-section="pedagogy"],[data-ss-tool-section="security"],[data-ss-tool-section="finance"]) fieldset {
+    margin: 20px 0; padding: 16px; border: 1px solid var(--school-line); border-radius: 5px; min-width: 0;
+}
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) legend { padding: 0 8px; color: var(--school-accent); }
+.ss-form-grid { display: block; width: 100%; box-sizing: border-box; }
+.ss-form-grid > tbody { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px 24px; }
+.ss-form-grid > tbody > tr { display: block !important; min-width: 0; margin: 0 !important; }
+.ss-form-grid > tbody > tr > td { display: block !important; width: 100% !important; padding: 0 !important; box-sizing: border-box; }
+.ss-form-grid .ss-form-pair > td:first-child { margin-bottom: 6px; font-weight: 600; }
+.ss-form-grid .ss-form-span { grid-column: 1 / -1; }
+.ss-form-grid :is(input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),select,textarea) { max-width: 100%; box-sizing: border-box; }
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) .header2 { padding: 12px 0; vertical-align: middle; }
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) .header2 :is(input[type="submit"],button,select) { margin: 4px 8px 4px 0; }
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) .center:has(> input[type="submit"]) { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; margin: 20px 0; }
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) .widefat { font-variant-numeric: tabular-nums; }
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) .widefat :is(td,th) { line-height: 1.5; }
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) .list-nav td { padding: 12px; }
+#body[data-ss-section="security"] .list-wrapper { position: relative; contain: inline-size; box-sizing: border-box; width: 100%; }
+#body[data-ss-section="security"] .list-outer { min-width: 0; max-width: 100%; }
+@media (max-width: 900px) {
+    .ss-form-grid > tbody { grid-template-columns: minmax(0,1fr); gap: 16px; }
+}
+@media (max-width: 700px) {
+    .ss-school-tool[data-ss-tool-section="finance"] #fee-model-form { grid-template-columns: minmax(0,1fr); }
+    #body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) fieldset { padding: 12px; }
+    #body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) .header2 { text-align: left; }
+}
+@media print { .ss-form-grid, .ss-form-grid > tbody { display: table; } }
+
+#body[data-ss-section="school"] .ss-school-details { display: block; width: 100%; }
+#body[data-ss-section="school"] .ss-school-details > tbody { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px 24px; }
+#body[data-ss-section="school"] .ss-school-details > tbody > tr { display: block; min-width: 0; }
+#body[data-ss-section="school"] .ss-school-details > tbody > tr > td { display: block; width: 100%; padding: 0; box-sizing: border-box; }
+#body[data-ss-section="school"] .ss-school-details .ss-form-span { grid-column: 1 / -1; }
+#body[data-ss-section="school"] .ss-school-details > tbody > .ss-school-location-row { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+#body[data-ss-section="school"] :is(.general-info,.create-account) > tbody > tr > td { padding: 12px; }
+#body[data-ss-section="school"] .general-info .legend-gray { display: block; margin: 6px 0 12px; }
+#body[data-ss-section="school"] :is(table.general-info,table.create-account) { background: #fff !important; border: 0 !important; border-top: 1px solid var(--school-line) !important; border-radius: 0 !important; box-shadow: none !important; }
+#body[data-ss-section="school"] h3.ss-f14-section { color: var(--school-accent); font-size: 16px; }
+@media (max-width: 900px) {
+    #body[data-ss-section="school"] .ss-school-details > tbody { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 700px) {
+    #body[data-ss-section="school"] .ss-school-details > tbody > .ss-school-location-row { grid-template-columns: minmax(0,1fr); }
+    #body[data-ss-section="school"] :is(.general-info,.create-account) > tbody > tr,
+    #body[data-ss-section="school"] :is(.general-info,.create-account) > tbody > tr > td { display: block; width: 100% !important; box-sizing: border-box; }
+}
+#body[data-ss-section="people"] :is(table.general-info,table.create-account) { background: #fff !important; border: 0 !important; border-top: 1px solid var(--school-line) !important; border-radius: 0 !important; box-shadow: none !important; }
+#body[data-ss-section="people"] :is(.general-info,.create-account) > tbody > tr > td { padding: 12px; }
+#body:is([data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) .widefat th { background: var(--school-wash) !important; color: var(--school-ink) !important; border-color: var(--school-line) !important; }
+@media (max-width: 700px) {
+    #body[data-ss-section="people"] :is(.general-info,.create-account) > tbody > tr,
+    #body[data-ss-section="people"] :is(.general-info,.create-account) > tbody > tr > td { display: block; width: 100% !important; box-sizing: border-box; }
+}
+@media print {
+    #body[data-ss-section="school"] .ss-school-details, #body[data-ss-section="school"] .ss-school-details > tbody { display: table; }
+}
+.ss-school-tool[data-ss-tool-section="school"] #management-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  max-width: 900px;
+  margin-inline: auto;
+}
+.ss-school-tool[data-ss-tool-section="school"]:has(#management-form) > header {
+  background: #08766b;
+  padding: 12px 20px;
+}
+.ss-school-tool[data-ss-tool-section="school"] #management-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.ss-school-tool[data-ss-tool-section="school"] #management-form label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+}
+.ss-school-tool[data-ss-tool-section="school"] #management-form input,
+.ss-school-tool[data-ss-tool-section="school"] #management-form select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.ss-school-tool[data-ss-tool-section="school"] #management-submit {
+  justify-self: end;
+  min-height: 44px;
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .ss-school-tool[data-ss-tool-section="school"] #management-fields { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,0 +1,29 @@
+/* Same color cycle and movement as the validated card Studio. */
+#menu-top .ss-menu-animated-logo {
+  object-fit: contain;
+  flex-shrink: 0;
+  animation: ss-menu-logo-colors 8s linear infinite, ss-menu-logo-float 3s ease-in-out infinite;
+}
+.ss-photo-mobile-brand > img,
+.ss-animated-brand {
+  object-fit: contain;
+  flex-shrink: 0;
+  animation: ss-emblem-light 8s linear infinite !important;
+}
+@keyframes ss-emblem-light {
+  0%,100% { filter:hue-rotate(0deg) brightness(1); }
+  50% { filter:hue-rotate(180deg) brightness(1.15); }
+}
+@keyframes ss-menu-logo-colors {
+  0%, 100% { filter: hue-rotate(0deg) drop-shadow(0 3px 9px #2563eb66); }
+  50% { filter: hue-rotate(180deg) drop-shadow(0 3px 9px #8b5cf666); }
+}
+@keyframes ss-menu-logo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #menu-top .ss-menu-animated-logo,
+  .ss-photo-mobile-brand > img,
+  .ss-animated-brand { animation: none !important; }
+}

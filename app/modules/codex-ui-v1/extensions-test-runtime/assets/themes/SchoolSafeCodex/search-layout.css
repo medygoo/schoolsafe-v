@@ -1,0 +1,33 @@
+/* Shared native searches: field layout must not reflow nested option groups. */
+#body form#search #general_table { display: table !important; width: 100%; table-layout: fixed; border-collapse: collapse; }
+#body form#search #general_table > tbody { display: table-row-group !important; }
+#body form#search #general_table > tbody > tr { display: table-row !important; }
+#body form#search #general_table > tbody > tr > td { display: table-cell !important; width: auto !important; padding: 8px !important; vertical-align: middle; }
+#body form#search #general_table > tbody > tr > td:first-child { width: 30% !important; }
+#body form#search #general_table > tbody > tr > td > label:not(:has(input)) { width: auto; }
+#body form#search :is(input[type="checkbox"],input[type="radio"]) {
+    width: 18px !important; min-width: 18px !important; max-width: 18px !important;
+    height: 18px !important; min-height: 18px !important; max-height: 18px !important;
+    padding: 0 !important; margin: 0 !important; flex: 0 0 18px;
+    vertical-align: middle; appearance: auto; accent-color: var(--school-accent,#1459d9);
+}
+#body form#search label:has(> input[type="checkbox"]),
+#body form#search label:has(> input[type="radio"]) {
+    display: inline-flex !important; align-items: center; gap: 6px;
+    width: auto !important; min-width: 0; min-height: 36px;
+    white-space: normal; overflow-wrap: normal; margin: 4px 12px 4px 0;
+}
+#body form#search #general_table table:has(input[type="checkbox"]),
+#body form#search #general_table table:has(input[type="radio"]) { display: block; width: 100%; }
+#body form#search #general_table table:has(input[type="checkbox"]) > tbody,
+#body form#search #general_table table:has(input[type="radio"]) > tbody { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+#body form#search #general_table table:has(input[type="checkbox"]) > tbody > tr,
+#body form#search #general_table table:has(input[type="radio"]) > tbody > tr { display: contents; }
+#body form#search #general_table table:has(input[type="checkbox"]) td,
+#body form#search #general_table table:has(input[type="radio"]) td { display: block; width: auto !important; min-width: 64px; padding: 0 !important; }
+#body form#search #general_table :is([hidden],[style*="display: none"],[style*="display:none"]) { display: none !important; }
+@media(max-width:700px) {
+    #body form#search #general_table > tbody > tr { display: block !important; margin-bottom: 12px; }
+    #body form#search #general_table > tbody > tr > td { display: block !important; width: 100% !important; box-sizing: border-box; padding: 4px 0 !important; }
+    #body form#search #general_table > tbody > tr > td:first-child:empty { display: none !important; }
+}

@@ -1,0 +1,10 @@
+/* Avoid painting the native layout before the local theme is ready. */
+body.modules #menu:has(.adminmenu:not([data-ss-organized="1"])),
+body.modules #body:not([data-ss-page]) {
+    visibility: hidden;
+    animation: ss-native-fallback 0s 6s forwards;
+}
+/* Keep native controls available if script initialization fails. */
+@keyframes ss-native-fallback { to { visibility: visible; } }
+body.modules #menu:has(.adminmenu[data-ss-organized="1"]),
+body.modules #body[data-ss-page] { visibility: visible; animation: none; }

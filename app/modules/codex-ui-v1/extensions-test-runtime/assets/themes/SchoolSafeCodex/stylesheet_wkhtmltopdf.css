@@ -1,0 +1,4 @@
+/* Preserve the native PDF layout independently of interactive screen layout. */
+@import url("../SchoolSafe/stylesheet_wkhtmltopdf.css");
+body { color: #17263b; font-family: Arial, sans-serif; }
+table { border-color: #d6e1ee; }

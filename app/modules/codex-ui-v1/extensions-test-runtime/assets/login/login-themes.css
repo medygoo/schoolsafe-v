@@ -1,0 +1,27 @@
+#ss-login-reference{--login-bg:#041b62;--login-ink:#fff;--login-muted:#c7d5f3;--login-panel:#142f6dbd;--login-field:#234681;--login-border:#6287cf;--login-accent:#49d0e6;}
+#ss-login-reference[data-theme="white"]{--login-bg:#fff;--login-ink:#16344d;--login-muted:#405e73;--login-panel:#f4f8fcf2;--login-field:#e8eff7;--login-border:#a4bfd5;--login-accent:#087f97;}
+#ss-login-reference[data-theme="blue"]{--login-bg:#dcecff;--login-ink:#123557;--login-muted:#385d7e;--login-panel:#edf5fff2;--login-field:#cee3fb;--login-border:#87b2df;--login-accent:#0866af;}
+#ss-login-reference[data-theme="gray"]{--login-bg:#eef0f3;--login-ink:#253747;--login-muted:#4b606f;--login-panel:#fafbfcf2;--login-field:#dfe5eb;--login-border:#a7b6c2;--login-accent:#366580;}
+#ss-login-reference[data-theme="mint"]{--login-bg:#e5f5ed;--login-ink:#163d31;--login-muted:#3c6355;--login-panel:#f3fcf7f2;--login-field:#d0eadd;--login-border:#83baa0;--login-accent:#087555;}
+#ss-login-reference[data-theme="rose"]{--login-bg:#fbe9ef;--login-ink:#522b3d;--login-muted:#775466;--login-panel:#fff6f9f2;--login-field:#f4d5e1;--login-border:#cd98ad;--login-accent:#a52759;}
+#ss-login-reference[data-theme="yellow"]{--login-bg:#fff5d9;--login-ink:#483b19;--login-muted:#6c5b34;--login-panel:#fffaf0f2;--login-field:#f3e7bc;--login-border:#c3ad6b;--login-accent:#816013;}
+html:has(#ss-login-reference){background:var(--ss-page-background,#041b62)!important;}
+body.login:has(#ss-login-reference){background:transparent!important;}
+#ss-login-reference:not([data-theme="night"]){background:var(--login-bg);color:var(--login-ink);}
+#ss-login-reference:not([data-theme="night"]) .ss-login-hero::before{content:'';position:absolute;inset:0;background:url('reference-background.png') right top/cover no-repeat;opacity:.12;pointer-events:none;}
+#ss-login-reference:not([data-theme="night"]) .ss-login-brand h1,#ss-login-reference:not([data-theme="night"]) .ss-login-welcome h2{color:var(--login-ink);}
+#ss-login-reference:not([data-theme="night"]) .ss-login-brand h1 span,#ss-login-reference:not([data-theme="night"]) .ss-login-brand p{color:var(--login-accent);}
+#ss-login-reference:not([data-theme="night"]) .ss-login-welcome p{color:var(--login-muted);}
+body.login #ss-login-reference:not([data-theme="night"]) .ss-login-panel,body.login #ss-login-reference:not([data-theme="night"]) .ss-login-features{background:var(--login-panel);border-color:var(--login-border);}
+body.login #ss-login-reference:not([data-theme="night"]) #loginform .ss-login-field,body.login #ss-login-reference:not([data-theme="night"]) .ss-login-features span{background:var(--login-field);border-color:var(--login-border);color:var(--login-ink);box-shadow:none;}
+body.login #ss-login-reference:not([data-theme="night"]) #loginform input:not([type=hidden]){color:var(--login-ink);}
+body.login #ss-login-reference:not([data-theme="night"]) #loginform input::placeholder{color:var(--login-muted);}
+body.login #ss-login-reference:not([data-theme="night"]) #loginform input:-webkit-autofill{-webkit-text-fill-color:var(--login-ink);box-shadow:0 0 0 1000px var(--login-field) inset!important;}
+body.login #ss-login-reference:not([data-theme="night"]) a,body.login #ss-login-reference:not([data-theme="night"]) .ss-login-eye,body.login #ss-login-reference:not([data-theme="night"]) .ss-login-features svg{color:var(--login-accent);}
+#ss-login-reference:not([data-theme="night"]) .ss-login-school{background:var(--login-field);color:var(--login-ink);border-color:var(--login-border);}
+#ss-login-reference:not([data-theme="night"]) .ss-login-features p,#ss-login-reference:not([data-theme="night"]) .ss-login-slogan{color:var(--login-ink);}
+#ss-login-reference .ss-login-slogan span{color:var(--login-accent);}
+body.login #ss-login-reference:not([data-theme="night"]) #ss-login-legal-slot,body.login #ss-login-reference:not([data-theme="night"]) .ss-login-languages{color:var(--login-muted);}
+.ss-login-theme{position:absolute;z-index:6;right:8px;top:8px;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--login-border);border-radius:50%;background:var(--login-field);color:var(--login-accent);cursor:pointer;}
+.ss-login-theme svg{width:20px;height:20px;}
+@media(max-width:500px){.ss-login-features p{font-size:10px;line-height:1.2;min-height:24px;}.ss-login-features span{width:36px;height:36px;}.ss-login-features svg{width:26px;height:26px;}}

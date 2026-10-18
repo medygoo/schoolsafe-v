@@ -1,0 +1,48 @@
+/* Shared structure; branch colors remain distinct. */
+#body[data-ss-section="school"], .ss-school-tool {
+    --school-accent: #08766b; --school-focus: #08766b;
+    --ss-page-accent: #08766b;
+}
+#body[data-ss-section="pedagogy"], .ss-school-tool[data-ss-tool-section="pedagogy"] {
+    --school-ink: #30253d; --school-muted: #61516f;
+    --school-line: #e1d8ea; --school-wash: #f5f0fa;
+    --school-accent: #7445a6; --school-focus: #7445a6;
+    --ss-page-accent: #7445a6;
+}
+#body[data-ss-section="pedagogy"] input[type="submit"]:hover { background: #5c3585 !important; }
+#body[data-ss-section="pedagogy"] .widefat tr:focus-within td { background: #f5f0fa !important; }
+.ss-school-tool #native-lookup button:not([type="button"]) { background: var(--school-accent); color: #fff; border-color: var(--school-accent); }
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"],[data-ss-section="security"],[data-ss-section="finance"],[data-ss-section="accounting"],[data-ss-section="people"],[data-ss-section="inventory"],[data-ss-section="communication"],[data-ss-section="care"],[data-ss-section="administration"],[data-ss-section="reports"]) .ss-page-heading {
+    display: flex; align-items: center; gap: 12px; min-height: 56px;
+    margin: 0 0 16px; padding: 8px 12px; background: var(--school-wash);
+    border: 1px solid var(--school-accent); border-radius: 6px; box-sizing: border-box;
+}
+#body[data-ss-section] .ss-page-heading > img { width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px; }
+#body[data-ss-section] .ss-page-heading h2 { margin: 0; font: 650 20px/1.35 system-ui, Arial, sans-serif; color: var(--school-accent); overflow-wrap: anywhere; min-width: 0; }
+#body[data-ss-section] .ss-page-back { margin-left: auto; display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border: 1px solid var(--school-accent); border-radius: 5px; background: #fff; }
+#body[data-ss-section] .ss-page-back:hover { background: var(--school-wash); }
+#body[data-ss-section] .ss-native-title { display: none !important; }
+#body[data-ss-section] .ss-native-heading:not(:has(a,button,input,select,textarea)) { display: none !important; }
+#body[data-ss-section]:has(.ss-page-heading) .ss-f13 { border: 0; padding: 0; margin: 0; }
+#body[data-ss-section]:has(.ss-page-heading) .header1 { border: 0; padding: 0; }
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"]) .list-wrapper { border-top-color: var(--school-accent); }
+#body:is([data-ss-section="school"],[data-ss-section="pedagogy"]) .widefat th { background: var(--school-wash) !important; color: var(--school-muted) !important; }
+.ss-studio-harmonized.ss-tool-embedded > header { display: none !important; }
+#body[data-ss-section="security"], .ss-school-tool[data-ss-tool-section="security"] {
+    --school-ink: #3e2530; --school-muted: #70505b;
+    --school-line: #ead6dc; --school-wash: #fcf1f4;
+    --school-accent: #a5324d; --school-focus: #a5324d; --ss-page-accent: #a5324d;
+}
+#body[data-ss-section="security"] .widefat th { background: var(--school-wash) !important; color: var(--school-muted) !important; }
+@media (max-width: 700px) {
+    #body[data-ss-section] .ss-page-heading { gap: 8px; padding: 8px; }
+    #body[data-ss-section] .ss-page-heading h2 { font-size: 18px; }
+}
+@media print { #body[data-ss-section] .ss-page-back { display: none; } }
+#body[data-ss-section="finance"], .ss-school-tool[data-ss-tool-section="finance"] { --school-ink: #253629; --school-muted: #526756; --school-line: #d9e5d5; --school-wash: #f1f7ee; --school-accent: #23682d; --school-focus: #23682d; --ss-page-accent: #23682d; }
+#body[data-ss-section="finance"] .widefat th { background: var(--school-wash) !important; color: var(--school-muted) !important; }
+#body[data-ss-section="accounting"] { --school-accent: #4e5990; --school-focus: #4e5990; --ss-page-accent: #4e5990; --school-wash: #f2f3fa; }
+
+#body[data-ss-section="people"] { --school-accent: #9c446b; --school-focus: #9c446b; --ss-page-accent: #9c446b; --school-wash: #fbf1f5; }
+
+
