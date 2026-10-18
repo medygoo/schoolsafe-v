@@ -508,6 +508,7 @@ require_once 'ProgramFunctions/SchoolSafeLocale.fnc.php';
 require_once 'ProgramFunctions/SchoolSafeSchoolScope.fnc.php';
 require_once 'ProgramFunctions/SchoolSafeAccountState.fnc.php';
 require_once 'ProgramFunctions/SchoolSafeSchoolState.fnc.php';
+require_once 'ProgramFunctions/SchoolSafeSchoolCalendar.fnc.php';
 
 /**
  * SchoolSafe — état de compte.

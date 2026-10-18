@@ -387,6 +387,24 @@ switch ( $action )
 
 		$template_id = (int) $template[1]['ID'];
 
+		// Le gabarit doit avoir un calendrier coherent : sans cela, l'ecole
+		// recopiee naitrait cassee (periodes sans parent) et tous ses ecrans
+		// echoueraient. Mieux vaut refuser avant toute ecriture que reparer
+		// apres coup une ecole deja livree.
+		$template_issues = SchoolSafeSchoolCalendarIssues( $template_id, $syear );
+
+		if ( $template_issues )
+		{
+			SchoolSafeConsoleReply( 409, [
+				'ok' => false,
+				'error' => 'TEMPLATE_CALENDAR_INVALID',
+				'data' => [
+					'template_school_id' => $template_id,
+					'issues' => array_column( $template_issues, 'label' ),
+				],
+			] );
+		}
+
 		// 1) Ecole : meme INSERT que CopySchool.php, gabarit pour le scale.
 		DBQuery( "INSERT INTO schools (SYEAR,TITLE,REPORTING_GP_SCALE,ADDRESS,CITY,PHONE,WWW_ADDRESS,SCHOOL_NUMBER,SHORT_NAME)
 			SELECT SYEAR,'" . DBEscapeString( $title ) . "',REPORTING_GP_SCALE,
@@ -430,8 +448,13 @@ switch ( $action )
 			SELECT SYEAR," . $new_school_id . ",TITLE,SHORT_NAME,SORT_ORDER,LENGTH,ATTENDANCE
 			FROM school_periods WHERE SCHOOL_ID='" . $template_id . "' AND SYEAR='" . (int) $syear . "'" );
 
-		DBQuery( "INSERT INTO school_marking_periods (SYEAR,MP,SCHOOL_ID,TITLE,SHORT_NAME,SORT_ORDER,START_DATE,END_DATE,DOES_GRADES,DOES_COMMENTS,ROLLOVER_ID)
-			SELECT SYEAR,MP," . $new_school_id . ",TITLE,SHORT_NAME,SORT_ORDER,START_DATE,END_DATE,DOES_GRADES,DOES_COMMENTS,MARKING_PERIOD_ID
+		// PARENT_ID est recopie tel quel, puis remappe vers les identifiants de la
+		// nouvelle ecole : c'est ce que fait CopySchool.php. L'omettre laissait
+		// PARENT_ID a NULL et le remappage ne trouvait jamais rien — d'ou des
+		// periodes a plat a chaque creation. Les dates de saisie sont recopiees
+		// pour la meme raison (calendrier du gabarit a l'identique).
+		DBQuery( "INSERT INTO school_marking_periods (SYEAR,MP,SCHOOL_ID,TITLE,SHORT_NAME,SORT_ORDER,START_DATE,END_DATE,POST_START_DATE,POST_END_DATE,DOES_GRADES,DOES_COMMENTS,ROLLOVER_ID,PARENT_ID)
+			SELECT SYEAR,MP," . $new_school_id . ",TITLE,SHORT_NAME,SORT_ORDER,START_DATE,END_DATE,POST_START_DATE,POST_END_DATE,DOES_GRADES,DOES_COMMENTS,MARKING_PERIOD_ID,PARENT_ID
 			FROM school_marking_periods WHERE SCHOOL_ID='" . $template_id . "' AND SYEAR='" . (int) $syear . "'" );
 
 		DBQuery( "UPDATE school_marking_periods mp
@@ -440,6 +463,25 @@ switch ( $action )
 				AND mp2.ROLLOVER_ID=mp.PARENT_ID)
 			WHERE mp.SCHOOL_ID='" . $new_school_id . "' AND mp.SYEAR='" . (int) $syear . "'
 			AND mp.PARENT_ID IS NOT NULL" );
+
+		// Garde-fou : la copie doit produire un calendrier coherent. Sinon, rien
+		// de partiel ne reste en base (aucune ecole a moitie creee).
+		$copy_issues = SchoolSafeSchoolCalendarIssues( $new_school_id, $syear );
+
+		if ( $copy_issues )
+		{
+			DBQuery( "DELETE FROM config WHERE SCHOOL_ID='" . $new_school_id . "'" );
+			DBQuery( "DELETE FROM school_gradelevels WHERE SCHOOL_ID='" . $new_school_id . "'" );
+			DBQuery( "DELETE FROM school_periods WHERE SCHOOL_ID='" . $new_school_id . "'" );
+			DBQuery( "DELETE FROM school_marking_periods WHERE SCHOOL_ID='" . $new_school_id . "'" );
+			DBQuery( "DELETE FROM schools WHERE ID='" . $new_school_id . "' AND SYEAR='" . (int) $syear . "'" );
+
+			SchoolSafeConsoleReply( 500, [
+				'ok' => false,
+				'error' => 'CALENDAR_COPY_FAILED',
+				'data' => [ 'issues' => array_column( $copy_issues, 'label' ) ],
+			] );
+		}
 
 		// 4) Auto-attribution optionnelle (comme CopySchool pour l'admin createur).
 		$assign_to = (int) ( $request['assign_to_staff_id'] ?? 0 );

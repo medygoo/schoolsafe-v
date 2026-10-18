@@ -615,10 +615,20 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 
 	<?php if ( $schoolsafe_global_admin ) {
 		$school_states = SchoolSafeSchoolStateRows();
+
+		// Controle de coherence du calendrier (annee, semestres, trimestres) :
+		// une ecole dont les periodes sont a plat casse les ecrans de son
+		// directeur. Le proprietaire de la plateforme le voit ici, avant qu'un
+		// directeur ne tombe sur une erreur technique.
+		$school_calendars = SchoolSafeSchoolCalendarStatuses(
+			array_map( static function ( $school ) { return (int) $school['ID']; }, (array) $schools ),
+			$syear
+		);
 		?>
 	<div class="card">
 		<h2 style="font-size:19px;margin-top:0">Etablissements</h2>
 		<p class="mut">Trois etats, aucun effacement : <strong>Actif</strong> (en service), <strong>Suspendu</strong> (acces coupe pour tous ses utilisateurs, donnees conservees ; une date de fin rend l'acces tout seul a cette date), <strong>Desactive</strong> (etablissement ferme ou hors service, reactivation manuelle). Une ecole coupee ne perd rien : eleves, notes, paiements, comptes et historiques restent en place. Une personne affectee a plusieurs ecoles perd l'ecole coupee et garde les autres ; le proprietaire de la plateforme conserve l'acces pour administrer.</p>
+		<p class="mut"><strong>Calendrier</strong> : chaque ecole doit avoir une annee, des semestres rattaches a l'annee, des trimestres rattaches a un semestre. Un calendrier en anomalie est signale ici ; la creation d'une ecole refuse desormais de recopier un gabarit incoherent plutot que de livrer une ecole dont les ecrans echouent.</p>
 		<div style="overflow-x:auto">
 		<table class="list schools-list">
 			<tr><th>ID</th><th>Etablissement</th><th>Etat</th><th>Actions</th></tr>
@@ -629,9 +639,34 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 
 				$school_row = $school_states[(int) $school['ID']] ?? [];
 
+				$calendar = $school_calendars[(int) $school['ID']] ?? [
+					'ok' => false,
+					'issues' => [ [ 'label' => 'Calendrier illisible.' ] ],
+				];
+
+				$calendar_labels = array_column( $calendar['issues'], 'label' );
+
 				echo '<tr>';
 				echo '<td>' . (int) $school['ID'] . '</td>';
-				echo '<td><strong>' . htmlspecialchars( $school['TITLE'], ENT_QUOTES, 'UTF-8' ) . '</strong></td>';
+				echo '<td><strong>' . htmlspecialchars( $school['TITLE'], ENT_QUOTES, 'UTF-8' ) . '</strong>';
+
+				// Calendrier sous le nom : signale l'anomalie sans elargir le tableau
+				// (une cinquieme colonne rendait la console illisible sur telephone).
+				echo ' <span class="badge ' . ( $calendar['ok'] ? 'on' : 'off' ) . '" data-calendar="'
+					. ( $calendar['ok'] ? 'ok' : 'issues' ) . '">'
+					. ( $calendar['ok'] ? 'Coherent' : ( count( $calendar_labels ) . ' anomalie(s)' ) ) . '</span>';
+
+				foreach ( array_slice( $calendar_labels, 0, 3 ) as $calendar_label )
+				{
+					echo '<br><span class="mut">' . htmlspecialchars( (string) $calendar_label, ENT_QUOTES, 'UTF-8' ) . '</span>';
+				}
+
+				if ( count( $calendar_labels ) > 3 )
+				{
+					echo '<br><span class="mut">et ' . ( count( $calendar_labels ) - 3 ) . ' autre(s).</span>';
+				}
+
+				echo '</td>';
 				echo '<td><span class="badge ' . ( $school_state === 'active' ? 'on' : 'off' ) . '">'
 					. htmlspecialchars( SchoolSafeConsoleSchoolStateLabel( $school_state ), ENT_QUOTES, 'UTF-8' ) . '</span>';
 

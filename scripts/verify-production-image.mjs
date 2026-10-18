@@ -31,6 +31,7 @@
  *   SCHOOLSAFE_QA_DB_NAME / SCHOOLSAFE_QA_DB_USER
  */
 import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
@@ -54,7 +55,7 @@ const requestedSuites = argv
   .filter(Boolean);
 const suites = requestedSuites.length
   ? requestedSuites
-  : ['app/qa-l1-account-state.cjs', 'app/qa-dashboard-periods.cjs'];
+  : ['app/qa-l1-account-state.cjs', 'app/qa-dashboard-periods.cjs', 'app/qa-school-calendar.cjs'];
 const port = Number(option('port', '0')) || 0;
 const image = option('image', 'schoolsafe-verify-prod:local');
 const network = process.env.SCHOOLSAFE_QA_NETWORK || 'schoolsafe-app_backend';
@@ -64,6 +65,11 @@ const dbName = process.env.SCHOOLSAFE_QA_DB_NAME || 'schoolsafe';
 const dbUser = process.env.SCHOOLSAFE_QA_DB_USER || 'schoolsafe';
 const dbPassword = process.env.SCHOOLSAFE_QA_DB_PASSWORD || 'preview-local-jetable-32caracteres-xx';
 const containerName = 'schoolsafe-verify-prod-' + process.pid;
+
+// Jeton de service de la console (création d'école) : propre à chaque exécution,
+// transmis au conteneur jetable ET à la suite QA. Ce n'est pas un secret de
+// production : le conteneur vit quelques minutes et n'écoute que sur loopback.
+const consoleToken = process.env.SCHOOLSAFE_CONSOLE_TOKEN || randomUUID().replace(/-/g, '');
 
 function run(command, args, options = {}) {
   return spawnSync(command, args, { encoding: 'utf8', ...options });
@@ -127,6 +133,7 @@ async function runSuites(freePort) {
     '-e', 'SCHOOLSAFE_DB_HOST=' + dbHost,
     '-e', 'SCHOOLSAFE_DB_PORT=' + dbPort,
     '-e', 'SCHOOLSAFE_DEFAULT_SYEAR=' + (process.env.SCHOOLSAFE_DEFAULT_SYEAR || '2026'),
+    '-e', 'SCHOOLSAFE_CONSOLE_TOKEN=' + consoleToken,
     '-v', productionConfig + ':/var/www/html/config.inc.php:ro',
     image], { stdio: 'ignore' });
 
@@ -151,7 +158,7 @@ async function runSuites(freePort) {
       const result = run(process.execPath, [suitePath], {
         cwd: repoRoot,
         stdio: 'inherit',
-        env: { ...process.env, SCHOOLSAFE_L1_URL: url },
+        env: { ...process.env, SCHOOLSAFE_L1_URL: url, SCHOOLSAFE_CONSOLE_TOKEN: consoleToken },
       });
       if (result.status !== 0) status = result.status || 1;
     }
