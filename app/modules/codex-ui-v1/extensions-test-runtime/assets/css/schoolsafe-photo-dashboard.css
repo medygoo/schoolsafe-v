@@ -264,7 +264,10 @@ body.ss-school-shell:has(#ss-photo-dashboard) .ss-photo-toolbar [data-photo-sear
 body.ss-fixed-school:has(#ss-photo-dashboard){height:100dvh!important;overflow:hidden!important}
 html:has(body.ss-fixed-school){height:100%;overflow:hidden!important}
 body.ss-fixed-school:has(#ss-photo-dashboard) #wrap{padding:0!important;height:100dvh!important;overflow:hidden!important}
-body.ss-fixed-school:has(#ss-photo-dashboard) #body{position:fixed!important;inset:68px 0 0!important;padding:14px 20px 8px!important;overflow:hidden!important;height:auto!important}
+/* min-height:0 : la regle de base body.modules #body{min-height:100vh} forcait la
+   coque fixe a 68+900 px, donc 68 px de tableau de bord sortaient de l'ecran sans
+   defilement possible (html overflow hidden). */
+body.ss-fixed-school:has(#ss-photo-dashboard) #body{position:fixed!important;inset:68px 0 0!important;padding:14px 20px 8px!important;overflow:hidden!important;height:auto!important;min-height:0!important}
 body.ss-fixed-school:has(#ss-photo-dashboard) #ss-photo-dashboard{height:100%!important;max-width:1440px!important;display:grid!important;grid-template-rows:auto auto minmax(0,1fr) auto;gap:8px;min-height:0}
 .ss-fixed-park,[hidden].ss-fixed-view{display:none!important}
 .ss-fixed-pager{display:flex;align-items:center;gap:12px;border-block:1px solid var(--photo-line);padding:8px 0}
