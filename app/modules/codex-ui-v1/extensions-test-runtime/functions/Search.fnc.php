@@ -295,6 +295,13 @@ function Search( $type, $extra = null )
 					'parent' => _( 'Parent' ),
 					'none' => _( 'No Access' ),
 				];
+
+				// SchoolSafe — filtrer aussi par profil nomme (Directeur,
+				// Comptable, Gardien) et pas seulement par famille native.
+				if ( function_exists( 'SchoolSafeNamedProfileOptions' ) )
+				{
+					$options += SchoolSafeNamedProfileOptions();
+				}
 			}
 
 			if ( ! empty( $extra['profile'] ) )

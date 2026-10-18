@@ -116,6 +116,32 @@ function SchoolSafeProfileStrictlyWithin( $target, $reference )
     return (bool) array_diff_key( $reference_rights, $target_rights );
 }
 
+/**
+ * Options de filtre par profil nomme (Directeur, Comptable, Gardien) pour les
+ * ecrans de recherche d'utilisateurs, en plus des familles natives.
+ *
+ * Les cles sont prefixees « profile:<id> » pour ne pas se confondre avec les
+ * familles (admin, teacher, parent, none) que la recherche native attend.
+ *
+ * @return array Cle => libelle traduit.
+ */
+function SchoolSafeNamedProfileOptions()
+{
+    $options = [];
+
+    $profiles = DBGet( "SELECT ID,TITLE
+        FROM user_profiles
+        WHERE ID>3 AND PROFILE IN ('admin','teacher','parent')
+        ORDER BY PROFILE,ID" );
+
+    foreach ( (array) $profiles as $profile )
+    {
+        $options[ 'profile:' . (int) $profile['ID'] ] = _( $profile['TITLE'] );
+    }
+
+    return $options;
+}
+
 function SchoolSafeProfileDelegable( $profile_id, $profile = null )
 {
     if ( SchoolSafeGlobalAdmin() ) return true;

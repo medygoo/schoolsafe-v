@@ -495,6 +495,61 @@ function client() {
     return 'pair et profil plus large : options absentes, forge 403, 0 compte';
   });
 
+  // --- 7quater. Filtre par profil nomme dans la liste Utilisateurs (C5) ----
+  const director2Name = sql("SELECT FIRST_NAME||' '||LAST_NAME FROM staff WHERE SYEAR='2026' AND USERNAME='l1.directeur2'");
+  const director1Name = sql("SELECT FIRST_NAME||' '||LAST_NAME FROM staff WHERE SYEAR='2026' AND USERNAME='l1.lecture1'");
+  const teacher1Name = sql("SELECT FIRST_NAME||' '||LAST_NAME FROM staff WHERE SYEAR='2026' AND USERNAME='l1.enseignant1'");
+  assert.ok(director2Name && director1Name && teacher1Name, 'fixtures l1.* nommees');
+
+  await checkAsync('proprietaire : la recherche propose les profils nommes, pas seulement les familles', async () => {
+    const c = client();
+    await c.login('l1.proprietaire');
+    const page = await c.request('/Modules.php?modname=Users/User.php');
+    assert.equal(page.status, 200, 'formulaire de recherche rendu');
+    const select = (page.body.match(/<select name="profile"[\s\S]*?<\/select>/) || [''])[0];
+    assert.match(select, /<option value="admin">/, 'familles natives conservees');
+    assert.match(select, new RegExp('value="profile:' + directorProfileId + '"'), 'Directeur propose');
+    assert.match(select, /value="profile:5"/, 'Comptable propose');
+    assert.match(select, /value="profile:6"/, 'Gardien propose');
+    return 'familles + Directeur, Comptable, Gardien';
+  });
+
+  await checkAsync('proprietaire : filtrer sur Directeur ne renvoie que des directeurs', async () => {
+    const c = client();
+    await c.login('l1.proprietaire');
+    const filtered = await c.request('/Modules.php?modname=Users/User.php&search_modfunc=list&advanced=Y&_search_all_schools=Y&profile=profile:' + directorProfileId);
+
+    assert.ok(filtered.body.includes(director2Name), 'le directeur de l\'ecole 2 est liste');
+    assert.ok(filtered.body.includes(director1Name), 'celui de l\'ecole 1 aussi : le proprietaire voit tout');
+    assert.equal(filtered.body.includes(teacher1Name), false, 'aucun enseignant dans le filtre Directeur (meme famille non plus)');
+    return 'deux ecoles, profils exacts, 0 enseignant';
+  });
+
+  await checkAsync('directeur ecole 2 : le filtre Directeur reste borne a son ecole', async () => {
+    const c = client();
+    await c.login('l1.directeur2');
+    const filtered = await c.request('/Modules.php?modname=Users/User.php&search_modfunc=list&advanced=Y&profile=profile:' + directorProfileId);
+
+    assert.ok(filtered.body.includes(director2Name), 'il voit le directeur de son ecole');
+    assert.equal(filtered.body.includes(director1Name), false, 'pas le Directeur de l\'ecole 1 (portee)');
+    assert.equal(filtered.body.includes(teacher1Name), false, 'ni un enseignant (profil)');
+    return 'meme profil, autre ecole : exclu';
+  });
+
+  await checkAsync('enseignant : aucun profil nomme propose, filtre forge ignore proprement', async () => {
+    const c = client();
+    await c.login('l1.enseignant1');
+    const page = await c.request('/Modules.php?modname=Users/User.php');
+    assert.equal(page.status, 200, 'formulaire accessible');
+    const select = (page.body.match(/<select name="profile"[\s\S]*?<\/select>/) || [''])[0];
+    assert.doesNotMatch(select, /value="profile:/, 'options reservees aux administrateurs');
+
+    const forged = await c.request('/Modules.php?modname=Users/User.php&search_modfunc=list&advanced=Y&profile=profile:' + directorProfileId);
+    assert.equal(forged.status, 200, 'valeur hors liste blanche ignoree, pas une erreur');
+    assert.doesNotMatch(forged.body, /WE HAVE A PROBLEM/, 'aucune erreur SQL');
+    return 'options admin seulement, valeur forgee sans effet';
+  });
+
   // --- 8. Console : le directeur ne peut pas creer d'administrateur --------
   await checkAsync('directeur : creation d\'un administrateur de plateforme refusee', async () => {
     const c = client();

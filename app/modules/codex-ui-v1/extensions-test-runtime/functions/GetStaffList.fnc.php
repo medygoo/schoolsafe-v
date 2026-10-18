@@ -397,6 +397,12 @@ function appendStaffSQL( $sql, $extra = [] )
 				'parent' => _( 'Parent' ),
 				'none' => _( 'No Access' ),
 			];
+
+			// SchoolSafe — profils nommes (Directeur, Comptable, Gardien).
+			if ( function_exists( 'SchoolSafeNamedProfileOptions' ) )
+			{
+				$options += SchoolSafeNamedProfileOptions();
+			}
 		}
 
 		if ( ! empty( $extra['profile'] ) )
@@ -406,7 +412,20 @@ function appendStaffSQL( $sql, $extra = [] )
 
 		if ( isset( $options[ $_REQUEST['profile'] ] ) )
 		{
-			$sql .= " AND s.PROFILE='" . $_REQUEST['profile'] . "' ";
+			$named_profile_id = strpos( $_REQUEST['profile'], 'profile:' ) === 0
+				? (int) substr( $_REQUEST['profile'], strlen( 'profile:' ) )
+				: 0;
+
+			if ( $named_profile_id )
+			{
+				// Filtre exact sur le profil nomme ; la portee par ecole reste
+				// celle de l'acteur, appliquee plus haut dans cette fonction.
+				$sql .= " AND s.PROFILE_ID='" . $named_profile_id . "' ";
+			}
+			else
+			{
+				$sql .= " AND s.PROFILE='" . $_REQUEST['profile'] . "' ";
+			}
 
 			$_ROSARIO['SearchTerms'] .= '<b>' . _( 'Profile' ) . ':</b> ' .
 				$options[ $_REQUEST['profile'] ] . '<br />';
