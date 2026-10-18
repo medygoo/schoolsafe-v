@@ -85,16 +85,22 @@ function availablePort() {
 }
 
 /**
- * Fichiers PHP du runtime modifiés depuis HEAD ou non suivis : chaque correction
- * du lot est couverte sans relire tout le runtime.
+ * Fichiers PHP du runtime touchés par la correction : modifications en cours,
+ * fichiers non suivis, ET fichiers du dernier commit. Sans ce dernier point, une
+ * vérification lancée sur un arbre propre (cas normal avant un déploiement) ne
+ * contrôlerait plus rien.
  */
 function changedRuntimePhpFiles() {
-  const tracked = must('git', ['-C', repoRoot, 'diff', '--name-only', 'HEAD'])
-    .split('\n').map(line => line.trim()).filter(Boolean);
-  const untracked = must('git', ['-C', repoRoot, 'ls-files', '--others', '--exclude-standard'])
+  const list = args => must('git', ['-C', repoRoot, ...args])
     .split('\n').map(line => line.trim()).filter(Boolean);
 
-  return [...new Set([...tracked, ...untracked])]
+  const files = [
+    ...list(['diff', '--name-only', 'HEAD']),
+    ...list(['ls-files', '--others', '--exclude-standard']),
+    ...list(['show', '--name-only', '--format=', 'HEAD']),
+  ];
+
+  return [...new Set(files)]
     .filter(file => /\.php$/.test(file))
     .filter(file => file.startsWith(runtimePrefix))
     .filter(file => existsSync(path.join(repoRoot, file)))
