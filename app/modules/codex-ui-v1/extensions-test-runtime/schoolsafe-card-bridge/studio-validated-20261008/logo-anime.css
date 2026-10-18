@@ -1,0 +1,4 @@
+.schoolsafe-logo-anime{object-fit:contain;animation:schoolsafe-colors 8s linear infinite,schoolsafe-float 3s ease-in-out infinite}
+@keyframes schoolsafe-colors{0%,100%{filter:hue-rotate(0deg) drop-shadow(0 3px 9px #2563eb66)}50%{filter:hue-rotate(180deg) drop-shadow(0 3px 9px #8b5cf666)}}
+@keyframes schoolsafe-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media(prefers-reduced-motion:reduce){.schoolsafe-logo-anime{animation:none}}
