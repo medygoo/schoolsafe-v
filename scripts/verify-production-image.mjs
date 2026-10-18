@@ -48,7 +48,13 @@ const option = (name, fallback = '') => {
   return index >= 0 && argv[index + 1] ? argv[index + 1] : fallback;
 };
 
-const suites = argv.includes('--suite') ? [option('suite')] : ['app/qa-l1-account-state.cjs'];
+// `--suite` peut être répété ; par défaut, toutes les suites du lot courant.
+const requestedSuites = argv
+  .map((value, index) => (value === '--suite' ? argv[index + 1] : ''))
+  .filter(Boolean);
+const suites = requestedSuites.length
+  ? requestedSuites
+  : ['app/qa-l1-account-state.cjs', 'app/qa-dashboard-periods.cjs'];
 const port = Number(option('port', '0')) || 0;
 const image = option('image', 'schoolsafe-verify-prod:local');
 const network = process.env.SCHOOLSAFE_QA_NETWORK || 'schoolsafe-app_backend';

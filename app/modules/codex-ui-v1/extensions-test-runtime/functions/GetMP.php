@@ -216,7 +216,30 @@ function GetAllMP( $mp, $marking_period_id = '0' )
 		}
 	}
 
-	return issetVal( $all_mp[ $mp ][ $marking_period_id ] );
+	// SchoolSafe — garde-fou sur une hiérarchie de périodes incomplète.
+	//
+	// Les branches ci-dessus concatènent `PARENT_ID` sans contrôle : une école
+	// dont les trimestres n'ont pas de semestre parent (PARENT_ID NULL) produit
+	// une liste contenant un élément vide, que PostgreSQL refuse dans IN(...) :
+	// « invalid input syntax for type integer: "" », donc une page d'erreur à la
+	// place du tableau de bord. On ne renvoie plus que des identifiants valides ;
+	// une liste vide renvoie '0' (aucune ligne) plutôt qu'une requête invalide,
+	// car les appelants concaténent ce retour directement dans IN(...).
+	$list = (string) issetVal( $all_mp[ $mp ][ $marking_period_id ] );
+
+	$ids = [];
+
+	foreach ( explode( ',', $list ) as $segment )
+	{
+		$segment = trim( $segment, " '\"\t\n\r" );
+
+		if ( ctype_digit( $segment ) && (int) $segment > 0 )
+		{
+			$ids[(int) $segment] = (int) $segment;
+		}
+	}
+
+	return $ids ? "'" . implode( "','", $ids ) . "'" : "'0'";
 }
 endif;
 
