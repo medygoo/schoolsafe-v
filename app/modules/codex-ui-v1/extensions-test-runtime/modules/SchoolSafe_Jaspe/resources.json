@@ -1,0 +1,8 @@
+{
+  "verified": "2026-10-13",
+  "resources": [
+    {"id":"fractions","title":"Fractions - bandes","subject":"Mathematiques","level":"Primaire - fractions deja abordees","objective":"Comparer des fractions et reconnaitre des equivalences","url":"https://toytheater.com/fraction-strips/","draft":"Represente 1/2, 1/3 et 1/4 avec les bandes. Classe ces fractions de la plus petite a la plus grande. Trouve deux fractions equivalentes a 1/2. Dessine tes reponses sur papier et explique ton raisonnement."},
+    {"id":"clock","title":"Lire l'heure","subject":"Mathematiques","level":"Primaire - lecture de l'heure","objective":"Lire et representer heures et minutes","url":"https://toytheater.com/clock/","draft":"Place les aiguilles a 3 h, 6 h 30 et 9 h 15. Dessine chaque horloge et ecris l'heure correspondante. Combien de minutes separent 6 h et 6 h 30 ?"},
+    {"id":"multiplication","title":"Tables de multiplication","subject":"Mathematiques","level":"Primaire - multiplication deja abordee","objective":"Calculer des produits et comparer l'ordre des facteurs","url":"https://toytheater.com/multiplication-chart/","draft":"Calcule sans la table : 3 x 4, 4 x 3, 5 x 6 et 6 x 5. Verifie ensuite avec la table. Explique ce que tu observes lorsque tu inverses les deux facteurs. Ecris deux autres exemples."}
+  ]
+}

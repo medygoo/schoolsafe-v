@@ -1,0 +1,49 @@
+/* Screen-only presentation: card artwork and print geometry stay untouched. */
+@media screen {
+  body.ss-studio-harmonized { margin:0; background:#fff; color:#1d2e45; font-family:Arial,sans-serif; }
+  .ss-studio-harmonized > header { display:flex; align-items:center; gap:12px; padding:8px 16px; background:#08766b; color:#fff; }
+  .ss-studio-harmonized > header h1 { font-size:20px; margin:0; }
+  .ss-studio-harmonized > header > img { width:40px; height:40px; object-fit:contain; }
+  #ss-studio-home { margin-left:auto; color:#fff; font-size:14px; }
+  .ss-studio-harmonized > main { max-width:1200px; margin:auto; padding:24px; }
+  .ss-studio-harmonized #native-lookup { padding-bottom:16px; border-bottom:1px solid #a9beb5; }
+  .ss-studio-harmonized #PC { display:flex; flex-direction:column; gap:20px; min-width:0; }
+  #PC > [data-studio-group="models"] { order:10; }
+  #PC > [data-studio-group="catalogue"] { order:20; }
+  #PC > [data-studio-group="preview"] { order:30; }
+  #PC > [data-studio-group="personalization"] { order:40; }
+  #PC > [data-studio-group="layout"] { order:50; }
+  #PC > [data-studio-group="production"] { order:60; }
+  .ss-studio-harmonized #PC > fieldset,
+  .ss-studio-harmonized #ss-model-manager { box-sizing:border-box; width:100%; min-width:0; margin:0!important; padding:16px!important; border:1px solid #a9beb5!important; border-radius:6px; background:#fff; }
+  .ss-studio-harmonized #PC > fieldset { display:flex!important; flex-wrap:wrap; align-items:flex-end; gap:16px!important; }
+  .ss-studio-harmonized #PC > fieldset > label { display:flex; flex-direction:column; gap:8px; min-width:120px; flex:1 1 160px; font-size:14px; }
+  .ss-studio-harmonized #PC > fieldset > label:has(input[type="checkbox"]) { flex-direction:row; align-items:center; }
+  .ss-studio-harmonized #PC > fieldset legend { font-weight:700; font-size:15px; color:#08766b; padding:0 8px; }
+  .ss-studio-harmonized #PC > .controls { display:flex; flex-wrap:wrap; gap:8px; margin:0; }
+  .ss-studio-harmonized #PC > fieldset input:not([type="checkbox"]):not([type="color"]),
+  .ss-studio-harmonized #PC > fieldset select { width:100%!important; min-width:0; box-sizing:border-box; }
+  .ss-studio-harmonized button,
+  .ss-studio-harmonized input,
+  .ss-studio-harmonized select { min-height:40px; border-radius:4px; }
+  .ss-studio-harmonized button { padding:8px 12px; cursor:pointer; }
+  .ss-studio-harmonized button:disabled { cursor:not-allowed; opacity:.6; }
+  .ss-studio-harmonized :is(button,input,select,a):focus-visible { outline:3px solid #08766b; outline-offset:3px; }
+  .ss-studio-harmonized button { border-color:#a9beb5; }
+  .ss-studio-harmonized .btn-primary { background:#08766b; color:#fff; border-color:#08766b; }
+  .ss-studio-harmonized #native-lookup button:not([type="button"]) { background:#08766b; color:#fff; border-color:#08766b; }
+  .ss-studio-harmonized .ss-fam-btn.active { background:#edf6f3; color:#075b53; border-color:#08766b; }
+  .ss-studio-harmonized #ss-studio-home { display:grid; place-items:center; width:44px; height:44px; flex:0 0 44px; border:1px solid #fff; border-radius:5px; }
+  .ss-studio-harmonized #ss-studio-home img { width:20px; height:20px; filter:brightness(0) invert(1); }
+  .ss-studio-harmonized #ss-type-label { font-weight:700; padding-top:12px; border-top:1px solid #a9beb5; }
+  .ss-studio-harmonized #ss-model-manager h3 { margin-top:0; color:#08766b; font-size:18px; }
+  @media(max-width:700px) {
+    .ss-studio-harmonized > header { padding:12px 16px; gap:12px; flex-wrap:wrap; }
+    .ss-studio-harmonized > header h1 { font-size:20px; }
+    .ss-studio-harmonized > main { padding:16px; }
+    #ss-studio-home { margin-left:0; }
+    .ss-studio-harmonized #PC > fieldset > label { flex-basis:140px; }
+    .ss-studio-harmonized #native-lookup { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .ss-studio-harmonized #native-lookup p { flex-basis:100%; }
+  }
+}

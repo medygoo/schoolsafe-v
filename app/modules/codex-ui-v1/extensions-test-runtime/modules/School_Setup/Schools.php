@@ -1,0 +1,466 @@
+<?php
+
+require_once 'ProgramFunctions/FileUpload.fnc.php';
+require_once 'ProgramFunctions/Fields.fnc.php';
+require_once 'ProgramFunctions/StudentsUsersInfo.fnc.php';
+require_once 'modules/School_Setup/includes/Schools.fnc.php';
+require_once 'modules/School_Setup/includes/SchoolReceiptIdentity.fnc.php';
+require_once 'ProgramFunctions/SchoolSafeSchoolDocument.fnc.php';
+
+DrawHeader( ProgramTitle() );
+
+if ( $_REQUEST['modfunc'] === 'update'
+	&& AllowEdit() )
+{
+	// Add eventual Dates to $_REQUEST['values'].
+	AddRequestedDates( 'values', 'post' );
+
+	if ( ! empty( $_REQUEST['values'] )
+		&& ! empty( $_POST['values'] )
+		|| ! empty( $_FILES ) )
+	{
+		// FJ other fields required.
+		$required_error = CheckRequiredCustomFields( 'school_fields', $_REQUEST['values'] );
+		$school_email = trim( (string) ( $_POST['school_email'] ?? SchoolSafeSchoolEmail( UserSchool() ) ) );
+		$school_slogan = SchoolSafeDocumentSloganPost( $_POST, SchoolSafeSchoolSlogan( UserSchool() ) );
+		if ( ! SchoolSafeSchoolSloganValid( $school_slogan ) )
+		{
+			$error[] = SchoolSafeT( 'The school slogan must fit on one line, up to 180 characters.', 'Le slogan de l’école doit tenir sur une ligne, avec 180 caractères maximum.' );
+		}
+		if ( ! SchoolSafeSchoolEmailValid( $school_email ) )
+		{
+			$error[] = SchoolSafeT( 'Please enter a valid school email.', 'Veuillez saisir un email valide pour l’école.' );
+		}
+
+		if ( $required_error )
+		{
+			$error[] = _( 'Please fill in the required fields' );
+		}
+
+		// FJ textarea fields MarkDown sanitize.
+		$_REQUEST['values'] = FilterCustomFieldsMarkdown( 'school_fields', 'values' );
+
+		if ( ! $error )
+		{
+			SchoolSafeSaveSchoolEmail( UserSchool(), $school_email );
+			SchoolSafeSaveSchoolSlogan( UserSchool(), $school_slogan );
+			if ( ! empty( $_FILES['LOGO_FILE']['tmp_name'] ) )
+			{
+				ImageUpload( 'LOGO_FILE', [], 'assets/', [], '.jpg', 'school_logo_' . UserSchool() );
+				SchoolSafeUpdateReceiptBrand( UserSchool() );
+			}
+			$fields_RET = DBGet( "SELECT ID,TYPE
+				FROM school_fields
+				ORDER BY SORT_ORDER IS NULL,SORT_ORDER", [], [ 'ID' ] );
+
+			$update_columns = [];
+
+			foreach ( (array) $_REQUEST['values'] as $column => $value )
+			{
+				$numeric_columns = [
+					'REPORTING_GP_SCALE',
+				];
+
+				if ( ( ( ! empty( $fields_RET[str_replace( 'CUSTOM_', '', $column )][1]['TYPE'] )
+						&& $fields_RET[str_replace( 'CUSTOM_', '', $column )][1]['TYPE'] == 'numeric' )
+						|| in_array( $column, $numeric_columns ) )
+					&& $value != ''
+					&& ! is_numeric( $value ) )
+				{
+					$error[] = _( 'Please enter valid Numeric data.' );
+					continue;
+				}
+
+				if ( is_array( $value ) )
+				{
+					// Select Multiple from Options field type format.
+					$value = implode( '||', $value ) ? '||' . implode( '||', $value ) : '';
+				}
+
+				$update_columns[ $column ] = $value;
+			}
+
+			if ( $update_columns )
+			{
+				DBUpdate(
+					'schools',
+					$update_columns,
+					[ 'ID' => UserSchool(), 'SYEAR' => UserSyear() ]
+				);
+			}
+
+			$uploaded = FilesUploadUpdate(
+				'schools',
+				'values',
+				$FileUploadsPath . 'Schools/' . UserSchool() . '/'
+			);
+
+			if ( $update_columns || $uploaded )
+			{
+				$note[] = button( 'check' ) . '&nbsp;' . _( 'This school has been modified.' );
+			}
+
+			UpdateSchoolArray( UserSchool() );
+
+			// @since 5.8 Hook.
+			do_action( 'School_Setup/Schools.php|update_school' );
+		}
+	}
+
+	// Unset modfunc, values & redirect URL.
+	RedirectURL( [ 'modfunc', 'values' ] );
+}
+
+if ( $_REQUEST['modfunc'] === 'delete'
+	&& User( 'PROFILE' ) === 'admin'
+	&& AllowEdit() )
+{
+	if ( DeletePrompt( _( 'School' ) ) )
+	{
+		$delete_sql = SchoolDeleteSQL( UserSchool() );
+
+		DBQuery( $delete_sql );
+
+		// @since 5.8 Hook.
+		do_action( 'School_Setup/Schools.php|delete_school' );
+
+		// Set current school to one of the remaining schools.
+		$_SESSION['UserSchool'] = DBGetOne( "SELECT ID
+			FROM schools
+			WHERE SYEAR = '" . UserSyear() . "' LIMIT 1" );
+
+		UpdateSchoolArray( UserSchool() );
+
+		// Unset modfunc & redirect URL.
+		RedirectURL( 'modfunc' );
+	}
+}
+
+if ( $_REQUEST['modfunc'] === 'remove_file'
+	&& AllowEdit() )
+{
+	if ( DeletePrompt( _( 'File' ) ) )
+	{
+		$column = DBEscapeIdentifier( 'CUSTOM_' . $_REQUEST['id'] );
+
+		$file = $FileUploadsPath . 'Schools/' . UserSchool() . '/' . $_REQUEST['filename'];
+
+		DBQuery( "UPDATE schools SET " . $column . "=REPLACE(" . $column . ", '" . DBEscapeString( $file ) . "||', '')
+			WHERE ID='" . UserSchool() . "'
+			AND SYEAR='" . UserSyear() . "'" );
+
+		// Security: use FileDelete() instead of unlink()
+		FileDelete( $file );
+
+		// Unset modfunc, id, filename & redirect URL.
+		RedirectURL( [ 'modfunc', 'id', 'filename' ] );
+	}
+}
+
+if ( ! $_REQUEST['modfunc'] )
+{
+	echo ErrorMessage( $note, 'note' );
+
+	echo ErrorMessage( $error, 'error' );
+
+	$schooldata = DBGet( "SELECT ID,TITLE,ADDRESS,CITY,STATE,ZIPCODE,PHONE,PRINCIPAL,WWW_ADDRESS,
+		SCHOOL_NUMBER,REPORTING_GP_SCALE,SHORT_NAME,NUMBER_DAYS_ROTATION
+		FROM schools
+		WHERE ID='" . UserSchool() . "'
+		AND SYEAR='" . UserSyear() . "'" );
+
+	$schooldata = $schooldata[1];
+	$school_name = SchoolInfo( 'TITLE' );
+
+	$form_url = 'Modules.php?modname=' . $_REQUEST['modname'] . '&modfunc=update';
+
+	if ( empty( $_REQUEST['_ROSARIO_PDF'] ) )
+	{
+		echo '<header class="ss-f07 ss-rise">';
+		echo '<p class="ss-f07-kicker"><img src="assets/themes/SchoolSafe/icons/school.svg" alt="" width="20" height="20"> ' . SchoolSafeT( 'School', 'Établissement' ) . '</p>';
+		echo '<h2>' . SchoolSafeT( 'School information', 'Fiche de l’école' ) . '</h2>';
+		echo '<p>' . SchoolSafeT( 'This page shows the school: its name, address, phone, principal and website. If you can edit, correct these details, then save.', 'Cette page présente l’école : son nom, son adresse, son téléphone, son directeur et son site. Si vous pouvez modifier, corrigez ces informations, puis enregistrez.' ) . '</p>';
+		echo '</header>';
+	}
+
+	echo '<form action="' . URLEscape( $form_url ) . '" method="POST" enctype="multipart/form-data">';
+
+	$delete_button = '';
+
+	// Delete school only if more than one school.
+	if ( SchoolInfo( 'SCHOOLS_NB' ) > 1 )
+	{
+		// Delete school only if has NO students enrolled in all school years.
+		$has_students_enrolled = DBGetOne( "SELECT 1 AS ENROLLED
+			FROM student_enrollment
+			WHERE SCHOOL_ID='" . UserSchool() . "'
+			AND ('" . DBDate() . "'<=END_DATE OR END_DATE IS NULL )" );
+
+		$can_delete = DBTransDryRun( SchoolDeleteSQL( UserSchool() ) );
+
+		$delete_url = str_replace( 'modfunc=update', 'modfunc=delete', $form_url );
+
+		$delete_button = $can_delete ? '<input type="button" value="' . AttrEscape( _( 'Delete' ) ) .
+			// Change form action's modfunc to delete.
+			// @since RosarioSIS 12.5 CSP remove unsafe-inline Javascript
+			'" class="onclick-ajax-link" data-link="' . URLEscape( $delete_url ) . '" />'
+			: '';
+	}
+
+	// FJ fix bug: no save button if not admin.
+	if ( User( 'PROFILE' ) === 'admin' && AllowEdit() )
+	{
+		DrawHeader(
+			'',
+			// Leave Delete button AFTER the Save one so info are saved on Enter keypress.
+			SubmitButton('', 'submit') . $delete_button
+		);
+	}
+
+	echo '<br />';
+
+	PopTable( 'header', $school_name );
+
+	echo '<table><tr><td colspan="3">' . ( file_exists( 'assets/school_logo_' . UserSchool() . '.jpg' ) ?
+		'<img src="assets/school_logo_' . UserSchool() . '.jpg" style="max-width:225px; max-height:225px;" /><br />
+		<span class="legend-gray">' . _( 'School logo' ) . '</span>' :
+		'' ) . '</td></tr>';
+
+	$school_slogan_parts = explode( ' • ', SchoolSafeSchoolSlogan( UserSchool() ) );
+	echo '<tr><td colspan="3">' . TextInput(
+		$school_slogan_parts[0] ?? '',
+		'school_slogan',
+		SchoolSafeT( 'School slogan', 'Slogan de l’école' ),
+		'maxlength="180"'
+	) . '</td></tr>';
+	for ( $slogan_index = 1; $slogan_index <= 3; $slogan_index++ )
+	{
+		echo '<tr><td colspan="3">' . TextInput(
+			$school_slogan_parts[$slogan_index] ?? '',
+			'school_slogan_extra[' . ( $slogan_index - 1 ) . ']',
+			SchoolSafeT( 'Slogan phrase ', 'Expression du slogan ' ) . ( $slogan_index + 1 ),
+			'maxlength="180"'
+		) . '</td></tr>';
+	}
+	//FJ school name field required
+	echo '<tr><td colspan="3">' . FileInput(
+		'LOGO_FILE',
+		_( 'School logo' ) . ' (.jpg, .png, .gif, .webp)',
+		'accept="image/jpeg,image/png,image/gif,image/webp"'
+	) . '</td></tr>';
+	echo '<tr><td colspan="3">' . TextInput(
+		SchoolSafeSchoolEmail( UserSchool() ),
+		'school_email',
+		SchoolSafeT( 'Official school email', 'Email officiel de l’école' ),
+		'type="email" maxlength="254"'
+	) . '</td></tr>';
+	echo '<tr><td colspan="3">' . TextInput(
+		$schooldata['TITLE'],
+		'values[TITLE]',
+		_( 'School Name' ),
+		'required maxlength=100'
+	) . '</td></tr>';
+
+	echo '<tr><td colspan="3">' . TextInput(
+		$schooldata['ADDRESS'],
+		'values[ADDRESS]',
+		_( 'Address' ),
+		( 'maxlength=100' . ( empty( $schooldata['ADDRESS'] ) ? ' size=26' : '' ) )
+	) . '</td></tr>';
+
+	echo '<tr><td>' . TextInput(
+		$schooldata['CITY'],
+		'values[CITY]',
+		_( 'City' ),
+		'maxlength=100'
+	) . '</td><td>' .
+	TextInput(
+		$schooldata['STATE'],
+		'values[STATE]',
+		_( 'State' ),
+		'maxlength=10 size=5'
+	) . '</td><td>' .
+	TextInput(
+		$schooldata['ZIPCODE'],
+		'values[ZIPCODE]',
+		_( 'Zip Code' ),
+		'maxlength=10 size=5'
+	) . '</td></tr>';
+
+	if ( ! AllowEdit() )
+	{
+		echo '<tr><td colspan="3">' . NoInput(
+			makePhone( $schooldata['PHONE'] ),
+			_( 'Phone' )
+		) . '</td></tr>';
+	}
+	else
+	{
+		echo '<tr><td colspan="3">' . TextInput(
+			$schooldata['PHONE'],
+			'values[PHONE]',
+			_( 'Phone' ),
+			'maxlength=30'
+		) . '</td></tr>';
+	}
+
+	echo '<tr><td colspan="3">' . TextInput(
+		$schooldata['PRINCIPAL'],
+		'values[PRINCIPAL]',
+		_( 'Principal of School' ),
+		'maxlength=100'
+	) . '</td></tr>';
+
+	if ( AllowEdit()
+		|| ! $schooldata['WWW_ADDRESS'] )
+	{
+		echo '<tr><td colspan="3">' . TextInput(
+			$schooldata['WWW_ADDRESS'],
+			'values[WWW_ADDRESS]',
+			_( 'Website' ),
+			( 'maxlength=100' . ( empty( $schooldata['WWW_ADDRESS'] ) ? ' size=26' : '' ) )
+		) . '</td></tr>';
+	}
+	else
+	{
+		$school_link = mb_strpos( $schooldata['WWW_ADDRESS'], 'http' ) === 0 ?
+		$schooldata['WWW_ADDRESS'] :
+		'http://' . $schooldata['WWW_ADDRESS'];
+
+		echo '<tr><td colspan="3">' . NoInput(
+			'<a href="' . URLEscape( $school_link ) . '" target="_blank">' . $schooldata['WWW_ADDRESS'] . '</a>',
+			_( 'Website' )
+		) . '</td></tr>';
+	}
+
+	echo '<tr><td colspan="3">' . TextInput(
+		$schooldata['SHORT_NAME'],
+		'values[SHORT_NAME]',
+		_( 'Short Name' ),
+		'maxlength=25'
+	) . '</td></tr>';
+
+	echo '<tr><td colspan="3">' . TextInput(
+		$schooldata['SCHOOL_NUMBER'],
+		'values[SCHOOL_NUMBER]',
+		_( 'School Number' ),
+		'maxlength=50'
+	) . '</td></tr>';
+
+	echo '<tr><td colspan="3">' . TextInput(
+		(float) $schooldata['REPORTING_GP_SCALE'],
+		'values[REPORTING_GP_SCALE]',
+		_( 'Base Grading Scale' ),
+		'type="number" min="1" max="10000" required'
+	) . '</td></tr>';
+
+	// FJ add School Fields.
+	$fields_RET = DBGet( "SELECT ID,TITLE,TYPE,SELECT_OPTIONS,DEFAULT_SELECTION,REQUIRED
+		FROM school_fields
+		ORDER BY SORT_ORDER IS NULL,SORT_ORDER,TITLE" );
+
+	$fields_RET = ParseMLArray( $fields_RET, 'TITLE' );
+
+	if ( ! empty( $fields_RET ) )
+	{
+		echo '<tr><td colspan="3"><hr></td></tr>';
+	}
+
+	$custom_RET = DBGet( "SELECT *
+		FROM schools
+		WHERE ID='" . UserSchool() . "'
+		AND SYEAR='" . UserSyear() . "'" );
+
+	// Fix PHP warning undefined index when school was deleted
+	$value = empty( $custom_RET[1] ) ? [] : $custom_RET[1];
+
+	foreach ( (array) $fields_RET as $field )
+	{
+		echo '<tr><td colspan="3">';
+
+		switch ( $field['TYPE'] )
+		{
+			case 'text':
+			case 'numeric':
+
+				echo _makeTextInput( 'CUSTOM_' . $field['ID'], $field['TITLE'], 'values' );
+
+				break;
+
+			case 'date':
+
+				echo _makeDateInput( 'CUSTOM_' . $field['ID'], $field['TITLE'], 'values' );
+
+				break;
+
+			case 'textarea':
+
+				echo _makeTextAreaInput( 'CUSTOM_' . $field['ID'], $field['TITLE'], 'values' );
+
+				break;
+
+			// Add School Field types.
+			case 'radio':
+
+				echo _makeCheckboxInput( 'CUSTOM_' . $field['ID'], $field['TITLE'], 'values' );
+
+				break;
+
+			case 'multiple':
+
+				echo _makeMultipleInput( 'CUSTOM_' . $field['ID'], $field['TITLE'], 'values' );
+
+				break;
+
+			case 'autos':
+
+				$col_name = DBEscapeIdentifier( 'CUSTOM_' . $field['ID'] );
+
+				$sql_options = "SELECT DISTINCT s." . $col_name . ",upper(s." . $col_name . ") AS SORT_KEY
+					FROM schools s
+					WHERE (s.SYEAR='" . UserSyear() . "' OR s.SYEAR='" . ( UserSyear() - 1 ) . "')
+					AND s." . $col_name . " IS NOT NULL
+					AND s." . $col_name . "<>''
+					AND s." . $col_name . "<>'---'
+					ORDER BY SORT_KEY";
+
+				$options_RET = DBGet( $sql_options );
+
+				echo _makeAutoSelectInput( 'CUSTOM_' . $field['ID'], $field['TITLE'], 'values', $options_RET );
+
+				break;
+
+			case 'exports':
+			case 'select':
+
+				echo _makeSelectInput( 'CUSTOM_' . $field['ID'], $field['TITLE'], 'values' );
+
+				break;
+
+			case 'files':
+
+				echo _makeFilesInput(
+					'CUSTOM_' . $field['ID'],
+					$field['TITLE'],
+					'values',
+					'Modules.php?modname=' . $_REQUEST['modname'] . '&modfunc=remove_file&id=' . $field['ID'] . '&filename='
+				);
+
+				break;
+		}
+
+		echo '</td></tr>';
+	}
+
+	echo '</table>';
+
+	PopTable( 'footer' );
+
+	if ( User( 'PROFILE' ) === 'admin'
+		&& AllowEdit() )
+	{
+		echo '<br /><div class="center">' . SubmitButton() . '</div>';
+	}
+
+	echo '</form>';
+}

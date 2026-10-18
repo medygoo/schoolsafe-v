@@ -1,0 +1,152 @@
+<?php
+declare(strict_types=1);
+header('Cache-Control: no-store, private');
+header('Pragma: no-cache');
+header('Referrer-Policy: no-referrer');
+header('X-Frame-Options: DENY');
+chdir(dirname(__DIR__,2));
+require_once 'Warehouse.php';
+require_once __DIR__.'/functions.php';
+if (empty($_SESSION['STAFF_ID'])) {header('Location: /index.php');exit;}
+if (!sskcCanRead()) {SchoolSafeScopeDeny();exit;}
+if(isset($_GET['home'])) sskcHomePage();
+if(isset($_GET['wizard'])) sskcWizardPage();
+if(isset($_GET['opening'])) sskcOpeningPage();
+$message='';$failure='';$intent=null;
+try {
+    if(($_SERVER['REQUEST_METHOD']??'')==='POST') {
+        $action=(string)($_POST['action']??'');
+        if($action==='prepare') $intent=sskcPrepareIntent();
+        else {
+            $target=(int)($_POST['staff_id']??0);
+            if(($_POST['confirmed']??'')!=='1')sskcActionReview($action,$target);
+            sskcExistingAction($action,$target);
+            if(in_array($action,['temporary','link'],true)) {header('Location: /schoolsafe-administrators.php?credential='.$target);exit;}
+            $message=$action==='suspend'?'Compte suspendu dans SchoolSafe.':'Compte réactivé dans SchoolSafe.';
+        }
+    }
+} catch(Throwable $e) {$failure=$e->getMessage();}
+if(isset($_GET['credential'])) {
+    // Keep the temporary credential away from the application's global scripts.
+    header("Content-Security-Policy: default-src 'none'; style-src 'self'; font-src 'self'; base-uri 'none'; frame-ancestors 'none'");
+    echo '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Accès temporaire SchoolSafe</title><link rel="stylesheet" href="/assets/themes/FlatSIS/stylesheet.css"><link rel="stylesheet" href="/plugins/SchoolSafe_Keycloak/central-ui.css?v=6"><main class="sskc-shell"><header class="sskc-top"><strong>SchoolSafe</strong><nav><a href="/schoolsafe-administrators.php">Administrateurs</a></nav></header>';
+    try {
+        $id=(int)$_GET['credential'];$row=sskcTarget($id,true);
+        $handoff=$_SESSION['sskc_handoff'][$id]??null;
+        if(!$handoff || $handoff['expires']<time() || $handoff['actor']!==(int)User('STAFF_ID')) {
+            throw new RuntimeException('Cet accès temporaire a déjà été affiché ou a expiré. Vous pouvez en générer un nouveau depuis la liste.');
+        }
+        unset($_SESSION['sskc_handoff'][$id]);
+        sskcAudit('temporary_password_display',$id,'success');
+        echo '<h2>Accès à remettre confidentiellement</h2><p>Ce mot de passe est affiché une seule fois. Remettez-le directement à la personne concernée.</p>';
+        echo '<dl><dt>Identifiant</dt><dd>'.sskcEscape($row['USERNAME']).'</dd><dt>Mot de passe temporaire</dt><dd><code>'
+            .sskcEscape($handoff['password']).'</code></dd></dl>';
+        $client=!empty($handoff['client']) || is_array(SchoolSafeScopeParse($row['SCHOOLS']));
+        $login='https://schoolsafe.179-198-195-15.sslip.io/plugins/SchoolSafe_Keycloak/endpoint.php';
+        $steps=$client?'Complétez vos informations, choisissez un mot de passe personnel, puis ouvrez votre école. Aucun QR code ni Windows Hello obligatoire.':'Choisissez un mot de passe personnel et suivez l’authentification renforcée de l’équipe SchoolSafe.';
+        $document="SchoolSafe — fiche confidentielle\nÀ remettre uniquement à la personne concernée.\n\nIdentifiant : ".$row['USERNAME']."\nMot de passe temporaire : ".$handoff['password']."\nConnexion : ".$login."\n\n".$steps."\nLe mot de passe personnel doit respecter les exigences affichées. Utilisez votre navigateur personnel ; si un autre compte est connecté, ouvrez une fenêtre privée.\nAprès la première connexion, détruisez cette fiche.\n";
+        echo '<p><a class="sskc-action button-primary" download="SchoolSafe-acces-'.$id.'.txt" href="data:text/plain;charset=utf-8;base64,'.base64_encode($document).'">Télécharger la fiche d’accès</a></p><p>Enregistrez le fichier sur votre téléphone ou ordinateur, puis remettez-le confidentiellement à cette personne. Aucun e-mail n’est envoyé automatiquement. Le fichier téléchargé contient un secret et reste présent sur votre appareil jusqu’à sa suppression.</p>';
+        echo '<p>Connexion : <a href="/index.php">SchoolSafe — Connexion administrateur</a>. '
+            .($client?'Responsable d’école : compléter vos informations personnelles et choisir un mot de passe personnel. Aucun QR code ni Windows Hello obligatoire pour le parcours client.'
+            :'Mot de passe personnel à choisir. L’authentification renforcée reste applicable aux comptes de l’équipe SchoolSafe.').'</p>';
+        echo '<p><a href="/schoolsafe-administrators.php">Revenir à la gestion des administrateurs</a></p>';
+    }catch(Throwable $e){echo '<p role="alert">'.sskcEscape($e->getMessage()).'</p>';}
+    echo '<p><a href="/schoolsafe-administrators.php">Retour aux administrateurs</a></p></main></html>';exit;
+}
+$_REQUEST['modname']='Users/User.php';$_ROSARIO['page']='modules';
+sskcUiStart('Gestion des administrateurs');
+echo '<p><a href="/schoolsafe-administrators.php?opening=1">'.(SchoolSafeGlobalAdmin()?'Gestion centrale — ouvertures d’écoles':'Gestion de votre école').'</a></p>';
+echo '<p>Créez un compte, attribuez son profil SchoolSafe et ses écoles, puis remettez son accès temporaire. Les droits existants restent applicables.</p>';
+if($message!=='')echo '<p role="status">'.sskcEscape($message).'</p>';
+if($failure!=='')echo '<p role="alert">'.sskcEscape($failure).'</p>';
+$csrf=sskcEscape((string)$_SESSION['token']);
+if($intent!==null) {
+    $title=DBGetOne('SELECT TITLE FROM user_profiles WHERE id='.(int)$intent['profile']);
+    echo '<h2>Confirmer la création</h2><dl><dt>Personne</dt><dd>'.sskcEscape($intent['first'].' '.$intent['last'])
+        .'</dd><dt>Identifiant</dt><dd>'.sskcEscape($intent['username']).'</dd><dt>Profil</dt><dd>'.sskcEscape($title)
+        .'</dd><dt>Écoles</dt><dd>'.($intent['schools']===''?'Toutes les écoles':sskcEscape($intent['schools'])).'</dd></dl>';
+    echo '<p>SchoolSafe vérifiera les champs et les permissions avant la création. Aucun accès SchoolSafe ne sera remis si la création complète échoue.</p>';
+    echo '<form target="_self" method="post" action="/Modules.php?modname=Users/User.php&amp;modfunc=update&amp;staff_id=new">';
+    $fields=['token'=>$_SESSION['token'],'sskc_intent'=>$intent['id'],'staff[FIRST_NAME]'=>$intent['first'],
+        'staff[LAST_NAME]'=>$intent['last'],'staff[USERNAME]'=>$intent['username'],'staff[EMAIL]'=>$intent['email'],'staff[PROFILE]'=>'admin'];
+    if(isset($intent['middle']))$fields['staff[MIDDLE_NAME]']=$intent['middle'];
+    if(isset($intent['phone']))$fields['staff[CUSTOM_200000001]']=$intent['phone'];
+    $scope=SchoolSafeScopeParse($intent['schools']);
+    if($scope===null)$fields['staff[SCHOOLS][]']='';
+    else foreach($scope as $id)$fields['staff[SCHOOLS]['.$id.']']='Y';
+    foreach($fields as $name=>$value)echo '<input type="hidden" name="'.sskcEscape($name).'" value="'.sskcEscape((string)$value).'">';
+    echo '<input type="submit" class="button-primary" value="Créer le compte et préparer l’accès"></form><p><a href="/schoolsafe-administrators.php">Annuler</a></p>';
+    sskcUiEnd();exit;
+}
+if(sskcWizardAllowed())echo '<p><a class="sskc-action button-primary" target="_self" href="/schoolsafe-administrators.php?wizard=1">Ouvrir une école — parcours en six étapes</a></p>';
+echo '<div class="sskc-list-tools"><h2>Administrateurs dans votre périmètre</h2><label>Rechercher un administrateur<input type="search" id="sskc-account-search" placeholder="Nom, identifiant, profil ou école" autocomplete="off" aria-controls="sskc-accounts"></label><nav aria-label="Actions de gestion">';
+if(sskcCanWrite(true) && (int)UserSyear()===(int)Config('SYEAR'))echo '<a class="sskc-action" href="#sskc-add-admin" data-central-section="sskc-add-admin">Ajouter un administrateur</a>';
+echo '<a class="sskc-action" href="#sskc-history" data-central-section="sskc-history">Voir l’historique</a></nav></div>';
+$rows=DBGet('SELECT s.STAFF_ID,s.USERNAME,s.FIRST_NAME,s.LAST_NAME,s.PROFILE,s.PROFILE_ID,s.SCHOOLS,p.TITLE AS PROFILE_TITLE,'
+    . 'l.SUBJECT,l.STATE,l.ENABLED AS IDENTITY_ENABLED FROM staff s LEFT JOIN user_profiles p ON p.ID=s.PROFILE_ID'
+    . ' LEFT JOIN schoolsafe_identity_links l ON l.STAFF_ID=s.STAFF_ID WHERE s.SYEAR='.(int)UserSyear()
+    . " AND (s.PROFILE='admin' OR (s.PROFILE='none' AND l.STATE='suspended')) ORDER BY s.USERNAME");
+$labels=['active'=>'Actif','onboarding'=>'Première connexion à terminer','suspended'=>'Suspendu'];
+echo '<div class="sskc-table"><table id="sskc-accounts" class="list width-100p"><thead><tr><th>Personne / identifiant</th><th>Profil et écoles</th><th>État</th><th>Actions autorisées</th></tr></thead><tbody>';
+$count=0;
+foreach((array)$rows as $row) {
+    $id=(int)$row['STAFF_ID'];if(!SchoolSafeStaffWithinScope($id))continue;$count++;
+    $scope=SchoolSafeScopeParse($row['SCHOOLS']);
+    echo '<tr id="sskc-account-'.$id.'" tabindex="-1"><td>'.sskcEscape(trim($row['FIRST_NAME'].' '.$row['LAST_NAME'])).'<br>'.sskcEscape($row['USERNAME'])
+        .'</td><td>'.sskcEscape($row['PROFILE_TITLE']?:'Permissions personnalisées').'<br>'
+        .($scope===null?'Toutes les écoles':($scope===false?'Périmètre invalide':sskcEscape(implode(', ',$scope))))
+        .'</td><td>'.sskcEscape($labels[$row['STATE']??'']??'Accès à activer').'</td><td><div class="sskc-account-actions">';
+    echo '<a class="sskc-action sskc-action-secondary" target="_self" href="/Modules.php?modname=Users/User.php&amp;staff_id='.$id.'">Consulter la fiche</a>';
+    $write=sskcCanWrite() && SchoolSafeProfileDelegable((string)$row['PROFILE_ID']) && (int)UserSyear()===(int)Config('SYEAR');
+    if($write && $row['SUBJECT'] && $id!==(int)User('STAFF_ID')) {
+        $actions=$row['STATE']==='suspended'?['resume'=>'Réactiver l’accès']:['temporary'=>'Mot de passe temporaire','suspend'=>'Suspendre l’accès'];
+        foreach($actions as $action=>$label)echo '<form target="_self" method="post" action="/schoolsafe-administrators.php"><input type="hidden" name="token" value="'.$csrf
+            .'"><input type="hidden" name="staff_id" value="'.$id.'"><input type="hidden" name="action" value="'.$action
+            .'"><input type="submit" class="'.($action==='suspend'?'sskc-action-danger':'sskc-action-secondary').'" value="'.sskcEscape($label).'"></form>';
+    }
+    if($write && !$row['SUBJECT'] && $row['PROFILE']==='admin') {
+        echo '<form target="_self" method="post" action="/schoolsafe-administrators.php"><input type="hidden" name="token" value="'.$csrf
+            .'"><input type="hidden" name="staff_id" value="'.$id.'"><input type="hidden" name="action" value="link">'
+            .'<input type="submit" class="button-primary" value="Préparer l’accès"></form>';
+    }
+    echo '</div><p class="sskc-action-help">';
+    if($id===(int)User('STAFF_ID'))echo 'Votre compte connecté : consultez votre fiche. Les opérations de suspension et de renouvellement de votre propre accès sont protégées.';
+    elseif(!$write)echo 'Consultation disponible. Les modifications dépendent de votre profil et de l’année scolaire courante.';
+    elseif(!$row['SUBJECT'])echo 'Préparez l’accès de ce compte existant, puis remettez son mot de passe temporaire.';
+    elseif($row['STATE']==='suspended')echo 'Réactivez l’accès avant de préparer un nouveau mot de passe.';
+    else echo 'Chaque opération affiche un récapitulatif avant confirmation.';
+    echo '</p></td></tr>';
+}
+if(!$count)echo '<tr><td colspan="4">Aucun administrateur accessible dans votre périmètre.</td></tr>';
+echo '</tbody></table></div>';
+if(sskcCanWrite(true) && (int)UserSyear()===(int)Config('SYEAR')) {
+    $profiles=DBGet("SELECT ID,TITLE FROM user_profiles WHERE PROFILE='admin' ORDER BY ID");
+    $schools=DBGet('SELECT ID,TITLE FROM schools WHERE SYEAR='.(int)UserSyear().' ORDER BY TITLE');
+    echo '<details id="sskc-add-admin"><summary>Ajouter un administrateur à une école existante ou à l’équipe SchoolSafe</summary><h2>Créer un administrateur</h2><form target="_self" method="post"><input type="hidden" name="action" value="prepare"><input type="hidden" name="token" value="'.$csrf.'">';
+    echo '<p><label>Parcours de connexion <select name="login_population"><option value="client">Client — responsable d’école, connexion simple</option><option value="team">Équipe SchoolSafe — authentification renforcée</option></select></label></p><p>Un administrateur global conserve toujours l’authentification renforcée.</p>';
+    foreach(['first_name'=>'Prénom','last_name'=>'Nom','username'=>'Identifiant de connexion','email'=>'Adresse e-mail'] as $key=>$label) {
+        echo '<p><label>'.sskcEscape($label).' <input name="'.$key.'" type="'.($key==='email'?'email':'text').'" maxlength="'
+            .(in_array($key,['first_name','last_name'],true)?50:($key==='username'?100:254)).'" required></label></p>';
+    }
+    echo '<p><label>Profil SchoolSafe <select name="profile_id" required><option value="">Choisir un profil</option>';
+    foreach((array)$profiles as $profile)if(SchoolSafeProfileDelegable((string)$profile['ID']))echo '<option value="'.(int)$profile['ID'].'">'.sskcEscape($profile['TITLE']).'</option>';
+    echo '</select></label></p><fieldset><legend>Périmètre scolaire</legend>';
+    echo '<p><label><input type="radio" name="scope_mode" value="schools" checked> Écoles sélectionnées</label></p>';
+    foreach((array)$schools as $school)if(SchoolSafeSchoolAllowed((string)$school['ID']))echo '<p><label><input type="checkbox" name="schools[]" value="'.(int)$school['ID'].'">'.sskcEscape($school['TITLE']).'</label></p>';
+    if(SchoolSafeGlobalAdmin())echo '<p><label><input type="radio" name="scope_mode" value="global"> Toutes les écoles — administrateur global</label></p>';
+    echo '</fieldset><p>Un mot de passe temporaire sera généré. Responsable d’école : informations personnelles et nouveau mot de passe, sans second facteur obligatoire. Administrateur global : authentification renforcée. Aucun droit de gestion globale de la plateforme n’est attribué automatiquement.</p>';
+    echo '<input type="submit" class="button-primary" value="Vérifier et continuer"></form></details>';
+}else echo '<p>Création indisponible : droits de création, de profil et d’écoles requis dans l’année courante.</p>';
+echo '<h2 id="sskc-history" tabindex="-1">Historique récent</h2><div class="sskc-table"><table class="list width-100p"><thead><tr><th>Date</th><th>Gestionnaire</th><th>Compte</th><th>Opération</th><th>Résultat</th></tr></thead><tbody>';
+$events=DBGet('SELECT a.*,s.USERNAME AS TARGET_USERNAME FROM schoolsafe_identity_audit a LEFT JOIN staff s ON s.STAFF_ID=a.TARGET_STAFF_ID ORDER BY a.ID DESC LIMIT 50');
+$eventLabels=['create'=>'Création','link_existing'=>'Liaison existante','temporary'=>'Accès temporaire','temporary_password_display'=>'Remise de l’accès','suspend'=>'Suspension','resume'=>'Réactivation','first_login'=>'Première connexion'];
+$seen=0;
+foreach((array)$events as $event) {
+    if(!SchoolSafeGlobalAdmin() && !SchoolSafeStaffWithinScope((int)$event['TARGET_STAFF_ID']))continue;
+    $seen++;echo '<tr><td>'.sskcEscape($event['OCCURRED_AT']).'</td><td>'.(int)$event['ACTOR_STAFF_ID'].'</td><td>'
+        .sskcEscape($event['TARGET_USERNAME']??('ID '.(int)$event['TARGET_STAFF_ID'])).'</td><td>'
+        .sskcEscape($eventLabels[$event['ACTION']]??$event['ACTION']).'</td><td>'.sskcEscape($event['RESULT']==='success'?'Réussi':'Échec').'</td></tr>';
+}
+if(!$seen)echo '<tr><td colspan="5">Aucune opération récente dans votre périmètre.</td></tr>';
+echo '</tbody></table></div>';
+sskcUiEnd();
