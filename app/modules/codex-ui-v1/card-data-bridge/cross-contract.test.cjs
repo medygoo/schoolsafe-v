@@ -1,0 +1,21 @@
+"use strict";
+const assert = require("node:assert/strict");
+const { execFileSync } = require("node:child_process");
+const { toStudioInput } = require("./rosario-card-input.cjs");
+const { adaptRosarioCard } = require("../../cards/card-adapter.js");
+const raw = execFileSync("docker", ["exec", "codex-addons-web", "php",
+  "/tmp/card-data-bridge/RosarioCardRead.test.php", "--json"], { encoding: "utf8" });
+const native = JSON.parse(raw);
+const bridge = toStudioInput(native);
+const studio = adaptRosarioCard(bridge.input);
+assert.equal(studio.student.id, "12");
+assert.equal(studio.student.first_name, "EXAMPLE");
+assert.equal(studio.school.name, "TEST SCHOOL");
+assert.equal(studio.student.qr, "");
+assert.equal(studio.teacher, null);
+assert.equal(studio.authorizedPeople.length, 0);
+assert.equal(bridge.issuanceAllowed, false);
+assert(bridge.missing.includes("school.email"));
+assert(bridge.missing.includes("class.mapping"));
+assert(!raw.includes("do-not-export"));
+console.log("PASS: PHP provider -> JSON -> bridge -> existing Studio adapter; 10 assertions, mocked native access");

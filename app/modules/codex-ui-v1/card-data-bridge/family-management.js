@@ -1,0 +1,67 @@
+'use strict';
+(() => {
+ const byId=id=>document.getElementById(id),parent=document.body.dataset.parent==='true';
+ const actions={
+ 'parent-activate':['Réactiver une personne que j’ai désactivée',['nativeStudentId','guardianId','reason']],
+ 'parent-list':['Consulter les personnes de mes enfants',['nativeStudentId']],
+ 'parent-suspend':['Suspendre une personne accréditée',['nativeStudentId','authorizationId','reason']],
+ 'parent-family-suspend':['Suspendre une personne familiale',['nativeStudentId','guardianId','reason']],
+ 'school-list':['Consulter les personnes d’un élève',['nativeStudentId']],
+ 'school-family-approve':['Valider la récupération par une personne familiale',['nativeStudentId','guardianId','reason','consent']],
+ 'school-retire':['Retirer une personne sur demande reçue à l’école',['nativeStudentId','guardianId','reason','consent']],
+ 'school-replace':['Remplacer une personne sur demande reçue à l’école',['nativeStudentId','guardianId','reason','fullName','phone','email','address','consent','photoPath']],
+ 'register-external':['Enregistrer une demande d’accréditation',['nativeStudentId','fullName','phone','email','address','consent','photoPath']],
+ 'photo-set':['Associer une photo',['nativeStudentId','guardianId','photoPath']],
+ 'photo-review':['Valider ou refuser une photo',['nativeStudentId','guardianId','decision','reason']],
+ 'validate-authorization':['Valider une accréditation',['nativeStudentId','authorizationId']],
+ 'grants':['Consulter les tâches de scan attribuées',[]],
+ 'delegate':['Attribuer ou retirer une tâche de scan',['profileId','capability','decision','reason']],
+ 'print-request':['Créer une demande d’impression',['nativeStudentId','format']]
+ };
+ const labels={nativeStudentId:'Identifiant élève Rosario',authorizationId:'Référence de l’accréditation',guardianId:'Référence de la personne',profileId:'Référence du profil lié',reason:'Motif',fullName:'Nom complet',phone:'Téléphone',email:'Email',address:'Adresse',consent:'Consentement du parent principal',photoPath:'Photo enregistrée',decision:'Décision',capability:'Tâche',format:'Format'};
+ let csrf='',busy=false;
+ const action=byId('management-action'),fields=byId('management-fields'),state=byId('management-state'),output=byId('management-result'),submit=byId('management-submit');
+ for(const [key,[label]] of Object.entries(actions)){
+  if(parent!==key.startsWith('parent-'))continue;
+  const option=document.createElement('option');option.value=key;option.textContent=label;action.append(option);
+ }
+ function build(){fields.replaceChildren();output.replaceChildren();
+  for(const key of actions[action.value][1]){
+   const label=document.createElement('label');label.textContent=labels[key];
+   let input;
+   const choices=key==='capability'?{'SCAN_ENTRY':'Entrée','SCAN_PICKUP':'Récupération','SCAN_FEES':'Contrôle des frais','SCAN_VERIFY':'Vérification'}
+    :key==='format'?{badge:'Badge vertical',carte:'Carte horizontale'}
+    :key==='decision'?(action.value==='delegate'?{assign:'Attribuer',revoke:'Retirer'}:{accepted:'Accepter',rejected:'Refuser'}):null;
+   if(choices){input=document.createElement('select');for(const [value,text] of Object.entries(choices)){const option=document.createElement('option');option.value=value;option.textContent=text;input.append(option);}}
+   else{input=document.createElement('input');input.type=key==='nativeStudentId'?'number':key==='email'?'email':'text';input.maxLength=500;if(key==='nativeStudentId')input.min='1';}
+   input.name=key;input.required=!['phone','email','address'].includes(key);label.append(input);fields.append(label);
+  }
+ }
+ function paragraph(text){const p=document.createElement('p');p.textContent=text;output.append(p);}
+ function show(data){output.replaceChildren();
+  if(Array.isArray(data)){for(const row of data)paragraph((row.operator_name||'Profil')+' : '+row.capability+' — '+row.profile_id);if(!data.length)paragraph('Aucune tâche attribuée.');return;}
+  if(Array.isArray(data.family)||Array.isArray(data.accredited)){
+   for(const [group,rows] of [['Famille',data.family||[]],['Personnes accréditées',data.accredited||[]]]){
+    const heading=document.createElement('h2');heading.textContent=group;output.append(heading);
+    for(const row of rows){paragraph((row.name||'Personne')+(row.is_primary?' — Parent principal':'')+' — '+(row.pickup_ready?'Récupération autorisée':'Récupération non autorisée'));
+     paragraph('Personne : '+row.guardian_id+(row.authorization_id?' · Accréditation : '+row.authorization_id:''));
+     if(row.photo_path){let url;try{url=new URL(row.photo_path,location.href);}catch(_){}if(url&&url.origin===location.origin&&['http:','https:'].includes(url.protocol)){const image=document.createElement('img');image.src=url.href;image.alt='Photo de '+(row.name||'la personne');image.style.cssText='width:100px;height:125px;object-fit:contain';image.onerror=()=>{image.remove();paragraph('Photo indisponible.');};output.append(image);}}
+    }if(!rows.length)paragraph('Aucune personne enregistrée.');
+   }return;
+  }
+  paragraph(data.status==='pending'?'Demande enregistrée, en attente de validation.':data.status==='revoked'?'Autorisation retirée. Dossier et historique conservés.':data.status==='active'?'Autorisation de récupération active.':data.status==='suspended'?'Autorisation de récupération désactivée.':'Opération confirmée par le moteur.');
+  if(data.id)paragraph('Référence : '+data.id);
+  if(data.guardian_id)paragraph('Personne : '+data.guardian_id);
+  if(data.authorization_id)paragraph('Accréditation : '+data.authorization_id);
+ }
+ action.addEventListener('change',build);build();
+ byId('management-form').addEventListener('submit',async event=>{
+  event.preventDefault();if(busy||!csrf)return;busy=true;submit.disabled=true;action.disabled=true;state.textContent='Traitement...';
+  const input={action:action.value};fields.querySelectorAll('[name]').forEach(field=>{if(field.value)input[field.name]=field.value;});
+  try{const response=await fetch('scanner-relay.php?operation=management',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','X-SchoolSafe-Csrf':csrf},body:JSON.stringify(input)});
+   const result=await response.json();if(!response.ok)throw new Error(String(response.status));show(result.data);state.textContent='';
+  }catch(error){output.replaceChildren();state.textContent=error.message==='403'?'Permission ou périmètre refusé.':error.message==='409'?'Carte officielle active requise.':'Opération non confirmée. Vérifiez le dossier avant de recommencer.';}
+  finally{busy=false;submit.disabled=false;action.disabled=false;}
+ });
+ fetch('scanner-relay.php?operation=capabilities',{credentials:'same-origin',cache:'no-store'}).then(async response=>{if(!response.ok)throw new Error();const data=await response.json();if(typeof data.csrfToken!=='string')throw new Error();csrf=data.csrfToken;submit.disabled=false;state.textContent='';}).catch(()=>{state.textContent='Session Rosario indisponible.';});
+})();

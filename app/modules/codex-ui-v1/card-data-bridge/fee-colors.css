@@ -1,0 +1,4 @@
+#scan-result[data-fee-color]{padding:16px;border-radius:6px;border:2px solid transparent}
+#scan-result[data-fee-color=blue]{color:#1243a6;background:#edf4ff;border-color:#2364ce}
+#scan-result[data-fee-color=yellow]{color:#684800;background:#fff8db;border-color:#b88700}
+#scan-result[data-fee-color=red]{color:#9b1b32;background:#fff0f3;border-color:#cf2d46}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SchoolSafe - Cartes Rosario</title>
+  <link rel="stylesheet" href="studio-original/assets/cards.css">
+  <style>
+    body{margin:0;background:#fff;color:#17203a;font:14px 'Segoe UI',sans-serif;letter-spacing:0}
+    main{max-width:1200px;margin:auto;padding:20px}h1{font-size:22px}
+    form{display:flex;gap:12px;align-items:end;flex-wrap:wrap}label{display:grid;gap:6px}
+    input,button{font:inherit;padding:10px;border:1px solid #cbd5e1;border-radius:6px}
+    button{background:#1644a4;color:white;cursor:pointer}button:disabled{opacity:.5}
+    #status{min-height:24px;margin-top:16px}#details{padding:12px 0;border-block:1px solid #e2e8f0}
+    .ss-card-studio{overflow:auto;padding:20px 0}.rendered{display:flex;gap:20px;flex-wrap:wrap}
+    .ss-badge-wrap{width:340px;height:540px;flex:none}.ss-carte-wrap{width:560px;height:353px;flex:none}
+    @media(max-width:600px){main{padding:12px}.rendered{flex-wrap:nowrap}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Cartes scolaires</h1>
+  <form id="lookup"><label for="student">Identifiant Rosario de l'eleve<input id="student" required inputmode="numeric" pattern="[1-9][0-9]{0,18}"></label><button id="load">Consulter</button></form>
+  <p id="status" role="status" aria-live="polite"></p>
+  <div id="details" hidden></div>
+  <section id="readiness" hidden aria-label="Informations a completer"><h2>Informations a completer</h2><ul id="missing"></ul><p id="schooling"></p></section>
+  <button id="check-issuance" disabled>Verifier avant emission</button>
+  <p id="issuance-status" role="status" aria-live="polite"></p>
+  <section class="ss-card-studio" aria-label="Apercu de la carte"><div id="preview" class="rendered"></div></section>
+</main>
+<script src="studio-original-adapter.js"></script>
+<script src="studio-native-client.js"></script>
+<script type="module" src="studio-native-preview.js"></script>
+</body>
+</html>

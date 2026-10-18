@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "sourceInstance": "codex-addons-local",
+  "environment": "local-isolated-test-only",
+  "ownerDecision": "approved",
+  "nativeSchoolId": "1",
+  "nativeYear": "2026",
+  "nativeStudentId": "1",
+  "nativeParentId": "3",
+  "relationshipSource": "students_join_users",
+  "isPrimary": true,
+  "integrationStatus": "relationship_projected_local_database_verified",
+  "targetSchoolId": "8f1c3850-6568-4a26-8312-ed582c95891b",
+  "targetStudentId": "46141a61-9270-4164-bce4-655ac96a5dd1",
+  "targetProfileId": "9889f9f4-ba6b-4a0b-8103-b80fcb1da11c",
+  "verifiedMatricule": "SCH0023-000001",
+  "blockers": ["active_class_and_enrollment_required", "authenticated_studio_bridge_required", "pickup_workflow_not_verified"],
+  "grantsApplied": false,
+  "pickupAuthorizationGranted": false,
+  "passwordCreated": false
+}
