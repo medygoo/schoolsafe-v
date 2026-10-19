@@ -55,6 +55,31 @@ function json(body: unknown, status = 200): Response {
 }
 
 /**
+ * Texte de la réponse, selon la forme réellement renvoyée par Workers AI.
+ * Selon le modèle, la réponse arrive soit en `{ response: "..." }`, soit en
+ * forme OpenAI `{ choices: [{ message: { content: "..." } }] }`. Renvoyer le
+ * JSON brut à l'élève serait un défaut visible : on n'extrait que le texte, et
+ * l'absence de texte est traitée comme une erreur fournisseur, pas comme une
+ * réponse.
+ */
+function readReply(result: unknown): string | undefined {
+  if (typeof result === "string") return result.trim() || undefined;
+  const out = result as any;
+  const direct = out?.response;
+  if (typeof direct === "string" && direct.trim()) return direct.trim();
+  const content = out?.choices?.[0]?.message?.content;
+  if (typeof content === "string" && content.trim()) return content.trim();
+  if (Array.isArray(content)) {
+    const joined = content
+      .map((part: any) => (typeof part === "string" ? part : typeof part?.text === "string" ? part.text : ""))
+      .join("")
+      .trim();
+    if (joined) return joined;
+  }
+  return undefined;
+}
+
+/**
  * Consommation de jetons, quand le fournisseur la renvoie.
  * Workers AI n'a pas de forme unique selon les modèles : on accepte les deux
  * conventions connues et on omet l'attribut plutôt que d'inventer un chiffre.
@@ -115,18 +140,33 @@ export default {
 
       const aiTarget = env.AI_GATEWAY || env.AI;
 
-      const result = await aiTarget.run(model, {
+      // GLM-4.7-Flash est un modèle « reasoning » : sans cette option il produit
+      // des jetons de raisonnement, ce qui fait varier la réponse de 18 à 60 s
+      // et dépasse le délai de 40 s du client PHP. Le raisonnement n'apporte rien
+      // à une réponse d'accueil scolaire ; on le désactive explicitement.
+      const payload: Record<string, unknown> = {
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: message },
         ],
-      });
+      };
+      if (/glm/i.test(model)) payload.chat_template_kwargs = { enable_thinking: false };
 
-      let text = "";
+      const result = await aiTarget.run(model, payload);
+
       const out: any = result as any;
-      if (out?.response) text = String(out.response);
-      else if (typeof result === "string") text = result;
-      else text = JSON.stringify(result);
+      const text = readReply(result);
+      if (!text) {
+        traceJaspe(env, {
+          sessionKey: body.session_key as string,
+          model,
+          startedAt,
+          endedAt: Date.now(),
+          ok: false,
+          errorCode: "EMPTY_PROVIDER_REPLY",
+        }, ctx);
+        return json({ code: "PROVIDER_ERROR", message: "Reponse vide du fournisseur" }, 502);
+      }
 
       // Métriques seulement : ni message, ni réponse, ni prompt système.
       traceJaspe(env, {

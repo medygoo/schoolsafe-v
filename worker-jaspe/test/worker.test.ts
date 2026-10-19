@@ -15,6 +15,30 @@ test("accepts a valid signed request and invokes Workers AI", async () => {
   assert.equal((await res.json()).reply, "JASPE_OK");
 });
 
+test("extrait le texte d'une reponse au format OpenAI (choices.message.content)", async () => {
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const openAiShape = {
+    JASPE_WORKER_HMAC_SECRET: secret,
+    AI: { run: async () => ({ choices: [{ message: { role: "assistant", content: "  JASPE_OK  " } }] }) },
+  };
+  const res = await worker.fetch(new Request("https://worker.test/", { method: "POST", headers: { "content-type": "application/json", "x-jaspe-timestamp": timestamp, "x-jaspe-signature": sign(timestamp) }, body }), openAiShape as any);
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).reply, "JASPE_OK");
+});
+
+test("une reponse sans texte est une erreur fournisseur, jamais le JSON brut", async () => {
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const empty = {
+    JASPE_WORKER_HMAC_SECRET: secret,
+    AI: { run: async () => ({ id: "chatcmpl-1", choices: [] }) },
+  };
+  const res = await worker.fetch(new Request("https://worker.test/", { method: "POST", headers: { "content-type": "application/json", "x-jaspe-timestamp": timestamp, "x-jaspe-signature": sign(timestamp) }, body }), empty as any);
+  assert.equal(res.status, 502);
+  const payload = await res.json();
+  assert.equal(payload.code, "PROVIDER_ERROR");
+  assert.ok(!JSON.stringify(payload).includes("chatcmpl"));
+});
+
 test("rejects unsigned, invalid and replayed requests", async () => {
   const unsigned = await worker.fetch(new Request("https://worker.test/", { method: "POST", body }), env as any);
   assert.equal(unsigned.status, 401);

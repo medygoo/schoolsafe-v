@@ -11,7 +11,10 @@
  *    changement de mot de passe FORCE a la premiere connexion ;
  *  - etat de compte natif SchoolSafe : active / readonly / suspended / expired
  *    (table schoolsafe_account_state, voir schoolsafe-remediation/014) ;
- *  - revocation des sessions ouvertes (session_epoch) ;
+ *  - etat par PERSONNE ET PAR ECOLE : le tableau affiche l'etat le plus
+ *    restrictif et son detail ecole par ecole, et le proprietaire peut viser
+ *    une seule ecole (les autres gardent leur acces) ;
+ *  - revocation des sessions ouvertes (session_epoch, par ecole) ;
  *  - suspension historique par PROFILE 'none' toujours reconnue a l'affichage.
  *
  * Perimetre : administrateur de la plateforme = toutes les ecoles ; directeur
@@ -244,6 +247,138 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 				}
 			}
 		}
+		elseif ( $action === 'school_create' )
+		{
+			// Création d'école : réservée au propriétaire de la plateforme.
+			if ( ! $schoolsafe_global_admin )
+			{
+				$error = "Seul le proprietaire de la plateforme peut creer un etablissement.";
+			}
+			else
+			{
+				$created = SchoolSafeSchoolCreate( [
+					'title' => $_POST['title'] ?? '',
+					'short_name' => $_POST['short_name'] ?? '',
+					'email' => $_POST['email'] ?? '',
+					'slogan' => $_POST['slogan'] ?? '',
+					'address' => $_POST['address'] ?? '',
+					'city' => $_POST['city'] ?? '',
+					'phone' => $_POST['phone'] ?? '',
+					'template_school_id' => $_POST['template_school_id'] ?? 1,
+				], $syear );
+
+				$messages = [
+					'TITLE_INVALID' => 'Titre obligatoire (100 caracteres max).',
+					'IDENTITY_REQUIRED' => 'Email valide et slogan obligatoires (180 caracteres max pour le slogan).',
+					'TEMPLATE_NOT_FOUND' => 'Ecole gabarit introuvable pour cette annee.',
+					'TEMPLATE_CALENDAR_INVALID' => "Le gabarit a un calendrier incoherent : aucune ecole n'a ete creee.",
+					'CALENDAR_COPY_FAILED' => "La copie du calendrier a echoue : rien n'a ete conserve.",
+					'SCHOOL_NOT_CREATED' => "L'ecole n'a pas ete creee.",
+				];
+
+				if ( empty( $created['ok'] ) )
+				{
+					$error = $messages[ $created['error'] ?? '' ] ?? "L'ecole n'a pas ete creee.";
+
+					if ( ! empty( $created['issues'] ) )
+					{
+						$error .= ' ' . implode( ' ', array_map( 'strval', $created['issues'] ) );
+					}
+				}
+				else
+				{
+					$_SESSION['schoolsafe_console_flash'] = [
+						'type' => 'school',
+						'school_id' => (int) $created['school_id'],
+						'title' => trim( (string) ( $_POST['title'] ?? '' ) ),
+					];
+
+					header( 'Location: admin-console.php' );
+					exit;
+				}
+			}
+		}
+		elseif ( $action === 'school_director_create' )
+		{
+			// Administrateur d'école (profil « Directeur ») : propriétaire seul.
+			if ( ! $schoolsafe_global_admin )
+			{
+				$error = "Seul le proprietaire de la plateforme peut creer un directeur d'ecole.";
+			}
+			else
+			{
+				$created = SchoolSafeCreateDirector( [
+					'first_name' => $_POST['first_name'] ?? '',
+					'last_name' => $_POST['last_name'] ?? '',
+					'username' => $_POST['username'] ?? '',
+					'email' => $_POST['email'] ?? '',
+					'school_id' => $_POST['school_id'] ?? 0,
+					'principal' => ! empty( $_POST['principal'] ),
+				], $syear, (string) User( 'USERNAME' ) );
+
+				$messages = [
+					'NAME_REQUIRED' => 'Prenom et nom obligatoires (50 caracteres max).',
+					'USERNAME_INVALID' => "Nom d'utilisateur invalide.",
+					'USERNAME_TAKEN' => "Ce nom d'utilisateur est deja pris.",
+					'EMAIL_INVALID' => 'Email invalide.',
+					'SCHOOL_NOT_FOUND' => 'Choisissez une ecole existante.',
+					'DIRECTOR_PROFILE_MISSING' => "Le profil nomme « Directeur » n'existe pas : appliquez la migration 015.",
+					'ACCOUNT_NOT_CREATED' => "Le compte n'a pas ete cree.",
+				];
+
+				if ( empty( $created['ok'] ) )
+				{
+					$error = $messages[ $created['error'] ?? '' ] ?? "Le compte n'a pas ete cree.";
+				}
+				else
+				{
+					$_SESSION['schoolsafe_console_flash'] = [
+						'type' => 'created',
+						'username' => $created['username'],
+						'temp' => $created['temp_password'],
+						'role' => $created['role'],
+						'school_id' => (int) $created['school_id'],
+					];
+
+					header( 'Location: admin-console.php' );
+					exit;
+				}
+			}
+		}
+		elseif ( $action === 'school_principal_set' || $action === 'school_leadership_remove' )
+		{
+			$school_id = (int) ( $_POST['school_id'] ?? 0 );
+			$staff_id = (int) ( $_POST['staff_id'] ?? 0 );
+
+			if ( ! $schoolsafe_global_admin )
+			{
+				$error = "Seul le proprietaire de la plateforme peut nommer la direction d'une ecole.";
+			}
+			elseif ( $school_id < 1
+				|| ! DBGetOne( "SELECT 1 FROM schools WHERE SYEAR='" . $syear . "' AND ID='" . $school_id . "'" ) )
+			{
+				$error = 'Etablissement introuvable.';
+			}
+			elseif ( ! SchoolSafeLeadershipReady() )
+			{
+				$error = 'Direction non enregistree (migration 018 appliquee ?).';
+			}
+			elseif ( $action === 'school_leadership_remove'
+				&& ! SchoolSafeLeadershipRemove( $school_id, $staff_id ) )
+			{
+				$error = "Retrait impossible.";
+			}
+			elseif ( $action === 'school_principal_set'
+				&& ! SchoolSafeLeadershipSet( $school_id, $staff_id, 'principal', (string) User( 'USERNAME' ) ) )
+			{
+				$error = "Nomination impossible : verifiez que ce compte est bien un directeur de cette ecole.";
+			}
+			else
+			{
+				header( 'Location: admin-console.php' );
+				exit;
+			}
+		}
 		elseif ( $action === 'reset' || $action === 'revoke' || $action === 'state'
 			|| $action === 'suspend' || $action === 'activate' )
 		{
@@ -309,9 +444,24 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 
 				$until = trim( (string) ( $_POST['until'] ?? '' ) );
 
+				// Ecole visee : 0 = toutes les ecoles du compte. Le proprietaire
+				// peut cibler une seule ecole (suspension ciblee) ; un directeur
+				// reste borne a son ecole du perimetre.
+				$state_school_id = $schoolsafe_global_admin
+					? (int) ( $_POST['state_school_id'] ?? 0 )
+					: (int) SchoolSafeConsoleSchoolsFor( $target, false, $schoolsafe_scope );
+
+				$target_schools = array_values( array_filter( array_map( 'intval',
+					explode( ',', (string) $target['SCHOOLS'] ) ) ) );
+
 				if ( ! in_array( $requested, [ 'active', 'readonly', 'suspended', 'expired' ], true ) )
 				{
 					$error = 'Etat inconnu.';
+				}
+				elseif ( $state_school_id !== 0
+					&& ! in_array( $state_school_id, $target_schools, true ) )
+				{
+					$error = "Cette ecole ne fait pas partie du compte.";
 				}
 				elseif ( $until !== '' && ! preg_match( '/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $until ) )
 				{
@@ -321,8 +471,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 				{
 					$error = "Ce compte a ete ferme par le mecanisme natif (profil No Access). Retablissez son profil dans l'ecran Utilisateurs : un etat ne peut pas inventer un profil.";
 				}
-				elseif ( ! SchoolSafeAccountSet( $target['USERNAME'],
-					SchoolSafeConsoleSchoolsFor( $target, $schoolsafe_global_admin, $schoolsafe_scope ),
+				elseif ( ! SchoolSafeAccountSet( $target['USERNAME'], $state_school_id,
 					$requested, $reason ?: null, $until ?: null ) )
 				{
 					$error = 'Etat non enregistre (migration 014 appliquee ?).';
@@ -377,12 +526,29 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 }
 
 // --- Donnees ---
+// Filtre par ecole (proprietaire) : consulter une ecole a la fois sans
+// melanger les comptes de plusieurs etablissements.
+$schoolsafe_filter_id = $schoolsafe_global_admin
+	? (int) ( $_GET['school_filter'] ?? 0 )
+	: 0;
+
+if ( $schoolsafe_filter_id > 0
+	&& ! DBGetOne( "SELECT 1 FROM schools
+		WHERE SYEAR='" . $syear . "' AND ID='" . $schoolsafe_filter_id . "'" ) )
+{
+	$schoolsafe_filter_id = 0;
+}
+
+$schoolsafe_filter_sql = $schoolsafe_filter_id > 0
+	? " AND s.SCHOOLS IS NOT NULL AND POSITION('," . $schoolsafe_filter_id . ",' IN s.SCHOOLS)>0"
+	: '';
+
 // Tous les comptes du perimetre : le directeur gere ses enseignants, parents,
 // surveillants et comptables, pas seulement les administrateurs.
 $accounts = DBGet( DBQuery( "SELECT s.STAFF_ID,s.USERNAME,s.FIRST_NAME,s.LAST_NAME,s.EMAIL,
 	s.PROFILE,s.PROFILE_ID,s.SCHOOLS,s.LAST_LOGIN
 	FROM staff s
-	WHERE s.SYEAR='" . $syear . "'" . $schoolsafe_scope_sql . "
+	WHERE s.SYEAR='" . $syear . "'" . $schoolsafe_scope_sql . $schoolsafe_filter_sql . "
 	ORDER BY s.LAST_NAME,s.FIRST_NAME" ) );
 
 /**
@@ -392,9 +558,13 @@ function SchoolSafeConsoleState( $account )
 {
 	$schools = array_filter( array_map( 'intval', explode( ',', (string) $account['SCHOOLS'] ) ) );
 
-	$state = function_exists( 'SchoolSafeAccountEffective' )
-		? SchoolSafeAccountEffective( $account['USERNAME'], $schools ?: [ 0 ] )
-		: 'active';
+	// Etat le plus restrictif de la personne : une ecole suspendue se voit
+	// meme si l'ecole listee en premier est active.
+	$state = function_exists( 'SchoolSafeAccountWorstState' )
+		? SchoolSafeAccountWorstState( $account['USERNAME'], $schools )
+		: ( function_exists( 'SchoolSafeAccountEffective' )
+			? SchoolSafeAccountEffective( $account['USERNAME'], $schools ?: [ 0 ] )
+			: 'active' );
 
 	if ( $account['PROFILE'] === 'none' && $state === 'active' )
 	{
@@ -403,6 +573,36 @@ function SchoolSafeConsoleState( $account )
 	}
 
 	return $state;
+}
+
+/**
+ * Detail ecole par ecole : « Ecole A : Actif · Ecole B : Suspendu ».
+ *
+ * Repond a la question « ou exactement ? » sans ouvrir une seconde page.
+ * Vide quand la personne n'a ni ecole ni ligne d'etat.
+ */
+function SchoolSafeConsoleStateDetail( $account, $school_titles )
+{
+	$schools = array_filter( array_map( 'intval', explode( ',', (string) $account['SCHOOLS'] ) ) );
+
+	$entries = function_exists( 'SchoolSafeAccountStates' )
+		? SchoolSafeAccountStates( $account['USERNAME'], $schools )
+		: [];
+
+	$parts = [];
+
+	foreach ( $entries as $entry )
+	{
+		$school_id = (int) $entry['school_id'];
+
+		$label = $school_id > 0
+			? ( $school_titles[ $school_id ] ?? 'Ecole ' . $school_id )
+			: 'Toutes les ecoles';
+
+		$parts[] = $label . ' : ' . SchoolSafeConsoleStateLabel( $entry['state'] );
+	}
+
+	return implode( ' · ', $parts );
 }
 
 /**
@@ -473,6 +673,45 @@ $schools = $schoolsafe_global_admin
 		WHERE SYEAR='" . $syear . "' AND ID IN (" . implode( ',', array_map( 'intval', $schoolsafe_scope ) ) . ")
 		ORDER BY TITLE" ) );
 
+// Libelles d'ecole reutilises par le detail d'etat et le selecteur.
+$school_titles = [];
+
+foreach ( (array) $schools as $school_row )
+{
+	$school_titles[ (int) $school_row['ID'] ] = (string) $school_row['TITLE'];
+}
+
+// Direction de chaque ecole : directeur principal et adjoints (migration 018).
+$school_leadership = [];
+
+foreach ( (array) $schools as $school_row )
+{
+	$school_leadership[ (int) $school_row['ID'] ] = SchoolSafeLeadershipStaff(
+		(int) $school_row['ID'], $syear );
+}
+
+// Comptes administrateurs d'ecole proposes pour nommer un directeur principal.
+// Requete dediee : le filtre de la liste des comptes ne doit pas vider ce
+// selecteur pour les autres ecoles.
+$director_profile_id = SchoolSafeDirectorProfileId();
+
+$school_directors = [];
+
+$director_rows = DBGet( DBQuery( "SELECT s.STAFF_ID,s.USERNAME,s.FIRST_NAME,s.LAST_NAME,s.SCHOOLS
+	FROM staff s
+	WHERE s.SYEAR='" . $syear . "'
+	AND s.PROFILE='admin'" . $schoolsafe_scope_sql . "
+	ORDER BY s.LAST_NAME,s.FIRST_NAME" ) );
+
+foreach ( (array) $director_rows as $director_row )
+{
+	foreach ( array_filter( array_map( 'intval',
+		explode( ',', (string) $director_row['SCHOOLS'] ) ) ) as $director_school )
+	{
+		$school_directors[ $director_school ][] = $director_row;
+	}
+}
+
 ?>
 <!doctype html>
 <html lang="fr">
@@ -530,10 +769,26 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 	<?php
 	if ( $flash && $flash['type'] === 'created' )
 	{
+		$flash_role = ( $flash['role'] ?? '' ) === 'principal'
+			? "Directeur principal de l'ecole"
+			: ( ( $flash['role'] ?? '' ) === 'adjoint' ? "Directeur adjoint de l'ecole" : 'Administrateur' );
+
 		echo '<div class="flash"><strong>Compte pret :</strong> ' . htmlspecialchars( $flash['username'], ENT_QUOTES, 'UTF-8' )
+			. ( isset( $flash['school_id'] ) && (int) $flash['school_id'] > 0
+				? ' — ' . htmlspecialchars( $flash_role, ENT_QUOTES, 'UTF-8' ) . ' (ID ' . (int) $flash['school_id'] . ')'
+				: '' )
 			. '<br>Mot de passe temporaire (affiche une seule fois, a communiquer maintenant) :<br>'
 			. '<code>' . htmlspecialchars( $flash['temp'], ENT_QUOTES, 'UTF-8' ) . '</code>'
-			. '<p class="mut">A sa premiere connexion, cet administrateur sera oblige de choisir son propre mot de passe.</p></div>';
+			. '<p class="mut">A sa premiere connexion, cette personne sera obligee de choisir son propre mot de passe.</p></div>';
+	}
+
+	if ( $flash && $flash['type'] === 'school' )
+	{
+		echo '<div class="flash"><strong>Ecole creee :</strong> '
+			. htmlspecialchars( $flash['title'], ENT_QUOTES, 'UTF-8' )
+			. ' (ID ' . (int) $flash['school_id'] . ')'
+			. '<p class="mut">Calendriers de presence, cours et eleves restent a creer dans SchoolSafe. '
+			. 'Nommez maintenant son directeur dans le parcours guide « Ouvrir une ecole et son directeur ».</p></div>';
 	}
 
 	if ( $error )
@@ -549,6 +804,23 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 				: ' — vos ecoles uniquement';
 		?></h2>
 		<p class="mut">Quatre etats : <strong>Actif</strong> (acces normal), <strong>Lecture seule</strong> (consulte, n'ecrit plus), <strong>Suspendu</strong> (connexion refusee, donnees conservees), <strong>Expire</strong> (fin de validite atteinte). Une date de fin optionnelle : avec <em>Actif</em> elle expire le compte ce jour-la, avec <em>Suspendu</em> ou <em>Lecture seule</em> elle retablit l'acces a cette date.</p>
+		<?php if ( $schoolsafe_global_admin && count( (array) $schools ) > 1 ) { ?>
+		<form method="get" style="margin:0 0 14px">
+			<label class="fl" for="sf">Filtrer par ecole</label>
+			<select name="school_filter" id="sf" onchange="this.form.submit()">
+				<option value="0">Toutes les ecoles</option>
+				<?php
+				foreach ( (array) $schools as $filter_school )
+				{
+					echo '<option value="' . (int) $filter_school['ID'] . '"'
+						. ( (int) $filter_school['ID'] === $schoolsafe_filter_id ? ' selected' : '' ) . '>'
+						. htmlspecialchars( $filter_school['TITLE'], ENT_QUOTES, 'UTF-8' ) . '</option>';
+				}
+				?>
+			</select>
+			<noscript><button type="submit">Filtrer</button></noscript>
+		</form>
+		<?php } ?>
 		<div style="overflow-x:auto">
 		<table class="list">
 			<tr><th>ID</th><th>Utilisateur</th><th>Nom</th><th>Profil</th><th>Etat</th><th>Derniere connexion</th><th>Actions</th></tr>
@@ -566,7 +838,16 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 				echo '<td><strong>' . htmlspecialchars( $account['USERNAME'], ENT_QUOTES, 'UTF-8' ) . '</strong></td>';
 				echo '<td>' . htmlspecialchars( $account['FIRST_NAME'] . ' ' . $account['LAST_NAME'], ENT_QUOTES, 'UTF-8' ) . '</td>';
 				echo '<td>' . htmlspecialchars( SchoolSafeConsoleProfileLabel( $account ), ENT_QUOTES, 'UTF-8' ) . '</td>';
-				echo '<td><span class="badge ' . $badge . '">' . htmlspecialchars( SchoolSafeConsoleStateLabel( $state ), ENT_QUOTES, 'UTF-8' ) . '</span></td>';
+				echo '<td><span class="badge ' . $badge . '">' . htmlspecialchars( SchoolSafeConsoleStateLabel( $state ), ENT_QUOTES, 'UTF-8' ) . '</span>';
+
+				$state_detail = SchoolSafeConsoleStateDetail( $account, $school_titles );
+
+				if ( $state_detail !== '' )
+				{
+					echo '<br><span class="mut">' . htmlspecialchars( $state_detail, ENT_QUOTES, 'UTF-8' ) . '</span>';
+				}
+
+				echo '</td>';
 				echo '<td>' . ( $account['LAST_LOGIN'] ? htmlspecialchars( $account['LAST_LOGIN'], ENT_QUOTES, 'UTF-8' ) : '<em class="mut">jamais connecte</em>' ) . '</td>';
 				echo '<td style="white-space:nowrap">';
 
@@ -575,6 +856,26 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 				echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
 				echo '<input type="hidden" name="console_action" value="state">';
 				echo '<input type="hidden" name="staff_id" value="' . (int) $account['STAFF_ID'] . '">';
+
+				// Proprietaire : l'etat peut viser une seule ecole du compte.
+				if ( $schoolsafe_global_admin )
+				{
+					$account_schools = array_values( array_filter( array_map( 'intval',
+						explode( ',', (string) $account['SCHOOLS'] ) ) ) );
+
+					echo '<select name="state_school_id" aria-label="Ecole visee"' . ( $is_self ? ' disabled' : '' ) . '>';
+					echo '<option value="0">Toutes ses ecoles</option>';
+
+					foreach ( $account_schools as $account_school )
+					{
+						echo '<option value="' . (int) $account_school . '">'
+							. htmlspecialchars( $school_titles[ $account_school ] ?? ( 'Ecole ' . $account_school ), ENT_QUOTES, 'UTF-8' )
+							. '</option>';
+					}
+
+					echo '</select>';
+				}
+
 				echo '<select name="state" aria-label="Etat du compte"' . ( $is_self ? ' disabled' : '' ) . '>';
 
 				foreach ( [ 'active', 'readonly', 'suspended', 'expired' ] as $option )
@@ -666,6 +967,50 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 					echo '<br><span class="mut">et ' . ( count( $calendar_labels ) - 3 ) . ' autre(s).</span>';
 				}
 
+				// Direction de l'ecole : principal, puis adjoints. Une ecole sans
+				// directeur principal est signalee — elle tourne, mais personne ne
+				// la pilote.
+				$leadership_rows = $school_leadership[ (int) $school['ID'] ] ?? [];
+
+				$principal_label = '';
+
+				foreach ( $leadership_rows as $leadership_row )
+				{
+					if ( $leadership_row['ROLE'] === 'principal' )
+					{
+						$principal_label = trim( $leadership_row['FIRST_NAME'] . ' ' . $leadership_row['LAST_NAME'] )
+							. ' (' . $leadership_row['USERNAME'] . ')';
+					}
+				}
+
+				echo '<br><span class="mut">';
+
+				if ( $principal_label !== '' )
+				{
+					echo 'Directeur principal : ' . htmlspecialchars( $principal_label, ENT_QUOTES, 'UTF-8' );
+				}
+				else
+				{
+					echo '<span class="badge ro">Aucun directeur principal</span>';
+				}
+
+				$adjoint_count = 0;
+
+				foreach ( $leadership_rows as $leadership_row )
+				{
+					if ( $leadership_row['ROLE'] === 'adjoint' )
+					{
+						$adjoint_count++;
+					}
+				}
+
+				if ( $adjoint_count > 0 )
+				{
+					echo ' &middot; ' . (int) $adjoint_count . ' adjoint' . ( $adjoint_count > 1 ? 's' : '' );
+				}
+
+				echo '</span>';
+
 				echo '</td>';
 				echo '<td><span class="badge ' . ( $school_state === 'active' ? 'on' : 'off' ) . '">'
 					. htmlspecialchars( SchoolSafeConsoleSchoolStateLabel( $school_state ), ENT_QUOTES, 'UTF-8' ) . '</span>';
@@ -684,6 +1029,38 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 
 				echo '</td>';
 				echo '<td>';
+
+				// Nommer le directeur principal parmi les directeurs de l'ecole.
+				$school_director_rows = $school_directors[ (int) $school['ID'] ] ?? [];
+
+				if ( SchoolSafeLeadershipReady() && count( $school_director_rows ) > 0 )
+				{
+					echo '<form method="post" class="school-action" data-leadership="principal">';
+					echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
+					echo '<input type="hidden" name="console_action" value="school_principal_set">';
+					echo '<input type="hidden" name="school_id" value="' . (int) $school['ID'] . '">';
+					echo '<select name="staff_id" aria-label="Directeur principal">';
+
+					foreach ( $school_director_rows as $director_option )
+					{
+						echo '<option value="' . (int) $director_option['STAFF_ID'] . '"'
+							. ( (int) $director_option['STAFF_ID'] === SchoolSafeLeadershipPrincipal( (int) $school['ID'] ) ? ' selected' : '' ) . '>'
+							. htmlspecialchars( trim( $director_option['FIRST_NAME'] . ' ' . $director_option['LAST_NAME'] ), ENT_QUOTES, 'UTF-8' )
+							. '</option>';
+					}
+
+					echo '</select><button type="submit">Nommer principal</button></form>';
+
+					if ( SchoolSafeLeadershipPrincipal( (int) $school['ID'] ) > 0 )
+					{
+						echo '<form method="post" class="school-action" data-leadership="remove">';
+						echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
+						echo '<input type="hidden" name="console_action" value="school_leadership_remove">';
+						echo '<input type="hidden" name="school_id" value="' . (int) $school['ID'] . '">';
+						echo '<input type="hidden" name="staff_id" value="' . SchoolSafeLeadershipPrincipal( (int) $school['ID'] ) . '">';
+						echo '<button type="submit" class="secondary">Retirer la direction</button></form>';
+					}
+				}
 
 				if ( $school_state !== 'active' )
 				{
@@ -728,31 +1105,11 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 
 	<?php if ( $schoolsafe_global_admin ) { ?>
 	<div class="card">
-		<h2 style="font-size:19px;margin-top:0">Creer un administrateur de plateforme</h2>
-		<form method="post">
-			<input type="hidden" name="console_token" value="<?php echo htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ); ?>">
-			<input type="hidden" name="console_action" value="create">
-			<div class="inline">
-				<div><label class="fl" for="cf">Prenom</label><input type="text" id="cf" name="first_name" maxlength="50" required></div>
-				<div><label class="fl" for="cl">Nom</label><input type="text" id="cl" name="last_name" maxlength="50" required></div>
-			</div>
-			<div class="inline">
-				<div><label class="fl" for="cu">Nom d'utilisateur</label><input type="text" id="cu" name="username" maxlength="100" required></div>
-				<div><label class="fl" for="ce">Email (recommande)</label><input type="email" id="ce" name="email" maxlength="255"></div>
-			</div>
-			<label class="fl">Ecoles gerees par ce compte</label>
-			<div class="schools">
-				<?php
-				foreach ( $schools as $school )
-				{
-					echo '<label><input type="checkbox" name="school_ids[]" value="' . (int) $school['ID'] . '"> '
-						. htmlspecialchars( $school['TITLE'], ENT_QUOTES, 'UTF-8' ) . ' (ID ' . (int) $school['ID'] . ')</label>';
-				}
-				?>
-			</div>
-			<p><button type="submit">Creer l'administrateur</button></p>
-			<p class="mut">Un mot de passe temporaire sera genere : communiquez-le a la personne, elle choisira le sien a sa premiere connexion.</p>
-		</form>
+		<h2 style="font-size:19px;margin-top:0">Creer</h2>
+		<p class="mut">La creation se fait desormais dans un seul parcours guide : l'ecole, son identite, son calendrier et son directeur principal y sont verifies ensemble, puis le mot de passe temporaire est remis une seule fois. Aucun autre ecran ne cree d'ecole ni de directeur.</p>
+		<p><a href="/schoolsafe-administrators.php?wizard=1" style="display:inline-block;background:#126cac;color:#fff;text-decoration:none;border-radius:7px;padding:9px 16px">Ouvrir une ecole et son directeur</a></p>
+		<p><a href="/schoolsafe-administrators.php">Gerer les administrateurs et leurs acces</a></p>
+		<p class="mut">Cette console reste l'ecran de gestion : etats des comptes, suspension ciblee par ecole, revocation des sessions, direction d'ecole et filtre par ecole.</p>
 	</div>
 	<?php } ?>
 </main>

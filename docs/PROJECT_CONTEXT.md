@@ -4,6 +4,8 @@ Dernière mise à jour de la continuité : 16 septembre 2026.
 
 ## Point d'entrée pour la reprise
 
+- **Dépôt canonique depuis le 18/10/2026 : `medygoo/schoolsafe-v`** (ex-`schoolsafePRODELIFIN`). Toute mention de `medygoo/schoolsafe-stable` ci-dessous est historique : ce dépôt est archivé.
+
 - **ACTIVE — 19/09/2026 : base de développement validée ; publication autorisée
   uniquement sur `medygoo/schoolsafe-stable`, branche `develop/codex-base`.**
   Aucun push sur main, déploiement ou VPS. Défauts SQL ouverts et absence de

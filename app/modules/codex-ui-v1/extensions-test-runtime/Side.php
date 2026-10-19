@@ -101,6 +101,16 @@ if ( isset( $_REQUEST['sidefunc'] )
 			SchoolSafeScopeDeny();
 			exit;
 		}
+
+		// SchoolSafe — suspension ciblée : cette école est fermée POUR CETTE
+		// PERSONNE ; les autres écoles de son compte restent accessibles.
+		if ( function_exists( 'SchoolSafeAccountEffective' )
+			&& in_array( SchoolSafeAccountEffective( User( 'USERNAME' ),
+				[ (int) $_REQUEST['school'] ] ), [ 'suspended', 'expired' ], true ) )
+		{
+			SchoolSafeScopeDeny();
+			exit;
+		}
 		$requested_school = DBGetOne( "SELECT ID FROM schools WHERE SYEAR='" . UserSyear() . "' AND ID='" . (int) $_REQUEST['school'] . "'" );
 		if ( ! $requested_school ) { SchoolSafeScopeDeny(); exit; }
 		$unset_student = $unset_staff = true;

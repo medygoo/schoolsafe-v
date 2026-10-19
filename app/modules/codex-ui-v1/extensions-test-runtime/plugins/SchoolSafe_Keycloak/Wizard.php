@@ -123,6 +123,16 @@ function sskcWizardValidate(array $d,int $step): void
     if($step===5) {
         if(!ctype_digit((string)$a['REPORTING_GP_SCALE']) || (int)$a['REPORTING_GP_SCALE']<1 || (int)$a['REPORTING_GP_SCALE']>10000) throw new RuntimeException('La base de notation doit être comprise entre 1 et 10 000.');
         if(!DBGetOne('SELECT ID FROM schools WHERE ID='.(int)$d['source'].' AND SYEAR='.(int)UserSyear()) || !SchoolSafeSchoolAllowed((string)$d['source'])) throw new RuntimeException('Modèle d’école indisponible dans votre périmètre.');
+        // Le modèle doit avoir un calendrier cohérent (année, semestres,
+        // trimestres) : une copie depuis un modèle cassé livrerait une école
+        // dont les écrans échouent. Même contrôle que SchoolSafeSchoolCreate().
+        $calendar=SchoolSafeSchoolCalendarStatuses([(int)$d['source']],(int)UserSyear());
+        $calendarStatus=$calendar[(int)$d['source']]??null;
+        if(!$calendarStatus || empty($calendarStatus['ok'])) {
+            $calendarLabels=array_slice(array_column((array)($calendarStatus['issues']??[]),'label'),0,3);
+            throw new RuntimeException("Le modèle choisi a un calendrier incohérent : aucune école ne sera créée."
+                .($calendarLabels?' '.implode(' ',$calendarLabels):''));
+        }
     }
 }
 function sskcWizardSlogan(array $a): string {return implode(' • ',array_filter(array_map(static fn($k)=>trim((string)($a[$k]??'')),['school_slogan','extra1','extra2','extra3']),static fn($v)=>$v!==''));}

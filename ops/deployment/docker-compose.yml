@@ -51,6 +51,11 @@ services:
       # Jeton de service pour la console AppSmith (admin-console-bridge.php).
       # Absent => l'endpoint repond 503 (echec ferme).
       SCHOOLSAFE_CONSOLE_TOKEN: ${SCHOOLSAFE_CONSOLE_TOKEN:-}
+      # Cerveau JASPE (Cloudflare Workers AI). Absent ou incomplet => JASPE reste
+      # en conversation locale et n'appelle jamais le reseau (echec ferme).
+      # La signature HMAC exige un secret d'au moins 32 caracteres.
+      JASPE_WORKER_URL: ${JASPE_WORKER_URL:-}
+      JASPE_WORKER_HMAC_SECRET: ${JASPE_WORKER_HMAC_SECRET:-}
     volumes:
       # Configuration production pilotée par l'environnement, aucun secret écrit dans le code.
       - ../../ops/deployment/config.inc.production.php:/var/www/html/config.inc.php:ro

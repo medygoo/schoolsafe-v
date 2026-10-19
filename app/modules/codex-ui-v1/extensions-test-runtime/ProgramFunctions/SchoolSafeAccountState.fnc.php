@@ -190,7 +190,184 @@ function SchoolSafeAccountEffective( $username, $school_ids = [ 0 ] )
 }
 
 /**
+ * Poids d'un état : plus il est élevé, plus l'accès est restreint.
+ */
+function SchoolSafeAccountStateWeight( $state )
+{
+	$weights = [ 'suspended' => 4, 'expired' => 3, 'readonly' => 2, 'active' => 1 ];
+
+	return $weights[ $state ] ?? 1;
+}
+
+/**
+ * État d'une personne pour une école précise.
+ *
+ * La ligne de l'école prime ; à défaut la ligne « toutes les écoles » ;
+ * sinon actif. C'est la règle qui rend une suspension ciblée : elle ne
+ * s'applique qu'à son école.
+ */
+function SchoolSafeAccountStateForSchool( $username, $school_id )
+{
+	$rows = SchoolSafeAccountRows( $username );
+
+	$school_id = max( 0, (int) $school_id );
+
+	if ( isset( $rows[ $school_id ] ) )
+	{
+		return SchoolSafeAccountApplyUntil( $rows[ $school_id ]['STATE'], $rows[ $school_id ]['UNTIL'] );
+	}
+
+	if ( isset( $rows[0] ) )
+	{
+		return SchoolSafeAccountApplyUntil( $rows[0]['STATE'], $rows[0]['UNTIL'] );
+	}
+
+	return 'active';
+}
+
+/**
+ * États détaillés : ligne « toutes les écoles » puis une entrée par école.
+ *
+ * Sert à la console : un compte de plusieurs écoles se lit école par école.
+ *
+ * @param string $username   Compte.
+ * @param array  $school_ids Écoles de la personne.
+ *
+ * @return array Liste d'entrées [ 'school_id' => int, 'state' => string ].
+ */
+function SchoolSafeAccountStates( $username, $school_ids = [] )
+{
+	$rows = SchoolSafeAccountRows( $username );
+
+	$states = [];
+
+	// Ligne globale : elle s'applique à toutes les écoles.
+	if ( isset( $rows[0] ) )
+	{
+		$states[] = [
+			'school_id' => 0,
+			'state' => SchoolSafeAccountApplyUntil( $rows[0]['STATE'], $rows[0]['UNTIL'] ),
+		];
+	}
+
+	foreach ( SchoolSafeAccountSchoolIds( $school_ids ) as $school_id )
+	{
+		if ( $school_id === 0 )
+		{
+			continue;
+		}
+
+		$states[] = [
+			'school_id' => $school_id,
+			'state' => SchoolSafeAccountStateForSchool( $username, $school_id ),
+		];
+	}
+
+	return $states;
+}
+
+/**
+ * État le plus restrictif de la personne, toutes ses écoles.
+ *
+ * Une suspension ciblée doit se voir même si l'école listée en premier est
+ * active : c'est la restriction la plus forte qui s'affiche.
+ */
+function SchoolSafeAccountWorstState( $username, $school_ids = [] )
+{
+	$worst = 'active';
+
+	foreach ( SchoolSafeAccountStates( $username, $school_ids ) as $entry )
+	{
+		if ( SchoolSafeAccountStateWeight( $entry['state'] )
+			> SchoolSafeAccountStateWeight( $worst ) )
+		{
+			$worst = $entry['state'];
+		}
+	}
+
+	return $worst;
+}
+
+/**
+ * Écoles encore utilisables : ni suspendues, ni expirées.
+ *
+ * Une personne sans école assignée (portée plateforme) renvoie [ 0 ] tant que
+ * la ligne globale reste ouverte. Une ligne globale coupée coupe tout.
+ *
+ * @param string $username   Compte.
+ * @param array  $school_ids Écoles de la personne.
+ *
+ * @return array Identifiants d'école utilisables (peut être vide).
+ */
+function SchoolSafeAccountAccessibleSchools( $username, $school_ids = [] )
+{
+	$ids = SchoolSafeAccountSchoolIds( $school_ids );
+
+	$global = SchoolSafeAccountStateForSchool( $username, 0 );
+
+	if ( $global === 'suspended' || $global === 'expired' )
+	{
+		return [];
+	}
+
+	$accessible = [];
+
+	foreach ( $ids as $school_id )
+	{
+		if ( $school_id === 0 )
+		{
+			continue; // Déjà couvert par la ligne globale.
+		}
+
+		$state = SchoolSafeAccountStateForSchool( $username, $school_id );
+
+		if ( $state !== 'suspended' && $state !== 'expired' )
+		{
+			$accessible[] = $school_id;
+		}
+	}
+
+	// Aucune école assignée : portée plateforme.
+	if ( ! $accessible && $ids === [ 0 ] )
+	{
+		$accessible[] = 0;
+	}
+
+	return $accessible;
+}
+
+/**
+ * Époque de session valable pour une école.
+ *
+ * Une révocation globale (école 0) coupe toutes les écoles ; une révocation
+ * ciblée ne coupe que son école, laissant vivre une session ouverte ailleurs.
+ *
+ * @param string $username  Compte.
+ * @param int    $school_id École de la session (0 = toutes).
+ *
+ * @return int
+ */
+function SchoolSafeAccountSchoolEpoch( $username, $school_id )
+{
+	$rows = SchoolSafeAccountRows( $username );
+
+	$school_id = max( 0, (int) $school_id );
+
+	$epoch = (int) ( $rows[0]['SESSION_EPOCH'] ?? 0 );
+
+	if ( $school_id > 0 && isset( $rows[ $school_id ] ) )
+	{
+		$epoch = max( $epoch, (int) $rows[ $school_id ]['SESSION_EPOCH'] );
+	}
+
+	return $epoch;
+}
+
+/**
  * Époque de session de la personne : la plus haute de toutes ses lignes.
+ *
+ * Pour la garde de session, utiliser SchoolSafeAccountSchoolEpoch() : une
+ * révocation ciblée ne doit pas couper les autres écoles.
  */
 function SchoolSafeAccountEpoch( $username )
 {
@@ -468,19 +645,86 @@ function SchoolSafeAccountSessionGuard()
 		return;
 	}
 
-	$state = SchoolSafeAccountEffective( $username, [ SchoolSafeAccountCurrentSchool() ] );
+	$current_school = SchoolSafeAccountCurrentSchool();
 
-	$revoked = (int) ( $_SESSION['SchoolSafeEpoch'] ?? 0 ) !== SchoolSafeAccountEpoch( $username );
+	// Époques PAR ÉCOLE : une révocation ciblée ne coupe que son école ; une
+	// révocation globale (école 0) coupe toutes les écoles.
+	$epochs = isset( $_SESSION['SchoolSafeEpochs'] ) && is_array( $_SESSION['SchoolSafeEpochs'] )
+		? $_SESSION['SchoolSafeEpochs'] : null;
 
-	if ( $state !== 'suspended' && $state !== 'expired' && ! $revoked )
+	if ( $epochs === null )
+	{
+		// Session ouverte avant le suivi par école : on repart de l'époque
+		// enregistrée à la connexion pour l'école courante.
+		$epochs = [ $current_school => (int) ( $_SESSION['SchoolSafeEpoch'] ?? 0 ) ];
+	}
+
+	$epoch_now = SchoolSafeAccountSchoolEpoch( $username, $current_school );
+
+	if ( ! isset( $epochs[ $current_school ] ) )
+	{
+		// Première visite de cette école : l'époque courante est la référence.
+		$epochs[ $current_school ] = $epoch_now;
+	}
+
+	$_SESSION['SchoolSafeEpochs'] = $epochs;
+
+	$revoked = (int) $epochs[ $current_school ] !== $epoch_now;
+
+	$state = SchoolSafeAccountStateForSchool( $username, $current_school );
+
+	$global_state = SchoolSafeAccountStateForSchool( $username, 0 );
+
+	$reason = '';
+
+	if ( $global_state === 'suspended' || $global_state === 'expired' )
+	{
+		// Ligne « toutes les écoles » coupée : aucune école ne reste ouverte.
+		$reason = $global_state;
+	}
+	elseif ( $revoked )
+	{
+		$reason = 'revoked';
+	}
+	elseif ( $state === 'suspended' || $state === 'expired' )
+	{
+		// École courant coupée : si une autre école reste ouverte, on y ramène
+		// la session au lieu de la détruire (suspension ciblée).
+		$schools_RET = DBGetOne( "SELECT SCHOOLS FROM staff
+			WHERE SYEAR='" . (int) $syear . "'
+			AND USERNAME='" . DBEscapeString( $username ) . "'" );
+
+		$school_ids = array_filter( array_map( 'intval',
+			explode( ',', (string) $schools_RET ) ) );
+
+		$fallback = 0;
+
+		foreach ( SchoolSafeAccountAccessibleSchools( $username, $school_ids ) as $candidate )
+		{
+			if ( (int) $candidate > 0 && (int) $candidate !== $current_school )
+			{
+				$fallback = (int) $candidate;
+				break;
+			}
+		}
+
+		if ( $fallback > 0 )
+		{
+			$_SESSION['UserSchool'] = $fallback;
+			$_SESSION['UserMP'] = null;
+
+			return;
+		}
+
+		$reason = $state;
+	}
+
+	if ( $reason === '' )
 	{
 		return;
 	}
 
 	SchoolSafeAccountEndSession();
-
-	$reason = $state === 'suspended' ? 'suspended'
-		: ( $state === 'expired' ? 'expired' : 'revoked' );
 
 	if ( ! empty( $_SERVER['HTTP_X_REQUESTED_WITH'] )
 		|| ( isset( $_SERVER['HTTP_ACCEPT'] )

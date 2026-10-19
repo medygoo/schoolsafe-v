@@ -557,7 +557,7 @@ function client() {
     const page = await c.request('/admin-console.php');
     const token = (page.body.match(/name="console_token" value="([^"]+)"/) || [])[1];
     assert.ok(token, 'jeton CSRF present');
-    assert.doesNotMatch(page.body, /Creer un administrateur de plateforme/, 'formulaire reserve au proprietaire');
+    assert.doesNotMatch(page.body, /schoolsafe-administrators\.php\?wizard=1/, 'carte de creation reservee au proprietaire');
 
     const attempt = await c.request('/admin-console.php', {
       method: 'POST',
@@ -567,6 +567,38 @@ function client() {
     assert.match(attempt.body, /proprietaire de la plateforme/i, 'refus explique');
     assert.equal(sql("SELECT COUNT(1) FROM staff WHERE USERNAME LIKE 'l1.pirate.%'"), '0', 'aucun compte cree');
     return 'refus, 0 compte cree';
+  });
+
+  // --- 8 bis. Creation native : un seul choix de profil --------------------
+  await checkAsync('creation utilisateur : un seul choix (profil nomme), directeur sans ecole refuse', async () => {
+    const c = client();
+    assert.match((await c.login('l1.proprietaire')).location, /modname=/, 'proprietaire connecte');
+
+    const page = await c.request('/Modules.php?modname=Users/User.php&staff_id=new');
+    assert.equal(page.status, 200, 'formulaire de creation accessible');
+    const select = (page.body.match(/<select name="staff\[PROFILE_ID\]"[\s\S]*?<\/select>/) || [''])[0];
+    assert.match(select, /value="4">Directeur/, 'profil nomme propose');
+    assert.doesNotMatch(page.body, /name="staff\[PROFILE\]"/, 'le double choix a disparu');
+
+    const token = (page.body.match(/name="token" content="([^"]+)"/) || [])[1];
+    assert.ok(token, 'jeton CSRF du formulaire');
+
+    const username = 'l1.noschool.' + Date.now();
+    const refused = await c.request('/Modules.php?modname=Users/User.php&staff_id=new&modfunc=update', {
+      method: 'POST',
+      form: {
+        token,
+        'staff[FIRST_NAME]': 'QA',
+        'staff[LAST_NAME]': 'SansEcole',
+        'staff[USERNAME]': username,
+        'staff[PASSWORD]': 'Test-Pass-2026!',
+        'staff[EMAIL]': username + '@test.local',
+        'staff[PROFILE_ID]': '4',
+      },
+    });
+    assert.match(refused.body, /must be assigned at least one school/, 'refus explique');
+    assert.equal(sql(`SELECT COUNT(1) FROM staff WHERE USERNAME='${username}'`), '0', 'aucun compte cree');
+    return 'un seul selecteur + refus sans ecole';
   });
 
   // --- 9. Compte proprietaire PRODELI --------------------------------------
@@ -616,8 +648,8 @@ function client() {
       const consolePage = await c.request('/admin-console.php');
       assert.equal(consolePage.status, 200, 'console accessible');
       assert.match(consolePage.body, /plateforme entiere/, 'portee plateforme presentee');
-      assert.match(consolePage.body, /Creer un administrateur de plateforme/,
-        'formulaire reserve au proprietaire visible');
+      assert.match(consolePage.body, /schoolsafe-administrators\.php\?wizard=1/,
+        'porte de creation reservee au proprietaire visible');
       return 'connexion + 2 ecoles + console proprietaire verifies';
     });
   }

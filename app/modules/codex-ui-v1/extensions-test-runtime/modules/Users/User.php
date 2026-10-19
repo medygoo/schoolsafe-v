@@ -176,6 +176,35 @@ if ( $_REQUEST['modfunc'] === 'update'
 		SchoolSafeScopeDeny(); return;
 	}
 
+	// SchoolSafe — garde-fou : un profil nomme a portee d'ecole (Directeur,
+	// Comptable...) sans aucune ecole deviendrait proprietaire de la plateforme,
+	// puisque SCHOOLS vide signifie « toutes les ecoles ». On refuse au lieu de
+	// promouvoir en silence ; les profils natifs 1/2/3 restent inchanges.
+	if ( User( 'PROFILE' ) === 'admin'
+		&& function_exists( 'SchoolSafeSchoolScopedProfileRequiresSchool' ) )
+	{
+		$guard_profile_id = (int) ( $_REQUEST['staff']['PROFILE_ID'] ?? 0 );
+
+		if ( $guard_profile_id < 1 && UserStaffID() )
+		{
+			$guard_profile_id = (int) DBGetOne( "SELECT PROFILE_ID FROM staff
+				WHERE STAFF_ID='" . (int) UserStaffID() . "'" );
+		}
+
+		$guard_schools = isset( $_REQUEST['staff']['SCHOOLS'] )
+			? (string) $_REQUEST['staff']['SCHOOLS']
+			: ( UserStaffID()
+				? (string) DBGetOne( "SELECT SCHOOLS FROM staff
+					WHERE STAFF_ID='" . (int) UserStaffID() . "'" )
+				: '' );
+
+		if ( SchoolSafeSchoolScopedProfileRequiresSchool( $guard_profile_id )
+			&& trim( $guard_schools, ',' ) === '' )
+		{
+			$error[] = _( 'A school-level profile (Director, Accountant...) must be assigned at least one school: without a school, the account would manage the whole platform.' );
+		}
+	}
+
 	if (  ( User( 'PROFILE' ) === 'admin'
 		&& ! AllowEdit( 'Users/User.php&category_id=1&schools' ) )
 		|| User( 'PROFILE' ) !== 'admin' )

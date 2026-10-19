@@ -214,6 +214,52 @@ switch ( $action )
 			AND (PROFILE_ID=1 OR PROFILE='none')
 			ORDER BY LAST_NAME,FIRST_NAME" ) );
 
+		// Etat reel de chaque compte (personne + ecoles) : une suspension par
+		// etat et une suspension par profil No Access doivent se lire pareil.
+		$state_ready = function_exists( 'SchoolSafeAccountReady' )
+			&& SchoolSafeAccountReady();
+
+		foreach ( $admins as $admin_key => $admin_row )
+		{
+			$admin_schools = array_values( array_filter( array_map( 'intval',
+				explode( ',', (string) $admin_row['SCHOOLS'] ) ) ) );
+
+			if ( ! $state_ready )
+			{
+				// Repli sans migration : le profil natif est la seule source.
+				$admins[$admin_key]['STATE'] = $admin_row['PROFILE'] === 'none'
+					? 'suspended' : 'active';
+				$admins[$admin_key]['STATE_SOURCE'] = 'profile';
+				$admins[$admin_key]['SCHOOL_STATES'] = [];
+				$admins[$admin_key]['STATE_DETAIL'] = $admins[$admin_key]['STATE'];
+
+				continue;
+			}
+
+			// État le plus restrictif de la personne : une école suspendue se
+			// voit même si l'école listée en premier est active.
+			$admin_states = SchoolSafeAccountStates( $admin_row['USERNAME'], $admin_schools );
+
+			$admin_detail = [];
+
+			foreach ( $admin_states as $state_entry )
+			{
+				$admin_detail[] = ( $state_entry['school_id'] > 0
+					? 'ecole ' . $state_entry['school_id']
+					: 'toutes les ecoles' ) . ' : ' . $state_entry['state'];
+			}
+
+			$admins[$admin_key]['STATE'] = SchoolSafeAccountWorstState( $admin_row['USERNAME'], $admin_schools );
+
+			$admins[$admin_key]['STATE_SOURCE'] = 'account_state';
+
+			// Détail école par école : la console affiche les deux colonnes.
+			$admins[$admin_key]['SCHOOL_STATES'] = $admin_states;
+
+			$admins[$admin_key]['STATE_DETAIL'] = $admin_detail
+				? implode( ' ; ', $admin_detail ) : 'actif';
+		}
+
 		SchoolSafeConsoleReply( 200, [ 'ok' => true, 'data' => $admins ] );
 
 	case 'create-admin':
@@ -324,182 +370,159 @@ switch ( $action )
 
 		$admin = SchoolSafeConsoleFindAdmin( $request['staff_id'] ?? 0, $syear );
 
+		$school_id = (int) ( $request['school_id'] ?? 0 );
+
+		if ( $school_id < 0 )
+		{
+			SchoolSafeConsoleReply( 400, [ 'ok' => false, 'error' => 'SCHOOL_ID_INVALID' ] );
+		}
+
+		if ( $school_id > 0
+			&& ! DBGetOne( "SELECT ID FROM schools
+				WHERE ID='" . $school_id . "' AND SYEAR='" . (int) $syear . "'" ) )
+		{
+			SchoolSafeConsoleReply( 400, [ 'ok' => false, 'error' => 'SCHOOL_NOT_FOUND' ] );
+		}
+
+		/**
+		 * Etat de compte (migration 014) = source de verite quand elle existe.
+		 *
+		 * Il porte sur la personne ET l'ecole et incremente l'epoque de session,
+		 * donc une suspension coupe les sessions deja ouvertes. Le profil natif
+		 * `none` n'est plus utilise que si cette couche est absente : avant, il
+		 * etait pose seul, ce qui laissait la session ouverte et bloquait la
+		 * reactivation par etat (le profil restait « No Access »).
+		 */
+		$state_ready = function_exists( 'SchoolSafeAccountReady' )
+			&& SchoolSafeAccountReady();
+
+		$reason = trim( (string) ( $request['reason'] ?? '' ) );
+
+		$until = trim( (string) ( $request['until'] ?? '' ) );
+
+		if ( $until !== ''
+			&& ! preg_match( '/^[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}(:[0-9]{2})?)?$/', $until ) )
+		{
+			SchoolSafeConsoleReply( 400, [ 'ok' => false, 'error' => 'UNTIL_INVALID' ] );
+		}
+
 		if ( $action === 'suspend' )
 		{
-			if ( $admin['PROFILE'] === 'none' )
+			$current = $state_ready
+				? SchoolSafeAccountEffective( $admin['USERNAME'], [ $school_id ] )
+				: ( $admin['PROFILE'] === 'none' ? 'suspended' : 'active' );
+
+			if ( $current === 'suspended' )
 			{
 				SchoolSafeConsoleReply( 409, [ 'ok' => false, 'error' => 'ALREADY_SUSPENDED' ] );
 			}
 
-			// Mecanisme natif No Access ; PROFILE_ID conserve pour la reactivation.
-			DBUpdate( 'staff', [ 'PROFILE' => 'none' ],
-				[ 'STAFF_ID' => (int) $admin['STAFF_ID'], 'SYEAR' => $syear ] );
+			if ( $state_ready )
+			{
+				if ( ! SchoolSafeAccountSet( $admin['USERNAME'], $school_id, 'suspended',
+					$reason ?: 'Suspension PRODELI', $until ?: null, true ) )
+				{
+					SchoolSafeConsoleReply( 500, [ 'ok' => false, 'error' => 'STATE_NOT_SAVED' ] );
+				}
+			}
+			else
+			{
+				// Repli : mecanisme natif No Access, PROFILE_ID conserve.
+				DBUpdate( 'staff', [ 'PROFILE' => 'none' ],
+					[ 'STAFF_ID' => (int) $admin['STAFF_ID'], 'SYEAR' => $syear ] );
+			}
 
-			SchoolSafeConsoleReply( 200, [ 'ok' => true, 'data' => [ 'staff_id' => (int) $admin['STAFF_ID'], 'status' => 'suspended' ] ] );
+			SchoolSafeConsoleReply( 200, [
+				'ok' => true,
+				'data' => [
+					'staff_id' => (int) $admin['STAFF_ID'],
+					'username' => $admin['USERNAME'],
+					'status' => 'suspended',
+					'state' => 'suspended',
+					'school_id' => $school_id,
+					'until' => $until ?: null,
+					'session_revoked' => $state_ready,
+					'session_epoch' => $state_ready ? SchoolSafeAccountEpoch( $admin['USERNAME'] ) : null,
+					'state_source' => $state_ready ? 'account_state' : 'profile',
+				],
+			] );
 		}
 
-		if ( $admin['PROFILE'] !== 'none' )
+		// Reactivation.
+		$current = $state_ready
+			? SchoolSafeAccountEffective( $admin['USERNAME'], [ $school_id ] )
+			: ( $admin['PROFILE'] === 'none' ? 'suspended' : 'active' );
+
+		if ( $current === 'active' && $admin['PROFILE'] !== 'none' )
 		{
 			SchoolSafeConsoleReply( 409, [ 'ok' => false, 'error' => 'ALREADY_ACTIVE' ] );
 		}
 
-		DBUpdate( 'staff', [ 'PROFILE' => 'admin' ],
-			[ 'STAFF_ID' => (int) $admin['STAFF_ID'], 'SYEAR' => $syear ] );
+		if ( $state_ready )
+		{
+			SchoolSafeAccountSet( $admin['USERNAME'], $school_id, 'active',
+				$reason ?: 'Reactivation PRODELI', null, true );
+		}
 
-		SchoolSafeConsoleReply( 200, [ 'ok' => true, 'data' => [ 'staff_id' => (int) $admin['STAFF_ID'], 'status' => 'active' ] ] );
+		// Compte ferme par l'ancien mecanisme (profil No Access) : il resterait
+		// bloque malgre un etat actif, on retablit donc le profil admin.
+		if ( $admin['PROFILE'] === 'none' )
+		{
+			DBUpdate( 'staff', [ 'PROFILE' => 'admin' ],
+				[ 'STAFF_ID' => (int) $admin['STAFF_ID'], 'SYEAR' => $syear ] );
+		}
 
-	// Creation d'ecole : replique de CopySchool.php (gabarit + identite).
+		SchoolSafeConsoleReply( 200, [
+			'ok' => true,
+			'data' => [
+				'staff_id' => (int) $admin['STAFF_ID'],
+				'username' => $admin['USERNAME'],
+				'status' => 'active',
+				'state' => 'active',
+				'school_id' => $school_id,
+				'session_revoked' => $state_ready,
+				'session_epoch' => $state_ready ? SchoolSafeAccountEpoch( $admin['USERNAME'] ) : null,
+				'state_source' => $state_ready ? 'account_state' : 'profile',
+			],
+		] );
+
+	// Creation d'ecole : logique partagee avec la console native
+	// (ProgramFunctions/SchoolSafeSchoolSetup.fnc.php), pour que les deux
+	// chemins creent exactement la meme ecole.
 	case 'create-school':
 		if ( $_SERVER['REQUEST_METHOD'] !== 'POST' )
 		{
 			SchoolSafeConsoleReply( 405, [ 'ok' => false, 'error' => 'METHOD_NOT_ALLOWED' ] );
 		}
 
-		$title = trim( (string) ( $request['title'] ?? '' ) );
-		$email = trim( (string) ( $request['email'] ?? '' ) );
-		$slogan = trim( (string) ( $request['slogan'] ?? '' ) );
+		$created = SchoolSafeSchoolCreate( $request, $syear );
 
-		if ( $title === ''
-			|| mb_strlen( $title ) > 100
-			|| preg_match( '/[\x00-\x1f\x7f]/', $title ) )
+		if ( empty( $created['ok'] ) )
 		{
-			SchoolSafeConsoleReply( 400, [ 'ok' => false, 'error' => 'TITLE_INVALID' ] );
-		}
+			$status = [
+				'TITLE_INVALID' => 400,
+				'IDENTITY_REQUIRED' => 400,
+				'TEMPLATE_NOT_FOUND' => 404,
+				'TEMPLATE_CALENDAR_INVALID' => 409,
+				'CALENDAR_COPY_FAILED' => 500,
+				'SCHOOL_NOT_CREATED' => 500,
+			][ $created['error'] ?? '' ] ?? 500;
 
-		if ( $email === ''
-			|| ! filter_var( $email, FILTER_VALIDATE_EMAIL )
-			|| $slogan === ''
-			|| mb_strlen( $slogan ) > 180 )
-		{
-			SchoolSafeConsoleReply( 400, [ 'ok' => false, 'error' => 'IDENTITY_REQUIRED' ] );
-		}
-
-		$template_id = (int) ( $request['template_school_id'] ?? 1 );
-
-		$template = DBGet( DBQuery( "SELECT ID,REPORTING_GP_SCALE FROM schools
-			WHERE ID='" . $template_id . "'
-			AND SYEAR='" . (int) $syear . "'" ) );
-
-		if ( ! $template )
-		{
-			SchoolSafeConsoleReply( 404, [ 'ok' => false, 'error' => 'TEMPLATE_NOT_FOUND' ] );
-		}
-
-		$template_id = (int) $template[1]['ID'];
-
-		// Le gabarit doit avoir un calendrier coherent : sans cela, l'ecole
-		// recopiee naitrait cassee (periodes sans parent) et tous ses ecrans
-		// echoueraient. Mieux vaut refuser avant toute ecriture que reparer
-		// apres coup une ecole deja livree.
-		$template_issues = SchoolSafeSchoolCalendarIssues( $template_id, $syear );
-
-		if ( $template_issues )
-		{
-			SchoolSafeConsoleReply( 409, [
+			SchoolSafeConsoleReply( $status, [
 				'ok' => false,
-				'error' => 'TEMPLATE_CALENDAR_INVALID',
+				'error' => $created['error'] ?? 'SCHOOL_NOT_CREATED',
 				'data' => [
-					'template_school_id' => $template_id,
-					'issues' => array_column( $template_issues, 'label' ),
+					'template_school_id' => (int) ( $request['template_school_id'] ?? 1 ),
+					'issues' => $created['issues'] ?? [],
 				],
 			] );
-		}
-
-		// 1) Ecole : meme INSERT que CopySchool.php, gabarit pour le scale.
-		DBQuery( "INSERT INTO schools (SYEAR,TITLE,REPORTING_GP_SCALE,ADDRESS,CITY,PHONE,WWW_ADDRESS,SCHOOL_NUMBER,SHORT_NAME)
-			SELECT SYEAR,'" . DBEscapeString( $title ) . "',REPORTING_GP_SCALE,
-			'" . DBEscapeString( trim( (string) ( $request['address'] ?? '' ) ) ) . "',
-			'" . DBEscapeString( trim( (string) ( $request['city'] ?? '' ) ) ) . "',
-			'" . DBEscapeString( trim( (string) ( $request['phone'] ?? '' ) ) ) . "',
-			'" . DBEscapeString( trim( (string) ( $request['www_address'] ?? '' ) ) ) . "',
-			'" . DBEscapeString( trim( (string) ( $request['school_number'] ?? '' ) ) ) . "',
-			'" . DBEscapeString( mb_substr( trim( (string) ( $request['short_name'] ?? '' ) ), 0, 25 ) ) . "'
-			FROM schools WHERE ID='" . $template_id . "' AND SYEAR='" . (int) $syear . "'" );
-
-		$new_school_id = (int) DBLastInsertID();
-
-		// 2) Configuration heritee du gabarit (comme CopySchool), puis identite SchoolSafe.
-		DBQuery( "INSERT INTO config (SCHOOL_ID,TITLE,CONFIG_VALUE,CREATED_AT,UPDATED_AT)
-			SELECT " . $new_school_id . ",TITLE,CONFIG_VALUE,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
-			FROM config WHERE SCHOOL_ID='" . $template_id . "'" );
-
-		foreach ( [
-			'SCHOOLSAFE_SCHOOL_EMAIL' => $email,
-			'SCHOOLSAFE_SCHOOL_SLOGAN' => $slogan,
-		] as $config_title => $config_value )
-		{
-			DBUpdate( 'config', [ 'CONFIG_VALUE' => $config_value ], [
-				'SCHOOL_ID' => $new_school_id,
-				'TITLE' => $config_title,
-			] );
-
-			DBQuery( "INSERT INTO config (SCHOOL_ID,TITLE,CONFIG_VALUE)
-				SELECT " . $new_school_id . ",'" . $config_title . "','" . DBEscapeString( $config_value ) . "'
-				WHERE NOT EXISTS (SELECT 1 FROM config
-					WHERE SCHOOL_ID=" . $new_school_id . " AND TITLE='" . $config_title . "')" );
-		}
-
-		// 3) Donnees de base copiees du gabarit : niveaux, periodes, periodes de notation.
-		DBQuery( "INSERT INTO school_gradelevels (SCHOOL_ID,TITLE,SHORT_NAME,SORT_ORDER)
-			SELECT " . $new_school_id . ",TITLE,SHORT_NAME,SORT_ORDER
-			FROM school_gradelevels WHERE SCHOOL_ID='" . $template_id . "'" );
-
-		DBQuery( "INSERT INTO school_periods (SYEAR,SCHOOL_ID,TITLE,SHORT_NAME,SORT_ORDER,LENGTH,ATTENDANCE)
-			SELECT SYEAR," . $new_school_id . ",TITLE,SHORT_NAME,SORT_ORDER,LENGTH,ATTENDANCE
-			FROM school_periods WHERE SCHOOL_ID='" . $template_id . "' AND SYEAR='" . (int) $syear . "'" );
-
-		// PARENT_ID est recopie tel quel, puis remappe vers les identifiants de la
-		// nouvelle ecole : c'est ce que fait CopySchool.php. L'omettre laissait
-		// PARENT_ID a NULL et le remappage ne trouvait jamais rien — d'ou des
-		// periodes a plat a chaque creation. Les dates de saisie sont recopiees
-		// pour la meme raison (calendrier du gabarit a l'identique).
-		DBQuery( "INSERT INTO school_marking_periods (SYEAR,MP,SCHOOL_ID,TITLE,SHORT_NAME,SORT_ORDER,START_DATE,END_DATE,POST_START_DATE,POST_END_DATE,DOES_GRADES,DOES_COMMENTS,ROLLOVER_ID,PARENT_ID)
-			SELECT SYEAR,MP," . $new_school_id . ",TITLE,SHORT_NAME,SORT_ORDER,START_DATE,END_DATE,POST_START_DATE,POST_END_DATE,DOES_GRADES,DOES_COMMENTS,MARKING_PERIOD_ID,PARENT_ID
-			FROM school_marking_periods WHERE SCHOOL_ID='" . $template_id . "' AND SYEAR='" . (int) $syear . "'" );
-
-		DBQuery( "UPDATE school_marking_periods mp
-			SET PARENT_ID=(SELECT mp2.MARKING_PERIOD_ID FROM school_marking_periods mp2
-				WHERE mp2.SCHOOL_ID='" . $new_school_id . "' AND mp2.SYEAR='" . (int) $syear . "'
-				AND mp2.ROLLOVER_ID=mp.PARENT_ID)
-			WHERE mp.SCHOOL_ID='" . $new_school_id . "' AND mp.SYEAR='" . (int) $syear . "'
-			AND mp.PARENT_ID IS NOT NULL" );
-
-		// Garde-fou : la copie doit produire un calendrier coherent. Sinon, rien
-		// de partiel ne reste en base (aucune ecole a moitie creee).
-		$copy_issues = SchoolSafeSchoolCalendarIssues( $new_school_id, $syear );
-
-		if ( $copy_issues )
-		{
-			DBQuery( "DELETE FROM config WHERE SCHOOL_ID='" . $new_school_id . "'" );
-			DBQuery( "DELETE FROM school_gradelevels WHERE SCHOOL_ID='" . $new_school_id . "'" );
-			DBQuery( "DELETE FROM school_periods WHERE SCHOOL_ID='" . $new_school_id . "'" );
-			DBQuery( "DELETE FROM school_marking_periods WHERE SCHOOL_ID='" . $new_school_id . "'" );
-			DBQuery( "DELETE FROM schools WHERE ID='" . $new_school_id . "' AND SYEAR='" . (int) $syear . "'" );
-
-			SchoolSafeConsoleReply( 500, [
-				'ok' => false,
-				'error' => 'CALENDAR_COPY_FAILED',
-				'data' => [ 'issues' => array_column( $copy_issues, 'label' ) ],
-			] );
-		}
-
-		// 4) Auto-attribution optionnelle (comme CopySchool pour l'admin createur).
-		$assign_to = (int) ( $request['assign_to_staff_id'] ?? 0 );
-
-		if ( $assign_to > 0 )
-		{
-			DBQuery( "UPDATE staff
-				SET SCHOOLS=CONCAT(TRIM(TRAILING ',' FROM SCHOOLS),'," . $new_school_id . ",')
-				WHERE STAFF_ID='" . $assign_to . "' AND SYEAR='" . (int) $syear . "'
-				AND SCHOOLS IS NOT NULL
-				AND POSITION('," . $new_school_id . ",' IN SCHOOLS)=0" );
 		}
 
 		SchoolSafeConsoleReply( 201, [
 			'ok' => true,
 			'data' => [
-				'school_id' => $new_school_id,
-				'title' => $title,
+				'school_id' => (int) $created['school_id'],
+				'title' => trim( (string) ( $request['title'] ?? '' ) ),
 				'syear' => $syear,
 				'note' => 'Calendriers de presence, cours et eleves restent a creer dans SchoolSafe.',
 			],

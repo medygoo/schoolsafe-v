@@ -34,6 +34,8 @@ Ce dépôt est la source de vérité commune pour tous les comptes ChatGPT/Codex
 
 ## Fin d'un lot
 
+**Dépôt canonique depuis le 18/10/2026 : `medygoo/schoolsafe-v`** (ex-`schoolsafePRODELIFIN`, renommé par le propriétaire). Les mandats ci-dessous qui nomment `medygoo/schoolsafe-stable` ou `develop/codex-base` sont historiques : ce dépôt est archivé, il ne doit plus servir de base de publication.
+
 **ACTIVE — autorisation du propriétaire du 19/09/2026 : publier les 772 fichiers
 préparés comme base de développement dans `medygoo/schoolsafe-stable`, uniquement
 sur `develop/codex-base`. Ne pas pousser sur `main`, ne pas déployer, ne pas toucher

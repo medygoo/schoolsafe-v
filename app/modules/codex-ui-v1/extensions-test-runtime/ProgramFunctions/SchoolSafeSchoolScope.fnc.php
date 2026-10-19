@@ -47,6 +47,32 @@ function SchoolSafeGlobalAdmin()
     return User( 'PROFILE' ) === 'admin' && SchoolSafeScopeParse( User( 'SCHOOLS' ) ) === null;
 }
 
+/**
+ * Un profil nomme a portee d'ecole (Directeur, Comptable...) ne peut pas
+ * exister sans ecole : SCHOOLS vide veut dire « toutes les ecoles », donc
+ * proprietaire de la plateforme. On refuse plutot que de promouvoir en
+ * silence un directeur au rang de proprietaire.
+ *
+ * Les profils natifs par defaut (1 admin, 2 teacher, 3 parent) restent hors
+ * garde : l'administrateur global conserve le moyen natif de nommer un pair.
+ *
+ * @param int $profile_id Profil nomme attribue au compte.
+ *
+ * @return bool Vrai si ce profil exige au moins une ecole.
+ */
+function SchoolSafeSchoolScopedProfileRequiresSchool( $profile_id )
+{
+    $profile_id = (int) $profile_id;
+
+    if ( $profile_id < 4 || ! function_exists( 'DBGetOne' ) )
+    {
+        return false;
+    }
+
+    return (bool) DBGetOne( "SELECT 1 FROM user_profiles
+        WHERE ID='" . $profile_id . "' AND PROFILE='admin'" );
+}
+
 function SchoolSafeCanCreateSchool()
 {
     $scope = SchoolSafeScopeParse( User( 'SCHOOLS' ) );

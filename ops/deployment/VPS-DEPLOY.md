@@ -19,7 +19,7 @@ prouvée en local et codifiée dans `docker-compose.yml`. Il complète, sans le 
 
 Hors périmètre de ce compose (bancs d'essai locaux séparés, intégration ultérieure) :
 `codex-card-bridge-http` et `codex-card-target-db-v17` (système de cartes natif), ainsi que le
-serveur Node natif (port 8787) du dépôt `medygoo/schoolsafe-stable`, qui suit sa propre mission.
+serveur Node natif (port 8787) du dépôt `medygoo/schoolsafe-v`, qui suit sa propre mission.
 
 ## 2. Installation sur le VPS
 

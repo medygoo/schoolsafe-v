@@ -1,5 +1,15 @@
 # SchoolSafe — Console AppSmith (gestion des administrateurs et des écoles)
 
+> **Note du 19 octobre 2026 — AppSmith n'est pas nécessaire.** Le gestionnaire PRODELI est la
+> **console native** `admin-console.php` du runtime Rosario (aucun service externe, aucun jeton) :
+> elle liste les comptes (filtre par école), affiche l'état le plus restrictif et son détail par
+> école, et permet de changer un état (école visée comprise), révoquer des sessions, régénérer un
+> mot de passe, **créer une école** et **créer un directeur d'école** (direction : principal et
+> adjoints). Voir `ops/deployment/COMPTES-SUSPENSION-20261018.md` §7.4 pour l'ouverture et
+> `ops/deployment/GESTION-ECOLES-20261019.md` pour l'école et la direction. Ce document reste la
+> référence du pont de service `admin-console-bridge.php`, utilisé seulement si une console externe
+> est branchée un jour.
+
 Date : 15 octobre 2026. Endpoint : `admin-console-bridge.php` (déployé sur le VPS, servi en
 HTTPS via Caddy). Aucune modification du cœur Rosario : l'endpoint réutilise les mécanismes
 natifs (hachage `$6$`, INSERT staff identique à `Users/User.php`, forçage de première

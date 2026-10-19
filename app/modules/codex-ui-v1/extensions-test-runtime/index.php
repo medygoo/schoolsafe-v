@@ -115,7 +115,7 @@ elseif ( isset( $_POST['USERNAME'] )
 	unset( $_REQUEST['USERNAME'], $_POST['USERNAME'] );
 
 	// Lookup for user $username in DB.
-	$login_RET = DBGet( "SELECT USERNAME,PROFILE,STAFF_ID,LAST_LOGIN,FAILED_LOGIN,PASSWORD,SCHOOLS
+	$login_RET = DBGet( "SELECT USERNAME,PROFILE,STAFF_ID,LAST_LOGIN,FAILED_LOGIN,PASSWORD,SCHOOLS,CURRENT_SCHOOL_ID
 	FROM staff
 	WHERE SYEAR='" . Config( 'SYEAR' ) . "'
 	AND UPPER(USERNAME)=UPPER('" . $username . "')" );
@@ -213,10 +213,15 @@ elseif ( isset( $_POST['USERNAME'] )
 		$schoolsafe_schools = array_filter( array_map( 'intval',
 			explode( ',', (string) issetVal( $login_RET[1]['SCHOOLS'] ) ) ) );
 
-		$schoolsafe_state = SchoolSafeAccountEffective( $login_RET[1]['USERNAME'], $schoolsafe_schools );
+		// SchoolSafe — état le plus restrictif pour le message, mais décision
+		// réelle sur les écoles encore utilisables : une suspension ciblée ne
+		// bloque que son école.
+		$schoolsafe_state = SchoolSafeAccountWorstState( $login_RET[1]['USERNAME'], $schoolsafe_schools );
 
-		if ( $schoolsafe_state === 'suspended'
-			|| $schoolsafe_state === 'expired' )
+		$schoolsafe_accessible = SchoolSafeAccountAccessibleSchools(
+			$login_RET[1]['USERNAME'], $schoolsafe_schools );
+
+		if ( ! $schoolsafe_accessible )
 		{
 			$schoolsafe_blocked = true;
 		}
@@ -253,12 +258,43 @@ elseif ( isset( $_POST['USERNAME'] )
 		// Invalidate any active Student session.
 		unset( $_SESSION['STUDENT_ID'] );
 
-		unset( $_SESSION['UserSchool'] );
+		// SchoolSafe — école d'entrée : celle du compte si elle reste ouverte,
+		// sinon la première école utilisable. Le sélecteur ne doit pas ramener
+		// la personne dans une école suspendue.
+		$schoolsafe_entry = 0;
+
+		foreach ( $schoolsafe_accessible as $schoolsafe_candidate )
+		{
+			if ( (int) $schoolsafe_candidate > 0 )
+			{
+				$schoolsafe_entry = (int) $schoolsafe_candidate;
+				break;
+			}
+		}
+
+		$schoolsafe_current = (int) ( $login_RET[1]['CURRENT_SCHOOL_ID'] ?? 0 );
+
+		if ( $schoolsafe_current > 0
+			&& in_array( $schoolsafe_current, $schoolsafe_accessible, true ) )
+		{
+			$schoolsafe_entry = $schoolsafe_current;
+		}
+
+		$_SESSION['UserSchool'] = $schoolsafe_entry;
 
 		$_SESSION['LAST_LOGIN'] = $login_RET[1]['LAST_LOGIN'];
 
 		// SchoolSafe — état de compte : époque de session pour la révocation.
 		$_SESSION['SchoolSafeEpoch'] = SchoolSafeAccountEpoch( $login_RET[1]['USERNAME'] );
+
+		// Époque PAR ÉCOLE : une révocation ciblée ne coupe que son école.
+		$_SESSION['SchoolSafeEpochs'] = [];
+
+		foreach ( SchoolSafeAccountSchoolIds( $schoolsafe_schools ) as $schoolsafe_epoch_school )
+		{
+			$_SESSION['SchoolSafeEpochs'][ $schoolsafe_epoch_school ] = SchoolSafeAccountSchoolEpoch(
+				$login_RET[1]['USERNAME'], $schoolsafe_epoch_school );
+		}
 
 		$_SESSION['SchoolSafeState'] = $schoolsafe_state;
 

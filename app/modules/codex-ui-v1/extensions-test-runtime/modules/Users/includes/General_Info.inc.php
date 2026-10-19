@@ -236,25 +236,83 @@ if ( basename( $_SERVER['PHP_SELF'] ) != 'index.php' )
 
 	$non_admin_user_profile_restriction = User( 'PROFILE' ) !== 'admin' && AllowEdit();
 
+	// SchoolSafe — un seul choix à la création : le profil nommé. La famille
+	// native (admin/teacher/parent) en découle à l'enregistrement : elle n'est
+	// plus une seconde décision demandée à l'utilisateur.
+	$schoolsafe_single_profile = User( 'PROFILE' ) === 'admin'
+		&& $_REQUEST['staff_id'] === 'new'
+		&& ! $admin_user_profile_restriction;
+
 	if ( $non_admin_user_profile_restriction )
 	{
 		// Temporarily deactivate AllowEdit.
 		$_ROSARIO['allow_edit'] = false;
 	}
 
-	echo SelectInput(
-		issetVal( $staff['PROFILE'], '' ),
-		'staff[PROFILE]',
-		_( 'User Profile' ),
-		$profile_options,
-		false,
-		'required',
-		empty( $_REQUEST['moodle_create_user'] )
-	);
+	if ( $schoolsafe_single_profile )
+	{
+		$schoolsafe_profiles = DBGet( "SELECT ID,TITLE,PROFILE FROM user_profiles
+			WHERE PROFILE IN ('admin','teacher','parent')
+			ORDER BY PROFILE,ID" );
+
+		$schoolsafe_families = [
+			'admin' => _( 'Administrator' ),
+			'teacher' => _( 'Teacher' ),
+			'parent' => _( 'Parent' ),
+		];
+
+		$named_profile_options = [];
+
+		foreach ( (array) $schoolsafe_profiles as $schoolsafe_profile )
+		{
+			if ( ! isset( $schoolsafe_families[ $schoolsafe_profile['PROFILE'] ] )
+				|| ! SchoolSafeProfileDelegable( (string) $schoolsafe_profile['ID'], $schoolsafe_profile['PROFILE'] ) )
+			{
+				continue;
+			}
+
+			$profile_label = _( $schoolsafe_profile['TITLE'] );
+
+			$family_label = $schoolsafe_families[ $schoolsafe_profile['PROFILE'] ];
+
+			// « Administrator — Administrator » n'apprend rien : la famille
+			// n'est affichée que lorsqu'elle ajoute une information.
+			$named_profile_options[ (int) $schoolsafe_profile['ID'] ] = $profile_label === $family_label
+				? $profile_label
+				: $profile_label . ' — ' . $family_label;
+		}
+
+		echo SelectInput(
+			'',
+			'staff[PROFILE_ID]',
+			_( 'Profile' ),
+			$named_profile_options,
+			_( 'Choose a profile' ),
+			'required',
+			empty( $_REQUEST['moodle_create_user'] )
+		);
+	}
+	else
+	{
+		echo SelectInput(
+			issetVal( $staff['PROFILE'], '' ),
+			'staff[PROFILE]',
+			_( 'User Profile' ),
+			$profile_options,
+			false,
+			'required',
+			empty( $_REQUEST['moodle_create_user'] )
+		);
+	}
 
 	echo '</td><td>';
 
-	if ( $staff['PROFILE'] !== 'none' )
+	if ( $schoolsafe_single_profile )
+	{
+		// Le profil nommé porte les permissions : le second sélecteur disparaît.
+		echo '<div class="mut">' . _( 'The profile sets the permissions. A Director or Accountant account needs at least one school.' ) . '</div>';
+	}
+	elseif ( $staff['PROFILE'] !== 'none' )
 	{
 		// Permissions (not for "No Access" profile).
 		$permissions_options = [];
