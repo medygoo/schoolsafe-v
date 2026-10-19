@@ -25,6 +25,15 @@ $DatabaseDumpPath = getenv('SCHOOLSAFE_PG_DUMP_PATH') ?: '/usr/bin/pg_dump';
 $RosarioNotifyAddress = getenv('SCHOOLSAFE_NOTIFY_EMAIL') ?: '';
 $RosarioErrorsAddress = getenv('SCHOOLSAFE_ERRORS_EMAIL') ?: '';
 
+// SchoolSafe — SMTP de récupération (plugin Email_SMTP, compte Brevo gratuit).
+// Inerte sans les variables Coolify : le plugin reste sur PHP mail().
+// Secrets jamais dans Git : valoriés uniquement par l'environnement.
+// Voir docs/CURRENT_HANDOFF.md (lot RECOVERY-SMTP) pour la procédure.
+if ( getenv( 'SCHOOLSAFE_SMTP_PASSWORD' ) )
+{
+	define( 'EMAIL_SMTP_PASSWORD', getenv( 'SCHOOLSAFE_SMTP_PASSWORD' ) );
+}
+
 $RosarioLocales = ['en_US.utf8', 'fr_FR.utf8'];
 $Timezone = getenv('SCHOOLSAFE_TIMEZONE') ?: 'Africa/Kinshasa';
 
