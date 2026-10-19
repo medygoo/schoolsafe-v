@@ -753,7 +753,7 @@ table.schools-list form.school-action:last-child{margin-bottom:0}
 table.schools-list input[type=text]{display:block;width:100%;max-width:220px;padding:5px 6px;font-size:14px;margin:0 0 4px}
 table.schools-list button{padding:6px 12px;font-size:14px}
 .mut{color:#5b6b7b;font-size:14px}
-@media(max-width:760px){.inline{flex-direction:column}.inline>div{min-width:100%}}
+@media(max-width:760px){.inline{flex-direction:column}.inline>div{min-width:100%}table.list td{white-space:normal!important}table.list td:last-child{white-space:normal!important}table.list td form{display:block!important;margin:0 0 6px!important}table.list input[type=text]{max-width:110px;margin-bottom:4px}table.list select{max-width:140px;margin-bottom:4px}table.list button{margin-bottom:4px}table.list th:nth-child(6),table.list td:nth-child(6){display:none}}
 </style>
 </head>
 <body>
@@ -1107,8 +1107,8 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 	<div class="card">
 		<h2 style="font-size:19px;margin-top:0">Creer</h2>
 		<p class="mut">La creation se fait desormais dans un seul parcours guide : l'ecole, son identite, son calendrier et son directeur principal y sont verifies ensemble, puis le mot de passe temporaire est remis une seule fois. Aucun autre ecran ne cree d'ecole ni de directeur.</p>
-		<p><a href="/schoolsafe-administrators.php?wizard=1" style="display:inline-block;background:#126cac;color:#fff;text-decoration:none;border-radius:7px;padding:9px 16px">Ouvrir une ecole et son directeur</a></p>
-		<p><a href="/schoolsafe-administrators.php">Gerer les administrateurs et leurs acces</a></p>
+		<p><a href="schoolsafe-administrators.php?wizard=1" style="display:inline-block;background:#126cac;color:#fff;text-decoration:none;border-radius:7px;padding:9px 16px">Ouvrir une ecole et son directeur</a></p>
+		<p><a href="schoolsafe-administrators.php">Gerer les administrateurs et leurs acces</a></p>
 		<p class="mut">Cette console reste l'ecran de gestion : etats des comptes, suspension ciblee par ecole, revocation des sessions, direction d'ecole et filtre par ecole.</p>
 	</div>
 	<?php } ?>

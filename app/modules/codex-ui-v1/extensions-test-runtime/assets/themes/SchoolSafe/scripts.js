@@ -86,9 +86,8 @@
 
 		if (open) {
 			menu.classList.remove('hide');
-			window.setTimeout(function () {
-				menu.classList.add('slide');
-			}, 10);
+			void menu.offsetHeight;
+			menu.classList.add('slide');
 			document.body.style.overflow = 'hidden';
 			return;
 		}
