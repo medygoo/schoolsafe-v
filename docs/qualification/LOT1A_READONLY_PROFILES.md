@@ -1,5 +1,7 @@
 # LOT 1-A — lecture seule dans le hub des profils
 
+> Rapport historique de qualification avant publication. Pour la livraison ultérieure autorisée sur le local, GitHub et le VPS, voir [LOT1A_RELEASE.md](LOT1A_RELEASE.md). Les mentions « NON DÉPLOYÉ » ci-dessous décrivent l'état au moment de cette qualification.
+
 Date : 20 octobre 2026. Statut : GREEN en qualification isolée pour le périmètre décrit ; NON DÉPLOYÉ. Le LOT 1 global reste RED avec ses autres réserves.
 
 ## Mandat et périmètre
