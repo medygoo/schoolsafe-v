@@ -316,7 +316,12 @@ function sskcManagedNativePassword($tag,&$crypted,$plain): void
     if(!is_string($username??null)) return;
     if(!empty($GLOBALS['sskc_accepted_native_ticket'])
         && hash_equals($GLOBALS['sskc_accepted_native_ticket'],hash('sha256',(string)$plain))) return;
-    $config=schoolSafeKeycloakConfig();
+    // LOT L2 : service non configure (ni secret, ni liaison) -> ne jamais
+    // bloquer l'authentification native (constat isole : 500 a chaque login).
+    // Quand le fournisseur est configure, la neutralisation ci-dessous reste
+    // integrale pour les comptes geres.
+    try { $config=schoolSafeKeycloakConfig(); }
+    catch(Throwable $e) { return; }
     $managed=DBGet('SELECT s.STAFF_ID FROM staff s JOIN schoolsafe_identity_links l ON l.STAFF_ID=s.STAFF_ID'
         . ' WHERE s.SYEAR='.(int)Config('SYEAR')." AND UPPER(s.USERNAME)=UPPER('".DBEscapeString($username)."')");
     if($managed && !in_array((int)$managed[1]['STAFF_ID'],$config['native_fallback_staff_ids']??[],true)) {

@@ -279,10 +279,81 @@ if ( $_REQUEST['modfunc'] === 'update'
 				SchoolSafeScopeDeny(); return;
 			}
 		}
-		if ( ! $_REQUEST['staff_id']
+
+		// L3.1 — profils propres à une école (user_profiles.school_id, 034) :
+		// attribution refusée hors de l'école propriétaire et aux comptes
+		// multi-écoles (le moteur natif ne cloisonne pas les droits par
+		// contexte) ; même exigence lors d'un changement ultérieur de SCHOOLS.
+		// Vaut pour tout acteur admin, global compris (garde-fou explicite).
+		if ( User( 'PROFILE' ) === 'admin'
+			&& function_exists( 'SchoolSafeProfileSchoolAssignable' )
+			&& is_array( $_REQUEST['staff'] ?? null ) )
+		{
+			$guard_has_schools = array_key_exists( 'SCHOOLS', $_REQUEST['staff'] );
+			$guard_schools_raw = $guard_has_schools ? $_REQUEST['staff']['SCHOOLS'] : null;
+
+			if ( is_array( $guard_schools_raw ) )
+			{
+				$guard_sids = [];
+
+				foreach ( (array) $guard_schools_raw as $gsid => $gyes )
+				{
+					if ( $gyes && ctype_digit( (string) $gsid ) && (int) $gsid > 0 )
+					{
+						$guard_sids[] = (int) $gsid;
+					}
+				}
+
+				$guard_target_schools = $guard_sids ? ',' . implode( ',', $guard_sids ) . ',' : '';
+			}
+			else $guard_target_schools = (string) ( $guard_schools_raw ?? '' );
+
+			// Profil visé : soumis, sinon celui déjà détenu (cas d'un
+			// changement de SCHOOLS sur un détenteur de profil local).
+			$guard_assign_profile = $_REQUEST['staff']['PROFILE_ID'] ?? null;
+
+			if ( ( $guard_assign_profile === null || $guard_assign_profile === '' )
+				&& UserStaffID() )
+			{
+				$guard_assign_profile = DBGetOne( "SELECT PROFILE_ID FROM staff
+					WHERE STAFF_ID='" . (int) UserStaffID() . "'" );
+			}
+
+			if ( ! $guard_has_schools && UserStaffID() )
+			{
+				// Écoles non soumises (fiche partielle) : périmètre actuel.
+			$guard_target_schools = (string) DBGetOne( "SELECT SCHOOLS FROM staff
+					WHERE STAFF_ID='" . (int) UserStaffID() . "'" );
+			}
+
+			$guard_owner = ( $guard_assign_profile !== null && $guard_assign_profile !== '' )
+				? SchoolSafeProfileSchoolId( $guard_assign_profile ) : null;
+
+			if ( $guard_owner !== null && $guard_owner !== false )
+			{
+				// Un profil d'école n'a pas de sens pour la famille parent
+				// (jamais rattachée à une école) : refusé plutôt que promu.
+				$guard_kind = $_REQUEST['staff']['PROFILE'] ?? null;
+
+				if ( $guard_kind === null && UserStaffID() )
+				{
+					$guard_kind = DBGetOne( "SELECT PROFILE FROM staff
+						WHERE STAFF_ID='" . (int) UserStaffID() . "'" );
+				}
+
+				if ( $guard_kind === 'parent'
+					|| ! SchoolSafeProfileSchoolAssignable( $guard_assign_profile, $guard_target_schools ) )
+				{
+					SchoolSafeScopeDeny(); return;
+				}
+			}
+		}
+		if ( ( ! $_REQUEST['staff_id'] || $_REQUEST['staff_id'] === 'new' )
 			&& UserStaffID() )
 		{
-			// Fix saving new student when current Staff ID set (in other browser tab).
+			// Fix saving new user/student when current Staff ID set (in other browser tab).
+			// An explicit creation must never update the browsed account instead:
+			// the insert path below only runs when no Staff ID is in session.
 			unset( $_SESSION['staff_id'] );
 		}
 		elseif ( $_REQUEST['staff_id'] !== 'new'
@@ -449,6 +520,22 @@ if ( $_REQUEST['modfunc'] === 'update'
 							WHERE USERNAME=(SELECT st2.USERNAME
 								FROM (SELECT * FROM staff) AS st2
 								WHERE st2.STAFF_ID='" . UserStaffID() . "')" );
+
+						// SchoolSafe L4 — mot de passe changé : les autres
+						// sessions sont révoquées (époque L1, garde Warehouse).
+						if ( function_exists( 'SchoolSafeAccountRevoke' ) )
+						{
+							$schoolsafe_pw_user = isset( $_POST['staff']['USERNAME'] )
+								&& $_POST['staff']['USERNAME'] !== ''
+								? (string) $_POST['staff']['USERNAME']
+								: (string) DBGetOne( "SELECT USERNAME FROM staff
+									WHERE STAFF_ID='" . UserStaffID() . "'" );
+
+							if ( $schoolsafe_pw_user !== '' )
+							{
+								SchoolSafeAccountRevoke( $schoolsafe_pw_user, 0 );
+							}
+						}
 
 						continue;
 					}

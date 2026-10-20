@@ -765,6 +765,18 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 		</div>
 		<a href="Modules.php?modname=misc/Portal.php">&larr; Portail SchoolSafe</a>
 	</div>
+	<nav aria-label="Navigation SchoolSafe" style="margin:8px 0 16px;font-size:14px">
+		<a href="Modules.php?modname=misc/Portal.php" style="margin-right:12px">Portail</a>
+<?php foreach ( (array) $schools as $school_row ) : ?>
+		<a href="/ecoles/<?php echo (int) $school_row['ID']; ?>/utilisateurs" style="margin-right:12px">Utilisateurs — <?php echo htmlspecialchars( (string) $school_row['TITLE'], ENT_QUOTES, 'UTF-8' ); ?></a>
+		<a href="/ecoles/<?php echo (int) $school_row['ID']; ?>/profils" style="margin-right:12px">Profils — <?php echo htmlspecialchars( (string) $school_row['TITLE'], ENT_QUOTES, 'UTF-8' ); ?></a>
+<?php endforeach; ?>
+		<a href="/plateforme/prodeli">PRODELI</a>
+<?php if ( $schoolsafe_global_admin ) : ?>
+		<a href="/plateforme/prodeli/sms" style="margin-right:12px">Communications — Gestion des SMS</a>
+		<a href="/plateforme/prodeli/whatsapp" style="margin-right:12px">Communications — Gestion WhatsApp</a>
+<?php endif; ?>
+	</nav>
 
 	<?php
 	if ( $flash && $flash['type'] === 'created' )

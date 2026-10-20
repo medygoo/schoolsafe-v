@@ -42,6 +42,173 @@ try {
    }
  }
  if($method==='GET'&&SchoolSafeEndpointGateway('scanner-relay.php',$method,$operation)==='deny') throw new RuntimeException('NATIVE_PERMISSION_REQUIRED');
+ // Lots A1/ENTRY : d'abord en local (Rosario moteur principal). Sinon repli bridge inchangé.
+ function SchoolSafeScanBridgeAvailable() {
+   try {
+     $config=json_decode(@file_get_contents('/var/lib/schoolsafe-card-bridge/relay-config.json'),true,16,JSON_THROW_ON_ERROR);
+   } catch(Throwable $ignored) { return false; }
+   return is_array($config)&&($config['environment']??'')==='local-isolated-test-only'
+     &&($config['sourceInstance']??'')==='codex-addons-local'
+     &&preg_match('/^[a-f0-9]{64}$/D',$config['secretHex']??'');
+ }
+ $enrichPortrait=function(array $data) {
+   if(isset($data['nativeStudentId'])&&AllowUse('Student_ID_Card/StudentIDCard.php')){
+     require_once __DIR__.'/schoolsafe-card-bridge/RosarioCardRead.fnc.php';
+     try{$portrait=SchoolSafeReadNativeCardStudent($data['nativeStudentId']);
+       $data['photo_url']=$portrait['verified']['photoUrl']??'';
+     }catch(RuntimeException $ignored){$data['photo_url']='';}
+   }
+   return $data;
+ };
+ if($operation==='scan'&&($input->mode??'')==='verify') {
+   if(!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000) throw new RuntimeException('INVALID_INPUT');
+   require_once __DIR__.'/ProgramFunctions/SchoolSafeCardVerify.fnc.php';
+   $localSecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
+   $local=null;
+   if(preg_match('/^[a-f0-9]{64}$/D',$localSecret)) {
+     $localQuery=function($number,$school)use($year){ return SchoolSafeCardVerifyQuery($number,$school,$year); };
+     $local=SchoolSafeCardVerifyQr($input->qr_payload,$localSecret,$school,$year,$localQuery);
+   }
+   if(is_array($local)&&($local['result']!=='INVALID'||($local['reason']??'')!=='card_not_found')) {
+     $data=$enrichPortrait($local);
+     while(ob_get_level()>$level)ob_end_clean();
+     SchoolSafeScanReply(200,['data'=>$data]);
+   }
+ }
+ // Lot ENTRY : sans bridge, capabilities/lieux/entree servis en local (contrats identiques).
+ if(!SchoolSafeScanBridgeAvailable()) {
+   if($operation==='capabilities') {
+     $caps=[];
+     if(SchoolSafeNativeCommandPermission('SchoolSafe/ScanArrival.php'))$caps[]='SCAN_ENTRY';
+     if(SchoolSafeNativeCommandPermission('SchoolSafe/ScanPickup.php'))$caps[]='SCAN_PICKUP';
+     if(SchoolSafeNativeCommandPermission('SchoolSafe/ScanFees.php'))$caps[]='SCAN_FEES';
+     if(!empty($RosarioModules['Food_Service'])&&SchoolSafeNativeCommandPermission('SchoolSafe/ScanCanteen.php'))$caps[]='SCAN_CANTEEN';
+     if(SchoolSafeNativeCommandPermission('SchoolSafe/ScanVerify.php'))$caps[]='SCAN_VERIFY';
+     // Lot FEES : la consultation billing locale ne dépend d'aucun barème
+     // policy ; le bouton Frais est actif dès que SCAN_FEES est accordé.
+     $result=['data'=>['capabilities'=>SchoolSafeFilterScanCapabilities($caps),'fee_policy_active'=>in_array('SCAN_FEES',$caps,true),
+       'open_campaign_id'=>null,'schoolId'=>(string)$school]];
+     $result['csrfToken']=$_SESSION['SchoolSafeScannerCsrf'];
+     while(ob_get_level()>$level)ob_end_clean();
+     SchoolSafeScanReply(200,$result);
+   }
+   if($operation==='locations') {
+     $rows=DBGet('SELECT ID, TITLE FROM entry_exit_checkpoints ORDER BY SORT_ORDER NULLS LAST, TITLE');
+     $list=[];
+     if(is_array($rows))foreach($rows as $row) {
+       if(!isset($row['ID'],$row['TITLE']))throw new RuntimeException('RELAY_UNAVAILABLE');
+       $list[]=['id'=>(string)$row['ID'],'label'=>$row['TITLE']];
+     }
+     while(ob_get_level()>$level)ob_end_clean();
+     SchoolSafeScanReply(200,['data'=>['locations'=>$list]]);
+   }
+   if($operation==='scan'&&($input->mode??'')==='pickup') {
+     $allowedPickupKeys=['mode','qr_payload','location_id','authorized_person_id','proof_token','human_confirmed'];
+     if(!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000
+       ||!is_string($input->location_id??null)
+       ||array_diff(array_keys((array)$input),$allowedPickupKeys)) throw new RuntimeException('INVALID_INPUT');
+     if(isset($input->authorized_person_id)&&!is_string($input->authorized_person_id)) throw new RuntimeException('INVALID_INPUT');
+     if(isset($input->proof_token)&&!is_string($input->proof_token)) throw new RuntimeException('INVALID_INPUT');
+     if(isset($input->human_confirmed)&&!is_bool($input->human_confirmed)) throw new RuntimeException('INVALID_INPUT');
+     require_once __DIR__.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
+     $pickupSecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
+     $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }];
+     $done=SchoolSafePickupScan($input->qr_payload,$input->location_id,$pickupSecret,
+       ['user'=>$user,'school'=>$school,'year'=>$year],$db,
+       ['authorized_person_id'=>$input->authorized_person_id??null,
+        'proof_token'=>$input->proof_token??null,
+        'human_confirmed'=>$input->human_confirmed??null]);
+     if($done===null) throw new RuntimeException('CONFIG_REQUIRED');
+     $data=$enrichPortrait($done);
+     while(ob_get_level()>$level)ob_end_clean();
+     SchoolSafeScanReply(200,['data'=>$data]);
+   }
+   if($operation==='management'&&in_array($input->action??'',
+     ['school-list','parent-list','register-family','register-external','school-family-approve',
+      'photo-set','photo-review','validate-authorization','school-retire','parent-suspend','parent-activate'],true)) {
+     require_once __DIR__.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
+     $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }];
+     $isParent=User('PROFILE')==='parent';
+     $mctx=['user'=>$user,'school'=>$school,'year'=>$year,'profile'=>User('PROFILE'),'parent'=>$isParent,'root'=>'.'];
+     $map=['FORBIDDEN'=>403,'NOT_FOUND'=>404,'PRIMARY_SELECTION_REQUIRED'=>409,'PRIMARY_EXISTS'=>409,
+       'LIMIT_REACHED'=>409,'INVALID_STATE'=>409,'PRIMARY_TRANSFER_REQUIRED'=>409,'WRITE_FAILED'=>503,
+       'REASON_REQUIRED'=>400,'CONSENT_REQUIRED'=>400,'INVALID_PERSON'=>400,'INVALID_PHOTO'=>400,'INVALID_DECISION'=>400];
+     try {
+       $action=$input->action;
+       $student=(int)($input->nativeStudentId??0);
+       if($student<1) throw new RuntimeException('INVALID_INPUT');
+       // Les parents sont déjà restreints à leurs enfants (contrôle natif ci-dessus) ;
+       // le personnel lit et gère via ses permissions Gateway (contrôle ci-dessus).
+       if($action==='school-list'||$action==='parent-list') {
+         if($action==='parent-list'&&!$isParent) throw new RuntimeException('FORBIDDEN');
+         $data=SchoolSafePickupList($student,$mctx,$db);
+       } elseif($action==='register-family') {
+         $data=SchoolSafePickupRegisterFamily($student,(array)($input), $mctx,$db);
+       } elseif($action==='register-external') {
+         $data=SchoolSafePickupRegisterExternal($student,(array)($input),$mctx,$db);
+       } elseif($action==='school-family-approve') {
+         $data=SchoolSafePickupApproveFamily($student,$input->guardianId??0,
+           $input->reason??'',$input->consent??'',$mctx,$db);
+       } elseif($action==='photo-set') {
+         $data=SchoolSafePickupPhotoSet($student,$input->guardianId??0,$input->photoPath??'',$mctx,$db);
+       } elseif($action==='photo-review') {
+         $data=SchoolSafePickupPhotoReview($student,$input->guardianId??0,
+           $input->decision??'',$input->reason??'',$mctx,$db);
+       } elseif($action==='validate-authorization') {
+         $data=SchoolSafePickupValidateAuthorization($student,$input->authorizationId??0,$mctx,$db);
+       } elseif($action==='school-retire') {
+         $data=SchoolSafePickupRetire($student,$input->guardianId??0,
+           $input->reason??'',$input->consent??'',$mctx,$db);
+       } elseif($action==='parent-suspend') {
+         $data=SchoolSafePickupParentSuspend($student,$input->authorizationId??0,$input->reason??'',$mctx,$db);
+       } else {
+         $data=SchoolSafePickupParentActivate($student,$input->authorizationId??0,$input->reason??'',$mctx,$db);
+       }
+     } catch(RuntimeException $error) {
+       while(ob_get_level()>$level)ob_end_clean();
+       $code=$map[$error->getMessage()]??503;
+       if($code===400) SchoolSafeScanReply(400,['error'=>'INVALID_REQUEST']);
+       SchoolSafeScanReply($code,['error'=>$code===409?'CONFLICT':($code===404?'NOT_FOUND':'NATIVE_SCANNER_UNAVAILABLE')]);
+     }
+     while(ob_get_level()>$level)ob_end_clean();
+     SchoolSafeScanReply(200,['data'=>$data]);
+   }
+   // Lot FEES : consultation strictly consultative (billing_fees /
+   // billing_payments lus, jamais écrits). Seule écriture : l'historique
+   // schoolsafe_fee_consults. Gateway SCAN_FEES déjà contrôlé ci-dessus
+   // (403 sans droit) ; le détail montants exige Student_Billing, sinon
+   // orientation FEE_STATUS sans montant. Ne touche ni entrée, ni présence,
+   // ni pickup (aucun appel, aucune écriture vers ces chemins).
+   if($operation==='scan'&&($input->mode??'')==='fees') {
+     if(!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000
+       ||array_diff(array_keys((array)$input),['mode','qr_payload'])) throw new RuntimeException('INVALID_INPUT');
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeFeeScan.fnc.php';
+     $feeSecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
+     $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }];
+     $detail=AllowUse('Student_Billing/StudentFees.php');
+     $done=SchoolSafeFeeScan($input->qr_payload,$feeSecret,
+       ['user'=>$user,'school'=>$school,'year'=>$year,'detail'=>$detail],$db);
+     if($done===null) throw new RuntimeException('CONFIG_REQUIRED');
+     $data=$enrichPortrait($done);
+     while(ob_get_level()>$level)ob_end_clean();
+     SchoolSafeScanReply(200,['data'=>$data]);
+   }
+   if($operation==='scan'&&($input->mode??'')==='entry') {
+     if(!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000
+       ||!is_string($input->location_id??null)) throw new RuntimeException('INVALID_INPUT');
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeEntryScan.fnc.php';
+     $entrySecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
+     // DBGet() n'exécute que les SELECT : passer par DBQuery pour INSERT...RETURNING.
+     $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }];
+     $done=SchoolSafeEntryScan($input->qr_payload,$input->location_id,$entrySecret,
+       ['user'=>$user,'school'=>$school,'year'=>$year],$db);
+     if($done===null) throw new RuntimeException('CONFIG_REQUIRED');
+     $data=$enrichPortrait($done);
+     while(ob_get_level()>$level)ob_end_clean();
+     SchoolSafeScanReply(200,['data'=>$data]);
+   }
+   throw new RuntimeException('CONFIG_REQUIRED');
+ }
  $config=json_decode(file_get_contents('/var/lib/schoolsafe-card-bridge/relay-config.json'),true,16,JSON_THROW_ON_ERROR);
  if(($config['environment']??'')!=='local-isolated-test-only'||($config['sourceInstance']??'')!=='codex-addons-local'
    ||!preg_match('/^[a-f0-9]{64}$/D',$config['secretHex']??'')) throw new RuntimeException('CONFIG_REQUIRED');

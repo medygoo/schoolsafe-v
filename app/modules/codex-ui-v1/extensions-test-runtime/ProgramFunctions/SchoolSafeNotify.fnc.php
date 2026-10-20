@@ -99,7 +99,8 @@ function SchoolSafeNotifyEmit(array $event, array $recipients, array $db)
     foreach ($recipients as $r) {
         if (!isset($r['audience'], $r['staff_id'], $r['channel'])) throw new RuntimeException('INVALID_RECIPIENT');
         if (!in_array($r['audience'], ['parent', 'teacher', 'direction', 'staff'], true)) throw new RuntimeException('INVALID_RECIPIENT');
-        if (!in_array($r['channel'], ['feed', 'email', 'push'], true)) throw new RuntimeException('INVALID_RECIPIENT');
+        // WhatsApp (037) : sur-ensemble strict — feed/email/push inchanges.
+        if (!in_array($r['channel'], ['feed', 'email', 'push', 'whatsapp'], true)) throw new RuntimeException('INVALID_RECIPIENT');
         if ((int) $r['staff_id'] < 1) throw new RuntimeException('INVALID_RECIPIENT');
     }
     $studentSql = $e['student_id'] === null ? 'NULL' : (string) $e['student_id'];

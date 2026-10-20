@@ -25,7 +25,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Apache : ServerName explicite, et IP client réelle derrière le proxy Caddy.
 RUN printf 'ServerName localhost\n' > /etc/apache2/conf-available/local-server.conf \
     && a2enconf local-server \
-    && a2enmod remoteip \
+    && a2enmod remoteip rewrite \
+    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf \
     && printf 'RemoteIPHeader X-Forwarded-For\nRemoteIPInternalProxy 172.16.0.0/12 10.0.0.0/8 192.168.0.0/16\n' \
         > /etc/apache2/conf-available/remoteip-proxy.conf \
     && a2enconf remoteip-proxy

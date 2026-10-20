@@ -52,7 +52,23 @@ function SchoolSafeArrivalReadScope(array $context, array $filters, callable $qu
     $date = SchoolSafeArrivalReadDate($filters['date'] ?? null);
     $page = SchoolSafeArrivalReadId($filters['page'] ?? '1');
     if ($page > 10000) throw new InvalidArgumentException('INVALID_ARRIVAL_FILTER');
-    $from = ' FROM schoolsafe_attendance.arrival_ledger l JOIN students s ON s.student_id=l.student_id'
+    // Lot ENTRY : le registre natif Rosario (entry_exit_student_records) s'ajoute
+    // au registre bridge, mêmes colonnes, même périmètre (inscription + classes).
+    $ledger = 'SELECT l.student_id,l.school_id,l.syear,l.school_date,l.occurred_at,'
+        . 'l.school_timezone,l.source_event_id,l.enrollment_id,l.status'
+        . ' FROM schoolsafe_attendance.arrival_ledger l';
+    $branches = [];
+    if (SchoolSafeArrivalTableReady($query, 'schoolsafe_attendance.arrival_ledger')) $branches[] = $ledger;
+        $branches[] = 'SELECT r.student_id,e.school_id,e.syear,(r.recorded_at::date) AS school_date,'
+            . "r.recorded_at AS occurred_at,current_setting('TIMEZONE') AS school_timezone,"
+            . "md5('rosario-entry-'||r.id)::uuid AS source_event_id,e.id AS enrollment_id,"
+            . "'arrival_evidence' AS status"
+            . ' FROM entry_exit_student_records r JOIN student_enrollment e ON e.student_id=r.student_id'
+            . " WHERE r.type='in' AND r.unauthorized IS NULL"
+            . ' AND e.start_date<=(r.recorded_at::date) AND (e.end_date IS NULL OR e.end_date>=(r.recorded_at::date))';
+    // Sans aucune source, le SQL historique est conservé : même 503 qu'avant, jamais de faux vide.
+    $native = $branches ? implode(' UNION ALL ', $branches) : $ledger;
+    $from = ' FROM (' . $native . ') l JOIN students s ON s.student_id=l.student_id'
         . ' JOIN student_enrollment e ON e.id=l.enrollment_id AND e.student_id=l.student_id'
         . ' AND e.school_id=l.school_id AND e.syear=l.syear';
     $where = ' WHERE l.school_id=' . $scope['school'] . ' AND l.syear=' . $scope['year']
@@ -72,6 +88,20 @@ function SchoolSafeArrivalReadScope(array $context, array $filters, callable $qu
             . ' AND ss.start_date<=l.school_date AND (ss.end_date IS NULL OR ss.end_date>=l.school_date))';
     } elseif (isset($filters['course_period_id'])) throw new InvalidArgumentException('INVALID_ARRIVAL_FILTER');
     return ['date' => $date, 'page' => $page, 'from' => $from, 'where' => $where, 'scope' => $scope];
+}
+
+function SchoolSafeArrivalTableReady(callable $query, $name): bool
+{
+    try {
+        $rows = SchoolSafeArrivalReadRows($query("SELECT to_regclass('" . $name . "') AS t"));
+    } catch (Throwable $error) { return false; }
+    $found = (string) ($rows[0]['t'] ?? '');
+    return $found !== '' && substr($found, -strlen($name)) === $name;
+}
+
+function SchoolSafeArrivalNativeRecordsReady(callable $query): bool
+{
+    return SchoolSafeArrivalTableReady($query, 'public.entry_exit_student_records');
 }
 
 /** Only SELECT statements. No roster-minus-arrivals inference or attendance mutation. */

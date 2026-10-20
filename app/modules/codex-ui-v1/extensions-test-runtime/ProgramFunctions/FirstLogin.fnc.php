@@ -28,21 +28,55 @@ if ( ! function_exists( 'DoFirstLoginForm' ) )
 			&& ( User( 'STAFF_ID' ) === '1' || Config( 'FORCE_PASSWORD_CHANGE_ON_FIRST_LOGIN' ) ) )
 		{
 			// Password set.
-			$new_password = encrypt_password( $values['PASSWORD'] );
-
-			if ( User( 'STAFF_ID' ) )
+			$new_password = encrypt_password( $values['PASSWORD'] );			if ( User( 'STAFF_ID' ) )
 			{
 				DBQuery( "UPDATE staff
 					SET PASSWORD='" . $new_password . "',LAST_LOGIN=CURRENT_TIMESTAMP
 					WHERE STAFF_ID='" . User( 'STAFF_ID' ) . "'
 					AND SYEAR='" . UserSyear() . "'" );
+
+				// SchoolSafe L4 — mot de passe changé : les autres sessions
+				// sont révoquées (époque L1, garde Warehouse).
+				if ( function_exists( 'SchoolSafeAccountRevoke' ) )
+				{
+					SchoolSafeAccountRevoke( (string) User( 'USERNAME' ), 0 );
+
+					// La session courante vient de poser le mot de passe :
+					// elle adopte la nouvelle epoque (sinon auto-eviction
+					// au prochain ecran — la revocation ne vise que les
+					// AUTRES sessions).
+					if ( function_exists( 'SchoolSafeAccountEpoch' ) )
+					{
+						$_SESSION['SchoolSafeEpoch'] = SchoolSafeAccountEpoch( (string) User( 'USERNAME' ) );
+					}
+
+					if ( function_exists( 'SchoolSafeAccountSchoolEpoch' )
+						&& function_exists( 'SchoolSafeAccountSchoolIds' ) )
+					{
+						$_SESSION['SchoolSafeEpochs'] = [];
+
+						foreach ( SchoolSafeAccountSchoolIds( User( 'SCHOOLS' ) ) as $schoolsafe_epoch_school )
+						{
+							$_SESSION['SchoolSafeEpochs'][ $schoolsafe_epoch_school ] = SchoolSafeAccountSchoolEpoch(
+								(string) User( 'USERNAME' ), $schoolsafe_epoch_school );
+						}
+					}
+				}
 			}
 			else
 			{
 				DBQuery( "UPDATE students
 					SET PASSWORD='" . $new_password . "',LAST_LOGIN=CURRENT_TIMESTAMP
 					WHERE STUDENT_ID='" . (int) $_SESSION['STUDENT_ID'] . "'" );
-			}
+
+				// SchoolSafe L4 — révocation enregistrée (garde de session
+				// limitée au personnel ; voir PasswordReset.php).
+				if ( function_exists( 'SchoolSafeAccountRevoke' )
+					&& ! empty( $_SESSION['USERNAME'] ) )
+				{
+					SchoolSafeAccountRevoke( (string) $_SESSION['USERNAME'], 0 );
+				}
+				}
 
 			unset( $values['PASSWORD'], $new_password );
 

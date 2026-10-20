@@ -125,8 +125,20 @@ function SchoolSafeMailBuild(array $event, array $identity)
     $bodyText = implode("\n", array_slice($lines, 1, count($lines) - 5));
     $html .= '<p style="font-size:14px;color:#1f2937;white-space:pre-line;">'
         . SchoolSafeMailEscape($bodyText) . '</p>';
+    // Bloc d'assistance JASPE : portrait officiel 64 px (plage 48-72), texte de
+    // repli si l'image est bloquee (alt + legende FR/EN), mise en page en table
+    // pour Gmail mobile/ordinateur et clients sans support flex.
+    $jaspeAlt = $locale === 'en' ? 'Jaspe, the SchoolSafe assistant' : 'Jaspe, l\'assistant SchoolSafe';
+    $jaspeCaption = $locale === 'en'
+        ? 'Jaspe stays with you at every step.'
+        : 'Jaspe vous accompagne à chaque étape.';
     if ($jaspe !== '') {
-        $html .= '<div style="margin:16px 0;"><img src="' . SchoolSafeMailEscape($jaspe) . '" alt="Jaspe" style="max-width:100%;height:auto;border-radius:8px;"/></div>';
+        $html .= '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;">'
+            . '<tr><td width="72" valign="top" style="width:72px;">'
+            . '<img src="' . SchoolSafeMailEscape($jaspe) . '" alt="' . SchoolSafeMailEscape($jaspeAlt) . '" width="64"'
+            . ' style="display:block;width:64px;height:auto;border:0;border-radius:12px;"/>'
+            . '</td><td valign="middle" style="padding-left:12px;font-size:13px;color:#475569;">'
+            . SchoolSafeMailEscape($jaspeCaption) . '</td></tr></table>';
     }
     if ($schoolLogo !== '') {
         $html .= '<div style="margin:8px 0;"><img src="' . SchoolSafeMailEscape($schoolLogo) . '" alt="' . SchoolSafeMailEscape($school) . '" width="96" style="display:block;border:0;"/></div>';

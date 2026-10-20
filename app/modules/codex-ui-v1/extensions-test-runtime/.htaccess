@@ -16,4 +16,44 @@ RewriteRule (^|/)(LICENSE|COPYRIGHT|composer\.lock|composer\.json|package\.json)
 #
 ## End - Security
 
+## Begin - SchoolSafe L1 : porte d'entree unique
+# /connexion = ecran et moteur d'authentification Rosario (index.php),
+# sans dupliquer aucune logique : QSA preserve modfunc/first-login/logout.
+# index.php reste accessible (liens internes et favoris preserves).
+RewriteRule ^connexion/?$ index.php [QSA,L]
+#
+## End - SchoolSafe L1
+
+## Begin - SchoolSafe L2 : parcours officiel d'ouverture
+# /demarrer = depot de demande et presentation du code d'autorisation
+# (demarrer.php) : aucun moteur metier duplique, memes tables 019/032 et
+# memes regles que les ecrans centraux. Anciens points d'entree preserves.
+RewriteRule ^demarrer/?$ demarrer.php [QSA,L]
+#
+## End - SchoolSafe L2
+
+## Begin - SchoolSafe L3 : gestion centralisee des comptes et profils
+# Centre officiel par etablissement (hub fin, moteur natif Users/User.php) :
+# anciens ecrans Modules.php preserves, jamais supprimes.
+RewriteRule ^ecoles/([0-9]+)/utilisateurs/nouveau/?$ ecole-utilisateurs.php?school_id=$1&nouveau=1 [QSA,L]
+RewriteRule ^ecoles/([0-9]+)/utilisateurs/([0-9]+)/?$ ecole-utilisateurs.php?school_id=$1&utilisateur=$2 [QSA,L]
+RewriteRule ^ecoles/([0-9]+)/utilisateurs/?$ ecole-utilisateurs.php?school_id=$1 [QSA,L]
+# Route officielle des profils (lecture + orientation vers le natif).
+RewriteRule ^ecoles/([0-9]+)/profils/?$ ecole-profils.php?school_id=$1 [QSA,L]
+# Gestionnaire general PRODELI : meme application, console existante.
+RewriteRule ^plateforme/prodeli/?$ plateforme-prodeli.php [QSA,L]
+# Gestionnaire SMS PRODELI : 4 lignes, quotas, historique, tests autorises.
+RewriteRule ^plateforme/prodeli/sms/?$ plateforme-prodeli-sms.php [QSA,L]
+# Gestionnaire WhatsApp PRODELI : WAHA principal, Evolution secours.
+RewriteRule ^plateforme/prodeli/whatsapp/?$ plateforme-prodeli-whatsapp.php [QSA,L]
+#
+## End - SchoolSafe L3
+
+## Begin - SchoolSafe L4 : recuperation des comptes
+# /compte/recuperation = ecrans harmonises (courriel via PasswordReset.php
+# natif, telephone via defi OTP simule puis remise au formulaire natif) :
+# aucun moteur de mot de passe duplique. PasswordReset.php reste accessible.
+RewriteRule ^compte/recuperation/?$ compte-recuperation.php [QSA,L]
+#
+## End - SchoolSafe L4
 </IfModule>

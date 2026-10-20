@@ -24,7 +24,7 @@
    const response=await request('scan',input),data=response.data;
    if(!data||typeof data.result!=='string')throw new Error('INVALID_RESULT');
    result.dataset.feeColor=data.result==='FEE_POLICY_STATUS'?data.color:'';
-   result.textContent=data.result==='FEE_POLICY_STATUS'?data.label:(data.student_name?data.student_name+' : ':'')+(data.result==='CANTEEN_STATUS'?data.label:(data.result==='FEE_STATUS'?'Orienter au bureau — contrôle à vérifier':(names[data.result]||'Résultat du moteur : '+data.result)));
+   if(data.result==='FEE_STATUS'){const who=data.student_name?data.student_name+(typeof data.class_name==='string'&&data.class_name?' ('+data.class_name+')':'')+' : ':'';const label=balances[data.balance_status]||'Statut indisponible';result.textContent=typeof data.balance==='string'?who+label+' — solde '+data.balance:who+label+' — Orienter au bureau, controle a verifier';}else result.textContent=data.result==='FEE_POLICY_STATUS'?data.label:(data.student_name?data.student_name+(typeof data.class_name==='string'&&data.class_name?' ('+data.class_name+')':'')+' : ':'')+(data.result==='CANTEEN_STATUS'?data.label:(names[data.result]||'Résultat du moteur : '+data.result))+(data.late===true?' (retard)':'');
    if(typeof data.photo_url==='string'&&data.photo_url){
     let photo;try{photo=new URL(data.photo_url,location.href);}catch(_){}
     if(photo&&photo.origin===location.origin&&['http:','https:'].includes(photo.protocol)){
@@ -39,16 +39,20 @@
   }catch(error){clearPickup();result.textContent=['401','403'].includes(error.message)?'Connexion ou autorisation requise.':'Scan indisponible. Aucune confirmation reçue.';}
   finally{busy=false;form.querySelectorAll('button,input,select').forEach(button=>button.disabled=false);}
  }
+ function enlargePhoto(src,alt){const overlay=document.createElement('div');overlay.className='scan-photo-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-label',alt||'Photo agrandie');overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:9999';const big=document.createElement('img');big.src=src;big.alt=alt||'';big.style.cssText='max-width:92vw;max-height:92vh;object-fit:contain';overlay.append(big);overlay.addEventListener('click',()=>overlay.remove());document.body.append(overlay);}
  function renderPeople(rows,input){for(const person of rows){
   const article=document.createElement('article');article.className='scan-person';
   const title=document.createElement('strong');title.textContent=person.name||'Personne';article.append(title);
-  const status=document.createElement('p');status.textContent='Photo indisponible ou non validée.';article.append(status);
+  const roleLine=typeof person.role==='string'&&person.role?person.role:'';
+  const status=document.createElement('p');status.textContent=(roleLine?roleLine+' — ':'')+'Photo indisponible ou non validée.';article.append(status);
   const choose=document.createElement('button');choose.type='button';choose.textContent='Choisir cette personne';choose.disabled=true;article.append(choose);
   if(typeof person.photo_path==='string'&&person.photo_accepted===true&&person.pickup_ready===true){
    let url;try{url=new URL(person.photo_path,location.href);}catch(_){}
    if(url&&url.origin===location.origin&&['http:','https:'].includes(url.protocol)){
     const image=document.createElement('img');image.alt='Photo de '+(person.name||'la personne');image.referrerPolicy='same-origin';
-    image.onload=()=>{if(image.naturalWidth>0){choose.disabled=false;status.textContent='Photo validée.';}};
+    image.style.cursor='zoom-in';
+    image.addEventListener('click',()=>{if(!choose.disabled)enlargePhoto(image.src,image.alt);});
+    image.onload=()=>{if(image.naturalWidth>0){choose.disabled=false;status.textContent=(roleLine?roleLine+' — ':'')+'Photo validée.';}};
     image.onerror=()=>{choose.disabled=true;status.textContent='Photo impossible à afficher.';};image.src=url.href;article.prepend(image);
    }
   }

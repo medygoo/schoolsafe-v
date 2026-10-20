@@ -9,6 +9,10 @@
 
 require_once 'Warehouse.php';
 
+// SchoolSafe L4 — moteur partagé de récupération (Brevo-d'abord, throttle
+// des liens, OTP) : factorise l'émission du lien natif sans la reconstruire.
+require_once 'ProgramFunctions/SchoolSafeRecovery.fnc.php';
+
 /**
  * Send email with password reset link.
  * Activate debug mode for error messages.
@@ -16,7 +20,21 @@ require_once 'Warehouse.php';
 if ( isset( $_POST['email'] )
 	&& ! empty( $_REQUEST['email'] ) )
 {
-	if ( ! filter_var( $_REQUEST['email'], FILTER_VALIDATE_EMAIL ) )
+	// SchoolSafe — anti-abus : maximum 5 demandes / 10 min par IP (journal
+	// access_log, STATUS 'P'). Refus silencieux avec le message générique :
+	// aucune énumération de comptes, même en cas de limitation.
+	$schoolsafe_reset_ip = SchoolSafeRecoveryClientIp();
+	$schoolsafe_reset_recent = SchoolSafeRecoveryRequestAttempts( $schoolsafe_reset_ip );
+	if ( (int) $schoolsafe_reset_recent >= 5 )
+	{
+		if ( ! ROSARIO_DEBUG )
+		{
+			header( 'Location: index.php?modfunc=logout&reason=password_reset&token=' . $_SESSION['token'] );
+			exit;
+		}
+		$error[] = 'Too many password reset requests. Please try again later.';
+	}
+	elseif ( ! filter_var( $_REQUEST['email'], FILTER_VALIDATE_EMAIL ) )
 	{
 		if ( ROSARIO_DEBUG )
 		{
@@ -77,6 +95,11 @@ if ( isset( $_POST['email'] )
 
 			if ( ! $email_sent )
 			{
+				// SchoolSafe — panne d'envoi tracée côté serveur (journal
+				// applicatif) : l'utilisateur voit le message générique,
+				// l'administrateur retrouve l'échec dans les logs Docker.
+				error_log( 'SchoolSafe password reset email FAILED id=' .
+				(int) $user_RET[1]['ID'] . ' type=' . $user_RET[1]['USER_TYPE'] );
 				if ( ROSARIO_DEBUG )
 				{
 					$error[] = 'Password reset email could not be sent.';
@@ -88,6 +111,10 @@ if ( isset( $_POST['email'] )
 			}
 		}
 	}
+
+	// SchoolSafe — chaque demande est journalisée (succès ou non, même
+	// message) pour l'anti-abus ci-dessus ; aucun détail exposé.
+	SchoolSafeRecoveryRequestLog( $schoolsafe_reset_ip );
 
 	if ( ! ROSARIO_DEBUG )
 	{
@@ -104,6 +131,18 @@ if ( ! empty( $_REQUEST['h'] )
 		|| mb_strlen( $_REQUEST['h'] ) == 105 )
 	&& mb_substr( $_REQUEST['h'], 0, 3 ) == '$6$' )
 {
+	// SchoolSafe L4 — limitation des tentatives sur les liens : au-delà de
+	// 30 vérifications / 10 min / IP, refus générique (aucun oracle : même
+	// message que le lien inconnu). Chaque vérification est journalisée.
+	$schoolsafe_link_ip = SchoolSafeRecoveryClientIp();
+	$schoolsafe_link_locked = SchoolSafeRecoveryLinkAttempts( $schoolsafe_link_ip ) >= 30;
+	SchoolSafeRecoveryLinkLog( $schoolsafe_link_ip );
+	if ( $schoolsafe_link_locked )
+	{
+		$error[] = _( 'Please enter your email again.' );
+	}
+	else
+	{
 	// Select Staff where last login > now.
 	$staff_RET = DBGet( "SELECT STAFF_ID AS ID, USERNAME, PASSWORD, EMAIL,
 		" . DisplayNameSQL() . " AS FULL_NAME, LAST_LOGIN, PROFILE_ID
@@ -212,6 +251,20 @@ if ( ! empty( $_REQUEST['h'] )
 						[ 'USERNAME' => DBEscapeString( $staff['USERNAME'] ) ]
 					);
 
+					// SchoolSafe — usage unique du lien : invalider le jeton
+					// en ramenant LAST_LOGIN au présent (le lien exigeait
+					// LAST_LOGIN futur). Sans ceci, le lien restait
+					// réutilisable jusqu'à expiration des 2 heures.
+					DBQuery( "UPDATE staff SET LAST_LOGIN=CURRENT_TIMESTAMP
+						WHERE USERNAME='" . DBEscapeString( $staff['USERNAME'] ) . "'" );
+
+					// SchoolSafe L4 — mot de passe changé : les autres
+					// sessions sont révoquées (époque L1, garde Warehouse).
+					if ( function_exists( 'SchoolSafeAccountRevoke' ) )
+					{
+						SchoolSafeAccountRevoke( $staff['USERNAME'], 0 );
+					}
+
 					// If admin, send notification email to server admin.
 					if ( $user_profile == 1 )
 					{
@@ -219,13 +272,24 @@ if ( ! empty( $_REQUEST['h'] )
 					}
 				}
 				elseif ( $user_type === 'student' )
-				{
-					// Update password.
+				{					// Update password.
 					DBUpdate(
 						'students',
 						[ 'PASSWORD' => encrypt_password( $new_password ) ],
 						[ 'STUDENT_ID' => (int) $user_id ]
-					);
+						);
+
+					// SchoolSafe — usage unique du lien (voir personnel).
+					DBQuery( "UPDATE students SET LAST_LOGIN=CURRENT_TIMESTAMP
+						WHERE STUDENT_ID='" . (int) $user_id . "'" );
+
+					// SchoolSafe L4 — révocation enregistrée (la garde de
+					// session ne couvre aujourd'hui que le personnel ; le
+					// lien reste à usage unique et expiré en 2 h).
+					if ( function_exists( 'SchoolSafeAccountRevoke' ) )
+					{
+						SchoolSafeAccountRevoke( $student['USERNAME'], 0 );
+					}
 				}
 
 				unset(
@@ -246,6 +310,7 @@ if ( ! empty( $_REQUEST['h'] )
 			$error[] = _( 'Please enter your email again.' );
 		}
 	}
+	} // Fin du garde L4 de limitation des tentatives sur les liens.
 }
 
 $_ROSARIO['page'] = 'password-reset';
@@ -294,6 +359,9 @@ echo ErrorMessage( $note, 'note' );
 		<br />
 		<br />
 		<?php echo Buttons( _( 'Send password reset instructions' ) ); ?>
+		<br />
+		<br />
+		<p><em><?php echo _( 'Si vous ne recevez aucun email, contactez l\'administration de votre établissement : un administrateur peut régénérer un mot de passe temporaire depuis la console « Comptes et accès ».' ); ?></em></p>
 
 	<?php PopTable( 'footer' ); ?>
 
@@ -314,96 +382,12 @@ Warehouse( 'footer' );
  */
 function _sendPasswordResetEmail( $user_id, $user_type, $email )
 {
-	global $DatabaseType;
+	// SchoolSafe L4 — délégation au moteur partagé : même cryptographie du
+	// lien, même échéance +2 h, même mise à jour conditionnelle à l'envoi
+	// réussi ; transport Brevo-d'abord avec repli natif. Rien de reconstruit.
+	$out = SchoolSafeRecoveryIssueReset( $user_id, $user_type, $email );
 
-	if ( ! $user_id )
-	{
-		return false;
-	}
-
-	if ( $user_type === 'staff' )
-	{
-		// Get Staff email, password.
-		$staff_RET = DBGet( "SELECT USERNAME, PASSWORD,
-			" . DisplayNameSQL() . " AS FULL_NAME
-			FROM staff
-			WHERE STAFF_ID='" . (int) $user_id . "'
-			AND SYEAR='" . Config( 'SYEAR' ) . "'" );
-
-		$username = $staff_RET[1]['USERNAME'];
-
-		$name = $staff_RET[1]['FULL_NAME'];
-
-		$password = $staff_RET[1]['PASSWORD']; // Can be NULL!
-	}
-	elseif ( $user_type === 'student' )
-	{
-		// Get Student username, password, name.
-		$student_RET = DBGet( "SELECT USERNAME,PASSWORD,
-			" . DisplayNameSQL( 's' ) . " AS FULL_NAME
-			FROM students s,student_enrollment ssm
-			WHERE s.STUDENT_ID='" . (int) $user_id . "'
-			AND s.STUDENT_ID=ssm.STUDENT_ID
-			AND ssm.SYEAR='" . Config( 'SYEAR' ) . "'
-			AND ('" . DBDate() . "'>=ssm.START_DATE
-			AND (ssm.END_DATE IS NULL
-				OR '" . DBDate() . "'<=ssm.END_DATE ) )" );
-
-		$username = $student_RET[1]['USERNAME'];
-
-		$name = $student_RET[1]['FULL_NAME'];
-
-		$password = $student_RET[1]['PASSWORD']; // Can be NULL!
-	}
-
-	if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL )
-		|| ! $username )
-	{
-		return false;
-	}
-
-	// Last login = now + 2 hours.
-	$last_login = DBGetOne( "SELECT
-		CAST(CURRENT_TIMESTAMP + INTERVAL " . ( $DatabaseType === 'mysql' ? '2 hour' : "'2 hour'" ) . " AS char(19)) AS LAST_LOGIN" );
-
-	// Generate hash from user ID, username, name, password, email & last login.
-	$hash = encrypt_password( $user_id . $username . $name . $password . $email . $last_login );
-
-	// Generate link.
-	$link = RosarioURL( 'script' ) . '?h=' . $hash;
-
-	// Send email.
-	require_once 'ProgramFunctions/SendEmail.fnc.php';
-
-	$message = _( 'Please visit the following link to reset your password' ) . ':<br />
-		<a href="' . URLEscape( $link ) . '">' . $link . '</a>
-		<br />' . _( 'Username' ) . ': ' . $username . '
-		<br /><br />' .
-		_( 'Please permanently delete this email once you are done.' );
-
-	$email_sent = SendEmail( $email, _( 'Password Reset' ), $message );
-
-	if ( ! $email_sent )
-	{
-		return false;
-	}
-
-	if ( $user_type === 'staff' )
-	{
-		// Update Last login = now + 2 hours.
-		DBQuery( "UPDATE staff
-			SET LAST_LOGIN='" . $last_login . "'
-			WHERE STAFF_ID='" . (int) $user_id . "'" ); // CURRENT_TIMESTAMP + interval '2 hour'.
-	}
-	elseif ( $user_type === 'student' )
-	{
-		// Update Last login = now + 2 hours.
-		DBQuery( "UPDATE students
-			SET LAST_LOGIN='" . $last_login . "'
-			WHERE STUDENT_ID='" . (int) $user_id . "'" ); // CURRENT_TIMESTAMP + interval '2 hour'.
-	}
-
-	return true;
+	return ! empty( $out['sent'] );
 }
 
 

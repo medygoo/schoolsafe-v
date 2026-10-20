@@ -35,6 +35,20 @@ function sskcOpeningMutation(): void
         return;
     }
     $id=(int)($_POST['request_id']??0);
+    if($action==='issue_code') {
+        // LOT L2 : emission centrale d'un code d'autorisation (transaction
+        // interne). Le code brut n'est retourne qu'ici, affiche une seule
+        // fois, jamais journalise. Seul le central peut emettre : un
+        // directeur ne passe jamais sskcOpeningWrite().
+        $issued=SchoolSafeOpeningCodeIssue($id,(int)User('STAFF_ID'));
+        if(empty($issued['ok'])) {
+            $issue_labels=['ISSUER_UNAUTHORIZED'=>'Émission non autorisée.','REQUEST_NOT_FOUND'=>'Demande introuvable pour cette année.','REQUEST_NOT_APPROVABLE'=>'Cette demande ne peut plus recevoir de code.','CODE_ALREADY_ACTIVE'=>'Un code actif existe déjà pour cette demande.','SERVICE_UNAVAILABLE'=>'Service d’autorisation indisponible.'];
+            throw new RuntimeException($issue_labels[$issued['error']??'']??'Émission indisponible. Aucun code transmis.');
+        }
+        $_SESSION['sskc_opening_code_handoff']=['request_id'=>$id,'code'=>$issued['code'],
+            'expires_at'=>$issued['expires_at'],'actor'=>(int)User('STAFF_ID'),'expires'=>time()+600];
+        return;
+    }
     DBQuery('BEGIN');
     try {
         $rows=DBGet('SELECT * FROM schoolsafe_opening_requests WHERE id='.$id.' AND syear='.(int)UserSyear().' FOR UPDATE');
@@ -47,9 +61,17 @@ function sskcOpeningMutation(): void
             if(!DBGetOne('SELECT id FROM schools WHERE id='.$school.' AND syear='.(int)UserSyear())) throw new RuntimeException('École non valide.');
             $account=sskcTarget($staff,true);
             $scope=SchoolSafeScopeParse($account['SCHOOLS']);
+            // LOT L2 : acces active = identite geree (Keycloak, SUBJECT lie et
+            // active) OU compte natif en premiere connexion (LAST_LOGIN NULL
+            // -> changement de mot de passe force). Les deux prouvent que le
+            // responsable legitime controle l'activation ; aucun GlobalAdmin
+            // (SCHOOLS NULL) n'est accepte ici, le rattachement exige une
+            // ecole explicite dans le perimetre.
+            $managed=!empty($account['SUBJECT']) && $account['IDENTITY_ENABLED']==='Y'
+                && in_array($account['STATE'],['active','onboarding'],true);
+            $native_onboarding=empty($account['SUBJECT']) && empty($account['LAST_LOGIN']);
             if($account['PROFILE']!=='admin' || !is_array($scope) || !in_array($school,$scope,true)
-                || !$account['SUBJECT'] || $account['IDENTITY_ENABLED']!=='Y'
-                || !in_array($account['STATE'],['active','onboarding'],true)) {
+                || !($managed || $native_onboarding)) {
                 throw new RuntimeException('Choisissez un responsable limité aux écoles attribuées et avec un accès SchoolSafe activé.');
             }
             DBUpdate('schoolsafe_opening_requests',['SCHOOL_ID'=>$school,'RESPONSIBLE_ID'=>$staff],['ID'=>$id]);
@@ -77,6 +99,17 @@ function sskcOpeningPage(): void
     echo '<p><a href="/schoolsafe-administrators.php">Administrateurs et accès temporaires</a></p>';
     if($message)echo '<p role="status">'.sskcEscape($message).'</p>';
     if($error)echo '<p role="alert">'.sskcEscape($error).'</p>';
+    // LOT L2 : remise confidentielle du code emis — affichee une seule fois,
+    // jamais repetee ni journalisee.
+    $code_handoff=$_SESSION['sskc_opening_code_handoff']??null;
+    unset($_SESSION['sskc_opening_code_handoff']);
+    if(is_array($code_handoff) && ($code_handoff['actor']??0)===(int)User('STAFF_ID')
+        && ($code_handoff['expires']??0)>time() && !empty($code_handoff['code'])) {
+        echo '<section aria-label="Code d\'autorisation"><h2>Code à remettre confidentiellement</h2>'
+            .'<p role="status">Code de la demande n°'.(int)$code_handoff['request_id']
+            .' — affiché UNE SEULE FOIS : <code>'.sskcEscape((string)$code_handoff['code']).'</code></p>'
+            .'<p>Expire le '.sskcEscape((string)$code_handoff['expires_at']).'. Remettez-le directement au demandeur, sans e-mail automatique. Cette page ne l’affichera plus.</p></section>';
+    }
     echo '<p>'.($central?'Validez la demande, préparez l’école dans SchoolSafe, créez son responsable et remettez son accès confidentiellement.'
         :'Vous gérez uniquement les établissements et fonctions qui vous sont attribués. L’ouverture d’une nouvelle école relève de SchoolSafe.').'</p>';
     if(!$central) {sskcUiEnd();exit;}
@@ -96,6 +129,15 @@ function sskcOpeningPage(): void
     foreach((array)$rows as $r) {
         echo '<section id="sskc-request-'.(int)$r['ID'].'" tabindex="-1"><h3>Demande n°'.(int)$r['ID'].' — '.sskcEscape($r['SCHOOL_NAME']).'</h3><p>'.sskcEscape($r['PERSON_NAME']).' — '.sskcEscape($r['EMAIL']).'</p><p>'.sskcEscape($labels[$r['STATE']]??'État inconnu').'</p>';
         if($r['SCHOOL_ID'])echo '<p>École : '.sskcEscape($r['SCHOOL_TITLE']??'À vérifier').' ; responsable : '.sskcEscape($r['RESPONSIBLE_USERNAME']??'À vérifier').'</p>';
+        // LOT L2 : etat du code d'autorisation (sans secret) et emission centrale.
+        if($write && $r['STATE']==='requested') {
+            $code_status=function_exists('SchoolSafeOpeningCodeStatus')?SchoolSafeOpeningCodeStatus((int)$r['ID']):['active'=>false];
+            if(!empty($code_status['active'])) {
+                echo '<p>Code d’autorisation actif — expire le '.sskcEscape((string)$code_status['expires_at']).' — tentatives : '.(int)$code_status['attempts'].'/'.(int)$code_status['max_attempts'].'.</p>';
+            } else {
+                echo '<form target="_self" method="post"><input type="hidden" name="token" value="'.$token.'"><input type="hidden" name="request_id" value="'.(int)$r['ID'].'"><input type="hidden" name="opening_action" value="issue_code"><input type="submit" class="button" value="Émettre un code d’autorisation (affiché une seule fois)"></form>';
+            }
+        }
         if($write && in_array($r['STATE'],['requested','approved'],true)) {
             echo '<form target="_self" method="post"><input type="hidden" name="token" value="'.$token.'"><input type="hidden" name="request_id" value="'.(int)$r['ID'].'">';
             if($r['STATE']==='requested')echo '<input type="hidden" name="opening_action" value="approve"><input type="submit" class="button-primary" value="Valider après vérification"> ';

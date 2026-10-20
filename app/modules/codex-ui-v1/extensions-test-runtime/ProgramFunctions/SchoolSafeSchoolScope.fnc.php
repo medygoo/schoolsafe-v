@@ -239,3 +239,68 @@ function SchoolSafeStaffWithinScope( $staff_id )
     }
     return SchoolSafeScopeDelegates( $scope, SchoolSafeScopeParse( $target[1]['SCHOOLS'] ) );
 }
+
+/**
+ * L3.1 — la colonne additive 034 (user_profiles.school_id) existe-t-elle ?
+ * Oui après migration ; non sur une base pas encore migrée. Mis en cache
+ * par requête ; toute erreur SQL vaut « absente » (jamais de 500 : sans la
+ * colonne, aucun profil d'école ne peut exister).
+ *
+ * @return bool Vrai si les profils d'école sont stockables sur cette base.
+ */
+function SchoolSafeSchoolProfileColumnExists()
+{
+    static $exists = null;
+    if ( $exists !== null ) return $exists;
+    $exists = false;
+    // @codingStandardsIgnoreStart (sonde d'introspection, pas de données).
+    $hit = @DBGetOne( "SELECT 1 FROM information_schema.columns
+        WHERE table_name='user_profiles' AND column_name='school_id'" );
+    // @codingStandardsIgnoreEnd
+    if ( (string) $hit === '1' ) $exists = true;
+    return $exists;
+}
+
+/**
+ * L3.1 — périmètre d'un profil nommé (migration 034) :
+ *   null  = profil global (natif, écrans réservés au GlobalAdmin) ;
+ *   entier = profil propre à cette école (hub /ecoles/{id}/profils) ;
+ *   false = profil inconnu.
+ * Sans la colonne 034, tout profil est global (null) : les gardes natifs
+ * retrouvent alors exactement leur comportement d'avant L3.1.
+ *
+ * @param int|string $profile_id Profil nommé.
+ * @return int|null|false École propriétaire, null si global, false si inconnu.
+ */
+function SchoolSafeProfileSchoolId( $profile_id )
+{
+    if ( ! ctype_digit( (string) $profile_id ) || (int) $profile_id < 1 ) return false;
+    if ( ! SchoolSafeSchoolProfileColumnExists() ) return null;
+    $row = DBGet( "SELECT SCHOOL_ID FROM user_profiles WHERE ID='" . (int) $profile_id . "'" );
+    if ( ! $row ) return false;
+    $school = $row[1]['SCHOOL_ID'];
+    if ( $school === null || $school === '' ) return null;
+    return (int) $school > 0 ? (int) $school : false;
+}
+
+/**
+ * L3.1 — un acteur peut-il attribuer le profil $profile_id à un compte dont
+ * les écoles cibles sont $target_schools (liste ',N,' ou null pour parent) ?
+ * Global : oui. Profil d'école S : oui si et seulement si S est dans le
+ * périmètre de l'acteur ET les cibles sont exactement ',S,' (jamais un compte
+ * multi-écoles, jamais une autre école : les droits natifs ne s'isolent pas
+ * par contexte, on refuse plutôt que risquer une fuite).
+ *
+ * @param int|string $profile_id Profil nommé.
+ * @param string|null $target_schools Écoles cibles ',N,' (null = parent).
+ * @return bool Vrai si l'attribution respecte le périmètre du profil.
+ */
+function SchoolSafeProfileSchoolAssignable( $profile_id, $target_schools )
+{
+    $owner = SchoolSafeProfileSchoolId( $profile_id );
+    if ( $owner === false ) return false;
+    if ( $owner === null ) return true; // Global : les autres gardes décident.
+    $scope = SchoolSafeScopeParse( User( 'SCHOOLS' ) );
+    if ( $scope === false || ! SchoolSafeScopeContains( $scope, $owner ) ) return false;
+    return $target_schools === ',' . $owner . ',';
+}
