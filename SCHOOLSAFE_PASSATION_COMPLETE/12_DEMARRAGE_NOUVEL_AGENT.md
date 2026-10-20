@@ -10,7 +10,7 @@
 >
 > **Ce qui tourne** : `https://app.shoolsafe.tech` (application SchoolSafe/RosarioSIS), PostgreSQL dans `schoolsafe-rosario-db`, deux moteurs WhatsApp connectés (WAHA et Evolution API).
 >
-> **Ce qui est fragile** : le chrome de navigation après connexion est encore celui de Rosario ; les sessions WhatsApp applicatives sont volontairement désactivées ; aucun outil de sécurité P0 n'est installé ; un correctif WhatsApp attend d'être publié ; le lot cartes/scans est hors Git.
+> **Ce qui est fragile** : le chrome de navigation après connexion est encore celui de Rosario ; les sessions WhatsApp applicatives sont volontairement désactivées ; aucun outil de sécurité P0 n'est installé ; un correctif WhatsApp attend d'être publié ; le lot cartes/scans est publié (`8f81b8f`) mais pas déployé.
 >
 > **Tes règles** : jamais de secret publié, jamais de suppression de données, jamais de déploiement sans accord, jamais de réécriture de Rosario, jamais de simulation présentée comme une validation réelle.
 >
@@ -62,12 +62,12 @@ Puis lire `docs/CURRENT_HANDOFF.md` en ciblant les sections utiles (3 800 lignes
 3. Un QR WhatsApp **expire** ; un scan raté met WAHA en `FAILED` → redémarrer la session.
 4. WhatsApp entrant arrive en **`@lid`**, pas en `@c.us`.
 5. Evolution exige **`X-Api-Key`** sur `GET /instance/fetchInstances` (401 sinon).
-6. Les fichiers **non suivis** du lot cartes/scans sont du vrai travail : ne jamais les écraser.
+6. Le lot cartes/scans est désormais dans Git (`8f81b8f`) ; seuls 6 captures QA et le correctif WhatsApp restent non publiés — ne jamais les écraser.
 
 ## 4. Ce qu'il ne faut pas faire le premier jour
 
 - Ne pas déployer, ne pas pousser, ne pas migrer.
-- Ne pas « nettoyer » les fichiers non suivis.
+- Ne pas « nettoyer » les fichiers non suivis (6 captures QA + `SchoolSafeWhatsapp.fnc.php` modifié).
 - Ne pas modifier `Side.php`, `Bottom.php` ni le thème pour « voir ».
 - Ne pas activer les sessions WhatsApp sans accord.
 - Ne pas installer d'outil P0 sans vérifier qu'il n'est pas déjà présent.

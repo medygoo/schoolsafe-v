@@ -123,6 +123,6 @@ Règles : jamais `docker volume rm`, jamais `DROP DATABASE`, jamais de remplacem
 ## 10. Écarts connus
 
 - Le correctif `provider_msg_id` est dans l'arbre de travail mais **pas** dans `5a946f3` ni dans l'image.
-- Le lot cartes/scans (5 fonctions PHP, 4 migrations, 7 tests, 3 scripts QA) est **hors Git**.
+- Le lot cartes/scans (5 fonctions PHP, 4 migrations, 7 tests, 3 scripts QA) est **publié depuis le 20/10/2026** (commit `8f81b8f`), mais pas déployé.
 - La base de production s'appelle `rosario_addons_test` : toujours lire `POSTGRES_DB`, jamais supposer un nom.
 - Le conteneur API (`20261018d`) est plus ancien que le conteneur PHP (`20261020-gofinal`) : les deux ne proviennent pas forcément du même commit.

@@ -29,7 +29,7 @@ Statuts utilisés, sans ambiguïté :
 | Push web | DÉPLOYÉ-NON-VÉRIFIÉ | `SchoolSafeWebPush.fnc.php`, `notification-push-sw.js` |
 | Navigation / menu (tiroir, thème `SchoolSafeCodex`) | EN COURS | thème actif documenté ; chrome natif encore visible après connexion |
 | JASPE 2.5D | DÉPLOYÉ-NON-VÉRIFIÉ | `modules/SchoolSafe_Jaspe/**`, 10+ scripts `qa-jaspe-*` |
-| Cartes / scans (A1, ENTRY, PICKUP, FEES) | **PRÊT-NON-DÉPLOYÉ** | hors Git : 5 fonctions PHP, migrations `020`–`023`, `qa-scan-*` |
+| Cartes / scans (A1, ENTRY, PICKUP, FEES) | **PUBLIÉ-NON-DÉPLOYÉ** (20/10/2026) | commit `8f81b8f` : 5 fonctions PHP, migrations `020`–`023`, 7 tests, `qa-scan-*` ; 7 suites GREEN en isolé (`09` §11) |
 | Finance (caisse, reçus, exonérations) | DÉPLOYÉ-NON-VÉRIFIÉ | ~15 scripts `qa-finance-*` |
 | Outils P0 (Semgrep, Gitleaks, Trivy, Lighthouse, axe, ZAP, Bugsink) | **NON COMMENCÉ** | aucun binaire, aucune configuration (`07`) |
 
@@ -38,18 +38,19 @@ Statuts utilisés, sans ambiguïté :
 - Aucun envoi **réel** vers un parent ou une école n'a été effectué : interdit avant validation.
 - Aucun déclenchement réel de notification SchoolSafe → WhatsApp n'a été exécuté.
 - Le rendu visuel de l'ensemble des écrans après connexion n'a pas été audité ; seul l'écran de connexion a été vérifié en direct.
-- Les lots U1–U5, finance, JASPE et cartes sont dans l'image (ou hors Git) mais n'ont pas été re-testés ici.
+- Les lots U1–U5, finance et JASPE sont dans l'image mais n'ont pas été re-testés ici.
+- Le lot cartes/scans n'a **pas** été testé via HTTP en session (secret HMAC absent du conteneur L1) : seules les 7 suites CLI ont été jouées.
 
 ## Écarts local ↔ GitHub ↔ VPS
 
 | Élément | État |
 |---|---|
-| `main` local | `5a946f3` |
-| `origin/main` | `5a946f3` (identique) |
-| `prodelifin/main` | `5a946f3` (identique) |
+| `main` local | `8f81b8f` |
+| `origin/main` | `8f81b8f` (identique) |
+| `prodelifin/main` | `5a946f3` (l'image déployée ; deux commits de retard) |
 | Image en ligne | `schoolsafe-rosario:20261020-gofinal` |
 | Code WhatsApp dans le conteneur | SHA-256 identique à `HEAD` pour ce fichier |
-| Modifications locales | 1 fichier modifié + 25 non suivis (`02` §7) — **non publiés** |
+| Modifications locales | 1 fichier modifié (correctif `provider_msg_id`) + 6 captures QA non suivies — **non publiés** |
 
 ## Ce qui reste à faire avant de dire « production validée »
 

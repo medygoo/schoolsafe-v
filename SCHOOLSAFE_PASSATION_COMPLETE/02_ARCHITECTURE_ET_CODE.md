@@ -105,19 +105,17 @@ index.php → Warehouse('header') → Side.php (menu, tiroir mobile)
           → modules/<Module>/<Écran>.php (natif) ou écran racine SchoolSafe
 ```
 
-## 7. Fichiers locaux NON publiés (20/10/2026)
+## 7. Fichiers locaux NON publiés (état au 20/10/2026, après `8f81b8f`)
 
 Modifié (suivi) :
-- `…/extensions-test-runtime/ProgramFunctions/SchoolSafeWhatsapp.fnc.php` — correctif `provider_msg_id`.
+- `…/extensions-test-runtime/ProgramFunctions/SchoolSafeWhatsapp.fnc.php` — correctif `provider_msg_id` (testé, non déployé).
 
-Non suivis :
-- `ProgramFunctions/` : `SchoolSafeCardVerify.fnc.php`, `SchoolSafeEntryScan.fnc.php`, `SchoolSafeFeeScan.fnc.php`, `SchoolSafePickupManage.fnc.php`, `SchoolSafePickupScan.fnc.php`
-- `schoolsafe-remediation/` : `020-school-cards.sql`, `021-entry-records.sql`, `022-pickup-guardians.sql`, `023-fee-consults.sql`
-- `schoolsafe-remediation/tests/` : `card-verify-a1.php`, `card-verify-a1-db.php`, `scan-entry.php`, `scan-entry-db.php`, `scan-pickup.php`, `scan-pickup-db.php`, `fee-scan.php`
-- `app/` : `qa-scan-entry.cjs`, `qa-scan-pickup.cjs`, `qa-scan-verify-a1.cjs`
-- `app/qa-output/` : 6 captures PNG (artefacts de tests)
+Non suivis (artefacts de QA d'anciens lots) :
+- `app/qa-output/` : `l1r-desktop.png`, `l1r-mobile.png`, `l2r-desktop.png`, `l2r-mobile.png`, `l31-profils-desktop.png`, `l31-profils-mobile.png`
 
-**Ces fichiers ne doivent être ni écrasés, ni supprimés** : ils forment le lot cartes/scans en cours.
+**Publié le 20/10/2026 par `8f81b8f`** (ne plus considérer comme hors Git) : les 5 fonctions `SchoolSafeCardVerify`, `SchoolSafeEntryScan`, `SchoolSafeFeeScan`, `SchoolSafePickupManage`, `SchoolSafePickupScan` ; les migrations `020`–`023` ; les 7 tests PHP du lot ; les 3 scripts `app/qa-scan-*.cjs`.
+
+**Ces fichiers ne doivent être ni écrasés, ni supprimés** : ils réparent des routes déjà déployées (`09` §11).
 
 ## 8. Serveur TypeScript et Worker
 

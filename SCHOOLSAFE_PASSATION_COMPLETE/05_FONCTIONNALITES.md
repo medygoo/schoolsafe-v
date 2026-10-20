@@ -69,7 +69,7 @@ Chaque ligne donne le point d'entrée réel dans l'interface, la logique serveur
 
 - Logique : `SchoolSafeCardVerify`, `SchoolSafeEntryScan`, `SchoolSafePickupScan`, `SchoolSafeFeeScan`, `SchoolSafePickupManage` + migrations `020`–`023`.
 - Interface : `card-bridge-*`, `scanner-native.php`, `fee-control.php`, `arrival-attendance.php`.
-- Statut : **PRÊT-NON-DÉPLOYÉ** — hors Git (`02` §7).
+- Statut : **PUBLIÉ-NON-DÉPLOYÉ** depuis `8f81b8f` (20/10/2026) ; les migrations `020`–`023` ne sont pas encore en production (`09` §11).
 
 ## J. Finance
 

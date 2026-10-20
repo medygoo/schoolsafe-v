@@ -113,3 +113,17 @@ Méthode : chaque problème sépare **symptôme observé**, **cause démontrée*
 **Symptôme** : aucune couverture sécurité/accessibilité/performance.
 
 **Statut** : non commencé, détaillé en `07_OUTILS_P0.md`. Ne jamais présenter ces contrôles comme réalisés.
+
+---
+
+## 11. Relay de scan commité sans ses dépendances (corrigé le 20/10/2026)
+
+**Symptôme** : sur `main` avant `8f81b8f`, les modes `verify`, `pickup`, `management`, `fee` et `entry` de `scanner-relay.php` appelaient cinq fonctions inexistantes côté dépôt.
+
+**Cause démontrée** : `scanner-relay.php` (déjà commité et déployé) contient cinq `require_once` vers `SchoolSafeCardVerify`, `SchoolSafePickupScan`, `SchoolSafePickupManage`, `SchoolSafeFeeScan` et `SchoolSafeEntryScan`. `git cat-file -e HEAD:…` renvoyait « absent » pour les cinq ; aucun autre exemplaire n'existe dans l'arborescence. Un `require_once` sur fichier manquant est fatal en PHP : ces routes ne pouvaient pas répondre.
+
+**Preuve** : `git show 9bb5311:…/scanner-relay.php` (lignes 65, 113, 129, 185, 199) contre `git cat-file` (absent ×5). Après publication : les 5 fichiers se chargent en chaîne dans le conteneur L1 (5/5) et les 7 suites du lot passent.
+
+**Correction** : commit `8f81b8f`, 19 fichiers, 2 645 lignes — les 5 fonctions, les 4 migrations `020`–`023`, les 7 tests PHP et les 3 scripts QA.
+
+**Reste à faire** : appliquer `020`–`023` en production avec sauvegarde préalable, puis vérifier les 5 modes via HTTP (le secret HMAC de test est absent du conteneur L1, donc la chaîne HTTP n'a pas été rejouée ici).

@@ -37,13 +37,13 @@ Séquence proposée (chaque sous-étape soumise à accord) :
 
 Dépendance : étape 1 déployée. Risque : envoi réel à un vrai destinataire → cadrage obligatoire.
 
-## Étape 3 — Sortir le lot cartes/scans de l'ombre
+## Étape 3 — Sortir le lot cartes/scans de l'ombre — **FAIT le 20/10/2026**
 
-Aujourd'hui hors Git : 5 fonctions PHP, 4 migrations (`020`–`023`), 7 tests PHP, 3 scripts QA, 6 captures.
+Publié par `8f81b8f` : 5 fonctions PHP, 4 migrations (`020`–`023`), 7 tests PHP, 3 scripts QA (19 fichiers, 2 645 lignes). 6 captures QA d'anciens lots restent volontairement locales.
 
-Dépendance : décision du propriétaire sur le périmètre à publier. **Accord requis** (commit).
+Motif d'urgence découvert pendant la publication : le relay déjà déployé requérait ces 5 fonctions — ces routes ne pouvaient pas répondre (`09` §11).
 
-Risque : migrations `020`–`023` non appliquées en production — les rejouer en base isolée avec sauvegarde.
+Reste à faire : appliquer `020`–`023` en production avec sauvegarde préalable, puis vérifier les 5 modes du relay via HTTP. **Accord requis** (migration de production).
 
 ## Étape 4 — Outils P0 (dans cet ordre)
 
@@ -73,7 +73,7 @@ Identifier le test instable, le rendre déterministe, puis seulement ajouter de 
 |---|---|
 | Correctif WhatsApp | Publier maintenant ? |
 | Sessions WhatsApp | Activer pour tests réels ? Lesquelles, dans quel ordre ? |
-| Lot cartes/scans | Publier dans le prochain commit ? |
+| Lot cartes/scans | ~~Publier dans le prochain commit ?~~ Publié (`8f81b8f`) — reste l'accord pour migrer la production. |
 | Outils P0 | Installer Gitleaks et Semgrep en premier ? |
 | Interface | Corriger l'habillage post-connexion, ou accepter le chrome natif ? |
 | Bugsink | Service auto-hébergé ou externe ? |

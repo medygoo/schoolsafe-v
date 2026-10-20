@@ -86,3 +86,21 @@ sha256sum (arbre de travail)                                # 03a706feacd8521f�
 | `Array to string conversion` dans le module WhatsApp | **corrigé** dans l'arbre de travail, non déployé |
 | OPcache sert l'ancien contenu d'un PHP remplacé au même chemin | contourné en publiant sous un nouveau nom |
 | Fichier PHP temporaire illisible par Apache (`0600 root`) | cause : droits ; `chown www-data` + `0400` |
+
+## 8. Lot cartes/scans — exécution du 20/10/2026 (avant publication)
+
+Lint PHP 12/12 (`php -l`), `node --check` 3/3, puis 7 suites dans l'environnement isolé :
+
+| Suite | Conteneur | Résultat |
+|---|---|---|
+| `card-verify-a1.php` (28 cas) | `codex-ref-v1-php:local`, `--network none` | GREEN |
+| `fee-scan.php` (22 cas) | idem | GREEN |
+| `scan-entry.php` (21 cas) | idem | GREEN |
+| `scan-pickup.php` (31 cas) | idem | GREEN |
+| `card-verify-a1-db.php` | `schoolsafe-l1-test` + base `schoolsafe` | GREEN, nettoyage 0 résidu |
+| `scan-entry-db.php` | idem | GREEN, nettoyage 0 résidu |
+| `scan-pickup-db.php` | idem | GREEN, nettoyage 0 résidu |
+
+Migrations `020`–`023` appliquées deux fois de suite sans erreur dans la base isolée (idempotence vérifiée), 7 tables présentes.
+
+**Non exécuté** : les 3 scripts `app/qa-scan-*.cjs` (chaîne HTTP + secret HMAC de test) — le conteneur L1 ne porte pas `SCHOOLSAFE_CARD_HMAC_SECRET`, et le secret n'a pas été injecté dans cette session. Ne pas présenter ces parcours HTTP comme vérifiés.
