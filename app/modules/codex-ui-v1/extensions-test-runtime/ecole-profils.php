@@ -136,6 +136,15 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST'
 			throw new RuntimeException( 'Requête expirée. Rechargez la page.' );
 		}
 
+		// Le hub peut viser une autre école que celle de la session : vérifier
+		// aussi son état avant toute création, modification ou suppression.
+		if ( SchoolSafeAccountBlocksWrite()
+			|| in_array( SchoolSafeAccountStateForSchool( User( 'USERNAME' ), $school_id ),
+				[ 'readonly', 'suspended', 'expired' ], true ) )
+		{
+			SchoolSafeProfilsDeny( 'Compte en lecture seule ou accès restreint : modification des profils interdite.' );
+		}
+
 		$action = (string) $_POST['ecole_profil_action'];
 		$reserved_mods = [ 'Users/Profiles.php', 'Users/Exceptions.php',
 			'Users/User.php&category_id=1&schools', 'Users/User.php&category_id=1&user_profile' ];
