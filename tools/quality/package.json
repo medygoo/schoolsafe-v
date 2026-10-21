@@ -1,0 +1,17 @@
+{
+  "name": "schoolsafe-quality-gates",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test:playwright": "node web-verify.cjs playwright",
+    "test:axe": "node web-verify.cjs axe",
+    "test:lighthouse": "node web-verify.cjs lighthouse",
+    "test": "npm run test:playwright && npm run test:axe && npm run test:lighthouse && node telemetry-verify.cjs"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@lhci/cli": "0.15.1",
+    "playwright-core": "1.62.1"
+  }
+}

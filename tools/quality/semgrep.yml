@@ -1,0 +1,16 @@
+rules:
+  - id: schoolsafe.no-eval-python
+    languages: [python]
+    severity: ERROR
+    message: Dynamic evaluation requires security review; do not evaluate untrusted input.
+    pattern: eval(...)
+  - id: schoolsafe.no-eval-javascript
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Dynamic evaluation requires security review; do not evaluate untrusted input.
+    pattern: eval(...)
+  - id: schoolsafe.no-eval-php
+    languages: [php]
+    severity: ERROR
+    message: Dynamic evaluation requires security review; do not evaluate untrusted input.
+    pattern: eval(...)

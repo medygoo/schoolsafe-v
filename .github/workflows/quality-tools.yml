@@ -1,0 +1,81 @@
+name: SchoolSafe quality tools
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, production]
+  push:
+    branches: [main]
+    paths:
+      - 'tools/quality/**'
+      - '.github/workflows/quality-tools.yml'
+      - 'server/**'
+      - 'app/**'
+      - 'ops/**'
+      - 'package.json'
+      - 'package-lock.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: schoolsafe-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-tool-contracts:
+    name: Playwright + axe-core + Lighthouse CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tools/quality/package-lock.json
+      - name: Install isolated locked tooling
+        run: npm ci --prefix tools/quality --ignore-scripts --no-audit --no-fund
+      - name: Install pinned Playwright Chromium
+        run: node tools/quality/node_modules/playwright-core/cli.js install --with-deps chromium
+      - name: Verify positive and deliberately broken browser fixtures
+        run: npm test --prefix tools/quality
+
+  security:
+    name: Gitleaks + Semgrep + Trivy
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install checksum-pinned scanner binaries
+        run: python3 tools/quality/install-scanners.py
+      - name: Pull digest-pinned Semgrep
+        run: docker pull semgrep/semgrep@sha256:4a34048c04fef049f71665047f074cffb00cc3d89482f965a5cd151d589237af
+      - name: Prove clean and vulnerable fixtures are distinguished
+        run: python3 tools/quality/security-verify.py selftest
+      - name: Scan real repository history, selected application code and dependencies
+        run: python3 tools/quality/security-verify.py source
+      # Detailed scanner reports are deliberately not uploaded: this repository is public.
+
+  isolated-zap:
+    name: ZAP passive scanner / fictional target only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Pull immutable scanner and fixture runtime
+        run: |
+          docker pull ghcr.io/zaproxy/zaproxy@sha256:0cbc40e0fa1562d5170a18a247eca579c4d155ad869f8944c3b8526d4a58c64c
+          docker pull bugsink/bugsink@sha256:c5e3657451f4ba1ddb145a5118a4347314206cc5ba98f40e5f268c6c0975963e
+      - name: Verify missing header detection on an internal Docker network
+        run: python3 tools/quality/zap-verify.py
+
+# No deployment, production URL, application secret, real account or production database.
+# Bugsink remains a separate operator-managed service, not an application dependency here.
