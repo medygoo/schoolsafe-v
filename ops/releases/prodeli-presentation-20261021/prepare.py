@@ -13,6 +13,8 @@ def run(args):
 if __name__=='__main__':
     assert not (ROOT/'prepare-proof.json').exists(),'Already prepared; inspect existing proof'
     release=json.loads((ROOT/'release.json').read_text());sha=release['commit'];assert re.fullmatch('[0-9a-f]{40}',sha)
+    assert run(['docker','image','inspect','--format','{{.Id}}','schoolsafe-rosario:20261020-lot1a-d12a639']).decode().strip()==BASE
+    assert (ROOT/'.dockerignore').read_text().startswith('**\n'), 'Build context must exclude private state'
     pre=json.loads(run(['docker','inspect','schoolsafe-rosario']))[0];assert pre['Image']==BASE
     (ROOT/'container-before.private.json').write_text(json.dumps(pre))
     for path,digest in release['files'].items():

@@ -1,0 +1,8 @@
+**
+!Dockerfile
+!.dockerignore
+!payload/
+!payload/Management.php
+!payload/manage.php
+!payload/Wizard.php
+!payload/central-ui.js
