@@ -26,10 +26,10 @@ def probe(public=False):
     assert r.status==200 and b'USERNAME' in body and b'PASSWORD' in body,'Login probe failed'
 
 def check_layer(name):
-    allowed={'/run','/run/apache2','/run/apache2/apache2.pid','/tmp','/var','/var/www','/var/www/html','/var/www/html/config.inc.php'}
+    allowed={'/run','/run/apache2','/run/apache2/apache2.pid','/tmp','/tmp/.config','/tmp/.config/chromium','/var','/var/www','/var/www/html','/var/www/html/config.inc.php'}
     for line in run(['docker','diff',name]).decode().splitlines():
         p=line[2:]
-        assert p in allowed or p.startswith('/tmp/sess_'),'Unpreserved writable data: stop and inspect privately'
+        assert p in allowed or p.startswith(('/tmp/sess_','/tmp/.config/chromium/')),'Unpreserved writable data: stop and inspect privately'
 
 def sessions(data):
     result={}
@@ -37,6 +37,17 @@ def sessions(data):
         for m in t.getmembers():
             if m.isfile() and Path(m.name).name.startswith('sess_'):
                 result[m.name]=(hashlib.sha256(t.extractfile(m).read()).hexdigest(),m.uid,m.gid,m.mode)
+    return result
+
+def chromium_artifacts(data):
+    # Runtime printing creates these caches; preserve, never discard or rebuild them.
+    result={}
+    with tarfile.open(fileobj=io.BytesIO(data)) as archive:
+        for item in archive.getmembers():
+            path=Path(item.name).as_posix()
+            if path not in ('.config','.config/chromium') and not path.startswith('.config/chromium/'):continue
+            digest=hashlib.sha256(archive.extractfile(item).read()).hexdigest() if item.isfile() else None
+            result[path]=(digest,item.uid,item.gid,item.mode,item.type,item.linkname)
     return result
 
 def transfer_sessions(source,target,clear_stale=False):
@@ -50,7 +61,10 @@ def transfer_sessions(source,target,clear_stale=False):
         run(['docker','cp','-a','-',target+':/tmp'],out.getvalue())
     (ROOT/'sessions-latest.private.tar').write_bytes(data)
     run(['docker','cp','-a','-',target+':/tmp'],data)
-    actual=sessions(run(['docker','cp','-a',target+':/tmp/.','-']))
+    copied=run(['docker','cp','-a',target+':/tmp/.','-'])
+    expected_cache=chromium_artifacts(data);actual_cache=chromium_artifacts(copied)
+    for path,metadata in expected_cache.items():assert actual_cache.get(path)==metadata,'Chromium runtime cache preservation failed'
+    actual=sessions(copied)
     expected=sessions(data)
     for k,v in expected.items():assert actual.get(k)==v,'Session transfer failed'
     if not clear_stale:assert actual==expected,'Unexpected sessions in new container'
@@ -149,7 +163,7 @@ if __name__=='__main__':
         for key in ['PortBindings','NetworkMode','RestartPolicy','Privileged','CapAdd','CapDrop','SecurityOpt','Memory','NanoCpus','LogConfig']:
             assert new['HostConfig'][key]==pre['HostConfig'][key], 'Runtime setting changed: '+key
         assert other_state()==others,'Unrelated service changed'
-        result={'status':'DEPLOYED','commit':sha,'image':image,'files':release['files'],'scope':'native school principal, atomic leadership/audit, confidential handoff and targeted first login','session_files_preserved':count,'other_services_unchanged':True,'public_login':200,'unauthenticated_routes_protected':True,'database_migration':['018-school-leadership.sql','038-native-onboarding.sql'],'production_account_mutations_tested':False,'rollback_container':OLD,'rollback_command':'python3 '+str(ROOT/'deploy.py')+' --rollback','elapsed_seconds':round(time.monotonic()-start,2)}
+        result={'status':'DEPLOYED','commit':sha,'image':image,'deployment_recipe_commit':release.get('deployment_recipe_commit',sha),'chromium_runtime_cache_preserved':True,'files':release['files'],'scope':'native school principal, atomic leadership/audit, confidential handoff and targeted first login','session_files_preserved':count,'other_services_unchanged':True,'public_login':200,'unauthenticated_routes_protected':True,'database_migration':['018-school-leadership.sql','038-native-onboarding.sql'],'production_account_mutations_tested':False,'rollback_container':OLD,'rollback_command':'python3 '+str(ROOT/'deploy.py')+' --rollback','elapsed_seconds':round(time.monotonic()-start,2)}
         (ROOT/'deployment-proof.json').write_text(json.dumps(result,indent=2));print(json.dumps(result))
     except Exception:
         if created:
