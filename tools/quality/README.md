@@ -42,7 +42,7 @@ docker pull bugsink/bugsink@sha256:c5e3657451f4ba1ddb145a5118a4347314206cc5ba98f
 python3 tools/quality/zap-verify.py
 ```
 
-On Windows use `python` if appropriate. `CHROME_PATH` may select the already qualified local Chromium executable; in CI the pinned Playwright browser is installed. No global npm package or global PATH change is required.
+On Windows use `python` if appropriate. `CHROME_PATH` may select the already qualified local Chromium executable; in CI the pinned Playwright browser is installed. No global npm package or global PATH change is required. Lighthouse uses `--no-sandbox` only in the disposable GitHub Actions runner against its anonymous loopback fixture, to accommodate the runner's Chromium sandbox restrictions. This flag is not applied to local runs or production browsers.
 
 ## What the checks actually prove
 

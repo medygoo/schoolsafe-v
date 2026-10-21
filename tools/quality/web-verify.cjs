@@ -68,9 +68,12 @@ const run = (args, cwd) => new Promise((resolve, reject) => {
       const cli = require.resolve('@lhci/cli/src/cli.js');
       for (const broken of [false, true]) {
         const name = broken ? 'negative' : 'positive'; const dir = path.join(ROOT, name); fs.mkdirSync(dir, { recursive: true });
-        const config = { ci: { collect: { url: [`http://127.0.0.1:${server.address().port}/${name}`], numberOfRuns: 1, chromePath, settings: { onlyCategories: ['accessibility','performance','best-practices'], chromeFlags: '--headless --disable-background-networking --disable-component-update' } }, assert: { assertions: { 'categories:accessibility': ['error', { minScore: 1 }] } } } };
+        const config = { ci: { collect: { url: [`http://127.0.0.1:${server.address().port}/${name}`], numberOfRuns: 1, chromePath, settings: { onlyCategories: ['accessibility','performance','best-practices'], chromeFlags: '--headless --disable-background-networking --disable-component-update' + (process.env.GITHUB_ACTIONS === 'true' ? ' --no-sandbox' : '') } }, assert: { assertions: { 'categories:accessibility': ['error', { minScore: 1 }] } } } };
         fs.writeFileSync(path.join(dir, 'lighthouserc.json'), JSON.stringify(config, null, 2));
-        const collect = await run([cli, 'collect'], dir); fs.writeFileSync(path.join(dir,'collect.log'), collect.log); assert.equal(collect.code, 0, 'Lighthouse collection must succeed');
+        const collect = await run([cli, 'collect'], dir); fs.writeFileSync(path.join(dir,'collect.log'), collect.log);
+        // Only this anonymous loopback fixture is audited; no application context is logged.
+        if (collect.code !== 0) result.collectionDiagnostic = collect.log.slice(-12000);
+        assert.equal(collect.code, 0, 'Lighthouse collection must succeed');
         const check = await run([cli, 'assert'], dir); fs.writeFileSync(path.join(dir,'assert.log'), check.log);
         assert.equal(check.code, broken ? 1 : 0, 'Accessibility assertion must distinguish fixtures');
         result.cases.push({ fixture: name, collectionExit: collect.code, assertionExit: check.code, status: 'PASS' });
