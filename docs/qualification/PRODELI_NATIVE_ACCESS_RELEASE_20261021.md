@@ -2,7 +2,7 @@
 
 ## Statut courant
 
-**DÉPLOYÉ ET VÉRIFIÉ INDÉPENDAMMENT — 21 octobre 2026.** Source application `3670dad176a4fe6932e69e87a481a5f205131543`, image `sha256:36a9e2fbc24159f25f65247cb516f84a43df49b410e35ee208ef3d25e3cf0c78`. Recette de déploiement complétée séparément au commit `0ab0690fe4a1178f27895c5304a95f5a841f705b` pour conserver le cache Chromium existant ; aucun changement de l'image qualifiée. Validation humaine connectée attendue. Ce rapport ne déclare pas la récupération ni tout ProDéli achevés.
+**DÉPLOYÉ ET VÉRIFIÉ INDÉPENDAMMENT — 21 octobre 2026.** Source application `3670dad176a4fe6932e69e87a481a5f205131543`, image `sha256:36a9e2fbc24159f25f65247cb516f84a43df49b410e35ee208ef3d25e3cf0c78`. Recette de déploiement complétée séparément au commit `0ab0690fe4a1178f27895c5304a95f5a841f705b` pour conserver le cache Chromium existant ; aucun changement de l'image qualifiée. **Acceptation du propriétaire reçue après livraison : « je valide ».** Aucun scénario supplémentaire de recette manuelle connectée n'a été détaillé ; les preuves techniques restent celles consignées ci-dessous. Ce rapport ne déclare pas la récupération ni tout ProDéli achevés.
 
 Base du travail : `42b9ae5`, branche `work/prodeli-completion-20261021`. Base de livraison immuable : source production `3eb2e9e`, pas main. Recette `ops/releases/prodeli-native-access-20261021/`.
 
@@ -56,4 +56,4 @@ Dossier VPS privé : `/opt/schoolsafe-releases/prodeli-native-access-20261021`. 
 
 ## Restant hors lot
 
-Récupération après première connexion ; raccord OTP vide et test SMS sans ligne forcée ; réception externe non prouvée ; aucune activation implicite des lignes ou sessions WhatsApp. Validation humaine connectée du propriétaire après livraison. CI sécurité RED et autres travaux historiques inchangés.
+Récupération après première connexion ; raccord OTP vide et test SMS sans ligne forcée ; réception externe non prouvée ; aucune activation implicite des lignes ou sessions WhatsApp. Acceptation du propriétaire acquise pour ce lot uniquement ; aucune réception externe ni recette manuelle supplémentaire n'en est déduite. CI sécurité RED et autres travaux historiques inchangés.
