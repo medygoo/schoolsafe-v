@@ -37,7 +37,17 @@ Preuves privées hors Git : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evi
 
 ## Livraison
 
-À compléter après qualification de l'image exacte et bascule. Recette ciblée `ops/releases/prodeli-communication-20261021/` : image dérivée immuable, allowlist trois chemins, réseau de build désactivé, comparaison complète contenu/mode/propriétaire, 56 contrats PHP (16 comptes + 12 dashboard + 28 communication), aucune base attachée aux tests d'image. Source courante/configuration Docker contrôlées, ancien conteneur de rollback conservé et sessions transférées avec vérification. Aucun pull global de main.
+**DÉPLOYÉ et contrôlé indépendamment.** Source `90f6238cfee03f81af19a0c3ff4f902f9c134c3e`, image `sha256:3daf00a1c5990f6e7bac1564d6a47bdc322746c05f1e8db06fa7144f74e883fb`, tag `schoolsafe-rosario:prodeli-communication-90f6238cfee0`. `/opt/app-src` propre sur `deployed/prodeli-communication-20261021`. Les commits documentaires suivants ne sont pas la source de l'image.
+
+Recette ciblée `ops/releases/prodeli-communication-20261021/` : image dérivée immuable, allowlist trois chemins, réseau de build désactivé, comparaison complète contenu/mode/propriétaire : **2 755 autres fichiers identiques**, une feuille CSS ajoutée, deux PHP modifiés. **56 contrats PHP PASS** (16 comptes + 12 dashboard + 28 communication), deux lints PASS, aucune base attachée aux tests d'image. Aucun pull global de main.
+
+Bascule : **169 fichiers de session conservés**, contenu/mode/propriétaire contrôlés ; environnement, mounts, ports et configuration de services préservés. Procédure mesurée **14,97 s**, pas une mesure de l'interruption exacte. Autres services mêmes identifiants et démarrages. Aucun compte réel modifié, aucun message émis et aucune migration.
+
+Vérification indépendante PASS : image/source propre et santé PHP ; login public HTTPS 200 ; accès anonyme aux réglages ne révèle aucun formulaire de configuration ; hashes des trois fichiers servis et CSS public exacts ; sauvegardes des deux sources conformes ; empreintes privées de l'environnement, des lignes SMS, des sessions WhatsApp et des consentements identiques avant/après. Cette vérification n'utilise pas les coordonnées privées dans les rapports.
+
+Répertoire privé VPS : `/opt/schoolsafe-releases/prodeli-communication-20261021`, sources avant livraison dans `source-before/`, état Docker et sessions privés. Pas de sauvegarde/restauration DB dans ce lot sans mutation de schéma/données. Ancien conteneur conservé : `schoolsafe-rosario-pre-prodeli-communication-20261021`, image base `9177067d…`. Retour arrière préparé **non exercé** : `python3 /opt/schoolsafe-releases/prodeli-communication-20261021/deploy.py --rollback` ; préserve les sessions courantes, neutralise les obsolètes, bloque en cas de données nouvelles non préservées.
+
+Preuves `prepare-proof.json`, `deployment-proof.json`, `independent-before.json`, `independent-proof.json`, `browser-result.json`, `scope-proof.json` et captures hors Git dans le répertoire privé local indiqué ci-dessus. Validation visuelle connectée du propriétaire restant à réaliser ; elle ne conditionne pas la réalité de la livraison technique.
 
 ## Limites conservées, non masquées
 

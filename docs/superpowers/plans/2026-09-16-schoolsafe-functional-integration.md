@@ -1,6 +1,6 @@
 ## Priorité du propriétaire — finir les réglages Communication
 
-Organisation Studio/messagerie Rosario, destinataires et répartition des notifications examinés et conservés ; Keycloak reste en pause. Finition de deux pages existantes SMS/WhatsApp et CSS dédiée, sans nouveau menu/fournisseur ni modification des handlers. 28 contrats, huit groupes HTTP/PG fictif, cinq régressions dashboard PASS. Qualification image exacte/livraison ciblée en préparation ; [rapport et limites](../../qualification/PRODELI_COMMUNICATION_RELEASE_20261021.md). Ce sous-lot ne clôture pas les parcours de comptes ci-dessous.
+Organisation Studio/messagerie Rosario, destinataires et répartition des notifications examinés et conservés ; Keycloak reste en pause. Finition de deux pages existantes SMS/WhatsApp et CSS dédiée, sans nouveau menu/fournisseur ni modification des handlers. 28 contrats, huit groupes HTTP/PG fictif, cinq régressions dashboard PASS. **DÉPLOYÉ** source `90f6238cfee03f81af19a0c3ff4f902f9c134c3e`, image `3daf00a1…` ; 56 contrats image exacte, 2 755 autres fichiers identiques, 169 sessions conservées, contrôle indépendant PASS. Configuration communication inchangée, pas d'envoi externe ni migration. Validation connectée propriétaire attendue ; [rapport et limites](../../qualification/PRODELI_COMMUNICATION_RELEASE_20261021.md). Ce sous-lot ne clôture pas les parcours de comptes ci-dessous.
 
 ## Priorité courante — achever ProDéli, mandat validé
 

@@ -20,7 +20,7 @@ Communication : pages SMS/WhatsApp et routeurs déjà présents, à préserver. 
 | 2. Création native et rattachement principal | À réaliser | Transaction/reprise, unicité, une école, profil, doublons et échecs, sans fallback d'une identité gérée |
 | 3. Premier accès | À réaliser | Remise confidentielle, URL canonique, secret à usage limité, choix du mot de passe et arrivée dans la bonne école |
 | 4. Récupération | À réaliser | Courriel/code selon canal disponible, expiration, usage unique, rate-limit, révocation et messages génériques |
-| 5. Communication conservée et raccordée | Finition réglages qualifiée localement ; [rapport du sous-lot](PRODELI_COMMUNICATION_RELEASE_20261021.md), livraison en préparation. Organisation d'envoi inchangée | SMS/courriel/WhatsApp sans perte de configuration/fonction, essais contrôlés, aucun faux statut de livraison |
+| 5. Communication conservée et raccordée | Réglages **DÉPLOYÉS** source `90f6238`, image `3daf00a1…` ; [rapport](PRODELI_COMMUNICATION_RELEASE_20261021.md). Organisation d'envoi inchangée ; réception externe non testée | SMS/courriel/WhatsApp sans perte de configuration/fonction, essais contrôlés, aucun faux statut de livraison |
 | 6. Recette globale et livraison | À réaliser | PostgreSQL/HTTP réels fictifs, rôles et écoles, pannes/reprises, bureau/mobile, image exacte et validation humaine |
 
 ## Lot 1 — réalisé localement
@@ -47,10 +47,10 @@ Preuves hors Git : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/das
 
 ## Priorité complémentaire du propriétaire — Communication
 
-Terminer d'abord le sous-lot de réglages SMS/WhatsApp, après examen du Studio natif, des fonctions métier, de Notify et du dispatcher. Le propriétaire confirme que la répartition des messages/notifications existe : elle n'est ni réécrite ni redistribuée. Keycloak reste en pause. Trois fichiers applicatifs (deux pages et CSS dédiée), handlers et huit composants protégés identiques ; 28 contrats + huit groupes HTTP/PG fictif + cinq régressions dashboard PASS. [Rapport](PRODELI_COMMUNICATION_RELEASE_20261021.md). Pas de test externe ni d'activation de ligne implicite.
+Terminer d'abord le sous-lot de réglages SMS/WhatsApp, après examen du Studio natif, des fonctions métier, de Notify et du dispatcher. Le propriétaire confirme que la répartition des messages/notifications existe : elle n'est ni réécrite ni redistribuée. Keycloak reste en pause. Trois fichiers applicatifs (deux pages et CSS dédiée), handlers et huit composants protégés identiques ; 28 contrats + huit groupes HTTP/PG fictif + cinq régressions dashboard PASS ; image exacte 56 contrats PASS, 2 755 autres fichiers identiques. Source `90f6238`, image `3daf00a1…` déployées, 169 sessions conservées, contrôle indépendant PASS. [Rapport](PRODELI_COMMUNICATION_RELEASE_20261021.md). Pas de test externe ni d'activation de ligne implicite.
 
 ## Prochaine action exacte
 
-Qualifier l'image exacte puis livrer le sous-lot Communication avec sauvegarde/rollback et vérification indépendante. Ensuite reprendre le lot 2, en conservant Keycloak en pause.
+Sous-lot de réglages Communication livré ; validation visuelle connectée du propriétaire attendue. Pour l'achèvement global distinct, reprendre le lot 2 et les contrôles de création native/rattachement, en conservant Keycloak en pause. Ne pas reconstruire l'organisation des messages/notifications ni lancer d'envoi externe sans destinataire autorisé.
 
 Historique de la prochaine action précédente : commencer le lot 2 avec la procédure native existante : préparation, POST final avec plugin désactivé, transaction compte/rattachement/audit/reprise et tests de première connexion. La table leadership absente exige une migration additive qualifiée avec sauvegarde/restauration ; ne pas changer globalement la politique de première connexion pour faire passer un test. Ne pas utiliser le garde `prodeli-presentation-scope.py` comme gate de ce nouveau lot : il limite volontairement la livraison précédente à quatre fichiers et refuserait les nouveaux changements. Mettre le plan/handoff à jour à chaque lot. Ne pas annoncer la création native, la récupération ou l'ensemble ProDéli terminés après les seuls tests d'accueil.
