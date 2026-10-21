@@ -36,9 +36,17 @@ try {
     if(($_SERVER['REQUEST_METHOD']??'')==='POST') {
         $action=(string)($_POST['action']??'');
         if($action==='prepare') $intent=sskcPrepareIntent();
+        elseif($action==='native_create') {
+            $created=sskcConfirmNativeDirector();
+            header('Location: /schoolsafe-administrators.php?credential='.$created,true,303);exit;
+        }
         else {
             $target=(int)($_POST['staff_id']??0);
             if(($_POST['confirmed']??'')!=='1')sskcActionReview($action,$target);
+            if($action==='native_temporary') {
+                $renewed=sskcRenewNativeDirector();
+                header('Location: /schoolsafe-administrators.php?credential='.$renewed,true,303);exit;
+            }
             sskcExistingAction($action,$target);
             if(in_array($action,['temporary','link'],true)) {header('Location: /schoolsafe-administrators.php?credential='.$target);exit;}
             $message=$action==='suspend'?'Compte suspendu dans SchoolSafe.':'Compte réactivé dans SchoolSafe.';
@@ -61,8 +69,11 @@ if(isset($_GET['credential'])) {
         echo '<dl><dt>Identifiant</dt><dd>'.sskcEscape($row['USERNAME']).'</dd><dt>Mot de passe temporaire</dt><dd><code>'
             .sskcEscape($handoff['password']).'</code></dd></dl>';
         $client=!empty($handoff['client']) || is_array(SchoolSafeScopeParse($row['SCHOOLS']));
-        $login='https://schoolsafe.179-198-195-15.sslip.io/plugins/SchoolSafe_Keycloak/endpoint.php';
-        $steps=$client?'Complétez vos informations, choisissez un mot de passe personnel, puis ouvrez votre école. Aucun QR code ni Windows Hello obligatoire.':'Choisissez un mot de passe personnel et suivez l’authentification renforcée de l’équipe SchoolSafe.';
+        $native=!empty($handoff['native']);
+        $login=$native?'https://app.shoolsafe.tech/index.php':'https://schoolsafe.179-198-195-15.sslip.io/plugins/SchoolSafe_Keycloak/endpoint.php';
+        if($native)echo '<p>Connexion native SchoolSafe. Mot de passe initial valable 24 heures à compter de la création ; choix d’un mot de passe personnel obligatoire avant tout accès scolaire.</p>';
+        if(!empty($handoff['photo_warning']))echo '<p role="alert">Le portrait n’a pas pu être enregistré. Reprenez-le dans la fiche du responsable ; le compte n’est pas à recréer.</p>';
+        $steps=$native?'Connectez-vous à SchoolSafe et choisissez un mot de passe personnel de 12 à 128 caractères, différent du temporaire. Votre école s’ouvrira ensuite. Aucun QR code ni second facteur obligatoire.':($client?'Complétez vos informations, choisissez un mot de passe personnel, puis ouvrez votre école. Aucun QR code ni Windows Hello obligatoire.':'Choisissez un mot de passe personnel et suivez l’authentification renforcée de l’équipe SchoolSafe.');
         $document="SchoolSafe — fiche confidentielle\nÀ remettre uniquement à la personne concernée.\n\nIdentifiant : ".$row['USERNAME']."\nMot de passe temporaire : ".$handoff['password']."\nConnexion : ".$login."\n\n".$steps."\nLe mot de passe personnel doit respecter les exigences affichées. Utilisez votre navigateur personnel ; si un autre compte est connecté, ouvrez une fenêtre privée.\nAprès la première connexion, détruisez cette fiche.\n";
         echo '<p><a class="sskc-action button-primary" download="SchoolSafe-acces-'.$id.'.txt" href="data:text/plain;charset=utf-8;base64,'.base64_encode($document).'">Télécharger la fiche d’accès</a></p><p>Enregistrez le fichier sur votre téléphone ou ordinateur, puis remettez-le confidentiellement à cette personne. Aucun e-mail n’est envoyé automatiquement. Le fichier téléchargé contient un secret et reste présent sur votre appareil jusqu’à sa suppression.</p>';
         echo '<p>Connexion : <a href="/index.php">SchoolSafe — Connexion administrateur</a>. '
@@ -85,6 +96,14 @@ if($intent!==null) {
         .'</dd><dt>Identifiant</dt><dd>'.sskcEscape($intent['username']).'</dd><dt>Profil</dt><dd>'.sskcEscape($title)
         .'</dd><dt>Écoles</dt><dd>'.($intent['schools']===''?'Toutes les écoles':sskcEscape($intent['schools'])).'</dd></dl>';
     echo '<p>SchoolSafe vérifiera les champs et les permissions avant la création. Aucun accès SchoolSafe ne sera remis si la création complète échoue.</p>';
+    if(!empty($intent['native_director'])) {
+        echo '<p>Connexion native, une seule école. Rôle : '.(!empty($intent['principal'])?'principal (aucun remplacement automatique)':'adjoint si un principal existe, sinon principal').'.</p>';
+        echo '<form target="_self" method="post" action="/schoolsafe-administrators.php">';
+        foreach(['action'=>'native_create','token'=>$_SESSION['token'],'confirmed'=>'1','sskc_intent'=>$intent['id']] as $name=>$value)
+            echo '<input type="hidden" name="'.sskcEscape($name).'" value="'.sskcEscape((string)$value).'">';
+        echo '<input type="submit" class="button-primary" value="Créer le compte et préparer l’accès"></form><p><a href="/schoolsafe-administrators.php">Annuler</a></p>';
+        sskcUiEnd();exit;
+    }
     echo '<form target="_self" method="post" action="/Modules.php?modname=Users/User.php&amp;modfunc=update&amp;staff_id=new">';
     $fields=['token'=>$_SESSION['token'],'sskc_intent'=>$intent['id'],'staff[FIRST_NAME]'=>$intent['first'],
         'staff[LAST_NAME]'=>$intent['last'],'staff[USERNAME]'=>$intent['username'],'staff[EMAIL]'=>$intent['email'],'staff[PROFILE]'=>'admin'];
@@ -130,6 +149,9 @@ foreach((array)$rows as $row) {
             .'"><input type="submit" class="'.($action==='suspend'?'sskc-action-danger':'sskc-action-secondary').'" value="'.sskcEscape($label).'"></form>';
     }
     if($write && !$row['SUBJECT'] && $row['PROFILE']==='admin') {
+        $initial=SchoolSafeNativeOnboardingRow($id,(int)UserSyear());
+        if(SchoolSafeGlobalAdmin() && $id!==(int)User('STAFF_ID') && $initial && empty($initial['COMPLETED_AT']))
+            echo '<form target="_self" method="post" action="/schoolsafe-administrators.php"><input type="hidden" name="token" value="'.$csrf.'"><input type="hidden" name="staff_id" value="'.$id.'"><input type="hidden" name="action" value="native_temporary"><input type="submit" class="sskc-action-secondary" value="Renouveler l’accès initial natif"></form>';
         echo '<form target="_self" method="post" action="/schoolsafe-administrators.php"><input type="hidden" name="token" value="'.$csrf
             .'"><input type="hidden" name="staff_id" value="'.$id.'"><input type="hidden" name="action" value="link">'
             .'<input type="submit" class="sskc-action-secondary" value="Configurer la connexion gérée"></form>';
@@ -157,6 +179,7 @@ if(sskcCanWrite(true) && (int)UserSyear()===(int)Config('SYEAR')) {
     foreach((array)$profiles as $profile)if(SchoolSafeProfileDelegable((string)$profile['ID']))echo '<option value="'.(int)$profile['ID'].'">'.sskcEscape($profile['TITLE']).'</option>';
     echo '</select></label></p><fieldset><legend>Périmètre scolaire</legend>';
     echo '<p><label><input type="radio" name="scope_mode" value="schools" checked> Écoles sélectionnées</label></p>';
+    echo '<p>Création scolaire native : sélectionnez une seule école. Les comptes existants ne sont jamais convertis.</p><label>Responsabilité scolaire <select name="leadership_role"><option value="principal">Administrateur principal — sans remplacer le principal existant</option><option value="adjoint">Administrateur adjoint</option></select></label>';
     foreach((array)$schools as $school)if(SchoolSafeSchoolAllowed((string)$school['ID']))echo '<p><label><input type="checkbox" name="schools[]" value="'.(int)$school['ID'].'">'.sskcEscape($school['TITLE']).'</label></p>';
     if(SchoolSafeGlobalAdmin())echo '<p><label><input type="radio" name="scope_mode" value="global"> Toutes les écoles — administrateur global</label></p>';
     echo '</fieldset><p>Un mot de passe temporaire sera généré. Responsable d’école : informations personnelles et nouveau mot de passe, sans second facteur obligatoire. Administrateur global : authentification renforcée. Aucun droit de gestion globale de la plateforme n’est attribué automatiquement.</p>';

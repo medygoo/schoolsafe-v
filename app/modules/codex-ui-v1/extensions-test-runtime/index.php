@@ -283,6 +283,7 @@ elseif ( isset( $_POST['USERNAME'] )
 		$_SESSION['UserSchool'] = $schoolsafe_entry;
 
 		$_SESSION['LAST_LOGIN'] = $login_RET[1]['LAST_LOGIN'];
+		SchoolSafeNativeOnboardingMarkLogin( $login_RET[1]['STAFF_ID'], UserSyear() );
 
 		// SchoolSafe — état de compte : époque de session pour la révocation.
 		$_SESSION['SchoolSafeEpoch'] = SchoolSafeAccountEpoch( $login_RET[1]['USERNAME'] );

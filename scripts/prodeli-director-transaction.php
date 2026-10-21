@@ -5,7 +5,7 @@
  */
 if (PHP_SAPI !== 'cli' || getenv('POSTGRES_DB') !== 'schoolcef_fixture'
     || getenv('SCHOOLSAFE_DB_HOST') !== 'schoolcef-harmonization-pg') exit(2);
-$root = '/candidate';
+$root = getenv('SCHOOLSAFE_CONTRACT_PHP_ROOT') ?: '/candidate';
 $conn = pg_connect('host='.getenv('SCHOOLSAFE_DB_HOST').' dbname=schoolcef_fixture user=schoolcef_fixture password='.getenv('POSTGRES_PASSWORD'));
 if (!$conn) exit(2);
 $GLOBALS['db_connection'] = $conn;
@@ -22,10 +22,13 @@ set_error_handler(static function ($severity) {
     }
     return false;
 });
-function encrypt_password($p) {return password_hash($p, PASSWORD_BCRYPT);}
-function User($key) {return $key==='STAFF_ID' ? 7 : '';}
+require $root.'/functions/Password.php';
+function User($key) {return $GLOBALS['fixture_user'][$key]??($key==='STAFF_ID' ? 7 : '');}
+function UserSyear() {return 2026;}
+function SchoolSafeT($en,$fr) {return $en;}
 require $root.'/functions/DBUpsert.php';
 require (getenv('PRODELI_SETUP_UNDER_TEST') ?: $root.'/ProgramFunctions/SchoolSafeSchoolSetup.fnc.php');
+require $root.'/ProgramFunctions/SchoolSafeNativeOnboarding.fnc.php';
 $schema='qa_director_'.bin2hex(random_bytes(6));
 // Two independent processes exercise the same SQL boundary, not mocked locks.
 if (($argv[1]??'')==='worker') {
@@ -47,20 +50,28 @@ try {
     DBQuery('CREATE SCHEMA '.$schema);DBQuery('SET search_path TO '.$schema);
     DBQuery("CREATE TABLE schools(id integer,syear integer,PRIMARY KEY(id,syear)); INSERT INTO schools VALUES(1,2026),(2,2026),(3,2026),(4,2026),(5,2026);
         CREATE TABLE user_profiles(id integer, title text,profile text); INSERT INTO user_profiles VALUES(2,'Directeur','admin');
-        CREATE TABLE staff(staff_id serial,syear integer,first_name varchar(50),last_name varchar(50),username varchar(100),password text,email text,profile text,profile_id integer,schools text,current_school_id integer,UNIQUE(username,syear));
+        CREATE TABLE staff(staff_id serial,syear integer,first_name varchar(50),last_name varchar(50),middle_name varchar(50),custom_200000001 text,username varchar(100),password text,email text,profile text,profile_id integer,schools text,current_school_id integer,last_login timestamp,UNIQUE(username,syear));
+        CREATE TABLE schoolsafe_identity_links(staff_id integer,subject text);
         CREATE TABLE students(username text);
         CREATE TABLE schoolsafe_identity_audit(actor_staff_id integer,target_staff_id integer,action text,result text);");
     // Use the actual additive migration twice; never touch public tables.
     $migration=file_get_contents($root.'/schoolsafe-remediation/018-school-leadership.sql');
     DBQuery($migration);DBQuery($migration);
+    $onboarding=file_get_contents($root.'/schoolsafe-remediation/038-native-onboarding.sql');
+    DBQuery($onboarding);DBQuery($onboarding);
     check((int)DBGetOne('SELECT count(*) FROM schools')===5,'018 replay preserves schools');
     $first=createDirector('qa.first');
     check(!empty($first['ok']) && $first['role']==='principal','native principal created');
     $id=(int)($first['staff_id']??0);
     check($id>0 && (int)DBGetOne('SELECT staff_id FROM schoolsafe_school_leadership WHERE school_id=1 AND role=\'principal\'')===$id,'principal attached');
     check(DBGetOne('SELECT last_name FROM staff WHERE staff_id='.$id)==="D'Essai",'apostrophe stored verbatim');
-    check(password_verify($first['temp_password']??'',(string)DBGetOne('SELECT password FROM staff WHERE staff_id='.$id)),'temporary password hashed');
+    check(match_password((string)DBGetOne('SELECT password FROM staff WHERE staff_id='.$id),$first['temp_password']??''),'temporary password hashed');
     check((int)DBGetOne("SELECT count(*) FROM schoolsafe_identity_audit WHERE action='create' AND result='success'")===1,'creation audit committed');
+    check((int)DBGetOne('SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id='.$id.' AND completed_at IS NULL AND expires_at>CURRENT_TIMESTAMP')===1,'targeted first access committed');
+    DBQuery("INSERT INTO user_profiles VALUES(3,'Direction adaptée','admin')");
+    $custom=createDirector('qa.custom',['school_id'=>3,'profile_id'=>3]);
+    check(!empty($custom['ok']) && (int)DBGetOne('SELECT profile_id FROM staff WHERE staff_id='.(int)($custom['staff_id']??0))===3,'confirmed custom school profile preserved');
+    DBQuery("DELETE FROM schoolsafe_native_onboarding WHERE staff_id IN (SELECT staff_id FROM staff WHERE username='qa.custom'); DELETE FROM schoolsafe_school_leadership WHERE school_id=3; DELETE FROM staff WHERE username='qa.custom'");
     $second=createDirector('qa.second');
     check(empty($second['ok']) && ($second['error']??'')==='PRINCIPAL_EXISTS','existing principal not replaced');
     check((int)DBGetOne("SELECT count(*) FROM staff WHERE username='qa.second'")===0,'refusal leaves no account');
@@ -74,6 +85,7 @@ try {
     check(empty($failed['ok']) && !isset($failed['temp_password']),'audit failure releases no secret');
     check((int)DBGetOne("SELECT count(*) FROM staff WHERE username='qa.audit.failure'")===0,'audit failure rolls account back');
     check((int)DBGetOne('SELECT count(*) FROM schoolsafe_school_leadership WHERE school_id=2')===0,'audit failure rolls leadership back');
+    check((int)DBGetOne('SELECT count(*) FROM schoolsafe_native_onboarding o LEFT JOIN staff s USING(staff_id) WHERE s.staff_id IS NULL')===0,'audit failure leaves no orphan onboarding');
     DBQuery('ALTER TABLE schoolsafe_identity_audit DROP CONSTRAINT reject_create');
     DBQuery("ALTER TABLE schoolsafe_school_leadership ADD CONSTRAINT reject_school CHECK(school_id<>2) NOT VALID");
     $failed=createDirector('qa.leadership.failure',['school_id'=>2]);
@@ -88,6 +100,9 @@ try {
     DBQuery("INSERT INTO students(username) VALUES('qa.student')");
     $student=createDirector('QA.STUDENT',['school_id'=>3]);
     check(empty($student['ok']) && $student['error']==='USERNAME_TAKEN','student username collision refused');
+    DBQuery("INSERT INTO staff(syear,username) VALUES(2025,'qa.linked'); INSERT INTO schoolsafe_identity_links SELECT staff_id,'fixture-linked' FROM staff WHERE username='qa.linked'");
+    $linked=createDirector('QA.LINKED',['school_id'=>3]);
+    check(empty($linked['ok']) && $linked['error']==='USERNAME_TAKEN','linked identity from another year never converted');
     $unknown=createDirector('qa.unknown',['school_id'=>999]);
     check(empty($unknown['ok']) && $unknown['error']==='SCHOOL_NOT_FOUND','unknown school refused');
     DBQuery("UPDATE user_profiles SET profile='teacher'");
@@ -128,6 +143,36 @@ try {
     check((int)DBGetOne("SELECT count(*) FROM staff WHERE username IN ('qa.principal.a','qa.principal.b')")===1
         && (int)DBGetOne("SELECT count(*) FROM schoolsafe_school_leadership WHERE school_id=5 AND role='principal'")===1,
         'concurrent principals have one account and one principal');
+    $GLOBALS['fixture_user']=['STAFF_ID'=>$id];
+    $_SESSION=['token'=>'fixture-token'];$_POST=['token'=>'fixture-token'];$_SERVER['REQUEST_METHOD']='POST';
+    SchoolSafeNativeOnboardingMarkLogin($id,2026);
+    check(SchoolSafeNativeOnboardingPending(),'only provisioned account requires targeted first login');
+    DBQuery("UPDATE schoolsafe_native_onboarding SET expires_at=CURRENT_TIMESTAMP-interval '1 minute' WHERE staff_id=".$id);
+    check(!SchoolSafeNativeOnboardingComplete('Personal fixture passphrase 2026!'),'expired first access refused');
+    $renewed=SchoolSafeNativeOnboardingRenew($id,2026,7);
+    check(is_string($renewed) && match_password((string)DBGetOne('SELECT password FROM staff WHERE staff_id='.$id),$renewed),'expired first access renewed with new password');
+    check(!SchoolSafeNativeOnboardingComplete('Personal fixture passphrase 2026!'),'old temporary session generation refused after renewal');
+    $first['temp_password']=$renewed;
+    SchoolSafeNativeOnboardingMarkLogin($id,2026);
+    check(!SchoolSafeNativeOnboardingComplete('short'),'weak personal password refused');
+    check(!SchoolSafeNativeOnboardingComplete(str_repeat('é',6)),'password length counts characters, not UTF-8 bytes');
+    check(!SchoolSafeNativeOnboardingComplete("Personal fixture\0password"),'NUL password refused');
+    check(!SchoolSafeNativeOnboardingComplete($first['temp_password']),'temporary password cannot be retained');
+    $_POST['token']='invalid';
+    check(!SchoolSafeNativeOnboardingComplete('Personal fixture passphrase 2026!'),'password change CSRF refused');
+    $_POST['token']='fixture-token';
+    DBQuery("ALTER TABLE schoolsafe_identity_audit ADD CONSTRAINT reject_first_login CHECK(action<>'first_login') NOT VALID");
+    check(!SchoolSafeNativeOnboardingComplete('Personal fixture passphrase 2026!')
+        && SchoolSafeNativeOnboardingPending()
+        && match_password((string)DBGetOne('SELECT password FROM staff WHERE staff_id='.$id),$first['temp_password']),
+        'first-login audit failure preserves temporary hash and pending state');
+    DBQuery('ALTER TABLE schoolsafe_identity_audit DROP CONSTRAINT reject_first_login');
+    check(SchoolSafeNativeOnboardingComplete('Personal fixture passphrase 2026!')
+        && !SchoolSafeNativeOnboardingPending(),'personal password consumes targeted access');
+    check(!match_password((string)DBGetOne('SELECT password FROM staff WHERE staff_id='.$id),$first['temp_password']),
+        'temporary password no longer authenticates');
+    check(!SchoolSafeNativeOnboardingComplete('Another personal passphrase 2026!'),'first-login completion replay refused');
+    check(SchoolSafeNativeOnboardingRenew($id,2026,7)===false,'completed account is not reset by initial-access renewal');
 } finally {
     @pg_query($conn,'ROLLBACK');
     DBQuery('SET search_path TO public');DBQuery('DROP SCHEMA '.$schema.' CASCADE');

@@ -512,6 +512,7 @@ require_once 'ProgramFunctions/SchoolSafeSchoolCalendar.fnc.php';
 require_once 'ProgramFunctions/SchoolSafeSchoolSetup.fnc.php';
 require_once 'ProgramFunctions/SchoolSafeOpeningCode.fnc.php';
 require_once 'ProgramFunctions/SchoolSafeIdentity.fnc.php';
+require_once 'ProgramFunctions/SchoolSafeNativeOnboarding.fnc.php';
 
 /**
  * SchoolSafe — état de compte.
@@ -530,6 +531,7 @@ SchoolSafeAccountSessionGuard();
  * compte. Function inerte tant que la migration 016 n'a pas été appliquée.
  */
 SchoolSafeSchoolSessionGuard();
+SchoolSafeNativeOnboardingGuard();
 
 if ( mb_internal_encoding() !== 'UTF-8' )
 {

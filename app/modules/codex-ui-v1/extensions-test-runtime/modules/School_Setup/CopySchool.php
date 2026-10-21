@@ -3,6 +3,13 @@
 require_once 'modules/School_Setup/includes/SchoolReceiptIdentity.fnc.php';
 require_once 'ProgramFunctions/SchoolSafeSchoolDocument.fnc.php';
 if ( ! SchoolSafeCanCreateSchool() ) { SchoolSafeScopeDeny(); return; }
+// ProDéli's school wizard uses native hooks even while the identity provider
+// plugin stays disabled. Load its controllers only for an explicit wizard POST.
+if ( isset( $_REQUEST['sskc_school_draft'] ) )
+{
+    require_once 'plugins/SchoolSafe_Keycloak/Management.php';
+    require_once 'plugins/SchoolSafe_Keycloak/Opening.php';
+}
 
 $tables = [
 	'config' => _( 'School Configuration' ),
@@ -116,7 +123,8 @@ if ( $go
 	DBQuery( "UPDATE staff
 		SET SCHOOLS=CONCAT(trim(trailing ',' from SCHOOLS), '," . $id . ",')
 		WHERE STAFF_ID='" . User( 'STAFF_ID' ) . "'
-		AND SCHOOLS IS NOT NULL" );
+		AND SYEAR='" . UserSyear() . "'
+		AND SCHOOLS IS NOT NULL AND LENGTH(TRIM(SCHOOLS))>0" );
 
 	foreach ( (array) $_REQUEST['tables'] as $table => $value )
 	{

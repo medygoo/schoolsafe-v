@@ -173,14 +173,98 @@ function sskcPrepareIntent(): array
         $intent['wizard_id']=$d['id'];
         $intent['middle']=(string)($a['middle_name']??'');$intent['phone']=(string)($a['admin_phone']??'');
     }
+    $intent['native_director']=$mode==='schools';
+    $intent['principal']=isset($intent['wizard_id']) || ($_POST['leadership_role']??'principal')==='principal';
     sskcValidateIntent($intent);
+    if($intent['native_director'])sskcValidateNativeDirectorIntent($intent);
     $native=DBGetOne("SELECT 1 FROM staff WHERE syear=".(int)UserSyear()." AND UPPER(username)=UPPER('".DBEscapeString($username)."')");
     if ($native) throw new RuntimeException('Cet identifiant existe déjà dans SchoolSafe.');
-    if (sskcManagement('GET','users?username='.rawurlencode($username).'&exact=true')) {
+    if (!$intent['native_director'] && sskcManagement('GET','users?username='.rawurlencode($username).'&exact=true')) {
         throw new RuntimeException('Cet identifiant existe déjà dans le service de connexion. Aucune liaison automatique effectuée.');
     }
     $_SESSION['sskc_intent']=$intent;
     return $intent;
+}
+
+/** Explicit native POST: no dependency on hooks from a disabled identity plugin. */
+function sskcValidateNativeDirectorIntent(array $intent): void
+{
+    sskcValidateIntent($intent);
+    $scope=SchoolSafeScopeParse($intent['schools']);
+    if(empty($intent['native_director']) || !SchoolSafeGlobalAdmin() || !is_array($scope) || count($scope)!==1) {
+        throw new RuntimeException('La création native du responsable exige une seule école et un gestionnaire central habilité.');
+    }
+    if(!empty($intent['wizard_id'])) {
+        $d=sskcWizardDraft();$a=$d['data'];
+        if(!sskcWizardAllowed() || !hash_equals($d['id'],(string)$intent['wizard_id']) || !empty($d['staff'])
+            || (int)($d['school']??0)!==(int)$scope[0] || ($d['status']??'')!=='school_created'
+            || $intent['username']!==$a['username'] || $intent['email']!==$a['email']
+            || $intent['first']!==$a['first_name'] || $intent['last']!==$a['last_name']
+            || (int)$intent['profile']!==(int)$a['profile_id']) {
+            throw new RuntimeException('Le dossier d’école ne correspond plus à cette confirmation.');
+        }
+    }
+}
+function sskcConfirmNativeDirector(): int
+{
+    sskcCsrf();
+    $intent=$_SESSION['sskc_intent']??null;
+    if(($_POST['confirmed']??'')!=='1' || !is_array($intent)
+        || !is_string($_POST['sskc_intent']??null) || !hash_equals($intent['id'],$_POST['sskc_intent'])) {
+        throw new RuntimeException('Confirmation absente, expirée ou déjà utilisée.');
+    }
+    sskcValidateNativeDirectorIntent($intent);
+    // Consume before mutation. Failed operations require a fresh review, not replay.
+    unset($_SESSION['sskc_intent']);
+    $scope=SchoolSafeScopeParse($intent['schools']);
+    $result=SchoolSafeCreateDirector(['first_name'=>$intent['first'],'last_name'=>$intent['last'],
+        'username'=>$intent['username'],'email'=>$intent['email'],'profile_id'=>$intent['profile'],
+        'school_id'=>$scope[0],'principal'=>$intent['principal'],'opening'=>!empty($intent['wizard_id']),
+        'middle_name'=>$intent['middle']??'','phone'=>$intent['phone']??''],(int)UserSyear(),(string)User('USERNAME'));
+    if(empty($result['ok'])) {
+        $messages=['PRINCIPAL_EXISTS'=>'Cette école possède déjà un principal. Aucun compte créé ni responsable remplacé.',
+            'USERNAME_TAKEN'=>'Cet identifiant existe déjà. Aucune liaison automatique effectuée.'];
+        throw new RuntimeException($messages[$result['error']??'']??'La création complète a échoué ; aucun accès n’a été remis. Vérifiez le dossier avant une nouvelle confirmation.');
+    }
+    $id=(int)$result['staff_id'];
+    $_SESSION['sskc_handoff'][$id]=['password'=>$result['temp_password'],'actor'=>(int)User('STAFF_ID'),
+        'expires'=>time()+600,'client'=>true,'native'=>true];
+    if(!empty($intent['wizard_id'])) {
+        $_SESSION['sskc_school_draft']['staff']=$id;
+        $_SESSION['sskc_school_draft']['status']='prepared';
+        $portrait=$_SESSION['sskc_school_draft']['data']['portrait']??'';
+        if($portrait!=='') {
+            try {
+                global $UserPicturesPath;
+                require_once 'ProgramFunctions/FileUpload.fnc.php';
+                $saved=ImageUpload($portrait,['width'=>150,'height'=>150],$UserPicturesPath.UserSyear().'/',[],'.jpg',$id.'.'.bin2hex(random_bytes(16)));
+                if(!$saved)$_SESSION['sskc_handoff'][$id]['photo_warning']=true;
+            } catch(Throwable $e) {$_SESSION['sskc_handoff'][$id]['photo_warning']=true;}
+        }
+        unset($_SESSION['sskc_school_draft']['data']['logo'],$_SESSION['sskc_school_draft']['data']['portrait']);
+    }
+    return $id;
+}
+
+function sskcRenewNativeDirector(): int
+{
+    sskcCsrf();$id=(int)($_POST['staff_id']??0);$row=sskcTarget($id,true);
+    if(($_POST['confirmed']??'')!=='1' || !SchoolSafeGlobalAdmin() || $id===(int)User('STAFF_ID')
+        || !empty($row['SUBJECT']) || $row['PROFILE']!=='admin') {
+        throw new RuntimeException('Renouvellement de l’accès initial non autorisé.');
+    }
+    $nonce=$_SESSION['sskc_native_renew']??[];
+    if(($nonce['staff']??0)!==$id || ($nonce['actor']??0)!==(int)User('STAFF_ID')
+        || ($nonce['year']??0)!==(int)UserSyear() || ($nonce['expires']??0)<time()
+        || !is_string($_POST['native_renew_nonce']??null) || !hash_equals((string)($nonce['id']??''),$_POST['native_renew_nonce'])) {
+        throw new RuntimeException('Confirmation de renouvellement expirée ou déjà utilisée.');
+    }
+    unset($_SESSION['sskc_native_renew']);
+    $temporary=SchoolSafeNativeOnboardingRenew($id,(int)UserSyear(),(int)User('STAFF_ID'));
+    if(!is_string($temporary))throw new RuntimeException('Accès initial non renouvelé : vérifiez le compte et son état.');
+    $_SESSION['sskc_handoff'][$id]=['password'=>$temporary,'actor'=>(int)User('STAFF_ID'),
+        'expires'=>time()+600,'client'=>true,'native'=>true];
+    return $id;
 }
 
 function sskcBeforeNativeCreate(): void

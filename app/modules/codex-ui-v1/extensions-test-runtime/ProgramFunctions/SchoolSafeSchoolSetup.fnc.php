@@ -440,12 +440,15 @@ function SchoolSafeDirectorProfileId()
  * direction de son école.
  *
  * @param array $input first_name, last_name, username, email, school_id,
- *                     principal (bool).
+ *                     principal (bool), optional validated profile_id,
+ *                     middle_name, phone, opening (wizard follow-up).
+ *                     Without profile_id, the named Directeur profile is used.
  * @param int   $syear Année scolaire.
  * @param string $actor Compte à l'origine de la création.
  *
  * Owns a PostgreSQL transaction; refuses an already open caller transaction.
- * Account, leadership and success audit are committed together. An explicitly
+ * Account, leadership, targeted first access, optional opening follow-up and
+ * success audit are committed together. An explicitly
  * requested principal never replaces an existing principal. Controller must
  * check actor permissions/CSRF before calling; no identity is linked here.
  *
@@ -464,6 +467,13 @@ function SchoolSafeCreateDirector( $input, $syear, $actor = '' )
 	$email = trim( (string) ( $input['email'] ?? '' ) );
 
 	$school_id = (int) ( $input['school_id'] ?? 0 );
+	$middle_name = trim( (string) ( $input['middle_name'] ?? '' ) );
+	$phone = trim( (string) ( $input['phone'] ?? '' ) );
+
+	if ( mb_strlen( $middle_name ) > 50 || mb_strlen( $phone ) > 30 )
+	{
+		return [ 'ok' => false, 'error' => 'NAME_REQUIRED' ];
+	}
 
 	if ( $first_name === '' || mb_strlen( $first_name ) > 50
 		|| $last_name === '' || mb_strlen( $last_name ) > 50 )
@@ -534,8 +544,10 @@ function SchoolSafeCreateDirector( $input, $syear, $actor = '' )
 			throw new RuntimeException( 'SCHOOL_NOT_FOUND' );
 		}
 
+		$profile_filter = ! empty( $input['profile_id'] )
+			? 'ID=' . (int) $input['profile_id'] : "TITLE='Directeur'";
 		$profiles = DBGet( $query( "SELECT ID FROM user_profiles
-			WHERE TITLE='Directeur' AND PROFILE='admin' FOR SHARE" ) );
+			WHERE " . $profile_filter . " AND PROFILE='admin' FOR SHARE" ) );
 
 		if ( count( $profiles ) !== 1 )
 		{
@@ -547,7 +559,8 @@ function SchoolSafeCreateDirector( $input, $syear, $actor = '' )
 			WHERE LOWER(USERNAME)=LOWER('" . DBEscapeString( $username ) . "') AND SYEAR=" . $syear . "
 			UNION SELECT 1 FROM students WHERE LOWER(USERNAME)=LOWER('" . DBEscapeString( $username ) . "')" ) );
 
-		if ( $taken )
+		if ( $taken || DBGet( $query( "SELECT 1 FROM staff s JOIN schoolsafe_identity_links l
+			ON l.staff_id=s.staff_id WHERE LOWER(s.username)=LOWER('" . DBEscapeString( $username ) . "')" ) ) )
 		{
 			throw new RuntimeException( 'USERNAME_TAKEN' );
 		}
@@ -563,6 +576,7 @@ function SchoolSafeCreateDirector( $input, $syear, $actor = '' )
 		$role = $existing ? 'adjoint' : 'principal';
 		$values = [
 			'SYEAR' => $syear, 'FIRST_NAME' => $first_name, 'LAST_NAME' => $last_name,
+			'MIDDLE_NAME' => $middle_name, 'CUSTOM_200000001' => $phone,
 			'USERNAME' => $username, 'PASSWORD' => $password_hash, 'EMAIL' => $email,
 			'PROFILE' => 'admin', 'PROFILE_ID' => $profile_id,
 			'SCHOOLS' => ',' . $school_id . ',', 'CURRENT_SCHOOL_ID' => $school_id,
@@ -582,6 +596,17 @@ function SchoolSafeCreateDirector( $input, $syear, $actor = '' )
 		$query( "INSERT INTO schoolsafe_school_leadership (SCHOOL_ID,STAFF_ID,ROLE,CHANGED_BY)
 			VALUES (" . $school_id . "," . $staff_id . ",'" . $role . "','"
 			. DBEscapeString( mb_substr( (string) $actor, 0, 100 ) ) . "')" );
+		$query( "INSERT INTO schoolsafe_native_onboarding (staff_id,syear,created_by)
+			VALUES (" . $staff_id . "," . $syear . "," . (int) User( 'STAFF_ID' ) . ")" );
+		if ( ! empty( $input['opening'] ) )
+		{
+			$query( "INSERT INTO schoolsafe_opening_requests
+				(syear,school_name,person_name,email,school_id,responsible_id,state,created_by,updated_by)
+				SELECT " . $syear . ",TITLE,'" . DBEscapeString( $first_name . ' ' . $last_name )
+				. "','" . DBEscapeString( $email ) . "'," . $school_id . "," . $staff_id . ",'prepared',"
+				. (int) User( 'STAFF_ID' ) . "," . (int) User( 'STAFF_ID' )
+				. " FROM schools WHERE ID=" . $school_id . " AND SYEAR=" . $syear );
+		}
 		$query( "INSERT INTO schoolsafe_identity_audit (actor_staff_id,target_staff_id,action,result)
 			VALUES (" . (int) User( 'STAFF_ID' ) . "," . $staff_id . ",'create','success')" );
 		$query( 'COMMIT' );

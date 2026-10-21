@@ -24,6 +24,11 @@ if ( ! function_exists( 'DoFirstLoginForm' ) )
 
 		$return = false;
 
+		if ( SchoolSafeNativeOnboardingPending() )
+		{
+			return SchoolSafeNativeOnboardingComplete( $values['PASSWORD'] ?? '' );
+		}
+
 		if ( ! empty( $values['PASSWORD'] )
 			&& ( User( 'STAFF_ID' ) === '1' || Config( 'FORCE_PASSWORD_CHANGE_ON_FIRST_LOGIN' ) ) )
 		{
@@ -120,7 +125,7 @@ function FirstLoginForm()
 		return FirstLoginFormAfterInstall();
 	}
 
-	if ( Config( 'FORCE_PASSWORD_CHANGE_ON_FIRST_LOGIN' ) )
+	if ( Config( 'FORCE_PASSWORD_CHANGE_ON_FIRST_LOGIN' ) || SchoolSafeNativeOnboardingPending() )
 	{
 		return FirstLoginFormPasswordChange();
 	}
@@ -151,7 +156,7 @@ if ( ! function_exists( 'HasFirstLoginForm' ) )
 	 */
 	function HasFirstLoginForm()
 	{
-		return ( IsFirstLogin()
+		return SchoolSafeNativeOnboardingPending() || ( IsFirstLogin()
 				&& Config( 'FORCE_PASSWORD_CHANGE_ON_FIRST_LOGIN' ) )
 			|| ( Config( 'LOGIN' ) === 'No' && User( 'STAFF_ID' ) === '1' );
 	}
@@ -219,6 +224,11 @@ if ( ! function_exists( 'FirstLoginFormPasswordChange' ) )
 		PopTable( 'header', _( 'Password Change' ) ); ?>
 
 		<form action="index.php?modfunc=first-login" method="POST" id="first-login-form" target="_top">
+            <input type="hidden" name="token" value="<?php echo htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ); ?>">
+            <?php if ( SchoolSafeNativeOnboardingPending() ) : ?>
+            <p class="center"><img src="/schoolsafe-logo.png" alt="SchoolSafe" width="66" height="72"></p>
+            <p><?php echo SchoolSafeT( 'Choose a personal password of 12 to 128 characters, different from the temporary password. Initial access expires after 24 hours.', 'Choisissez un mot de passe personnel de 12 à 128 caractères, différent du mot de passe temporaire. Cet accès initial expire après 24 heures.' ); ?></p>
+            <?php endif; ?>
 			<p><?php echo implode( '</p><p>', FirstLoginFormFields( 'force_password_change' ) ); ?></p>
 			<p class="center"><?php echo Buttons( _( 'OK' ) ); ?></p>
 		</form>

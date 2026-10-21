@@ -1,4 +1,8 @@
-## Lot 2 ProDéli — procédure native qualifiée localement, raccord ouvert
+## Lots 2–3 ProDéli — raccord et premier accès qualifiés localement
+
+Raccord natif explicite sans plugin actif, profil confirmé/une école, transaction avec suivi d'ouverture, remise unique et URL officielle, temporaire 24 h et changement personnel ciblé, renouvellement initial avec nonce/génération. 47 contrôles PostgreSQL fictif, 92 contrats, dix groupes navigateur natif et 27 groupes de régression PASS. Restauration fictive de 118 tables et migrations additives 018/038 qualifiées. [Rapport](../../qualification/PRODELI_NATIVE_ACCESS_RELEASE_20261021.md). **NON DÉPLOYÉ** : publier le candidat nécessaire au build immuable, qualifier l'image exacte puis livrer avec sauvegarde et contrôle indépendant. Keycloak et communication inchangés ; récupération lot suivant.
+
+## Historique — lot 2 ProDéli, procédure native qualifiée localement, raccord ouvert
 
 `SchoolSafeCreateDirector()` : compte/rattachement/audit transactionnels, refus du remplacement implicite du principal, échappement Rosario corrigé et concurrence vérifiée. 29 contrôles sur PostgreSQL 17.11 fictif réel, 76 contrats de régression PASS. [Preuves et limites](../../qualification/PRODELI_NATIVE_DIRECTOR_TRANSACTION.md). **NON DÉPLOYÉ** ; contrôleur ProDéli/préparation/confirmation, droits HTTP/rejeu, premier accès et migration production à qualifier. Keycloak reste en pause ; aucune communication ni donnée réelle modifiée. Prochaine action : raccord natif explicite sans dépendance aux hooks du plugin désactivé ; le helper possède sa transaction.
 

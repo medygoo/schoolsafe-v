@@ -17,8 +17,8 @@ Communication : pages SMS/WhatsApp et routeurs déjà présents, à préserver. 
 | Lot | État | Condition de clôture |
 |---|---|---|
 | 1. Point d'entrée et tableau de bord sans menu central | **DÉPLOYÉ** source `3885644`, image `9177067d…` | Contrôles techniques PASS ; validation connectée propriétaire attendue |
-| 2. Création native et rattachement principal | **EN COURS** : procédure transactionnelle locale, 29 contrôles PostgreSQL fictif PASS ; raccord ProDéli non réalisé, non déployé. [Preuves](PRODELI_NATIVE_DIRECTOR_TRANSACTION.md) | Transaction/reprise, unicité, une école, profil, doublons et échecs, sans fallback d'une identité gérée |
-| 3. Premier accès | À réaliser | Remise confidentielle, URL canonique, secret à usage limité, choix du mot de passe et arrivée dans la bonne école |
+| 2. Création native et rattachement principal | **CANDIDAT LOCAL QUALIFIÉ** : raccord ProDéli explicite, transaction compte/rattachement/suivi/audit ; non déployé. [Preuves](PRODELI_NATIVE_ACCESS_RELEASE_20261021.md) | Transaction/reprise, unicité, une école, profil, doublons et échecs, sans fallback d'une identité gérée |
+| 3. Premier accès | **CANDIDAT LOCAL QUALIFIÉ** : remise unique, temporaire 24 h, choix personnel obligatoire, renouvellement initial contrôlé ; non déployé. [Preuves](PRODELI_NATIVE_ACCESS_RELEASE_20261021.md) | Remise confidentielle, URL canonique, secret à usage limité, choix du mot de passe et arrivée dans la bonne école |
 | 4. Récupération | À réaliser | Courriel/code selon canal disponible, expiration, usage unique, rate-limit, révocation et messages génériques |
 | 5. Communication conservée et raccordée | Réglages **DÉPLOYÉS** source `90f6238`, image `3daf00a1…` ; [rapport](PRODELI_COMMUNICATION_RELEASE_20261021.md). Organisation d'envoi inchangée ; réception externe non testée | SMS/courriel/WhatsApp sans perte de configuration/fonction, essais contrôlés, aucun faux statut de livraison |
 | 6. Recette globale et livraison | À réaliser | PostgreSQL/HTTP réels fictifs, rôles et écoles, pannes/reprises, bureau/mobile, image exacte et validation humaine |

@@ -89,11 +89,17 @@ function sskcWizardAllowed(): bool
 function sskcActionReview(string $action,int $id): void
 {
     sskcCsrf();$row=sskcTarget($id,true);
-    $labels=['link'=>'Configurer la connexion gérée','temporary'=>'Préparer un mot de passe temporaire','suspend'=>'Suspendre l’accès','resume'=>'Réactiver l’accès'];
+    $labels=['native_temporary'=>'Renouveler l’accès initial natif','link'=>'Configurer la connexion gérée','temporary'=>'Préparer un mot de passe temporaire','suspend'=>'Suspendre l’accès','resume'=>'Réactiver l’accès'];
     if(!isset($labels[$action]))throw new RuntimeException('Action inconnue.');
     if($action==='link' && ($row['PROFILE']!=='admin' || !empty($row['SUBJECT'])))throw new RuntimeException('Ce compte possède déjà une liaison ou ne peut pas être activé.');
-    if($action!=='link' && (empty($row['SUBJECT']) || $id===(int)User('STAFF_ID')))throw new RuntimeException('Cette opération n’est pas disponible pour ce compte.');
+    if($action==='native_temporary' && (!SchoolSafeGlobalAdmin() || !empty($row['SUBJECT']) || $row['PROFILE']!=='admin'
+        || $id===(int)User('STAFF_ID') || !SchoolSafeNativeOnboardingRow($id,(int)UserSyear())
+        || !empty(SchoolSafeNativeOnboardingRow($id,(int)UserSyear())['COMPLETED_AT'])))throw new RuntimeException('Ce compte ne possède pas d’accès initial natif à renouveler.');
+    if(!in_array($action,['link','native_temporary'],true) && (empty($row['SUBJECT']) || $id===(int)User('STAFF_ID')))throw new RuntimeException('Cette opération n’est pas disponible pour ce compte.');
+    if($action==='native_temporary')$_SESSION['sskc_native_renew']=['id'=>bin2hex(random_bytes(24)),
+        'staff'=>$id,'actor'=>(int)User('STAFF_ID'),'year'=>(int)UserSyear(),'expires'=>time()+600];
     $explanations=[
+        'native_temporary'=>'Le mot de passe initial sera remplacé, les sessions de préparation précédentes seront refusées et un nouvel accès valable 24 heures sera à remettre confidentiellement. Aucun courriel ni SMS n’est envoyé.',
         'link'=>'Cette opération prépare la connexion du compte déjà présent. Elle ne recrée pas sa fiche scolaire. Si une identité de connexion existe déjà, la vérification native arrête la liaison automatique.',
         'temporary'=>'Le mot de passe précédent sera remplacé et les sessions de cette personne seront fermées. Le nouvel accès sera affiché une seule fois pour une remise confidentielle.',
         'suspend'=>'La personne ne pourra plus se connecter. Sa fiche et ses données seront conservées. Vous pourrez réactiver son accès si vos droits le permettent.',
@@ -103,6 +109,7 @@ function sskcActionReview(string $action,int $id): void
     sskcUiStart($labels[$action]);
     echo '<section class="sskc-action-review"><p>Aucune modification n’a encore été effectuée. Vérifiez la personne et l’opération avant de confirmer.</p><dl><dt>Personne</dt><dd>'.sskcEscape(trim($row['FIRST_NAME'].' '.$row['LAST_NAME'])).'</dd><dt>Identifiant</dt><dd>'.sskcEscape($row['USERNAME']).'</dd><dt>Opération</dt><dd>'.sskcEscape($labels[$action]).'</dd></dl><p class="sskc-note">'.sskcEscape($explanations[$action]).'</p><form method="post" target="_self" action="'.sskcEscape($return).'">';
     foreach(['token'=>(string)$_SESSION['token'],'staff_id'=>(string)$id,'action'=>$action,'confirmed'=>'1'] as $key=>$value)sskcWizardHidden($key,$value);
+    if($action==='native_temporary')sskcWizardHidden('native_renew_nonce',$_SESSION['sskc_native_renew']['id']);
     echo '<div class="sskc-review-buttons"><input type="submit" class="'.($action==='suspend'?'sskc-action-danger':'button-primary').'" value="Confirmer : '.sskcEscape($labels[$action]).'"><a class="sskc-action" href="'.sskcEscape($return).'#sskc-account-'.$id.'" target="_self">Annuler et revenir au compte</a></div></form><p>Les droits et l’état du compte sont revérifiés au moment de la confirmation.</p></section>';
     sskcUiEnd();exit;
 }
