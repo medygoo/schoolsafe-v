@@ -16,7 +16,7 @@ Communication : pages SMS/WhatsApp et routeurs déjà présents, à préserver. 
 
 | Lot | État | Condition de clôture |
 |---|---|---|
-| 1. Point d'entrée et tableau de bord sans menu central | **Corrigé et testé localement, non déployé** | Qualifier le candidat exact et son retour arrière avant bascule ; validation propriétaire |
+| 1. Point d'entrée et tableau de bord sans menu central | **DÉPLOYÉ** source `3885644`, image `9177067d…` | Contrôles techniques PASS ; validation connectée propriétaire attendue |
 | 2. Création native et rattachement principal | À réaliser | Transaction/reprise, unicité, une école, profil, doublons et échecs, sans fallback d'une identité gérée |
 | 3. Premier accès | À réaliser | Remise confidentielle, URL canonique, secret à usage limité, choix du mot de passe et arrivée dans la bonne école |
 | 4. Récupération | À réaliser | Courriel/code selon canal disponible, expiration, usage unique, rate-limit, révocation et messages génériques |
@@ -41,6 +41,10 @@ Communication : pages SMS/WhatsApp et routeurs déjà présents, à préserver. 
 
 Preuves hors Git : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/dashboard-completion/` et scripts QA voisins. Aucun secret dans les documents ni messages réels envoyés.
 
+## Livraison du lot 1 — mise à jour
+
+[Rapport de livraison](PRODELI_DASHBOARD_RELEASE_20261021.md). Source `38856445143050895b6502c51be18285e9309042`, image `9177067d…`, 28 contrats sur image exacte, 2 754 autres fichiers identiques ; cinq cas d'entrée exécutés avec handlers substitués. 78 sessions transférées, production vérifiée indépendamment et autres services inchangés. Aucune migration ni action réelle de compte/message. Les lots 2 à 6 demeurent ouverts.
+
 ## Prochaine action exacte
 
-Relire les captures locales `dashboard-1280.png`/`dashboard-390.png`, compléter les contrats d'exécution de l'entrée (GET global/scoped et POST conservé), puis préparer le candidat exact du lot 1 et son retour arrière. Ne pas utiliser le garde `prodeli-presentation-scope.py` comme gate de ce nouveau lot : il limite volontairement la livraison précédente à quatre fichiers et refuserait les nouveaux changements. Mettre le plan/handoff à jour à chaque lot. Ne pas annoncer la création native, la récupération ou l'ensemble ProDéli terminés après les seuls tests d'accueil.
+Commencer le lot 2 avec la procédure native existante : préparation, POST final avec plugin désactivé, transaction compte/rattachement/audit/reprise et tests de première connexion. La table leadership absente exige une migration additive qualifiée avec sauvegarde/restauration ; ne pas changer globalement la politique de première connexion pour faire passer un test. Ne pas utiliser le garde `prodeli-presentation-scope.py` comme gate de ce nouveau lot : il limite volontairement la livraison précédente à quatre fichiers et refuserait les nouveaux changements. Mettre le plan/handoff à jour à chaque lot. Ne pas annoncer la création native, la récupération ou l'ensemble ProDéli terminés après les seuls tests d'accueil.
