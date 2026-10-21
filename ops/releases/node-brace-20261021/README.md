@@ -25,7 +25,7 @@ The targeted image intentionally keeps the compiled application, Fastify 5.12.4,
 - Full server suite: 688/688 after correction, including a repeat from a clean workspace install.
 - `node --test scripts/security-dependency-contract.test.cjs`: five checks passed; the three upstream parser regressions failed against the original installed version before replacement.
 
-These are local qualification results, not a statement that deployment has happened. The actual deployment result must be recorded in the private release manifest and operator handoff.
+These are local qualification results. Deployment was subsequently authorized and verified on 21 October 2026: see [the delivery report](../../../docs/qualification/NODE_BRACE_RELEASE_20261021.md) for exact image identity, independent production checks, rollback conditions and remaining RED security findings.
 
 ## Rollback
 
