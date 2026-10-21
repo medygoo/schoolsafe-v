@@ -8,10 +8,11 @@ function sskcUiStart(string $title): void
     if(isset($_GET['home']))$route.='?home=1';
     elseif(isset($_GET['wizard']))$route.='?wizard=1&step='.max(1,min(6,(int)($_GET['step']??1)));
     elseif(isset($_GET['opening']))$route.='?opening=1';
+    elseif(($_GET['accounts']??'')==='central')$route.='?accounts=central';
     $_REQUEST['modname']='Users/User.php';$_ROSARIO['page']='modules';Warehouse('header');
     $jaspeLink = !empty($RosarioModules['SchoolSafe_Jaspe']) && AllowUse('SchoolSafe_Jaspe/Assistant.php')
         ? '<a id="sskc-jaspe-launch" href="/Modules.php?modname=SchoolSafe_Jaspe/Assistant.php&amp;ss_companion=1" target="_self" aria-haspopup="dialog" aria-controls="ss-jaspe-dialog" aria-expanded="false">Écrire à JASPE</a>' : '';
-    echo '<link rel="stylesheet" href="/assets/themes/SchoolSafeCodex/menu-logo.css?v=shared-2"><link rel="stylesheet" href="/plugins/SchoolSafe_Keycloak/central-ui.css?v=13"><main class="sskc-shell" data-central-route="'.sskcEscape($route).'"><script src="/plugins/SchoolSafe_Keycloak/central-ui.js?v=13" defer></script><header class="sskc-top"><a class="sskc-brand" href="/schoolsafe-administrators.php?home=1" target="_self" aria-label="SchoolSafe — accueil central"><span class="sskc-emblem"><img class="ss-animated-brand" src="/schoolsafe-logo.png" alt="" width="66" height="72"></span><span><strong>SchoolSafe</strong><small>Votre école, en confiance.</small></span></a><nav aria-label="Navigation centrale">'.$jaspeLink.'<a href="/schoolsafe-administrators.php?home=1" target="_self">Accueil central</a><a href="/schoolsafe-administrators.php" target="_self">Administrateurs</a><a href="/schoolsafe-administrators.php?opening=1" target="_self">Écoles</a><a href="/index.php?modfunc=logout" target="_self">Déconnexion</a></nav></header><h1>'.sskcEscape($title).'</h1>';
+    echo '<link rel="stylesheet" href="/assets/themes/SchoolSafeCodex/menu-logo.css?v=shared-2"><link rel="stylesheet" href="/plugins/SchoolSafe_Keycloak/central-ui.css?v=13"><main class="sskc-shell" data-central-route="'.sskcEscape($route).'"><script src="/plugins/SchoolSafe_Keycloak/central-ui.js?v=14" defer></script><header class="sskc-top"><a class="sskc-brand" href="/schoolsafe-administrators.php?home=1" target="_self" aria-label="SchoolSafe — accueil central"><span class="sskc-emblem"><img class="ss-animated-brand" src="/schoolsafe-logo.png" alt="" width="66" height="72"></span><span><strong>SchoolSafe</strong><small>'.(SchoolSafeGlobalAdmin()?'ProDéli · Gestion centrale':'Votre école, en confiance.').'</small></span></a><nav aria-label="Navigation centrale">'.$jaspeLink.'<a href="/schoolsafe-administrators.php?home=1" target="_self">Accueil central</a><a href="/schoolsafe-administrators.php" target="_self">Administrateurs</a><a href="/schoolsafe-administrators.php?opening=1" target="_self">Écoles</a><a href="/index.php?modfunc=logout" target="_self">Déconnexion</a></nav></header><h1>'.sskcEscape($title).'</h1>';
 }
 function sskcUiEnd(): void {echo '</main>';Warehouse('footer');}
 /** Central navigation never opens the school dashboard implicitly. */
@@ -22,10 +23,11 @@ function sskcHomePage(): void
     foreach((array)DBGet('SELECT ID,TITLE FROM schools WHERE SYEAR='.$year.' ORDER BY TITLE') as $school)
         if(SchoolSafeSchoolAllowed((string)$school['ID']))$schools[(int)$school['ID']]=$school['TITLE'];
     $waiting=[];
-    $accounts=DBGet("SELECT s.STAFF_ID,s.FIRST_NAME,s.LAST_NAME,s.USERNAME,l.STATE,l.SUBJECT FROM staff s LEFT JOIN schoolsafe_identity_links l ON l.STAFF_ID=s.STAFF_ID WHERE s.SYEAR=".$year." AND s.PROFILE='admin' ORDER BY s.LAST_NAME,s.FIRST_NAME");
+    $accounts=DBGet("SELECT s.STAFF_ID,s.FIRST_NAME,s.LAST_NAME,s.USERNAME,s.PROFILE,s.SCHOOLS,s.LAST_LOGIN,l.STATE,l.SUBJECT,l.ENABLED AS IDENTITY_ENABLED FROM staff s LEFT JOIN schoolsafe_identity_links l ON l.STAFF_ID=s.STAFF_ID WHERE s.SYEAR=".$year." AND s.PROFILE='admin' ORDER BY s.LAST_NAME,s.FIRST_NAME");
     foreach((array)$accounts as $account) {
-        if(!SchoolSafeStaffWithinScope((int)$account['STAFF_ID']))continue;
-        if($account['STATE']==='onboarding' || !$account['SUBJECT'])$waiting[]=$account;
+        if(!SchoolSafeStaffWithinScope((int)$account['STAFF_ID']) || !is_array(SchoolSafeScopeParse($account['SCHOOLS'])))continue;
+        $presentation=sskcAccountPresentation($account);
+        if($presentation['access']==='Actif' && $presentation['onboarding']!=='')$waiting[]=$account+['FOLLOWUP'=>$presentation['onboarding']];
     }
     $pending=[];
     if(sskcOpeningCentral())$pending=(array)DBGet("SELECT ID,SCHOOL_NAME,STATE FROM schoolsafe_opening_requests WHERE SYEAR=".$year." AND STATE IN ('requested','approved') ORDER BY ID LIMIT 5");
@@ -53,8 +55,8 @@ function sskcHomePage(): void
         echo '<ul class="sskc-home-followup">';foreach($pending as $request)echo '<li><strong>'.sskcEscape($request['SCHOOL_NAME']).'</strong><a class="sskc-row-action" target="_self" href="/schoolsafe-administrators.php?opening=1#sskc-request-'.(int)$request['ID'].'">Ouvrir le suivi</a><span>'.($request['STATE']==='requested'?'Demande à examiner':'Demande validée · rattachement à vérifier').'</span></li>';echo '</ul><p class="sskc-home-caption">Le suivi d’une demande ne confirme pas la première connexion de son responsable. Vérifiez le rattachement avant de recréer un établissement.</p>';
     }
     echo '</section></div><aside class="sskc-home-side" aria-label="Administrateurs et préparation"><section class="sskc-home-section"><h2>Administrateurs et accès</h2><p>Consultez les profils, les écoles attribuées et les actions autorisées pour chaque personne.</p><a class="sskc-action" href="/schoolsafe-administrators.php" target="_self">Gérer les administrateurs</a>';
-    if($waiting){echo '<h3>Accès à accompagner</h3><ul class="sskc-access-followup">';foreach(array_slice($waiting,0,3) as $account)echo '<li><strong>'.sskcEscape(trim($account['FIRST_NAME'].' '.$account['LAST_NAME'])?:$account['USERNAME']).'</strong><a class="sskc-row-action" target="_self" href="/schoolsafe-administrators.php?accounts=1#sskc-account-'.(int)$account['STAFF_ID'].'">Gérer cet accès</a><span>'.($account['STATE']==='onboarding'?'Première connexion à terminer':'Accès à préparer').'</span></li>';echo '</ul>';if(count($waiting)>3)echo '<p class="sskc-home-caption">Autres comptes à consulter dans la gestion des administrateurs.</p>';}
-    else echo '<p class="sskc-home-caption">Aucun accès à préparer ou première connexion en attente dans votre périmètre.</p>';
+    if($waiting){echo '<h3>Accès à accompagner</h3><ul class="sskc-access-followup">';foreach(array_slice($waiting,0,3) as $account)echo '<li><strong>'.sskcEscape(trim($account['FIRST_NAME'].' '.$account['LAST_NAME'])?:$account['USERNAME']).'</strong><a class="sskc-row-action" target="_self" href="/schoolsafe-administrators.php?accounts=1#sskc-account-'.(int)$account['STAFF_ID'].'">Gérer cet accès</a><span>'.sskcEscape($account['FOLLOWUP']).'</span></li>';echo '</ul>';if(count($waiting)>3)echo '<p class="sskc-home-caption">Autres comptes à consulter dans la gestion des administrateurs.</p>';}
+    else echo '<p class="sskc-home-caption">Aucune première connexion en attente parmi les administrateurs scolaires actifs.</p>';
     echo '</section><section class="sskc-home-section sskc-home-preparation"><h2>Préparer le dossier</h2><p>Les six étapes sont remplies par le gestionnaire autorisé.</p><details><summary>Informations à réunir</summary><ul><li>Nom officiel, coordonnées et directeur de l’établissement.</li><li>E-mail officiel, devise et informations des documents.</li><li>Nom, e-mail personnel, identifiant et profil du responsable principal.</li><li>Logo et portrait, si disponibles : zoom, recadrage et redimensionnement dans le parcours.</li><li>Modèle scolaire et base de notation.</li></ul></details><p class="sskc-home-caption">Après création, le client reçoit son mot de passe temporaire, complète ses informations et choisit son mot de passe personnel.</p></section></aside></div>';
     if(isset($schools[$current]))echo '<section class="sskc-school-entry sskc-home-school-entry"><div><h2>Espace scolaire</h2><p>École sélectionnée : <strong>'.sskcEscape((string)$schools[$current]).'</strong>.</p><p>Retrouvez ici la gestion quotidienne des élèves, du personnel et de la scolarité.</p></div><a class="sskc-action" target="_self" href="/Modules.php?modname=misc/Portal.php">Ouvrir le tableau de bord de cette école</a></section>';
     echo '</div>';sskcUiEnd();exit;
@@ -69,7 +71,7 @@ function sskcWizardAllowed(): bool
 function sskcActionReview(string $action,int $id): void
 {
     sskcCsrf();$row=sskcTarget($id,true);
-    $labels=['link'=>'Préparer l’accès','temporary'=>'Préparer un mot de passe temporaire','suspend'=>'Suspendre l’accès','resume'=>'Réactiver l’accès'];
+    $labels=['link'=>'Configurer la connexion gérée','temporary'=>'Préparer un mot de passe temporaire','suspend'=>'Suspendre l’accès','resume'=>'Réactiver l’accès'];
     if(!isset($labels[$action]))throw new RuntimeException('Action inconnue.');
     if($action==='link' && ($row['PROFILE']!=='admin' || !empty($row['SUBJECT'])))throw new RuntimeException('Ce compte possède déjà une liaison ou ne peut pas être activé.');
     if($action!=='link' && (empty($row['SUBJECT']) || $id===(int)User('STAFF_ID')))throw new RuntimeException('Cette opération n’est pas disponible pour ce compte.');
@@ -79,10 +81,11 @@ function sskcActionReview(string $action,int $id): void
         'suspend'=>'La personne ne pourra plus se connecter. Sa fiche et ses données seront conservées. Vous pourrez réactiver son accès si vos droits le permettent.',
         'resume'=>'La suspension sera levée. Le profil et les écoles attribués au compte restent contrôlés par SchoolSafe.'
     ];
+    $return='/schoolsafe-administrators.php?accounts='.(SchoolSafeScopeParse($row['SCHOOLS'])===null?'central':'1');
     sskcUiStart($labels[$action]);
-    echo '<section class="sskc-action-review"><p>Aucune modification n’a encore été effectuée. Vérifiez la personne et l’opération avant de confirmer.</p><dl><dt>Personne</dt><dd>'.sskcEscape(trim($row['FIRST_NAME'].' '.$row['LAST_NAME'])).'</dd><dt>Identifiant</dt><dd>'.sskcEscape($row['USERNAME']).'</dd><dt>Opération</dt><dd>'.sskcEscape($labels[$action]).'</dd></dl><p class="sskc-note">'.sskcEscape($explanations[$action]).'</p><form method="post" target="_self" action="/schoolsafe-administrators.php">';
+    echo '<section class="sskc-action-review"><p>Aucune modification n’a encore été effectuée. Vérifiez la personne et l’opération avant de confirmer.</p><dl><dt>Personne</dt><dd>'.sskcEscape(trim($row['FIRST_NAME'].' '.$row['LAST_NAME'])).'</dd><dt>Identifiant</dt><dd>'.sskcEscape($row['USERNAME']).'</dd><dt>Opération</dt><dd>'.sskcEscape($labels[$action]).'</dd></dl><p class="sskc-note">'.sskcEscape($explanations[$action]).'</p><form method="post" target="_self" action="'.sskcEscape($return).'">';
     foreach(['token'=>(string)$_SESSION['token'],'staff_id'=>(string)$id,'action'=>$action,'confirmed'=>'1'] as $key=>$value)sskcWizardHidden($key,$value);
-    echo '<div class="sskc-review-buttons"><input type="submit" class="'.($action==='suspend'?'sskc-action-danger':'button-primary').'" value="Confirmer : '.sskcEscape($labels[$action]).'"><a class="sskc-action" href="/schoolsafe-administrators.php?accounts=1#sskc-account-'.$id.'" target="_self">Annuler et revenir au compte</a></div></form><p>Les droits et l’état du compte sont revérifiés au moment de la confirmation.</p></section>';
+    echo '<div class="sskc-review-buttons"><input type="submit" class="'.($action==='suspend'?'sskc-action-danger':'button-primary').'" value="Confirmer : '.sskcEscape($labels[$action]).'"><a class="sskc-action" href="'.sskcEscape($return).'#sskc-account-'.$id.'" target="_self">Annuler et revenir au compte</a></div></form><p>Les droits et l’état du compte sont revérifiés au moment de la confirmation.</p></section>';
     sskcUiEnd();exit;
 }
 function sskcWizardDraft(): array

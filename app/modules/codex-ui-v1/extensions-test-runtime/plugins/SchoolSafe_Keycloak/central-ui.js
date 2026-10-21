@@ -4,7 +4,7 @@
     const shell=document.querySelector('.sskc-shell[data-central-route]');
     if(!shell)return;
     const route=shell.dataset.centralRoute;
-    if(!/^\/schoolsafe-administrators\.php(?:\?(?:home=1|opening=1|wizard=1&step=[1-6]))?$/.test(route))return;
+    if(!/^\/schoolsafe-administrators\.php(?:\?(?:home=1|opening=1|accounts=central|wizard=1&step=[1-6]))?$/.test(route))return;
     const accountAnchor=/^#sskc-(?:account|request)-\d+$/.test(location.hash)?location.hash:'';
     const preserve=()=>{if(location.pathname+location.search!==route)history.replaceState(history.state,'',route+accountAnchor);};
     const ready=()=>setTimeout(preserve,0);

@@ -9,6 +9,8 @@ require_once 'Warehouse.php';
 require_once __DIR__.'/functions.php';
 if (empty($_SESSION['STAFF_ID'])) {header('Location: /index.php');exit;}
 if (!sskcCanRead()) {SchoolSafeScopeDeny();exit;}
+$showCentral=($_GET['accounts']??'')==='central';
+if($showCentral && !SchoolSafeGlobalAdmin()){SchoolSafeScopeDeny();exit;}
 if(isset($_GET['home'])) sskcHomePage();
 if(isset($_GET['wizard'])) sskcWizardPage();
 if(isset($_GET['opening'])) sskcOpeningPage();
@@ -54,7 +56,7 @@ if(isset($_GET['credential'])) {
     echo '<p><a href="/schoolsafe-administrators.php">Retour aux administrateurs</a></p></main></html>';exit;
 }
 $_REQUEST['modname']='Users/User.php';$_ROSARIO['page']='modules';
-sskcUiStart('Gestion des administrateurs');
+sskcUiStart($showCentral?'Comptes de l’équipe centrale':'Administrateurs scolaires');
 echo '<p><a href="/schoolsafe-administrators.php?opening=1">'.(SchoolSafeGlobalAdmin()?'Gestion centrale — ouvertures d’écoles':'Gestion de votre école').'</a></p>';
 echo '<p>Créez un compte, attribuez son profil SchoolSafe et ses écoles, puis remettez son accès temporaire. Les droits existants restent applicables.</p>';
 if($message!=='')echo '<p role="status">'.sskcEscape($message).'</p>';
@@ -79,23 +81,29 @@ if($intent!==null) {
     sskcUiEnd();exit;
 }
 if(sskcWizardAllowed())echo '<p><a class="sskc-action button-primary" target="_self" href="/schoolsafe-administrators.php?wizard=1">Ouvrir une école — parcours en six étapes</a></p>';
-echo '<div class="sskc-list-tools"><h2>Administrateurs dans votre périmètre</h2><label>Rechercher un administrateur<input type="search" id="sskc-account-search" placeholder="Nom, identifiant, profil ou école" autocomplete="off" aria-controls="sskc-accounts"></label><nav aria-label="Actions de gestion">';
+if(SchoolSafeGlobalAdmin())echo '<nav aria-label="Population des comptes"><a href="/schoolsafe-administrators.php" target="_self">Administrateurs scolaires</a> · <a href="/schoolsafe-administrators.php?accounts=central" target="_self">Comptes centraux — gestion protégée</a></nav>';
+echo '<div class="sskc-list-tools"><h2>'.($showCentral?'Équipe centrale':'Administrateurs scolaires dans votre périmètre').'</h2><label>Rechercher un administrateur<input type="search" id="sskc-account-search" placeholder="Nom, identifiant, profil ou école" autocomplete="off" aria-controls="sskc-accounts"></label><nav aria-label="Actions de gestion">';
 if(sskcCanWrite(true) && (int)UserSyear()===(int)Config('SYEAR'))echo '<a class="sskc-action" href="#sskc-add-admin" data-central-section="sskc-add-admin">Ajouter un administrateur</a>';
 echo '<a class="sskc-action" href="#sskc-history" data-central-section="sskc-history">Voir l’historique</a></nav></div>';
-$rows=DBGet('SELECT s.STAFF_ID,s.USERNAME,s.FIRST_NAME,s.LAST_NAME,s.PROFILE,s.PROFILE_ID,s.SCHOOLS,p.TITLE AS PROFILE_TITLE,'
+$rows=DBGet('SELECT s.STAFF_ID,s.USERNAME,s.FIRST_NAME,s.LAST_NAME,s.PROFILE,s.PROFILE_ID,s.SCHOOLS,s.LAST_LOGIN,p.TITLE AS PROFILE_TITLE,'
     . 'l.SUBJECT,l.STATE,l.ENABLED AS IDENTITY_ENABLED FROM staff s LEFT JOIN user_profiles p ON p.ID=s.PROFILE_ID'
     . ' LEFT JOIN schoolsafe_identity_links l ON l.STAFF_ID=s.STAFF_ID WHERE s.SYEAR='.(int)UserSyear()
-    . " AND (s.PROFILE='admin' OR (s.PROFILE='none' AND l.STATE='suspended')) ORDER BY s.USERNAME");
-$labels=['active'=>'Actif','onboarding'=>'Première connexion à terminer','suspended'=>'Suspendu'];
-echo '<div class="sskc-table"><table id="sskc-accounts" class="list width-100p"><thead><tr><th>Personne / identifiant</th><th>Profil et écoles</th><th>État</th><th>Actions autorisées</th></tr></thead><tbody>';
+    . " AND (s.PROFILE='admin' OR (s.PROFILE='none' AND (p.PROFILE='admin' OR l.STATE='suspended'))) ORDER BY s.USERNAME");
+$schoolNames=[];
+foreach((array)DBGet('SELECT ID,TITLE FROM schools WHERE SYEAR='.(int)UserSyear()) as $school)
+    if(SchoolSafeSchoolAllowed((string)$school['ID']))$schoolNames[(int)$school['ID']]=$school['TITLE'];
+echo '<div class="sskc-table"><table id="sskc-accounts" class="list width-100p"><thead><tr><th>Personne / identifiant</th><th>Profil et écoles</th><th>État du compte</th><th>Actions autorisées</th></tr></thead><tbody>';
 $count=0;
 foreach((array)$rows as $row) {
-    $id=(int)$row['STAFF_ID'];if(!SchoolSafeStaffWithinScope($id))continue;$count++;
+    $id=(int)$row['STAFF_ID'];if(!SchoolSafeStaffWithinScope($id))continue;
     $scope=SchoolSafeScopeParse($row['SCHOOLS']);
+    if(($scope===null)!==$showCentral)continue;
+    $count++;$presentation=sskcAccountPresentation($row);
     echo '<tr id="sskc-account-'.$id.'" tabindex="-1"><td>'.sskcEscape(trim($row['FIRST_NAME'].' '.$row['LAST_NAME'])).'<br>'.sskcEscape($row['USERNAME'])
         .'</td><td>'.sskcEscape($row['PROFILE_TITLE']?:'Permissions personnalisées').'<br>'
-        .($scope===null?'Toutes les écoles':($scope===false?'Périmètre invalide':sskcEscape(implode(', ',$scope))))
-        .'</td><td>'.sskcEscape($labels[$row['STATE']??'']??'Accès à activer').'</td><td><div class="sskc-account-actions">';
+        .sskcEscape(sskcAccountSchoolNames($row['SCHOOLS'],$schoolNames))
+        .'</td><td>'.sskcEscape($presentation['access']).'<br><small>'.sskcEscape($presentation['connection']).'</small>'
+        .($presentation['onboarding']!==''?'<br><small>'.sskcEscape($presentation['onboarding']).'</small>':'').'</td><td><div class="sskc-account-actions">';
     echo '<a class="sskc-action sskc-action-secondary" target="_self" href="/Modules.php?modname=Users/User.php&amp;staff_id='.$id.'">Consulter la fiche</a>';
     $write=sskcCanWrite() && SchoolSafeProfileDelegable((string)$row['PROFILE_ID']) && (int)UserSyear()===(int)Config('SYEAR');
     if($write && $row['SUBJECT'] && $id!==(int)User('STAFF_ID')) {
@@ -107,18 +115,18 @@ foreach((array)$rows as $row) {
     if($write && !$row['SUBJECT'] && $row['PROFILE']==='admin') {
         echo '<form target="_self" method="post" action="/schoolsafe-administrators.php"><input type="hidden" name="token" value="'.$csrf
             .'"><input type="hidden" name="staff_id" value="'.$id.'"><input type="hidden" name="action" value="link">'
-            .'<input type="submit" class="button-primary" value="Préparer l’accès"></form>';
+            .'<input type="submit" class="sskc-action-secondary" value="Configurer la connexion gérée"></form>';
     }
     echo '</div><p class="sskc-action-help">';
     if($id===(int)User('STAFF_ID'))echo 'Votre compte connecté : consultez votre fiche. Les opérations de suspension et de renouvellement de votre propre accès sont protégées.';
     elseif(!$write)echo 'Consultation disponible. Les modifications dépendent de votre profil et de l’année scolaire courante.';
-    elseif(!$row['SUBJECT'])echo 'Préparez l’accès de ce compte existant, puis remettez son mot de passe temporaire.';
+    elseif(!$row['SUBJECT'])echo 'Compte natif : l’absence de liaison au service d’identité ne signifie pas que son accès est inactif. La configuration d’une connexion gérée est une opération distincte.';
     elseif($row['STATE']==='suspended')echo 'Réactivez l’accès avant de préparer un nouveau mot de passe.';
     else echo 'Chaque opération affiche un récapitulatif avant confirmation.';
     echo '</p></td></tr>';
 }
 if(!$count)echo '<tr><td colspan="4">Aucun administrateur accessible dans votre périmètre.</td></tr>';
-echo '</tbody></table></div>';
+echo '</tbody></table></div><p class="sskc-muted">L’état du compte et la première connexion sont distincts. L’état de l’école peut aussi limiter l’accès.</p>';
 if(sskcCanWrite(true) && (int)UserSyear()===(int)Config('SYEAR')) {
     $profiles=DBGet("SELECT ID,TITLE FROM user_profiles WHERE PROFILE='admin' ORDER BY ID");
     $schools=DBGet('SELECT ID,TITLE FROM schools WHERE SYEAR='.(int)UserSyear().' ORDER BY TITLE');

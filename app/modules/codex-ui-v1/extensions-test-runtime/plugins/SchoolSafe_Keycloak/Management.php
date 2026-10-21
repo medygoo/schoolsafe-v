@@ -1,6 +1,40 @@
 <?php
 declare(strict_types=1);
 
+/** Read-only presentation; never provisions an identity or changes permissions. */
+function sskcAccountSchoolNames($scope,array $schools): string
+{
+    $ids=SchoolSafeScopeParse($scope);
+    if($ids===null)return 'Équipe centrale — toutes les écoles';
+    if($ids===false)return 'Périmètre à vérifier';
+    return implode(' · ',array_map(static fn($id)=>(string)($schools[$id]??('École #'.$id.' — à vérifier')),$ids));
+}
+function sskcAccountPresentation(array $row): array
+{
+    $managed=!empty($row['SUBJECT']);$scope=SchoolSafeScopeParse($row['SCHOOLS']??null);
+    $result=['connection'=>$managed?'Connexion gérée':'Connexion native','access'=>'État à vérifier','onboarding'=>''];
+    if($scope===false){$result['access']='Périmètre à vérifier';return $result;}
+    if($managed && ($row['STATE']??'')==='suspended'){$result['access']='Suspendu';return $result;}
+    if(($row['PROFILE']??'')!=='admin'){$result['access']='Sans accès — profil désactivé';return $result;}
+    if($managed && ($row['IDENTITY_ENABLED']??'')!=='Y'){$result['access']='Accès désactivé';return $result;}
+    if($managed && !in_array($row['STATE']??'',['active','onboarding'],true))return $result;
+    try {
+        if(!SchoolSafeAccountReady())return $result;
+        $entries=SchoolSafeAccountStates((string)$row['USERNAME'],$scope??[]);
+        $global='active';$states=[];
+        foreach($entries as $entry){if((int)$entry['school_id']===0)$global=$entry['state'];else $states[]=$entry['state'];}
+        if(in_array($global,['suspended','expired'],true))$states=[$global];
+        elseif($global==='readonly')$states=array_map(static fn($s)=>$s==='active'?'readonly':$s,$states?:[$global]);
+        $states=array_values(array_unique($states?:[$global]));
+        $labels=['active'=>'Actif','readonly'=>'Consultation seule','suspended'=>'Suspendu','expired'=>'Expiré'];
+        foreach($states as $state)if(!isset($labels[$state]))return $result;
+        $result['access']=count($states)>1?'Accès restreint selon l’école':$labels[$states[0]];
+    }catch(Throwable $e){return $result;}
+    if($managed && $row['STATE']==='onboarding')$result['onboarding']='Première connexion à terminer';
+    elseif(!$managed && empty($row['LAST_LOGIN']))$result['onboarding']='Première connexion à effectuer';
+    return $result;
+}
+
 function sskcCanRead(): bool
 {
     return User('PROFILE') === 'admin' && AllowUse('Users/User.php')
