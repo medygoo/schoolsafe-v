@@ -1,0 +1,46 @@
+# ProDéli — achèvement du parcours existant
+
+## Mandat validé
+
+Le propriétaire valide l'achèvement complet : tableau de bord unique ProDéli sans nouveau menu, base et traitements Rosario conservés, présentation SchoolSafe/logo original ; école → administrateur principal → premier accès → récupération ; communication existante conservée, notamment quatre réseaux SMS, courriel et WhatsApp. Pas de reconstruction de communication ni de retrait de fonctions. Les essais de réception externe exigent des destinataires autorisés. Le mandat de production est acquis, mais une modification n'est livrée qu'après qualification de son candidat et préparation du retour arrière.
+
+## État et limites de départ
+
+Production acquise : présentation quatre fichiers, source `6e741ba8a289866dc443dc61bf4108a3ecb29672`, image `b45be4ea…`. Le reste du worktree d'harmonisation n'est pas livré. Ce chantier part de la branche documentaire `cbc69769c1c99c80ff464db4b399a108786f4cdf`, nouvelle branche `work/prodeli-completion-20261021`.
+
+Inspection précédente en lecture seule : configuration Keycloak inaccessible dans le PHP, plugin global désactivé, zéro liaison d'identité. Le formulaire ProDéli appelle néanmoins le fournisseur pour préparer/créer un administrateur. Création native et récupération natives existent : réutiliser leurs contrôles, pas de conversion silencieuse d'un compte lié. Table `schoolsafe_school_leadership` absente à l'inspection ; qualification/migration additive nécessaire avant annoncer le rattachement principal fiable.
+
+Communication : pages SMS/WhatsApp et routeurs déjà présents, à préserver. Quatre lignes SMS préparées mais désactivées et sans credentials serveur complets à l'observation. Cela ne signifie pas supprimer/mettre en pause le système développé ni l'activer automatiquement. Raccord OTP appelle un envoi de texte vide avant génération ; test SMS d'une ligne passe par routage automatique : deux défauts à reproduire/tester avant correction ciblée.
+
+## Suivi vérifiable
+
+| Lot | État | Condition de clôture |
+|---|---|---|
+| 1. Point d'entrée et tableau de bord sans menu central | **Corrigé et testé localement, non déployé** | Qualifier le candidat exact et son retour arrière avant bascule ; validation propriétaire |
+| 2. Création native et rattachement principal | À réaliser | Transaction/reprise, unicité, une école, profil, doublons et échecs, sans fallback d'une identité gérée |
+| 3. Premier accès | À réaliser | Remise confidentielle, URL canonique, secret à usage limité, choix du mot de passe et arrivée dans la bonne école |
+| 4. Récupération | À réaliser | Courriel/code selon canal disponible, expiration, usage unique, rate-limit, révocation et messages génériques |
+| 5. Communication conservée et raccordée | Liens préservés dans lot 1 ; intégration non qualifiée | SMS/courriel/WhatsApp sans perte de configuration/fonction, essais contrôlés, aucun faux statut de livraison |
+| 6. Recette globale et livraison | À réaliser | PostgreSQL/HTTP réels fictifs, rôles et écoles, pannes/reprises, bureau/mobile, image exacte et validation humaine |
+
+## Lot 1 — réalisé localement
+
+- `plateforme-prodeli.php` : seul le GET sans paramètres d'un acteur global redirige vers l'accueil existant `/schoolsafe-administrators.php?home=1`. POST et liens anciens paramétrés continuent vers `admin-console.php` ; console scolaire conservée. Chargement préalable `Warehouse.php` en `require_once`.
+- `Wizard.php` : retire le menu central de l'en-tête ; conserve marque originale, déconnexion, lancement JASPE et retour au tableau de bord depuis les sous-écrans. Ajoute un bloc de commandes de communication réservé au global vers les pages SMS/WhatsApp existantes et la configuration scolaire courriel. La destination courriel reste soumise aux droits existants : pas un nouveau formulaire SMTP ni un accès automatique aux secrets.
+- Console native accessible dans un détail « Opérations administratives existantes » : pas de suppression de commandes ni de registre concurrent.
+- `central-ui.css` : disposition simple et focus clavier des commandes, réutilisant la palette existante ; version CSS 14 pour invalidation du cache. Le JS existant continue à fonctionner sans dépendre de l'ancien menu.
+- Aucun changement de moteur de compte, fournisseur, base, OTP ou communication dans ce sous-lot. Les pages annexes SMS/WhatsApp conservent encore leur présentation : leur harmonisation n'est pas annoncée terminée.
+
+## Preuves locales
+
+- `scripts/prodeli-dashboard-contracts.php` : **5 PASS/7 FAIL avant → 12 PASS après**, renderer PHP réel, DB et permissions substituées ; certaines assertions sur les routes sont statiques, pas une preuve d'exécution des POST historiques.
+- 16 contrats de présentation des comptes PASS ; deux lints PHP et `git diff --check` PASS.
+- Cinq groupes navigateur PHP/PostgreSQL fictif PASS : redirection de l'entrée globale, absence de menu, logo, liens, retour, largeur 1280/390 ; GET des pages SMS, WhatsApp et console native 200. Aucune action d'envoi ni mutation métier.
+- Six groupes de régression présentation des administrateurs PASS (trois comptes synthétiques nettoyés), incluant refus 403 de vue centrale pour acteur scolaire.
+- QA dans le web distinct `schoolsafe-prodeli-presentation-qa`, relay loopback 8096 ; réseau/base fictifs existants. Aperçu 8094 conservé. Base runtime en cache + copie source, **pas une image release exacte**.
+
+Preuves hors Git : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/dashboard-completion/` et scripts QA voisins. Aucun secret dans les documents ni messages réels envoyés.
+
+## Prochaine action exacte
+
+Relire les captures locales `dashboard-1280.png`/`dashboard-390.png`, compléter les contrats d'exécution de l'entrée (GET global/scoped et POST conservé), puis préparer le candidat exact du lot 1 et son retour arrière. Ne pas utiliser le garde `prodeli-presentation-scope.py` comme gate de ce nouveau lot : il limite volontairement la livraison précédente à quatre fichiers et refuserait les nouveaux changements. Mettre le plan/handoff à jour à chaque lot. Ne pas annoncer la création native, la récupération ou l'ensemble ProDéli terminés après les seuls tests d'accueil.

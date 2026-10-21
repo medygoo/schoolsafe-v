@@ -1,3 +1,7 @@
+## Priorité courante — achever ProDéli, mandat validé
+
+[Plan exécutable et résultats](../../qualification/PRODELI_COMPLETION.md). Un seul tableau de bord SchoolSafe sans nouveau menu, réemploi Rosario ; administrateur principal, accès initial, récupération et communication existante conservée (SMS quatre réseaux, courriel, WhatsApp). Lot 1 corrigé localement : entrée globale canonique et commandes de dashboard sans menu, 12 contrats/16 états/cinq groupes UI + six régressions PASS. Non déployé ; image exacte et branches d'entrée à qualifier. Puis lots fonctionnels de création/rattachement et récupération ; ne pas confondre ce périmètre avec la livraison précédente ci-dessous. Handoff courant prioritaire.
+
 ## 21 octobre 2026 — Présentation ProDéli livrée, validation humaine attendue
 
 Mandat direct de production reçu. Quatre fichiers isolés sans nouvelles mutations natives : populations scolaire/centrale, écoles/états/première connexion, suivi et navigation. Source `6e741ba8a289866dc443dc61bf4108a3ecb29672`, image `b45be4ea…`. 16 contrats + six groupes UI/HTTP/PG fictif ; image exacte vérifiée, 2 753 autres fichiers identiques. Production saine, 90 fichiers de session préservés, autres services inchangés. [Rapport](../../qualification/PRODELI_PRESENTATION_RELEASE_20261021.md). Prochaine action : validation connectée du propriétaire ; le grand lot local, concurrence/audit, fournisseur, logo et remise/récupération restent séparés. Lire le handoff courant, ne pas reprendre les anciennes consignes ci-dessous.

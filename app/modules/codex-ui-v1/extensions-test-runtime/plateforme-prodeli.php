@@ -25,4 +25,16 @@
 
 chdir( __DIR__ );
 
+require_once __DIR__ . '/Warehouse.php';
+
+// One dashboard for the global manager. Preserve all POST processing and
+// parameterized legacy links, and keep the native school-scoped console.
+if ( ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) === 'GET'
+    && empty( $_GET )
+    && SchoolSafeGlobalAdmin() )
+{
+    header( 'Location: /schoolsafe-administrators.php?home=1', true, 302 );
+    exit;
+}
+
 require_once __DIR__ . '/admin-console.php';

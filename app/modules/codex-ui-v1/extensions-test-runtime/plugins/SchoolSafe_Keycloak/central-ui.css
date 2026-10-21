@@ -4,6 +4,10 @@ body:has(.sskc-shell) #wrap{padding-top:0!important}
 body:has(.sskc-shell) #body{margin:0!important;padding:0!important;left:0!important;width:100%!important}
 .sskc-shell{--sskc-blue:#227ba3;color:#292929;max-width:1100px;margin:auto;padding:24px;line-height:1.55;box-sizing:border-box;width:100%}
 .sskc-top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:18px;border-bottom:1px solid #ccc;margin-bottom:24px}
+.sskc-session-tools,.sskc-dashboard-actions{display:flex;align-items:center;flex-wrap:wrap;gap:14px}
+.sskc-session-tools a{padding:10px 8px;text-decoration:none;font-size:14px;font-weight:600;border-radius:6px}
+.sskc-session-tools a:hover{background:#e4edfc;color:#124daf}
+.sskc-session-tools a:focus-visible,.sskc-dashboard-actions a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 .sskc-top strong{font-size:22px}.sskc-top nav{display:flex;gap:20px;flex-wrap:wrap}.sskc-shell a{color:#17658a;text-underline-offset:3px}
 .sskc-shell h1{font-size:28px;margin:20px 0 10px}.sskc-shell h2{font-size:22px;margin:28px 0 14px}.sskc-shell h3{font-size:18px}
 .sskc-shell p{max-width:76ch}.sskc-shell form{margin-block:16px}.sskc-shell label{display:block;margin-block:12px;font-weight:600}
