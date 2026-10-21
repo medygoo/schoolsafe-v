@@ -127,6 +127,11 @@ body:has(.sskc-shell) #ss-jaspe-dialog .ss-jaspe-unavailable[hidden]{display:non
 .sskc-home li strong,.sskc-home li span{display:block;overflow-wrap:anywhere}
 .sskc-school-directory li{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 0;border-top:1px solid #e0e8f3}
 .sskc-school-directory li:first-child{border-top:0}
+.sskc-school-directory li>div{min-width:0}
+.sskc-school-directory form{flex-shrink:0;margin:0}
+.sskc-school-directory button{font-size:14px}
+@media(max-width:520px){.sskc-school-directory li{align-items:stretch;flex-direction:column;gap:10px}.sskc-school-directory form,.sskc-school-directory button{width:100%}}
+@media print{#sskc-school-search,#sskc-school-search-status,.sskc-school-directory form{display:none!important}}
 .sskc-home li strong{font-size:16px;font-weight:600;color:#183b60}
 .sskc-home li span{font-size:13px;color:#456386;margin-top:4px}
 .sskc-home .sskc-status-label{flex-shrink:0;background:#dfebfb;color:#224f89;border-radius:5px;padding:5px 9px;font-size:12px;margin:0}

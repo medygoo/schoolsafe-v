@@ -1,3 +1,7 @@
+## Tableau de bord central — complément navigation en qualification
+
+Répertoire des établissements autorisés complet au lieu de huit lignes, recherche, ouverture par POST protégé puis `Side.php` natif, retour du portail scolaire vers ProDéli pour le global, comptes centraux directement accessibles sans nouveau menu. 20 contrats + huit groupes HTTP/PG fictif + 19 groupes de régression PASS ; cinq fichiers runtime, 14 composants protégés inchangés. [Rapport](../../qualification/PRODELI_NAVIGATION_RELEASE_20261021.md). Qualification image exacte/livraison ciblée en préparation. Ce complément ne clôture pas création/rattachement/premier accès/récupération. Keycloak reste en pause.
+
 ## Priorité du propriétaire — finir les réglages Communication
 
 Organisation Studio/messagerie Rosario, destinataires et répartition des notifications examinés et conservés ; Keycloak reste en pause. Finition de deux pages existantes SMS/WhatsApp et CSS dédiée, sans nouveau menu/fournisseur ni modification des handlers. 28 contrats, huit groupes HTTP/PG fictif, cinq régressions dashboard PASS. **DÉPLOYÉ** source `90f6238cfee03f81af19a0c3ff4f902f9c134c3e`, image `3daf00a1…` ; 56 contrats image exacte, 2 755 autres fichiers identiques, 169 sessions conservées, contrôle indépendant PASS. Configuration communication inchangée, pas d'envoi externe ni migration. Validation connectée propriétaire attendue ; [rapport et limites](../../qualification/PRODELI_COMMUNICATION_RELEASE_20261021.md). Ce sous-lot ne clôture pas les parcours de comptes ci-dessous.

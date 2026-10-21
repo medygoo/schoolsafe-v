@@ -12,9 +12,21 @@ function sskcUiStart(string $title): void
     $_REQUEST['modname']='Users/User.php';$_ROSARIO['page']='modules';Warehouse('header');
     $jaspeLink = !empty($RosarioModules['SchoolSafe_Jaspe']) && AllowUse('SchoolSafe_Jaspe/Assistant.php')
         ? '<a id="sskc-jaspe-launch" href="/Modules.php?modname=SchoolSafe_Jaspe/Assistant.php&amp;ss_companion=1" target="_self" aria-haspopup="dialog" aria-controls="ss-jaspe-dialog" aria-expanded="false">Écrire à JASPE</a>' : '';
-    echo '<link rel="stylesheet" href="/assets/themes/SchoolSafeCodex/menu-logo.css?v=shared-2"><link rel="stylesheet" href="/plugins/SchoolSafe_Keycloak/central-ui.css?v=14"><main class="sskc-shell" data-central-route="'.sskcEscape($route).'"><script src="/plugins/SchoolSafe_Keycloak/central-ui.js?v=14" defer></script><header class="sskc-top"><a class="sskc-brand" href="/schoolsafe-administrators.php?home=1" target="_self" aria-label="SchoolSafe — accueil central"><span class="sskc-emblem"><img class="ss-animated-brand" src="/schoolsafe-logo.png" alt="" width="66" height="72"></span><span><strong>SchoolSafe</strong><small>'.(SchoolSafeGlobalAdmin()?'ProDéli · Gestion centrale':'Votre école, en confiance.').'</small></span></a><div class="sskc-session-tools">'.(!isset($_GET['home'])?'<a href="/schoolsafe-administrators.php?home=1" target="_self">Retour au tableau de bord</a>':'').$jaspeLink.'<a href="/index.php?modfunc=logout" target="_self">Déconnexion</a></div></header><h1>'.sskcEscape($title).'</h1>';
+    echo '<link rel="stylesheet" href="/assets/themes/SchoolSafeCodex/menu-logo.css?v=shared-2"><link rel="stylesheet" href="/plugins/SchoolSafe_Keycloak/central-ui.css?v=15"><main class="sskc-shell" data-central-route="'.sskcEscape($route).'"><script src="/plugins/SchoolSafe_Keycloak/central-ui.js?v=15" defer></script><header class="sskc-top"><a class="sskc-brand" href="/schoolsafe-administrators.php?home=1" target="_self" aria-label="SchoolSafe — accueil central"><span class="sskc-emblem"><img class="ss-animated-brand" src="/schoolsafe-logo.png" alt="" width="66" height="72"></span><span><strong>SchoolSafe</strong><small>'.(SchoolSafeGlobalAdmin()?'ProDéli · Gestion centrale':'Votre école, en confiance.').'</small></span></a><div class="sskc-session-tools">'.(!isset($_GET['home'])?'<a href="/schoolsafe-administrators.php?home=1" target="_self">Retour au tableau de bord</a>':'').$jaspeLink.'<a href="/index.php?modfunc=logout" target="_self">Déconnexion</a></div></header><h1>'.sskcEscape($title).'</h1>';
 }
 function sskcUiEnd(): void {echo '</main>';Warehouse('footer');}
+/** Validate dashboard intent; Side.php remains the native school-switch authority. */
+function sskcDashboardSchoolTarget(): int
+{
+    sskcCsrf();
+    $school=$_POST['school']??null;
+    if(!sskcCanRead() || !is_string($school) || !preg_match('/^[1-9][0-9]{0,8}$/D',$school)
+        || !SchoolSafeSchoolAllowed($school)
+        || !DBGetOne('SELECT ID FROM schools WHERE ID='.(int)$school.' AND SYEAR='.(int)UserSyear())) {
+        throw new RuntimeException('Cette école ne relève pas de vos autorisations pour cette année.');
+    }
+    return (int)$school;
+}
 /** Central navigation never opens the school dashboard implicitly. */
 function sskcHomePage(): void
 {
@@ -42,9 +54,13 @@ function sskcHomePage(): void
     else echo '<p>La création d’un établissement est réservée aux gestionnaires autorisés. Vos accès actuels restent disponibles ci-dessous.</p>';
     echo '</div></section><div class="sskc-home-columns"><div class="sskc-home-main"><section class="sskc-home-section" aria-labelledby="sskc-schools-title"><div class="sskc-section-heading"><h2 id="sskc-schools-title">Vos établissements</h2><span>Année scolaire '.$year.'–'.($year+1).'</span></div>';
     if($schools){
-        echo '<ul class="sskc-school-directory">';$shown=0;
-        foreach($schools as $id=>$title){if(++$shown>8)break;echo '<li><div><strong>'.sskcEscape((string)$title).'</strong><span>'.($id===$current?'École sélectionnée':'Dans votre périmètre autorisé').'</span></div>'.($id===$current?'<span class="sskc-status-label">Sélectionnée</span>':'').'</li>';}
-        echo '</ul>';if(count($schools)>8)echo '<p>Les huit premiers établissements autorisés sont affichés.</p>';
+        echo '<label for="sskc-school-search">Rechercher un établissement<input type="search" id="sskc-school-search" autocomplete="off" placeholder="Nom de l’école" aria-controls="sskc-school-directory"></label><p id="sskc-school-search-status" class="sskc-muted" role="status">'.count($schools).' établissement(s) dans votre périmètre.</p><ul id="sskc-school-directory" class="sskc-school-directory">';
+        foreach($schools as $id=>$title){
+            echo '<li data-school-entry><div><strong data-school-title>'.sskcEscape((string)$title).'</strong><span>'.($id===$current?'École sélectionnée':'Dans votre périmètre autorisé').'</span></div><form target="_self" method="post" action="/schoolsafe-administrators.php?home=1">';
+            foreach(['token'=>(string)($_SESSION['token']??''),'action'=>'dashboard_school','school'=>(string)$id] as $key=>$value)sskcWizardHidden($key,$value);
+            echo '<button type="submit" aria-label="Ouvrir l’espace scolaire : '.sskcEscape((string)$title).'">Ouvrir l’école</button></form></li>';
+        }
+        echo '</ul><p id="sskc-school-search-empty" class="sskc-home-empty" hidden>Aucun établissement ne correspond à votre recherche.</p><p class="sskc-home-caption">L’ouverture utilise le changement d’école natif. Le serveur vérifie à nouveau vos autorisations ; aucun autre compte n’est créé.</p>';
     }else echo '<p class="sskc-home-empty">Aucun établissement accessible pour cette année. Un gestionnaire autorisé doit préparer votre école ou vérifier son attribution.</p>';
     echo '</section><section class="sskc-home-section" aria-labelledby="sskc-followup-title"><div class="sskc-section-heading"><h2 id="sskc-followup-title">Demandes à suivre</h2>';
     if(sskcOpeningCentral())echo '<a href="/schoolsafe-administrators.php?opening=1" target="_self">Voir les demandes</a>';
@@ -55,6 +71,7 @@ function sskcHomePage(): void
         echo '<ul class="sskc-home-followup">';foreach($pending as $request)echo '<li><strong>'.sskcEscape($request['SCHOOL_NAME']).'</strong><a class="sskc-row-action" target="_self" href="/schoolsafe-administrators.php?opening=1#sskc-request-'.(int)$request['ID'].'">Ouvrir le suivi</a><span>'.($request['STATE']==='requested'?'Demande à examiner':'Demande validée · rattachement à vérifier').'</span></li>';echo '</ul><p class="sskc-home-caption">Le suivi d’une demande ne confirme pas la première connexion de son responsable. Vérifiez le rattachement avant de recréer un établissement.</p>';
     }
     echo '</section></div><aside class="sskc-home-side" aria-label="Administrateurs et préparation"><section class="sskc-home-section"><h2>Administrateurs et accès</h2><p>Consultez les profils, les écoles attribuées et les actions autorisées pour chaque personne.</p><a class="sskc-action" href="/schoolsafe-administrators.php" target="_self">Gérer les administrateurs</a>';
+    if(SchoolSafeGlobalAdmin())echo '<p><a href="/schoolsafe-administrators.php?accounts=central" target="_self">Gérer les comptes de l’équipe centrale</a></p>';
     if($waiting){echo '<h3>Accès à accompagner</h3><ul class="sskc-access-followup">';foreach(array_slice($waiting,0,3) as $account)echo '<li><strong>'.sskcEscape(trim($account['FIRST_NAME'].' '.$account['LAST_NAME'])?:$account['USERNAME']).'</strong><a class="sskc-row-action" target="_self" href="/schoolsafe-administrators.php?accounts=1#sskc-account-'.(int)$account['STAFF_ID'].'">Gérer cet accès</a><span>'.sskcEscape($account['FOLLOWUP']).'</span></li>';echo '</ul>';if(count($waiting)>3)echo '<p class="sskc-home-caption">Autres comptes à consulter dans la gestion des administrateurs.</p>';}
     else echo '<p class="sskc-home-caption">Aucune première connexion en attente parmi les administrateurs scolaires actifs.</p>';
     echo '</section><section class="sskc-home-section sskc-home-preparation"><h2>Préparer le dossier</h2><p>Les six étapes sont remplies par le gestionnaire autorisé.</p><details><summary>Informations à réunir</summary><ul><li>Nom officiel, coordonnées et directeur de l’établissement.</li><li>E-mail officiel, devise et informations des documents.</li><li>Nom, e-mail personnel, identifiant et profil du responsable principal.</li><li>Logo et portrait, si disponibles : zoom, recadrage et redimensionnement dans le parcours.</li><li>Modèle scolaire et base de notation.</li></ul></details><p class="sskc-home-caption">Après création, le client reçoit son mot de passe temporaire, complète ses informations et choisit son mot de passe personnel.</p></section></aside></div>';

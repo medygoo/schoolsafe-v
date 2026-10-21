@@ -1,0 +1,13 @@
+**
+!Dockerfile
+!.dockerignore
+!payload/
+!payload/plugins/
+!payload/plugins/SchoolSafe_Keycloak/
+!payload/plugins/SchoolSafe_Keycloak/Wizard.php
+!payload/plugins/SchoolSafe_Keycloak/manage.php
+!payload/plugins/SchoolSafe_Keycloak/central-ui.js
+!payload/plugins/SchoolSafe_Keycloak/central-ui.css
+!payload/modules/
+!payload/modules/misc/
+!payload/modules/misc/Portal.php

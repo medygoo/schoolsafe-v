@@ -5,7 +5,7 @@
     if(!shell)return;
     const route=shell.dataset.centralRoute;
     if(!/^\/schoolsafe-administrators\.php(?:\?(?:home=1|opening=1|accounts=central|wizard=1&step=[1-6]))?$/.test(route))return;
-    const accountAnchor=/^#sskc-(?:account|request)-\d+$/.test(location.hash)?location.hash:'';
+    const accountAnchor=/^#sskc-(?:(?:account|request)-\d+|communications-title|schools-title|followup-title)$/.test(location.hash)?location.hash:'';
     const preserve=()=>{if(location.pathname+location.search!==route)history.replaceState(history.state,'',route+accountAnchor);};
     const ready=()=>setTimeout(preserve,0);
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();
@@ -65,6 +65,18 @@
         target.scrollIntoView({block:'start',behavior:'auto'});
         (target.querySelector('summary')||target).focus({preventScroll:true});
     }));
+    const schoolSearch=shell.querySelector('#sskc-school-search'),directory=shell.querySelector('#sskc-school-directory');
+    if(schoolSearch&&directory){
+        const rows=Array.from(directory.querySelectorAll('[data-school-entry]'));
+        const status=shell.querySelector('#sskc-school-search-status'),empty=shell.querySelector('#sskc-school-search-empty');
+        const normalizeSchool=text=>text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase();
+        schoolSearch.addEventListener('input',()=>{
+            const value=normalizeSchool(schoolSearch.value.trim());let visible=0;
+            rows.forEach(row=>{const match=normalizeSchool(row.querySelector('[data-school-title]').textContent).includes(value);row.hidden=!match;if(match)visible++;});
+            if(status)status.textContent=visible+' établissement(s) affiché(s) sur '+rows.length+'.';
+            if(empty)empty.hidden=visible!==0;
+        });
+    }
     const table=shell.querySelector('#sskc-accounts'),search=shell.querySelector('#sskc-account-search');
     if(table&&search){
         const headers=Array.from(table.querySelectorAll('thead th')).map(h=>h.textContent.trim());

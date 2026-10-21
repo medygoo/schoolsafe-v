@@ -11,6 +11,23 @@ if (empty($_SESSION['STAFF_ID'])) {header('Location: /index.php');exit;}
 if (!sskcCanRead()) {SchoolSafeScopeDeny();exit;}
 $showCentral=($_GET['accounts']??'')==='central';
 if($showCentral && !SchoolSafeGlobalAdmin()){SchoolSafeScopeDeny();exit;}
+if(($_SERVER['REQUEST_METHOD']??'')==='POST' && ($_POST['action']??'')==='dashboard_school') {
+    $level=ob_get_level();
+    try {
+        $dashboardSchool=sskcDashboardSchoolTarget();
+        // Only the validated school reaches the existing native controller.
+        // Never forward a client-supplied year, student, staff or module context.
+        $_REQUEST=['sidefunc'=>'update','school'=>(string)$dashboardSchool];
+        ob_start();require dirname(__DIR__,2).'/Side.php';ob_end_clean();
+        if((int)UserSchool()!==$dashboardSchool)throw new RuntimeException('Le changement d’école n’a pas été confirmé.');
+        header('Location: /Modules.php?modname=misc/Portal.php',true,303);exit;
+    } catch(Throwable $e) {
+        while(ob_get_level()>$level)ob_end_clean();
+        http_response_code(403);sskcUiStart('Ouverture de l’espace scolaire');
+        echo '<p role="alert">L’école n’a pas pu être ouverte. Rechargez le tableau de bord et vérifiez votre accès.</p><p><a href="/schoolsafe-administrators.php?home=1">Retour au tableau de bord</a></p>';
+        sskcUiEnd();exit;
+    }
+}
 if(isset($_GET['home'])) sskcHomePage();
 if(isset($_GET['wizard'])) sskcWizardPage();
 if(isset($_GET['opening'])) sskcOpeningPage();
