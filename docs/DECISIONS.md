@@ -1,3 +1,9 @@
+## 2026-10-21 — Mise à jour directe de production, présentation ProDéli isolée
+
+**VALIDÉE par le propriétaire :** travailler directement en production puis appliquer les dernières corrections, après abandon de la poursuite de la préproduction. Le produit reste SchoolSafe avec son logo original ; ProDéli est son espace central existant, pas une application parallèle. Livrer par lots ciblés avec sauvegarde et retour arrière, sans importer des mutations non qualifiées.
+
+**APPLIQUÉ :** sous-lot de quatre fichiers de présentation, source `6e741ba8a289866dc443dc61bf4108a3ecb29672`, image `b45be4ea…`. Gestion métier, comptes et schéma non modifiés ; contrôles techniques PASS et validation connectée du propriétaire attendue. Les autres travaux locaux restent distincts. [Rapport de livraison](qualification/PRODELI_PRESENTATION_RELEASE_20261021.md).
+
 ## 2026-10-18 — Un seul dépôt GitHub officiel : `medygoo/schoolsafe-v`
 
 Décision du propriétaire. Le dépôt actif `medygoo/schoolsafePRODELIFIN` est renommé `medygoo/schoolsafe-v` ; GitHub redirige l'ancienne URL et l'historique est intact (branche `main`, commit `d8bbcde` au moment du renommage). L'ancien `medygoo/schoolsafe-v` du 18 septembre devient `schoolsafe-v-legacy-20260918` et est archivé. Douze dépôts doublons sont archivés — lecture seule, historique conservé, réversible : `schoolsafe-stable`, `SchoolSafe-`, `Prodeli-`, `schoolsafemm`, `SchoolSafe1site`, `the-wise-school`, `schoolsafe-bolt-work`, `fiche`, `LOMELA_DENIS_FIN`, `medygoo-schoolsafe-V2`, `schoolsafev2-fin`, `Bolt`. Restent actifs volontairement : `Rosario-Schoolsafe` (base RosarioSIS 12.9.4), `schoolsafe-control-` (couche Control) et deux dépôts sans rapport produit. Toute mention de `schoolsafe-stable` ou `develop/codex-base` dans les mandats antérieurs est historique : ce dépôt est archivé, il ne doit plus servir de base de publication.

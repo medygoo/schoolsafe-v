@@ -1,3 +1,7 @@
+## 21 octobre 2026 — Présentation ProDéli livrée, validation humaine attendue
+
+Mandat direct de production reçu. Quatre fichiers isolés sans nouvelles mutations natives : populations scolaire/centrale, écoles/états/première connexion, suivi et navigation. Source `6e741ba8a289866dc443dc61bf4108a3ecb29672`, image `b45be4ea…`. 16 contrats + six groupes UI/HTTP/PG fictif ; image exacte vérifiée, 2 753 autres fichiers identiques. Production saine, 90 fichiers de session préservés, autres services inchangés. [Rapport](../../qualification/PRODELI_PRESENTATION_RELEASE_20261021.md). Prochaine action : validation connectée du propriétaire ; le grand lot local, concurrence/audit, fournisseur, logo et remise/récupération restent séparés. Lire le handoff courant, ne pas reprendre les anciennes consignes ci-dessous.
+
 ## Lot prioritaire du 28 septembre 2026 — Control → SchoolSafe
 
 Statut : implémentation et qualification locales terminées, publication en PR pour revue et CI GitHub. Base SchoolSafe 575ddb1, branche feat/control-admin-onboarding-v1. Auth/v7 additive, 139 scénarios PostgreSQL réels et sept étapes sans code maître. [Contrat](../../CONTROL_ADMIN_ONBOARDING_V1.md). Prochaine action : vérifier la CI du SHA final et revoir les PR ; aucun merge, VPS ou déploiement dans ce mandat. Les anciens ordres ci-dessous sont historiques.
