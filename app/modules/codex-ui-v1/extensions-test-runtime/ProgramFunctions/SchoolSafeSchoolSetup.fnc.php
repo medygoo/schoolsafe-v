@@ -444,6 +444,11 @@ function SchoolSafeDirectorProfileId()
  * @param int   $syear Année scolaire.
  * @param string $actor Compte à l'origine de la création.
  *
+ * Owns a PostgreSQL transaction; refuses an already open caller transaction.
+ * Account, leadership and success audit are committed together. An explicitly
+ * requested principal never replaces an existing principal. Controller must
+ * check actor permissions/CSRF before calling; no identity is linked here.
+ *
  * @return array ok, error, staff_id, username, temp_password, role.
  */
 function SchoolSafeCreateDirector( $input, $syear, $actor = '' )
@@ -472,78 +477,127 @@ function SchoolSafeCreateDirector( $input, $syear, $actor = '' )
 		return [ 'ok' => false, 'error' => 'USERNAME_INVALID' ];
 	}
 
-	if ( $email !== '' && ! filter_var( $email, FILTER_VALIDATE_EMAIL ) )
+	if ( mb_strlen( $email ) > 255
+		|| ( $email !== '' && ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) )
 	{
 		return [ 'ok' => false, 'error' => 'EMAIL_INVALID' ];
 	}
 
-	if ( $school_id < 1
-		|| ! DBGetOne( "SELECT 1 FROM schools
-			WHERE SYEAR='" . $syear . "' AND ID='" . $school_id . "'" ) )
+	// This operation owns its transaction. Never commit a caller's work or
+	// report success when the optional leadership/audit schema is unavailable.
+	// Authorization and CSRF remain the responsibility of the native controller.
+	global $db_connection, $DatabaseType;
+
+	if ( $DatabaseType !== 'postgresql' || ! isset( $db_connection )
+		|| pg_transaction_status( $db_connection ) !== PGSQL_TRANSACTION_IDLE )
 	{
-		return [ 'ok' => false, 'error' => 'SCHOOL_NOT_FOUND' ];
+		return [ 'ok' => false, 'error' => 'TRANSACTION_UNAVAILABLE' ];
 	}
 
-	$profile_id = SchoolSafeDirectorProfileId();
+	// db_query(false) avoids Rosario's terminating SQL error page, allowing
+	// rollback and a non-sensitive error result even after an INSERT fails.
+	$query = static function ( $sql ) {
+		$result = @db_query( $sql, false );
 
-	if ( $profile_id < 1 )
+		if ( $result === false )
+		{
+			throw new RuntimeException( 'ACCOUNT_NOT_CREATED' );
+		}
+
+		return $result;
+	};
+
+	$started = false;
+
+	try
 	{
-		return [ 'ok' => false, 'error' => 'DIRECTOR_PROFILE_MISSING' ];
+		$temp_password = SchoolSafeSetupTempPassword();
+		$password_hash = encrypt_password( $temp_password );
+
+		if ( ! is_string( $password_hash ) || $password_hash === '' )
+		{
+			throw new RuntimeException( 'ACCOUNT_NOT_CREATED' );
+		}
+
+		$query( 'BEGIN' );
+		$started = true;
+		$query( "SET LOCAL lock_timeout='5s'" );
+
+		// Real table locks also serialize native writers that do not participate
+		// in an advisory-lock convention (case-insensitive usernames included).
+		$query( 'LOCK TABLE staff, students, schoolsafe_school_leadership IN SHARE ROW EXCLUSIVE MODE' );
+		$schools = DBGet( $query( "SELECT ID FROM schools WHERE ID=" . $school_id
+			. " AND SYEAR=" . $syear . " FOR SHARE" ) );
+
+		if ( $school_id < 1 || ! $schools )
+		{
+			throw new RuntimeException( 'SCHOOL_NOT_FOUND' );
+		}
+
+		$profiles = DBGet( $query( "SELECT ID FROM user_profiles
+			WHERE TITLE='Directeur' AND PROFILE='admin' FOR SHARE" ) );
+
+		if ( count( $profiles ) !== 1 )
+		{
+			throw new RuntimeException( 'DIRECTOR_PROFILE_MISSING' );
+		}
+
+		$profile_id = (int) $profiles[1]['ID'];
+		$taken = DBGet( $query( "SELECT 1 FROM staff
+			WHERE LOWER(USERNAME)=LOWER('" . DBEscapeString( $username ) . "') AND SYEAR=" . $syear . "
+			UNION SELECT 1 FROM students WHERE LOWER(USERNAME)=LOWER('" . DBEscapeString( $username ) . "')" ) );
+
+		if ( $taken )
+		{
+			throw new RuntimeException( 'USERNAME_TAKEN' );
+		}
+
+		$existing = DBGet( $query( "SELECT STAFF_ID FROM schoolsafe_school_leadership
+			WHERE SCHOOL_ID=" . $school_id . " AND ROLE='principal'" ) );
+
+		if ( ! empty( $input['principal'] ) && $existing )
+		{
+			throw new RuntimeException( 'PRINCIPAL_EXISTS' );
+		}
+
+		$role = $existing ? 'adjoint' : 'principal';
+		$values = [
+			'SYEAR' => $syear, 'FIRST_NAME' => $first_name, 'LAST_NAME' => $last_name,
+			'USERNAME' => $username, 'PASSWORD' => $password_hash, 'EMAIL' => $email,
+			'PROFILE' => 'admin', 'PROFILE_ID' => $profile_id,
+			'SCHOOLS' => ',' . $school_id . ',', 'CURRENT_SCHOOL_ID' => $school_id,
+		];
+		// DBInsertSQL expects escaped values, not raw form data.
+		$values = array_map( 'DBEscapeString', $values );
+		$insert = rtrim( DBInsertSQL( 'staff', $values ), ';' ) . ' RETURNING STAFF_ID';
+		$created = DBGet( $query( $insert ) );
+		$staff_id = (int) ( $created[1]['STAFF_ID'] ?? 0 );
+
+		if ( $staff_id < 1 )
+		{
+			throw new RuntimeException( 'ACCOUNT_NOT_CREATED' );
+		}
+
+		// Do NOT call LeadershipSet: its replacement semantics demote a principal.
+		$query( "INSERT INTO schoolsafe_school_leadership (SCHOOL_ID,STAFF_ID,ROLE,CHANGED_BY)
+			VALUES (" . $school_id . "," . $staff_id . ",'" . $role . "','"
+			. DBEscapeString( mb_substr( (string) $actor, 0, 100 ) ) . "')" );
+		$query( "INSERT INTO schoolsafe_identity_audit (actor_staff_id,target_staff_id,action,result)
+			VALUES (" . (int) User( 'STAFF_ID' ) . "," . $staff_id . ",'create','success')" );
+		$query( 'COMMIT' );
+		$started = false;
 	}
-
-	$taken = DBGet( DBQuery( "SELECT 1 FROM staff
-		WHERE LOWER(USERNAME)='" . DBEscapeString( mb_strtolower( $username ) ) . "'
-		AND SYEAR='" . $syear . "'
-		UNION
-		SELECT 1 FROM students
-		WHERE LOWER(USERNAME)='" . DBEscapeString( mb_strtolower( $username ) ) . "'" ) );
-
-	if ( $taken )
+	catch ( Throwable $error )
 	{
-		return [ 'ok' => false, 'error' => 'USERNAME_TAKEN' ];
-	}
+		if ( $started )
+		{
+			@db_query( 'ROLLBACK', false );
+		}
 
-	$temp_password = SchoolSafeSetupTempPassword();
+		$code = $error->getMessage();
+		$allowed = [ 'SCHOOL_NOT_FOUND', 'DIRECTOR_PROFILE_MISSING', 'USERNAME_TAKEN', 'PRINCIPAL_EXISTS' ];
 
-	$staff_id = (int) DBInsert( 'staff', [
-		'SYEAR' => $syear,
-		'FIRST_NAME' => $first_name,
-		'LAST_NAME' => $last_name,
-		'USERNAME' => $username,
-		'PASSWORD' => encrypt_password( $temp_password ),
-		'EMAIL' => $email,
-		'PROFILE' => 'admin',
-		'PROFILE_ID' => $profile_id,
-		'SCHOOLS' => ',' . $school_id . ',',
-	], 'id' );
-
-	if ( $staff_id < 1 )
-	{
-		return [ 'ok' => false, 'error' => 'ACCOUNT_NOT_CREATED' ];
-	}
-
-	// Rôle de direction : principal si demandé, et d'office si l'école n'a
-	// encore aucun principal (une école ne peut pas rester sans direction).
-	$principal = ! empty( $input['principal'] );
-
-	if ( ! $principal
-		&& SchoolSafeLeadershipReady()
-		&& ! SchoolSafeLeadershipPrincipal( $school_id ) )
-	{
-		$principal = true;
-	}
-
-	$role = 'adjoint';
-
-	if ( $principal )
-	{
-		$role = SchoolSafeLeadershipSet( $school_id, $staff_id, 'principal', $actor )
-			? 'principal'
-			: 'adjoint';
-	}
-	elseif ( SchoolSafeLeadershipReady() )
-	{
-		SchoolSafeLeadershipSet( $school_id, $staff_id, 'adjoint', $actor );
+		return [ 'ok' => false, 'error' => in_array( $code, $allowed, true ) ? $code : 'ACCOUNT_NOT_CREATED' ];
 	}
 
 	return [
