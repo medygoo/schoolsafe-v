@@ -1,6 +1,6 @@
-## Tableau de bord central — complément navigation en qualification
+## Tableau de bord central — complément navigation livré
 
-Répertoire des établissements autorisés complet au lieu de huit lignes, recherche, ouverture par POST protégé puis `Side.php` natif, retour du portail scolaire vers ProDéli pour le global, comptes centraux directement accessibles sans nouveau menu. 20 contrats + huit groupes HTTP/PG fictif + 19 groupes de régression PASS ; cinq fichiers runtime, 14 composants protégés inchangés. [Rapport](../../qualification/PRODELI_NAVIGATION_RELEASE_20261021.md). Qualification image exacte/livraison ciblée en préparation. Ce complément ne clôture pas création/rattachement/premier accès/récupération. Keycloak reste en pause.
+Répertoire des établissements autorisés complet au lieu de huit lignes, recherche, ouverture par POST protégé puis `Side.php` natif, retour du portail scolaire vers ProDéli pour le global, comptes centraux directement accessibles sans nouveau menu. 20 contrats + huit groupes HTTP/PG fictif + 19 groupes de régression PASS ; cinq fichiers runtime, 14 composants protégés inchangés. [Rapport](../../qualification/PRODELI_NAVIGATION_RELEASE_20261021.md). **DÉPLOYÉ** source `3eb2e9e35984de9c40e22c571b212e727b13a2bb`, image `c8d10345…`. 76 contrats sur image exacte, 2 753 autres fichiers identiques, 163 sessions conservées ; contrôle indépendant PASS, aucun compte/école réel manipulé ni message externe. Validation connectée propriétaire attendue. Ce complément ne clôture pas création/rattachement/premier accès/récupération. Keycloak reste en pause.
 
 ## Priorité du propriétaire — finir les réglages Communication
 

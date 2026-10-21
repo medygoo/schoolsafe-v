@@ -45,6 +45,16 @@ Niveaux de preuve distincts : le renderer substitué ne remplace pas les parcour
 
 ## Livraison ciblée
 
-En préparation. Recette `ops/releases/prodeli-navigation-20261021/` : base immuable de la livraison Communication, allowlist cinq fichiers, comparaison complète et **76 contrats** attendus (16 comptes + 12 dashboard + 28 communication + 20 navigation), réseau none et aucune DB durant les tests d'image. Sources avant livraison, état Docker et sessions sauvegardés en privé ; préservation des autres services et retour arrière, pas de pull global/main.
+**DÉPLOYÉ et contrôle indépendant PASS.** Source `3eb2e9e35984de9c40e22c571b212e727b13a2bb`, image `sha256:c8d10345fc7018098c87bcb56551fc41f253dbe4f1d578a96733382c55afe45b`, tag `schoolsafe-rosario:prodeli-navigation-3eb2e9e35984`. `/opt/app-src` propre sur `deployed/prodeli-navigation-20261021`. Les commits documentaires suivants ne sont pas la source de l'image.
+
+Recette `ops/releases/prodeli-navigation-20261021/` : base immuable de la livraison Communication, allowlist cinq fichiers, comparaison complète contenu/mode/propriétaire : **2 753 autres fichiers identiques**, aucun ajout/suppression applicatif. **76 contrats PASS** (16 comptes + 12 dashboard + 28 communication + 20 navigation) et trois lints PHP PASS, réseau none et aucune DB durant les tests d'image. Sources avant livraison, état Docker et sessions sauvegardés en privé ; pas de pull global/main.
+
+**163 fichiers de session préservés** avec contrôle contenu/mode/propriétaire. Environnement/mounts/ports conservés, autres services mêmes identifiants et démarrages. Procédure **14,61 s**, pas une mesure exacte d'interruption. Aucune migration ni manipulation de compte/école réelle ; aucun envoi externe.
+
+Contrôle indépendant PASS : santé PHP, image/source propre, login public HTTPS 200, réglages SMS/WhatsApp refusés aux anonymes ; hashes des cinq sources servies, CSS public v15 et sauvegardes conformes. Empreintes privées de l'environnement, des lignes SMS, des sessions WhatsApp et des consentements identiques avant/après. Essai de changement d'école réel de production non effectué (pas de compte/école de test autorisé) ; le parcours est qualifié sur HTTP/PG fictifs, et la source/image servie est prouvée exacte.
+
+Répertoire privé VPS `/opt/schoolsafe-releases/prodeli-navigation-20261021`, sources sous `source-before/`. Ancien conteneur conservé `schoolsafe-rosario-pre-prodeli-navigation-20261021`, image précédente `3daf00a1…`. Retour arrière préparé **non exercé** : `python3 /opt/schoolsafe-releases/prodeli-navigation-20261021/deploy.py --rollback` ; sessions courantes transférées et anciennes neutralisées, gardes de données nouvelles, pas de restore DB. Les anciens rollbacks restent intacts.
+
+Preuves `prepare-proof.json`, `deployment-proof.json`, `independent-before.json`, `independent-proof.json`, `scope-proof.json`, `browser-result.json`, résultats de contrats et captures hors Git dans le répertoire local ci-dessous.
 
 Preuves privées : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/dashboard-navigation/`. QA 8096 et aperçu 8094 conservés, worktrees/WhatsApp/captures/rollbacks historiques intacts. Validation connectée humaine distincte de la livraison technique. CI sécurité RED et autres réserves historiques restent ouvertes.
