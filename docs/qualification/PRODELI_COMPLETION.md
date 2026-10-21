@@ -20,7 +20,7 @@ Communication : pages SMS/WhatsApp et routeurs déjà présents, à préserver. 
 | 2. Création native et rattachement principal | À réaliser | Transaction/reprise, unicité, une école, profil, doublons et échecs, sans fallback d'une identité gérée |
 | 3. Premier accès | À réaliser | Remise confidentielle, URL canonique, secret à usage limité, choix du mot de passe et arrivée dans la bonne école |
 | 4. Récupération | À réaliser | Courriel/code selon canal disponible, expiration, usage unique, rate-limit, révocation et messages génériques |
-| 5. Communication conservée et raccordée | Liens préservés dans lot 1 ; intégration non qualifiée | SMS/courriel/WhatsApp sans perte de configuration/fonction, essais contrôlés, aucun faux statut de livraison |
+| 5. Communication conservée et raccordée | Finition réglages qualifiée localement ; [rapport du sous-lot](PRODELI_COMMUNICATION_RELEASE_20261021.md), livraison en préparation. Organisation d'envoi inchangée | SMS/courriel/WhatsApp sans perte de configuration/fonction, essais contrôlés, aucun faux statut de livraison |
 | 6. Recette globale et livraison | À réaliser | PostgreSQL/HTTP réels fictifs, rôles et écoles, pannes/reprises, bureau/mobile, image exacte et validation humaine |
 
 ## Lot 1 — réalisé localement
@@ -45,6 +45,12 @@ Preuves hors Git : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/das
 
 [Rapport de livraison](PRODELI_DASHBOARD_RELEASE_20261021.md). Source `38856445143050895b6502c51be18285e9309042`, image `9177067d…`, 28 contrats sur image exacte, 2 754 autres fichiers identiques ; cinq cas d'entrée exécutés avec handlers substitués. 78 sessions transférées, production vérifiée indépendamment et autres services inchangés. Aucune migration ni action réelle de compte/message. Les lots 2 à 6 demeurent ouverts.
 
+## Priorité complémentaire du propriétaire — Communication
+
+Terminer d'abord le sous-lot de réglages SMS/WhatsApp, après examen du Studio natif, des fonctions métier, de Notify et du dispatcher. Le propriétaire confirme que la répartition des messages/notifications existe : elle n'est ni réécrite ni redistribuée. Keycloak reste en pause. Trois fichiers applicatifs (deux pages et CSS dédiée), handlers et huit composants protégés identiques ; 28 contrats + huit groupes HTTP/PG fictif + cinq régressions dashboard PASS. [Rapport](PRODELI_COMMUNICATION_RELEASE_20261021.md). Pas de test externe ni d'activation de ligne implicite.
+
 ## Prochaine action exacte
 
-Commencer le lot 2 avec la procédure native existante : préparation, POST final avec plugin désactivé, transaction compte/rattachement/audit/reprise et tests de première connexion. La table leadership absente exige une migration additive qualifiée avec sauvegarde/restauration ; ne pas changer globalement la politique de première connexion pour faire passer un test. Ne pas utiliser le garde `prodeli-presentation-scope.py` comme gate de ce nouveau lot : il limite volontairement la livraison précédente à quatre fichiers et refuserait les nouveaux changements. Mettre le plan/handoff à jour à chaque lot. Ne pas annoncer la création native, la récupération ou l'ensemble ProDéli terminés après les seuls tests d'accueil.
+Qualifier l'image exacte puis livrer le sous-lot Communication avec sauvegarde/rollback et vérification indépendante. Ensuite reprendre le lot 2, en conservant Keycloak en pause.
+
+Historique de la prochaine action précédente : commencer le lot 2 avec la procédure native existante : préparation, POST final avec plugin désactivé, transaction compte/rattachement/audit/reprise et tests de première connexion. La table leadership absente exige une migration additive qualifiée avec sauvegarde/restauration ; ne pas changer globalement la politique de première connexion pour faire passer un test. Ne pas utiliser le garde `prodeli-presentation-scope.py` comme gate de ce nouveau lot : il limite volontairement la livraison précédente à quatre fichiers et refuserait les nouveaux changements. Mettre le plan/handoff à jour à chaque lot. Ne pas annoncer la création native, la récupération ou l'ensemble ProDéli terminés après les seuls tests d'accueil.

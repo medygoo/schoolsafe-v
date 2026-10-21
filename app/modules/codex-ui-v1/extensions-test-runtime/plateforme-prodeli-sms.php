@@ -250,6 +250,14 @@ function SchoolSafeSmsHubStatusLabel( $status )
     return [ 'active' => 'Active', 'suspended' => 'Suspendue',
         'disabled' => 'Desactivee' ][ $status ] ?? $status;
 }
+// View selection only; mutations and routing above remain unchanged.
+$edit_line = [];
+$edit_id = (int) ( $_POST['line_id'] ?? $_GET['line'] ?? 0 );
+foreach ( (array) $lines as $line )
+{
+    if ( ! $edit_line || (int) $line['ID'] === $edit_id ) $edit_line = $line;
+    if ( (int) $line['ID'] === $edit_id ) break;
+}
 ?>
 <!doctype html>
 <html lang="fr">
@@ -257,11 +265,19 @@ function SchoolSafeSmsHubStatusLabel( $status )
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Gestion des SMS | PRODELI | SchoolSafe</title>
-<style>body{font-family:system-ui,sans-serif;max-width:60rem;margin:0 auto;padding:1rem}table{border-collapse:collapse;width:100%;margin:.5rem 0}th,td{border:1px solid #ccc;padding:.4rem;text-align:left;font-size:.9rem}form.inline{display:inline}.card{border:1px solid #ccc;border-radius:.5rem;padding:1rem;margin:1rem 0}label{display:block;margin:.4rem 0}input,select{max-width:100%}.ok{background:#e8f5e9;padding:.6rem;border-radius:.5rem}.ko{background:#fdecea;padding:.6rem;border-radius:.5rem}.warn{background:#fff8e1;padding:.6rem;border-radius:.5rem}.mut{color:#5b6b7b;font-size:.85rem}</style>
+<link rel="stylesheet" href="/plugins/SchoolSafe_Keycloak/central-ui.css?v=14">
+<link rel="stylesheet" href="/assets/css/prodeli-communication.css?v=1">
 </head>
 <body>
-<header><p><a href="/plateforme/prodeli">← PRODELI</a></p>
-<h1>Communications — Gestion des SMS</h1></header>
+<a class="ss-communication-skip" href="#communication-content">Aller aux réglages</a>
+<main class="sskc-shell ss-communication" id="communication-content">
+<header class="sskc-top">
+<a class="sskc-brand" href="/schoolsafe-administrators.php?home=1"><span class="sskc-emblem"><img src="/schoolsafe-logo.png" alt="SchoolSafe" width="66" height="72"></span><span><strong>SchoolSafe</strong><small>ProDéli · Communication</small></span></a>
+<a href="/schoolsafe-administrators.php?home=1#sskc-communications-title">Retour au tableau de bord</a>
+</header>
+<h1>Communication — SMS</h1>
+<p>Gérez les numéros des quatre réseaux et leurs réglages existants. Cette configuration ne change pas les destinataires ni les règles d’envoi des messages et notifications.</p>
+<p class="mut">Un numéro enregistré ne remplace pas la SIM : vérifiez aussi l’appareil SMSGate et son emplacement SIM. Aucune ligne n’est activée automatiquement.</p>
 <?php if ( $simulate ) : ?>
 <p class="warn" role="note">Mode simule (recette isolee) : aucun SMS reel ne part, quotas non consommes.</p>
 <?php endif; ?>
@@ -317,7 +333,7 @@ vers <?php echo htmlspecialchars( $preview['to'], ENT_QUOTES, 'UTF-8' ); ?> ?
 
 <section class="card" aria-labelledby="t-lines"><h2 id="t-lines">Lignes (4 emplacements)</h2>
 <p class="mut">Quota logiciel restant — jamais le solde officiel de l-operateur. Identifiants SMSGate : variables d-environnement serveur uniquement.</p>
-<table><thead><tr><th>Operateur</th><th>Numero</th><th>Appareil / SIM</th><th>Statut</th><th>Quota (reste/total)</th><th>Connexion</th><th>Actions</th></tr></thead><tbody>
+<div class="sskc-table" tabindex="0" role="region" aria-label="Lignes SMS"><table><thead><tr><th>Operateur</th><th>Numero</th><th>Appareil / SIM</th><th>Statut</th><th>Quota (reste/total)</th><th>Connexion</th><th>Actions</th></tr></thead><tbody>
 <?php foreach ( (array) $lines as $row ) : $l = $row; ?>
 <tr>
 <td><?php echo htmlspecialchars( (string) $l['OPERATOR'], ENT_QUOTES, 'UTF-8' ); ?></td>
@@ -328,6 +344,7 @@ vers <?php echo htmlspecialchars( $preview['to'], ENT_QUOTES, 'UTF-8' ); ?> ?
 <?php if ( (int) $l['LEFT_Q'] <= (int) $l['ALERT_THRESHOLD'] ) : ?><strong> (alerte)</strong><?php endif; ?></td>
 <td><?php echo htmlspecialchars( (string) $l['CONN_STATE'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td>
+<a href="/plateforme/prodeli/sms?line=<?php echo (int) $l['ID']; ?>#t-edit">Modifier <?php echo htmlspecialchars( (string) $l['OPERATOR'], ENT_QUOTES, 'UTF-8' ); ?></a>
 <form class="inline" method="post" action="/plateforme/prodeli/sms#t-lines">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( $token, ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="sms_action" value="line_status">
@@ -338,21 +355,20 @@ vers <?php echo htmlspecialchars( $preview['to'], ENT_QUOTES, 'UTF-8' ); ?> ?
 </td>
 </tr>
 <?php endforeach; ?>
-</tbody></table>
+</tbody></table></div>
 </section>
 
 <section class="card" aria-labelledby="t-edit"><h2 id="t-edit">Enregistrer / modifier une ligne</h2>
 <form method="post" action="/plateforme/prodeli/sms#t-edit">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( $token, ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="sms_action" value="line_save">
-<label>Ligne <select name="line_id"><?php foreach ( (array) $lines as $row ) : $l = $row; ?>
-<option value="<?php echo (int) $l['ID']; ?>"><?php echo htmlspecialchars( (string) $l['OPERATOR'], ENT_QUOTES, 'UTF-8' ); ?></option>
-<?php endforeach; ?></select></label>
-<label>Numero +243 <input name="phone" placeholder="+243…" required></label>
-<label>Appareil SMSGate (device id) <input name="device_id" maxlength="128"></label>
-<label>SIM <select name="sim_number"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
-<label>Quota logiciel total <input name="quota_total" inputmode="numeric" value="0" required></label>
-<label>Seuil d-alerte <input name="alert_threshold" inputmode="numeric" value="0" required></label>
+<p>Ligne : <strong><?php echo htmlspecialchars( (string) ( $edit_line['OPERATOR'] ?? 'Aucune ligne disponible' ), ENT_QUOTES, 'UTF-8' ); ?></strong>. Choisissez une autre ligne par son lien « Modifier » dans le tableau.</p>
+<input type="hidden" name="line_id" value="<?php echo (int) ( $edit_line['ID'] ?? 0 ); ?>">
+<label>Numero +243 <input name="phone" value="<?php echo htmlspecialchars( (string) ( $edit_line['PHONE_E164'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>" type="tel" placeholder="+243…" required></label>
+<label>Appareil SMSGate (device id) <input name="device_id" value="<?php echo htmlspecialchars( (string) ( $edit_line['DEVICE_ID'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>" maxlength="128"></label>
+<label>SIM <select name="sim_number"><?php for ( $sim = 1; $sim <= 4; $sim++ ) : ?><option<?php echo $sim === (int) ( $edit_line['SIM_NUMBER'] ?? 1 ) ? ' selected' : ''; ?>><?php echo $sim; ?></option><?php endfor; ?></select></label>
+<label>Quota logiciel total <input name="quota_total" inputmode="numeric" value="<?php echo (int) ( $edit_line['QUOTA_TOTAL'] ?? 0 ); ?>" required></label>
+<label>Seuil d-alerte <input name="alert_threshold" inputmode="numeric" value="<?php echo (int) ( $edit_line['ALERT_THRESHOLD'] ?? 0 ); ?>" required></label>
 <p><button type="submit">Verifier avant d-enregistrer</button></p>
 </form>
 </section>
@@ -382,7 +398,7 @@ vers <?php echo htmlspecialchars( $preview['to'], ENT_QUOTES, 'UTF-8' ); ?> ?
 </section>
 
 <section class="card" aria-labelledby="t-hist"><h2 id="t-hist">Envois (50 derniers)</h2>
-<table><thead><tr><th>#</th><th>Date</th><th>Ecole</th><th>Destinataire</th><th>Seg</th><th>Ligne</th><th>Statut</th><th>Erreur</th></tr></thead><tbody>
+<div class="sskc-table" tabindex="0" role="region" aria-label="Historique des SMS"><table><thead><tr><th>#</th><th>Date</th><th>Ecole</th><th>Destinataire</th><th>Seg</th><th>Ligne</th><th>Statut</th><th>Erreur</th></tr></thead><tbody>
 <?php foreach ( (array) $outbox as $row ) : $o = $row; ?>
 <tr><td><?php echo (int) $o['ID']; ?></td><td><?php echo htmlspecialchars( (string) $o['CREATED_AT'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo (int) $o['SCHOOL_ID']; ?></td>
@@ -391,11 +407,11 @@ vers <?php echo htmlspecialchars( $preview['to'], ENT_QUOTES, 'UTF-8' ); ?> ?
 <td><?php echo htmlspecialchars( (string) $o['STATUS'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( (string) $o['ERROR_CODE'], ENT_QUOTES, 'UTF-8' ); ?></td></tr>
 <?php endforeach; ?>
-</tbody></table>
+</tbody></table></div>
 </section>
 
 <section class="card" aria-labelledby="t-audit"><h2 id="t-audit">Journal d-audit (50 dernieres)</h2>
-<table><thead><tr><th>Date</th><th>Acteur</th><th>Action</th><th>Ligne</th><th>Detail</th></tr></thead><tbody>
+<div class="sskc-table" tabindex="0" role="region" aria-label="Journal des réglages SMS"><table><thead><tr><th>Date</th><th>Acteur</th><th>Action</th><th>Ligne</th><th>Detail</th></tr></thead><tbody>
 <?php foreach ( (array) $audit as $row ) : $a = $row; ?>
 <tr><td><?php echo htmlspecialchars( (string) $a['CREATED_AT'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( (string) $a['ACTOR'], ENT_QUOTES, 'UTF-8' ); ?></td>
@@ -403,7 +419,8 @@ vers <?php echo htmlspecialchars( $preview['to'], ENT_QUOTES, 'UTF-8' ); ?> ?
 <td><?php echo $a['LINE_ID'] !== null ? (int) $a['LINE_ID'] : '—'; ?></td>
 <td><?php echo htmlspecialchars( (string) $a['DETAIL'], ENT_QUOTES, 'UTF-8' ); ?></td></tr>
 <?php endforeach; ?>
-</tbody></table>
+</tbody></table></div>
 </section>
+</main>
 </body>
 </html>

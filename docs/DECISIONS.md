@@ -1,3 +1,7 @@
+## 2026-10-21 — Finition Communication : conserver l'organisation existante
+
+**VALIDÉ par le propriétaire :** le système de messages/notifications est déjà organisé ; examiner et conserver ses règles, destinataires et répartition des canaux. Terminer le lot de réglages SMS/WhatsApp dans le tableau de bord ProDéli existant, sans reconstruire le Studio, Brevo, les notifications ou les fournisseurs. Keycloak reste en pause. GO d'exécution et de livraison ciblée acquis. [Rapport et limites](qualification/PRODELI_COMMUNICATION_RELEASE_20261021.md).
+
 ## 2026-10-21 — Achèvement ProDéli validé
 
 **VALIDÉ :** tableau de bord unique sans nouveau menu, base/traitements Rosario et présentation SchoolSafe/logo original ; terminer école → administrateur principal → premier accès → récupération. Préserver toutes les fonctions de communication existantes, courriel, quatre réseaux SMS et WhatsApp ; ne pas les mettre en pause ni reconstruire leurs fournisseurs. Pas d'envoi externe d'essai sans destinataire autorisé. Exécution progressive avec preuves et livraison ciblée ; « terminé » exige un parcours complet, pas une interface seule. [Suivi courant](qualification/PRODELI_COMPLETION.md).

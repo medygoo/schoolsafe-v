@@ -240,6 +240,14 @@ function SchoolSafeWaHubStatusLabel( $status )
     return [ 'active' => 'Active', 'suspended' => 'Suspendue',
         'disabled' => 'Desactivee' ][ $status ] ?? $status;
 }
+// View selection only; mutations and routing above remain unchanged.
+$edit_session = [];
+$edit_id = (int) ( $_POST['session_id'] ?? $_GET['session'] ?? 0 );
+foreach ( (array) $sessions as $session )
+{
+    if ( ! $edit_session || (int) $session['ID'] === $edit_id ) $edit_session = $session;
+    if ( (int) $session['ID'] === $edit_id ) break;
+}
 ?>
 <!doctype html>
 <html lang="fr">
@@ -247,11 +255,19 @@ function SchoolSafeWaHubStatusLabel( $status )
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Gestion WhatsApp | PRODELI | SchoolSafe</title>
-<style>body{font-family:system-ui,sans-serif;max-width:60rem;margin:0 auto;padding:1rem}table{border-collapse:collapse;width:100%;margin:.5rem 0}th,td{border:1px solid #ccc;padding:.4rem;text-align:left;font-size:.9rem}form.inline{display:inline}.card{border:1px solid #ccc;border-radius:.5rem;padding:1rem;margin:1rem 0}label{display:block;margin:.4rem 0}input,select{max-width:100%}.ok{background:#e8f5e9;padding:.6rem;border-radius:.5rem}.ko{background:#fdecea;padding:.6rem;border-radius:.5rem}.warn{background:#fff8e1;padding:.6rem;border-radius:.5rem}.mut{color:#5b6b7b;font-size:.85rem}</style>
+<link rel="stylesheet" href="/plugins/SchoolSafe_Keycloak/central-ui.css?v=14">
+<link rel="stylesheet" href="/assets/css/prodeli-communication.css?v=1">
 </head>
 <body>
-<header><p><a href="/plateforme/prodeli">← PRODELI</a></p>
-<h1>Communications — Gestion WhatsApp</h1></header>
+<a class="ss-communication-skip" href="#communication-content">Aller aux réglages</a>
+<main class="sskc-shell ss-communication" id="communication-content">
+<header class="sskc-top">
+<a class="sskc-brand" href="/schoolsafe-administrators.php?home=1"><span class="sskc-emblem"><img src="/schoolsafe-logo.png" alt="SchoolSafe" width="66" height="72"></span><span><strong>SchoolSafe</strong><small>ProDéli · Communication</small></span></a>
+<a href="/schoolsafe-administrators.php?home=1#sskc-communications-title">Retour au tableau de bord</a>
+</header>
+<h1>Communication — WhatsApp</h1>
+<p>Gérez les numéros et sessions existants. Cette configuration ne change pas les destinataires ni les règles d’envoi des messages et notifications.</p>
+<p class="mut">Enregistrer un numéro ne connecte pas le compte WhatsApp. La session doit aussi être associée au bon compte auprès du moteur. Aucune session n’est activée automatiquement.</p>
 <p class="mut">WAHA = principal, Evolution = secours (bascule sur echec confirme uniquement, jamais en parallele). Sessions distinctes, jamais partagees. Cles : variables d-environnement serveur uniquement.</p>
 <?php if ( $simulate ) : ?>
 <p class="warn" role="note">Mode simule (recette isolee) : aucun message reel ne part.</p>
@@ -306,7 +322,7 @@ Envoyer un test WhatsApp vers <?php echo htmlspecialchars( $preview['to'], ENT_Q
 <?php endif; ?>
 
 <section class="card" aria-labelledby="t-sessions"><h2 id="t-sessions">Sessions (WAHA principal, Evolution secours)</h2>
-<table><thead><tr><th>Moteur</th><th>Session</th><th>Numero</th><th>Statut</th><th>Connexion</th><th>Actions</th></tr></thead><tbody>
+<div class="sskc-table" tabindex="0" role="region" aria-label="Sessions WhatsApp"><table><thead><tr><th>Moteur</th><th>Session</th><th>Numero</th><th>Statut</th><th>Connexion</th><th>Actions</th></tr></thead><tbody>
 <?php foreach ( (array) $sessions as $row ) : $s = $row; ?>
 <tr>
 <td><?php echo htmlspecialchars( (string) $s['ENGINE'], ENT_QUOTES, 'UTF-8' ); ?></td>
@@ -315,6 +331,7 @@ Envoyer un test WhatsApp vers <?php echo htmlspecialchars( $preview['to'], ENT_Q
 <td><?php echo htmlspecialchars( SchoolSafeWaHubStatusLabel( (string) $s['STATUS'] ), ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( (string) $s['CONN_STATE'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td>
+<a href="/plateforme/prodeli/whatsapp?session=<?php echo (int) $s['ID']; ?>#t-edit">Modifier <?php echo htmlspecialchars( (string) $s['ENGINE'], ENT_QUOTES, 'UTF-8' ); ?></a>
 <form class="inline" method="post" action="/plateforme/prodeli/whatsapp#t-sessions">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( $token, ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="wa_action" value="session_status">
@@ -325,18 +342,17 @@ Envoyer un test WhatsApp vers <?php echo htmlspecialchars( $preview['to'], ENT_Q
 </td>
 </tr>
 <?php endforeach; ?>
-</tbody></table>
+</tbody></table></div>
 </section>
 
 <section class="card" aria-labelledby="t-edit"><h2 id="t-edit">Enregistrer une session</h2>
 <form method="post" action="/plateforme/prodeli/whatsapp#t-edit">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( $token, ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="wa_action" value="session_save">
-<label>Session <select name="session_id"><?php foreach ( (array) $sessions as $row ) : $s = $row; ?>
-<option value="<?php echo (int) $s['ID']; ?>"><?php echo htmlspecialchars( (string) $s['ENGINE'], ENT_QUOTES, 'UTF-8' ); ?></option>
-<?php endforeach; ?></select></label>
-<label>Nom de session <input name="session_name" maxlength="128" required></label>
-<label>Numero +243 <input name="phone" placeholder="+243…" required></label>
+<p>Moteur : <strong><?php echo htmlspecialchars( (string) ( $edit_session['ENGINE'] ?? 'Aucune session disponible' ), ENT_QUOTES, 'UTF-8' ); ?></strong>. Choisissez l’autre session par son lien « Modifier » dans le tableau.</p>
+<input type="hidden" name="session_id" value="<?php echo (int) ( $edit_session['ID'] ?? 0 ); ?>">
+<label>Nom de session <input name="session_name" value="<?php echo htmlspecialchars( (string) ( $edit_session['SESSION_NAME'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>" maxlength="128" required></label>
+<label>Numero +243 <input name="phone" value="<?php echo htmlspecialchars( (string) ( $edit_session['PHONE_E164'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>" type="tel" placeholder="+243…" required></label>
 <p><button type="submit">Verifier avant d-enregistrer</button></p>
 </form>
 </section>
@@ -351,13 +367,13 @@ Envoyer un test WhatsApp vers <?php echo htmlspecialchars( $preview['to'], ENT_Q
 <label>Consentement <select name="consented"><option value="Y">Y (accepte)</option><option value="N">N (refuse)</option></select></label>
 <p><button type="submit">Verifier avant d-enregistrer</button></p>
 </form>
-<table><thead><tr><th>Ecole</th><th>Destinataire</th><th>Numero</th><th>Consentement</th></tr></thead><tbody>
+<div class="sskc-table" tabindex="0" role="region" aria-label="Consentements WhatsApp"><table><thead><tr><th>Ecole</th><th>Destinataire</th><th>Numero</th><th>Consentement</th></tr></thead><tbody>
 <?php foreach ( (array) $consents as $row ) : $k = $row; ?>
 <tr><td><?php echo (int) $k['SCHOOL_ID']; ?></td><td><?php echo (int) $k['STAFF_ID']; ?></td>
 <td><?php echo htmlspecialchars( (string) $k['PHONE_E164'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( (string) $k['CONSENTED'], ENT_QUOTES, 'UTF-8' ); ?></td></tr>
 <?php endforeach; ?>
-</tbody></table>
+</tbody></table></div>
 </section>
 
 <section class="card" aria-labelledby="t-test"><h2 id="t-test">Test d-envoi autorise</h2>
@@ -370,7 +386,7 @@ Envoyer un test WhatsApp vers <?php echo htmlspecialchars( $preview['to'], ENT_Q
 </section>
 
 <section class="card" aria-labelledby="t-hist"><h2 id="t-hist">Envois (50 derniers, par ecole)</h2>
-<table><thead><tr><th>#</th><th>Date</th><th>Ecole</th><th>Destinataire</th><th>Moteur</th><th>Statut</th><th>Erreur</th></tr></thead><tbody>
+<div class="sskc-table" tabindex="0" role="region" aria-label="Historique WhatsApp"><table><thead><tr><th>#</th><th>Date</th><th>Ecole</th><th>Destinataire</th><th>Moteur</th><th>Statut</th><th>Erreur</th></tr></thead><tbody>
 <?php foreach ( (array) $outbox as $row ) : $o = $row; ?>
 <tr><td><?php echo (int) $o['ID']; ?></td><td><?php echo htmlspecialchars( (string) $o['CREATED_AT'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo (int) $o['SCHOOL_ID']; ?></td>
@@ -379,11 +395,11 @@ Envoyer un test WhatsApp vers <?php echo htmlspecialchars( $preview['to'], ENT_Q
 <td><?php echo htmlspecialchars( (string) $o['STATUS'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( (string) $o['ERROR_CODE'], ENT_QUOTES, 'UTF-8' ); ?></td></tr>
 <?php endforeach; ?>
-</tbody></table>
+</tbody></table></div>
 </section>
 
 <section class="card" aria-labelledby="t-audit"><h2 id="t-audit">Journal d-audit (50 dernieres)</h2>
-<table><thead><tr><th>Date</th><th>Acteur</th><th>Action</th><th>Session</th><th>Detail</th></tr></thead><tbody>
+<div class="sskc-table" tabindex="0" role="region" aria-label="Journal des réglages WhatsApp"><table><thead><tr><th>Date</th><th>Acteur</th><th>Action</th><th>Session</th><th>Detail</th></tr></thead><tbody>
 <?php foreach ( (array) $audit as $row ) : $a = $row; ?>
 <tr><td><?php echo htmlspecialchars( (string) $a['CREATED_AT'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( (string) $a['ACTOR'], ENT_QUOTES, 'UTF-8' ); ?></td>
@@ -391,7 +407,8 @@ Envoyer un test WhatsApp vers <?php echo htmlspecialchars( $preview['to'], ENT_Q
 <td><?php echo $a['SESSION_ID'] !== null ? (int) $a['SESSION_ID'] : '—'; ?></td>
 <td><?php echo htmlspecialchars( (string) $a['DETAIL'], ENT_QUOTES, 'UTF-8' ); ?></td></tr>
 <?php endforeach; ?>
-</tbody></table>
+</tbody></table></div>
 </section>
+</main>
 </body>
 </html>

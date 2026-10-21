@@ -1,0 +1,9 @@
+**
+!Dockerfile
+!.dockerignore
+!payload/
+!payload/plateforme-prodeli-sms.php
+!payload/plateforme-prodeli-whatsapp.php
+!payload/assets/
+!payload/assets/css/
+!payload/assets/css/prodeli-communication.css
