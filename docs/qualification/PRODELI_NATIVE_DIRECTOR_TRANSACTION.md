@@ -1,4 +1,6 @@
-# ProDéli — procédure native de création et rattachement, sous-lot local
+# ProDéli — procédure native de création et rattachement, historique du sous-lot local
+
+**Mise à jour du 21 octobre :** ce document décrit la qualification historique à 29 contrôles du commit `42b9ae5`, pas l'état courant de livraison. Le raccord complet et le premier accès ont ensuite été qualifiés à 47 contrôles PG et dix groupes navigateur sur l'image exacte, puis **déployés** source `3670dad`, image `36a9e2fb…`, avec migrations 018/038 et contrôle indépendant PASS. Lire le [rapport courant](PRODELI_NATIVE_ACCESS_RELEASE_20261021.md) ; les « prochaines actions » et limites ci-dessous sont historiques.
 
 ## Statut
 

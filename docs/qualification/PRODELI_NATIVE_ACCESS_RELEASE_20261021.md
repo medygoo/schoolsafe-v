@@ -2,7 +2,7 @@
 
 ## Statut courant
 
-**Candidat local qualifié ; image exacte et livraison à effectuer.** Production toujours sur source `3eb2e9e35984de9c40e22c571b212e727b13a2bb`, image `c8d10345…` à la dernière inspection lecture seule. Ce rapport ne déclare pas la récupération ni tout ProDéli achevés.
+**DÉPLOYÉ ET VÉRIFIÉ INDÉPENDAMMENT — 21 octobre 2026.** Source application `3670dad176a4fe6932e69e87a481a5f205131543`, image `sha256:36a9e2fbc24159f25f65247cb516f84a43df49b410e35ee208ef3d25e3cf0c78`. Recette de déploiement complétée séparément au commit `0ab0690fe4a1178f27895c5304a95f5a841f705b` pour conserver le cache Chromium existant ; aucun changement de l'image qualifiée. Validation humaine connectée attendue. Ce rapport ne déclare pas la récupération ni tout ProDéli achevés.
 
 Base du travail : `42b9ae5`, branche `work/prodeli-completion-20261021`. Base de livraison immuable : source production `3eb2e9e`, pas main. Recette `ops/releases/prodeli-native-access-20261021/`.
 
@@ -19,7 +19,7 @@ Base du travail : `42b9ae5`, branche `work/prodeli-completion-20261021`. Base de
 
 ## Périmètre
 
-Dix fichiers runtime : FirstLogin, SchoolSetup, nouveau helper NativeOnboarding, Warehouse, index, CopySchool, Management, Wizard, manage et migration 038. Migration 018 existante inchangée, à appliquer en production où leadership est absente. Migration 038 additive pour les **nouveaux** comptes du parcours ; aucun compte existant ni réglage global modifié.
+Dix fichiers runtime : FirstLogin, SchoolSetup, nouveau helper NativeOnboarding, Warehouse, index, CopySchool, Management, Wizard, manage et migration 038. Migration 018 existante inchangée, appliquée en production avec 038 ; leadership était absente avant cette livraison. Migration 038 additive pour les **nouveaux** comptes du parcours ; aucun compte existant ni réglage global modifié.
 
 17 composants intégralement inchangés : connecteur Keycloak/functions et Opening, récupération et état des comptes, Studio/Notify/SMS/WhatsApp/Brevo/dispatch, Side, PasswordReset/compte-recuperation, pages de réglages Communication et JS/CSS centraux. Suffixe des handlers gérés de Management et corps historiques de l'assistant conservés. `scripts/prodeli-native-access-scope.py` vérifie cette limite contre la source déployée.
 
@@ -35,15 +35,24 @@ Dix fichiers runtime : FirstLogin, SchoolSetup, nouveau helper NativeOnboarding,
 
 Incidents de recette : nettoyage de l'école copiée initialement incomplet (dépendances `program_config` et `report_card_grade_scales`) ; dépendances vérifiées et nettoyage restreint aux IDs/titres fictifs rétabli. Écoles intermédiaires retirées. Précontrôle VPS initial incapable de déduire les credentials de `POSTGRES_USER` absent : corrigé en lecture de la configuration PHP effective, sans exposer de secret ni changer le service.
 
-Preuves privées : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/native-director/`. Copie sur QA 8096 : **pas encore image exacte**. Aperçu 8094 et anciens worktrees/rollbacks conservés.
+Preuves privées : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/native-director/`. La copie historique QA 8096 n'était pas l'image exacte. La recette finale ci-dessous l'a remplacée comme gate de livraison, sans modifier cette QA ni l'aperçu 8094. Anciens worktrees/rollbacks conservés.
 
-## Livraison et rollback à qualifier
+## Qualification sur l'image exacte et livraison
 
-Image basée strictement sur `c8d10345…`, dix chemins allowlistés ; build sans réseau, comparaison exhaustive et 92 contrats offline. Rejouer transactions/navigateur sur l'image exacte avec données fictives avant déploiement.
+- Build basé strictement sur `c8d10345…`, réseau désactivé : dix chemins allowlistés dont deux ajouts, **2 750 autres fichiers identiques**, contenu/mode/propriétaire comparés ; 92 contrats offline et lints PASS.
+- **47 contrôles PG et dix groupes navigateur rejoués sur l'image exacte** dans deux conteneurs éphémères VPS, PostgreSQL 17.11 entièrement fictif restauré depuis le dump de QA. Web en lecture seule, réseau interne sans port publié ni secret de production, navigateur par tunnel SSH loopback. Les dix groupes et leur nettoyage ont terminé en 184,9 s. Contrôle séparé : zéro compte/école `qa.native.*`, zéro schéma transactionnel et zéro ligne onboarding restant dans la QA. Conteneurs et réseau temporaires retirés ; aucune préproduction pérenne réinstallée.
+- Sauvegarde PostgreSQL **de production** complète de 641 830 octets, format custom, archive listée puis taille/empreinte/permissions 0600 revérifiées indépendamment. Elle reste sur le VPS privé ; **cette sauvegarde de production n'a pas été restaurée pour un essai**. La preuve de restauration réellement exécutée concerne la base fictive de 118 tables, pas les données de production.
+- Migrations additives 018/038 exécutées ensemble dans une transaction ; empreintes des six tables protégées identiques avant/après, aucun compte existant modifié, table de premier accès initialement vide.
+- Bascule en **15,31 s**, **120 fichiers de session préservés**, cache Chromium préservé avec vérification des octets/modes/propriétaires. Même environnement, montages, ports, réseau, redémarrage et options de conteneur ; ancien conteneur conservé arrêté.
+- Contrôle indépendant PASS : santé Docker, HTTPS/login 200, accès anonyme aux fonctions protégées refusé, dix sources servies et huit sauvegardes de source conformes, Git production propre sur la source prévue. Autres services inchangés en ID/date de démarrage ; quatre lignes SMS, deux sessions WhatsApp et consentements strictement identiques par empreinte. Zéro compte/école fictif en production, zéro ligne onboarding à l'inspection finale. Aucun essai sur compte/école réel ni envoi externe.
 
-Sauvegarde PostgreSQL privée complète avant les migrations. 018/038 exécutées ensemble dans une transaction ; aucune école/compte réel créé pour les tests de production. Conservation des sessions et des paramètres de conteneur, puis contrôle indépendant de santé/source/configuration communication.
+Incidents contenus : transfert complet d'image de 856 Mo trop lent, remplacé par QA éphémère sur l'image déjà présente. Les appels Docker distants répétés ont fait dépasser le délai navigateur pendant le nettoyage ; transport SSH direct, timeout par commande et nettoyage SQL groupé ont rétabli une exécution complète. Le premier précontrôle de livraison a refusé un cache d'impression Chromium apparu depuis la préparation : arrêt avant toute migration/bascule, ajout strict de ce seul préfixe temporaire à la recette, préservation vérifiée et contrat hors ligne prouvant que les autres dérives restent refusées. Pas de modification du code métier ou de suppression de cache pour contourner ces gates.
 
-**Retour arrière préparé, non exercé.** Aucun restore automatique ni DROP des tables additives. Dès qu'une ligne de premier accès existe, rollback ancien code **bloqué** : ce code ne contient pas la garde obligatoire et ne doit pas être remis en service en contournant le premier changement. Préserver le candidat et préparer un correctif compatible. Ne jamais vider la table pour contourner ce garde.
+Dossier VPS privé : `/opt/schoolsafe-releases/prodeli-native-access-20261021`. Preuves : `prepare-proof.json`, `exact-image-integration.json`, `exact-transactions.log`, `browser-result.json`, `exact-independent-cleanup.json`, `migration-proof.json`, `deployment-proof.json`, `independent-proof.json`.
+
+## Retour arrière
+
+**Préparé, non exercé.** Ancien conteneur `schoolsafe-rosario-pre-prodeli-native-access-20261021`, image `c8d10345…`, conservé arrêté. Commande : `python3 /opt/schoolsafe-releases/prodeli-native-access-20261021/deploy.py --rollback`. Aucun restore automatique ni DROP des tables additives. Dès qu'une ligne de premier accès existe, rollback ancien code **bloqué** : ce code ne contient pas la garde obligatoire et ne doit pas être remis en service en contournant le premier changement. Préserver le candidat et préparer un correctif compatible. Ne jamais vider la table pour contourner ce garde.
 
 ## Restant hors lot
 
