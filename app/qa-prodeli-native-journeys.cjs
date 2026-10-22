@@ -64,6 +64,7 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  assert.equal(sql(`SELECT count(*) FROM staff WHERE username=${quote(prefix+'.forbidden')}`),'0');
  assert.equal(sql(`SELECT password FROM staff WHERE staff_id=${adminId}`),hash,'Legacy central reset does not mutate the account');
  results.push('legacy console credentials cannot bypass guarded native handoff and personal activation');
+ await page.setViewportSize({width:390,height:844});
  await page.goto(base+'/schoolsafe-administrators.php?wizard=1');
  const steps=[{TITLE:prefix+' Wizard',SHORT_NAME:'QA Native'},{school_email:'school@example.invalid',school_slogan:'Fixture school'},
   {first_name:'Alice',last_name:'Wizard',username:prefix+'.wizard',email:'wizard@example.invalid'}, {},{REPORTING_GP_SCALE:'100'}];
@@ -71,8 +72,14 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
   for(const [key,value]of Object.entries(steps[i-1]))await page.locator('#'+key).fill(value);
   if(i===3)await page.locator('select[name="profile_id"]').selectOption('1');
   if(i===5)await page.locator('select[name="source"]').selectOption(String(source));
+  await page.getByRole('button',{name:'Enregistrer et continuer',exact:true}).waitFor({state:'visible'});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1,'Wizard mobile step '+i+' fits');
+  await page.screenshot({path:path.join(evidence,'central-wizard-step-'+i+'-390.png'),fullPage:true});
   await Promise.all([page.waitForURL(u=>u.searchParams.get('step')===String(i+1)),page.getByRole('button',{name:'Enregistrer et continuer',exact:true}).click()]);
  }
+ await page.getByRole('button',{name:'Confirmer la création de l’école',exact:true}).waitFor({state:'visible'});
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1,'Wizard mobile review fits');
+ await page.screenshot({path:path.join(evidence,'central-wizard-step-6-390.png'),fullPage:true});
  await page.getByRole('button',{name:'Confirmer la création de l’école',exact:true}).click();
  await page.getByRole('link',{name:'Continuer : préparer le compte principal',exact:true}).waitFor();
  assert.equal(await page.locator('.ss-native-workspace-header').count(),1,'Creation result retains the SchoolSafe workspace');
@@ -181,7 +188,9 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  results.push('unused legacy school administrator gets a real temporary credential, anti-CSRF/replay, and mandatory personal activation');
  await page.goto(base+'/schoolsafe-administrators.php');
  assert.equal(await page.locator('#sskc-account-'+legacyId+' input[value="native_temporary"]').count(),0);
- assert.ok((await page.locator('#sskc-account-'+legacyId).innerText()).includes('Aucun accès initial à préparer pour ce compte.'));
+ const completedHelp=page.locator('#sskc-account-'+legacyId+' .sskc-action-help');
+ await completedHelp.waitFor({state:'visible'});
+ assert.ok((await completedHelp.innerText()).includes('Aucun accès initial à préparer pour ce compte.'));
  assert.equal(await page.locator('#sskc-account-'+wizardId+' input[value="native_temporary"]').count(),0);
  results.push('completed school accounts are never reset through the initial-access preparation flow');
 }catch(error){failed=true;throw error;}finally{

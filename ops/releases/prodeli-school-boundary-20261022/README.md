@@ -8,7 +8,7 @@ Dix fichiers runtime du correctif `2267305`, base de production `8a969d5` / imag
 
 - Préparation d’image : `scripts/prodeli-school-boundary-image-qa.py prepare --evidence PRIVATE_DIR` ; source Git canonique uniquement, build sans réseau et image de base vérifiée.
 - 114 contrats PHP (nouvelle frontière remplaçant l’ancienne ouverture scolaire globale), 57 contrôles PG natifs/concurrence/rollback et 37 PG récupération/SMS. Migrations de tests canoniques hors web root, dans un schéma isolé supprimé.
-- Parcours sur le même ID d’image : 20 groupes natifs/activation/frontière, récupération/SMS et concurrence de reset. Ne pas lancer le vieux parcours workspace qui exige l’entrée des globaux dans les écoles : c’est précisément la politique retirée.
+- Parcours sur le même ID d’image : 20 groupes natifs/activation/frontière, récupération/SMS et concurrence de reset. Contrôle responsive `app/qa-prodeli-central-responsive.cjs` : huit écrans centraux à 1280/390/360 px, en-tête réellement visible, absence de débordement global, captures relues et cleanup. Les six étapes du wizard sont également traversées/capturées à 390 px par le parcours natif. Ne pas lancer le vieux parcours workspace qui exige l’entrée des globaux dans les écoles : c’est précisément la politique retirée.
 - QA sur réseau Docker interne sans ports publiés ni transport externe. Snapshot fictif étendu au suivi natif, directions, périodes et demandes d’ouverture ; contrôle des conteneurs production avant/après. Retirer uniquement les ressources QA portant le nonce de cette recette.
 
 ## Préparation et bascule

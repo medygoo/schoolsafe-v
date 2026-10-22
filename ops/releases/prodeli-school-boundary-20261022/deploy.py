@@ -71,6 +71,12 @@ def qualification(release):
     assert all(s['exit'] == 0 for s in result['suites'])
     for filename, groups in [('native-result.json',20)]:
         result = load(filename); assert result['status'] == 'PASS' and result['cleanup'] and len(result['results']) == groups
+    mobile = load('mobile-audit.json')
+    assert mobile['status'] == 'PASS' and mobile['image'] == release['image'] and mobile['cleanup']
+    assert len(mobile['results']) == 24 and {(x['key'],x['width']) for x in mobile['results']} == {
+        (key,width) for key in ['home','accounts','wizard','opening','console','sms','whatsapp','preferences']
+        for width in [1280,390,360]}
+    assert all(x['headingVisible'] and x['overflow'] <= 1 for x in mobile['results'])
     verify = load('image-verify-proof.json'); cleanup = load('image-cleanup-proof.json')
     assert verify['status'] == 'PASS' and verify['image'] == release['image'] and verify['fixture_snapshot_unchanged'] and verify['production_containers_unchanged']
     assert cleanup['status'] == 'REMOVED' and cleanup['only_owned_ephemeral_resources']
