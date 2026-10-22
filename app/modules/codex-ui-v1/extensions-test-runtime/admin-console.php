@@ -84,7 +84,8 @@ function SchoolSafeConsoleTarget( $staff_id, $syear, $scoped )
 		FROM staff WHERE STAFF_ID='" . (int) $staff_id . "'
 		AND SYEAR='" . (int) $syear . "'" ) );
 
-	if ( ! $target )
+	if ( ! $target || ( SchoolSafeGlobalAdmin()
+		&& ! in_array( $target[1]['PROFILE'], [ 'admin', 'none' ], true ) ) )
 	{
 		return false;
 	}
@@ -168,7 +169,11 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 	{
 		$action = $_POST['console_action'] ?? '';
 
-		if ( $action === 'create' && ! $schoolsafe_global_admin )
+		if ( $schoolsafe_global_admin && in_array( $action, [ 'create', 'school_director_create', 'reset' ], true ) )
+		{
+			$error = 'Préparez les accès initiaux dans « Administrateurs et accès ». Ce parcours remet une fiche confidentielle et oblige l’administrateur scolaire à choisir son mot de passe personnel. Aucun mot de passe modifié ici.';
+		}
+		elseif ( $action === 'create' && ! $schoolsafe_global_admin )
 		{
 			$error = "Seul le proprietaire de la plateforme peut creer un administrateur de plateforme. Creez vos comptes dans l'ecran Utilisateurs.";
 		}
@@ -549,7 +554,8 @@ $schoolsafe_filter_sql = $schoolsafe_filter_id > 0
 $accounts = DBGet( DBQuery( "SELECT s.STAFF_ID,s.USERNAME,s.FIRST_NAME,s.LAST_NAME,s.EMAIL,
 	s.PROFILE,s.PROFILE_ID,s.SCHOOLS,s.LAST_LOGIN
 	FROM staff s
-	WHERE s.SYEAR='" . $syear . "'" . $schoolsafe_scope_sql . $schoolsafe_filter_sql . "
+	WHERE s.SYEAR='" . $syear . "'" . $schoolsafe_scope_sql . $schoolsafe_filter_sql
+	. ( $schoolsafe_global_admin ? " AND s.PROFILE IN ('admin','none')" : '' ) . "
 	ORDER BY s.LAST_NAME,s.FIRST_NAME" ) );
 
 /**
@@ -765,14 +771,16 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 			<h1>SchoolSafe — Console d'administration</h1>
 			<p class="sub">Comptes administrateurs — annee scolaire <?php echo (int) $syear; ?></p>
 		</div>
-		<a href="Modules.php?modname=misc/Portal.php">&larr; Portail SchoolSafe</a>
+		<a href="<?php echo $schoolsafe_global_admin ? '/schoolsafe-administrators.php?home=1' : 'Modules.php?modname=misc/Portal.php'; ?>">&larr; <?php echo $schoolsafe_global_admin ? 'ProDéli' : 'Portail SchoolSafe'; ?></a>
 	</div>
 	<nav aria-label="Navigation SchoolSafe" style="margin:8px 0 16px;font-size:14px">
+<?php if ( ! $schoolsafe_global_admin ) : ?>
 		<a href="Modules.php?modname=misc/Portal.php" style="margin-right:12px">Portail</a>
 <?php foreach ( (array) $schools as $school_row ) : ?>
 		<a href="/ecoles/<?php echo (int) $school_row['ID']; ?>/utilisateurs" style="margin-right:12px">Utilisateurs — <?php echo htmlspecialchars( (string) $school_row['TITLE'], ENT_QUOTES, 'UTF-8' ); ?></a>
 		<a href="/ecoles/<?php echo (int) $school_row['ID']; ?>/profils" style="margin-right:12px">Profils — <?php echo htmlspecialchars( (string) $school_row['TITLE'], ENT_QUOTES, 'UTF-8' ); ?></a>
 <?php endforeach; ?>
+<?php endif; ?>
 		<a href="/plateforme/prodeli">PRODELI</a>
 <?php if ( $schoolsafe_global_admin ) : ?>
 		<a href="/plateforme/prodeli/sms" style="margin-right:12px">Communications — Gestion des SMS</a>
@@ -912,20 +920,27 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 				echo '<button type="submit" class="secondary"' . ( $is_self ? ' disabled' : '' ) . '>Deconnecter</button>';
 				echo '</form>';
 
-				// Nouveau mot de passe temporaire.
-				echo '<form method="post" style="display:inline-block">';
-				echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
-				echo '<input type="hidden" name="console_action" value="reset">';
-				echo '<input type="hidden" name="staff_id" value="' . (int) $account['STAFF_ID'] . '">';
-				echo '<button type="submit" class="secondary">Mot de passe</button>';
-				echo '</form>';
+				// Central access preparation uses the single guarded handoff/onboarding flow.
+				if ( $schoolsafe_global_admin )
+				{
+					echo '<a href="/schoolsafe-administrators.php#sskc-account-' . (int) $account['STAFF_ID'] . '">Administrateurs et accès</a>';
+				}
+				else
+				{
+					echo '<form method="post" style="display:inline-block">';
+					echo '<input type="hidden" name="console_token" value="' . htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ) . '">';
+					echo '<input type="hidden" name="console_action" value="reset">';
+					echo '<input type="hidden" name="staff_id" value="' . (int) $account['STAFF_ID'] . '">';
+					echo '<button type="submit" class="secondary">Mot de passe</button>';
+					echo '</form>';
+				}
 
 				echo '</td></tr>';
 			}
 			?>
 		</table>
 		</div>
-		<p class="mut">« Mot de passe » genere un mot de passe temporaire (affiche une seule fois) et deconnecte les sessions ouvertes : la personne choisira le sien a sa prochaine connexion.</p>
+		<p class="mut"><?php echo $schoolsafe_global_admin ? 'Les accès initiaux des administrateurs scolaires se préparent dans Administrateurs et accès : remise confidentielle, puis choix personnel obligatoire avant activation.' : '« Mot de passe » génère un mot de passe temporaire et déconnecte les sessions ouvertes.'; ?></p>
 	</div>
 
 	<?php if ( $schoolsafe_global_admin ) {

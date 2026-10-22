@@ -532,6 +532,7 @@ SchoolSafeAccountSessionGuard();
  */
 SchoolSafeSchoolSessionGuard();
 SchoolSafeNativeOnboardingGuard();
+SchoolSafeCentralRequestGuard();
 
 if ( mb_internal_encoding() !== 'UTF-8' )
 {

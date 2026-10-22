@@ -31,7 +31,19 @@ function sskcAccountPresentation(array $row): array
         $result['access']=count($states)>1?'Accès restreint selon l’école':$labels[$states[0]];
     }catch(Throwable $e){return $result;}
     if($managed && $row['STATE']==='onboarding')$result['onboarding']='Première connexion à terminer';
-    elseif(!$managed && empty($row['LAST_LOGIN']))$result['onboarding']='Première connexion à effectuer';
+    elseif(!$managed) {
+        $initial=function_exists('SchoolSafeNativeOnboardingRow') && !empty($row['STAFF_ID'])
+            ? SchoolSafeNativeOnboardingRow((int)$row['STAFF_ID'],(int)UserSyear()) : [];
+        if($initial && empty($initial['COMPLETED_AT'])) {
+            $result['onboarding']=($initial['VALID']??'f')==='t'
+                ? 'Mot de passe personnel à créer' : 'Accès initial expiré — à renouveler';
+            if($result['access']==='Actif')$result['access']='À activer';
+        } elseif(!$initial && empty($row['LAST_LOGIN'])) {
+            $result['onboarding']=is_array($scope)?'Accès initial à préparer':'Première connexion à effectuer';
+            if($result['access']==='Actif' && is_array($scope))$result['access']='À activer';
+        }
+    }
+    if($managed && $row['STATE']==='onboarding' && $result['access']==='Actif')$result['access']='À activer';
     return $result;
 }
 

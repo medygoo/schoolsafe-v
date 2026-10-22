@@ -47,6 +47,77 @@ function SchoolSafeGlobalAdmin()
     return User( 'PROFILE' ) === 'admin' && SchoolSafeScopeParse( User( 'SCHOOLS' ) ) === null;
 }
 
+/** Platform management is not a membership in any customer's school workspace.
+ * SchoolSafeSchoolAllowed remains the metadata/provisioning scope authority.
+ * School-scoped sessions still pass through their existing permissions/guards.
+ */
+function SchoolSafeCentralRequestAllowed( $script, array $request )
+{
+    if ( ! SchoolSafeGlobalAdmin() ) return true;
+    // Bottom's embedded print/help loader can include a native module even when
+    // reached through an otherwise central script: never let it bypass this gate.
+    if ( isset( $request['bottomfunc'] ) ) return false;
+    if ( $script === '/Modules.php' )
+    {
+        return isset( $request['modname'] ) && is_string( $request['modname'] )
+            && in_array( $request['modname'], [
+                'School_Setup/CopySchool.php', // Existing guarded preparation controller only.
+                'Users/Preferences.php', // The operator's own preferences, never a customer profile.
+            ], true );
+    }
+    if ( $script === '/Side.php' )
+    {
+        foreach ( [ 'sidefunc', 'side_student_id', 'side_staff_id', 'school', 'mp', 'period' ] as $key )
+            if ( isset( $request[$key] ) ) return false;
+        return true;
+    }
+    return in_array( $script, [
+        '/index.php', '/PasswordReset.php', '/compte-recuperation.php',
+        '/schoolsafe-administrators.php', '/admin-console.php', '/plateforme-prodeli.php',
+        '/plateforme-prodeli-sms.php', '/plateforme-prodeli-whatsapp.php',
+        '/plugins/SchoolSafe_Keycloak/manage.php', '/plugins/SchoolSafe_Keycloak/endpoint.php',
+    ], true );
+}
+
+/** Locale navigation must retain the central route, never the native module
+ * used internally to render its header. No secret or arbitrary query is copied.
+ */
+function SchoolSafeCentralLocaleUrl( $locale )
+{
+    $script = $_SERVER['SCRIPT_NAME'] ?? '';
+    if ( ! in_array( $script, [ '/schoolsafe-administrators.php', '/admin-console.php',
+        '/plateforme-prodeli-sms.php', '/plateforme-prodeli-whatsapp.php' ], true ) )
+    {
+        return '/schoolsafe-administrators.php?home=1&locale=' . rawurlencode( (string) $locale );
+    }
+    $query = [ 'locale' => (string) $locale ];
+    if ( $script === '/schoolsafe-administrators.php' )
+    {
+        foreach ( [ 'home', 'opening', 'wizard', 'step', 'accounts' ] as $key )
+        {
+            $value = $_GET[$key] ?? null;
+            if ( ! is_string( $value ) ) continue;
+            if ( $key === 'step' && preg_match( '/^[1-6]$/D', $value ) ) $query[$key] = $value;
+            elseif ( $key === 'accounts' && in_array( $value, [ 'central', '1' ], true ) ) $query[$key] = $value;
+            elseif ( in_array( $key, [ 'home', 'opening', 'wizard' ], true ) ) $query[$key] = '1';
+        }
+    }
+    return $script . '?' . http_build_query( $query );
+}
+
+/** One server boundary, before any authenticated school content or handler. */
+function SchoolSafeCentralRequestGuard()
+{
+    if ( SchoolSafeCentralRequestAllowed( $_SERVER['SCRIPT_NAME'] ?? '', $_REQUEST ) ) return;
+    http_response_code( 403 );
+    header( 'Cache-Control: no-store, private' );
+    echo '<!doctype html><html lang="fr"><meta charset="utf-8"><title>SchoolSafe — accès réservé</title>'
+        . '<h1>Espace réservé à l’établissement</h1><p>Connectez-vous avec le compte de son administrateur scolaire. '
+        . 'La gestion ProDéli ne permet pas d’entrer dans un espace client.</p>'
+        . '<p><a href="/schoolsafe-administrators.php?home=1">Retour à ProDéli</a></p></html>';
+    exit;
+}
+
 /**
  * Un profil nomme a portee d'ecole (Directeur, Comptable...) ne peut pas
  * exister sans ecole : SCHOOLS vide veut dire « toutes les ecoles », donc

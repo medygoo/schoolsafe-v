@@ -4,7 +4,7 @@ function SchoolSafeWorkspaceHeader(string $title, string $kind = 'school'): void
 {
     global $RosarioLocales;
     $global = SchoolSafeGlobalAdmin();
-    $central = $kind === 'central' && $global;
+    $central = $global;
     $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
     $home = $global ? '/schoolsafe-administrators.php?home=1' : '/Modules.php?modname=misc/Portal.php';
     echo '<link rel="stylesheet" href="/assets/themes/SchoolSafeCodex/menu-logo.css?v=shared-2">'
@@ -20,14 +20,12 @@ function SchoolSafeWorkspaceHeader(string $title, string $kind = 'school'): void
         foreach ($RosarioLocales as $locale) {
             $code = substr($locale, 0, 2);
             $label = $code === 'fr' ? 'Français' : ($code === 'en' ? 'English' : $code);
-            $url = PreparePHP_SELF([], ['locale','modfunc','token','action','_ROSARIO_PDF','LO_save'], ['locale'=>$locale]);
+            $url = $global ? SchoolSafeCentralLocaleUrl($locale)
+                : PreparePHP_SELF([], ['locale','modfunc','token','action','_ROSARIO_PDF','LO_save'], ['locale'=>$locale]);
             echo '<a href="'.$escape($url).'" hreflang="'.$escape($code).'" target="_self"'
                 . (($_SESSION['locale'] ?? '') === $locale ? ' aria-current="true"' : '') . '>'.$escape($label).'</a>';
         }
         echo '</span>';
-    }
-    if ($global && !$central) {
-        echo '<a href="/Modules.php?modname=misc/Portal.php" target="_self">Tableau de bord de l’école</a>';
     }
     echo '<a href="/index.php?modfunc=logout" target="_self">Déconnexion</a></nav></div>'
         . '<div class="ss-native-workspace-heading"><p>'

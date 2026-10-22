@@ -143,7 +143,7 @@ foreach((array)$rows as $row) {
         .sskcEscape(sskcAccountSchoolNames($row['SCHOOLS'],$schoolNames))
         .'</td><td>'.sskcEscape($presentation['access']).'<br><small>'.sskcEscape($presentation['connection']).'</small>'
         .($presentation['onboarding']!==''?'<br><small>'.sskcEscape($presentation['onboarding']).'</small>':'').'</td><td><div class="sskc-account-actions">';
-    echo '<a class="sskc-action sskc-action-secondary" target="_self" href="/Modules.php?modname=Users/User.php&amp;staff_id='.$id.'">Consulter la fiche</a>';
+    if(!SchoolSafeGlobalAdmin())echo '<a class="sskc-action sskc-action-secondary" target="_self" href="/Modules.php?modname=Users/User.php&amp;staff_id='.$id.'">Consulter la fiche</a>';
     $write=sskcCanWrite() && SchoolSafeProfileDelegable((string)$row['PROFILE_ID']) && (int)UserSyear()===(int)Config('SYEAR');
     if($write && $row['SUBJECT'] && $id!==(int)User('STAFF_ID')) {
         $actions=$row['STATE']==='suspended'?['resume'=>'Réactiver l’accès']:['temporary'=>'Mot de passe temporaire','suspend'=>'Suspendre l’accès'];
@@ -153,16 +153,19 @@ foreach((array)$rows as $row) {
     }
     if($write && !$row['SUBJECT'] && $row['PROFILE']==='admin') {
         $initial=SchoolSafeNativeOnboardingRow($id,(int)UserSyear());
-        if(SchoolSafeGlobalAdmin() && $id!==(int)User('STAFF_ID') && $initial && empty($initial['COMPLETED_AT']))
-            echo '<form target="_self" method="post" action="/schoolsafe-administrators.php"><input type="hidden" name="token" value="'.$csrf.'"><input type="hidden" name="staff_id" value="'.$id.'"><input type="hidden" name="action" value="native_temporary"><input type="submit" class="sskc-action-secondary" value="Renouveler l’accès initial natif"></form>';
-        echo '<form target="_self" method="post" action="/schoolsafe-administrators.php"><input type="hidden" name="token" value="'.$csrf
-            .'"><input type="hidden" name="staff_id" value="'.$id.'"><input type="hidden" name="action" value="link">'
-            .'<input type="submit" class="sskc-action-secondary" value="Configurer la connexion gérée"></form>';
+        if(SchoolSafeGlobalAdmin() && $id!==(int)User('STAFF_ID') && SchoolSafeNativeOnboardingCanPrepare($row,$initial))
+            echo '<form target="_self" method="post" action="/schoolsafe-administrators.php"><input type="hidden" name="token" value="'.$csrf.'"><input type="hidden" name="staff_id" value="'.$id.'"><input type="hidden" name="action" value="native_temporary"><input type="submit" class="sskc-action-secondary" value="'.($initial?'Renouveler l’accès initial natif':'Préparer l’accès initial natif').'"></form>';
+        // Native school access is prepared above; do not offer a paused provider
+        // as if it could generate the native temporary credential.
     }
     echo '</div><p class="sskc-action-help">';
-    if($id===(int)User('STAFF_ID'))echo 'Votre compte connecté : consultez votre fiche. Les opérations de suspension et de renouvellement de votre propre accès sont protégées.';
+    if($id===(int)User('STAFF_ID'))echo 'Votre compte connecté. Les opérations de suspension et de renouvellement de votre propre accès sont protégées.';
     elseif(!$write)echo 'Consultation disponible. Les modifications dépendent de votre profil et de l’année scolaire courante.';
-    elseif(!$row['SUBJECT'])echo 'Compte natif : l’absence de liaison au service d’identité ne signifie pas que son accès est inactif. La configuration d’une connexion gérée est une opération distincte.';
+    elseif(!$row['SUBJECT']) {
+        if(SchoolSafeGlobalAdmin() && SchoolSafeNativeOnboardingCanPrepare($row,SchoolSafeNativeOnboardingRow($id,(int)UserSyear())))
+            echo 'Accès natif : générez ou renouvelez l’accès initial ci-dessus, puis remettez la fiche confidentiellement. L’administrateur scolaire choisit lui-même son mot de passe personnel avant de pouvoir entrer dans son école.';
+        else echo 'Aucun accès initial à préparer pour ce compte. Un compte déjà activé conserve son mot de passe personnel ; en cas d’oubli, utilisez le parcours de récupération, sans réinitialisation depuis ProDéli.';
+    }
     elseif($row['STATE']==='suspended')echo 'Réactivez l’accès avant de préparer un nouveau mot de passe.';
     else echo 'Chaque opération affiche un récapitulatif avant confirmation.';
     echo '</p></td></tr>';

@@ -114,8 +114,20 @@ function SchoolSafeNativeOnboardingComplete( $password )
     }
 }
 
-/** Renew ONLY an uncompleted native first access. Controller checks rights/CSRF.
- * Password, generation and audit change together; old pending sessions expire.
+/** Pending access, or a legacy single-school administrator never connected.
+ * A completed/previously connected legacy account is never reset through this flow.
+ */
+function SchoolSafeNativeOnboardingCanPrepare( array $staff, array $initial )
+{
+    $scope = SchoolSafeScopeParse( $staff['SCHOOLS'] ?? null );
+    return ( $staff['PROFILE'] ?? '' ) === 'admin' && empty( $staff['SUBJECT'] )
+        && is_array( $scope ) && count( $scope ) === 1
+        && ( $initial ? empty( $initial['COMPLETED_AT'] ) : empty( $staff['LAST_LOGIN'] ) );
+}
+
+/** Prepare an unused legacy access or renew an uncompleted native first access.
+ * Controller checks rights/CSRF. Password, generation and audit change together;
+ * old pending sessions expire. No existing account is enrolled automatically.
  */
 function SchoolSafeNativeOnboardingRenew( $staff_id, $syear, $actor )
 {
@@ -133,15 +145,27 @@ function SchoolSafeNativeOnboardingRenew( $staff_id, $syear, $actor )
         if ( ! is_string( $hash ) || $hash === '' ) return false;
         $query( 'BEGIN' ); $started = true;
         $query( "SET LOCAL lock_timeout='5s'" );
-        $rows = DBGet( $query( 'SELECT o.completed_at,s.profile FROM schoolsafe_native_onboarding o
+        $fresh = false;
+        $rows = DBGet( $query( 'SELECT o.completed_at,s.profile,s.schools,s.last_login FROM schoolsafe_native_onboarding o
             JOIN staff s ON s.staff_id=o.staff_id AND s.syear=o.syear WHERE o.staff_id=' . $id
             . ' AND o.syear=' . $year . ' FOR UPDATE OF o,s' ) );
-        if ( ! $rows || ! empty( $rows[1]['COMPLETED_AT'] ) || $rows[1]['PROFILE'] !== 'admin'
+        if ( ! $rows )
+        {
+            $rows = DBGet( $query( 'SELECT profile,schools,last_login FROM staff WHERE staff_id=' . $id
+                . ' AND syear=' . $year . ' FOR UPDATE' ) );
+            if ( ! $rows || ! SchoolSafeNativeOnboardingCanPrepare( $rows[1], [] )
+                || DBGet( $query( 'SELECT 1 FROM schoolsafe_native_onboarding WHERE staff_id=' . $id . ' AND syear=' . $year ) ) )
+                throw new RuntimeException( 'Not an unused legacy native access' );
+            $query( 'INSERT INTO schoolsafe_native_onboarding (staff_id,syear,created_by) VALUES ('
+                . $id . ',' . $year . ',' . (int) $actor . ')' );
+            $fresh = true;
+        }
+        if ( ! SchoolSafeNativeOnboardingCanPrepare( $rows[1], $fresh ? [] : $rows[1] )
             || DBGet( $query( 'SELECT 1 FROM schoolsafe_identity_links WHERE staff_id=' . $id ) ) )
             throw new RuntimeException( 'Not a pending native access' );
         $query( "UPDATE staff SET password='" . DBEscapeString( $hash ) . "' WHERE staff_id=" . $id . ' AND syear=' . $year );
-        $query( "UPDATE schoolsafe_native_onboarding SET generation=generation+1,
-            expires_at=CURRENT_TIMESTAMP+interval '24 hours' WHERE staff_id=" . $id . ' AND syear=' . $year );
+        $query( 'UPDATE schoolsafe_native_onboarding SET generation=' . ( $fresh ? 'generation' : 'generation+1' )
+            . ",expires_at=CURRENT_TIMESTAMP+interval '24 hours' WHERE staff_id=" . $id . ' AND syear=' . $year );
         $query( "INSERT INTO schoolsafe_identity_audit(actor_staff_id,target_staff_id,action,result)
             VALUES (" . (int) $actor . ',' . $id . ",'temporary','success')" );
         $query( 'COMMIT' ); $started = false;

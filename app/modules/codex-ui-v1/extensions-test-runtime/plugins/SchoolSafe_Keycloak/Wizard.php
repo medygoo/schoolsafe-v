@@ -19,6 +19,7 @@ function sskcUiEnd(): void {echo '</main>';Warehouse('footer');}
 function sskcDashboardSchoolTarget(): int
 {
     sskcCsrf();
+    if(SchoolSafeGlobalAdmin())throw new RuntimeException('ProDéli ne permet pas d’entrer dans un espace scolaire client.');
     $school=$_POST['school']??null;
     if(!sskcCanRead() || !is_string($school) || !preg_match('/^[1-9][0-9]{0,8}$/D',$school)
         || !SchoolSafeSchoolAllowed($school)
@@ -39,7 +40,7 @@ function sskcHomePage(): void
     foreach((array)$accounts as $account) {
         if(!SchoolSafeStaffWithinScope((int)$account['STAFF_ID']) || !is_array(SchoolSafeScopeParse($account['SCHOOLS'])))continue;
         $presentation=sskcAccountPresentation($account);
-        if($presentation['access']==='Actif' && $presentation['onboarding']!=='')$waiting[]=$account+['FOLLOWUP'=>$presentation['onboarding']];
+        if(in_array($presentation['access'],['Actif','À activer'],true) && $presentation['onboarding']!=='')$waiting[]=$account+['FOLLOWUP'=>$presentation['onboarding']];
     }
     $pending=[];
     if(sskcOpeningCentral())$pending=(array)DBGet("SELECT ID,SCHOOL_NAME,STATE FROM schoolsafe_opening_requests WHERE SYEAR=".$year." AND STATE IN ('requested','approved') ORDER BY ID LIMIT 5");
@@ -60,11 +61,15 @@ function sskcHomePage(): void
     if($schools){
         echo '<label for="sskc-school-search">Rechercher un établissement<input type="search" id="sskc-school-search" autocomplete="off" placeholder="Nom de l’école" aria-controls="sskc-school-directory"></label><p id="sskc-school-search-status" class="sskc-muted" role="status">'.count($schools).' établissement(s) dans votre périmètre.</p><ul id="sskc-school-directory" class="sskc-school-directory">';
         foreach($schools as $id=>$title){
-            echo '<li data-school-entry><div><strong data-school-title>'.sskcEscape((string)$title).'</strong><span>'.($id===$current?'École sélectionnée':'Dans votre périmètre autorisé').'</span></div><form target="_self" method="post" action="/schoolsafe-administrators.php?home=1">';
-            foreach(['token'=>(string)($_SESSION['token']??''),'action'=>'dashboard_school','school'=>(string)$id] as $key=>$value)sskcWizardHidden($key,$value);
-            echo '<button type="submit" aria-label="Ouvrir l’espace scolaire : '.sskcEscape((string)$title).'">Ouvrir l’école</button></form></li>';
+            echo '<li data-school-entry><div><strong data-school-title>'.sskcEscape((string)$title).'</strong><span>'.(SchoolSafeGlobalAdmin()?'Espace réservé à son administrateur scolaire':($id===$current?'École sélectionnée':'Dans votre périmètre autorisé')).'</span></div>';
+            if(!SchoolSafeGlobalAdmin()) {
+                echo '<form target="_self" method="post" action="/schoolsafe-administrators.php?home=1">';
+                foreach(['token'=>(string)($_SESSION['token']??''),'action'=>'dashboard_school','school'=>(string)$id] as $key=>$value)sskcWizardHidden($key,$value);
+                echo '<button type="submit" aria-label="Ouvrir l’espace scolaire : '.sskcEscape((string)$title).'">Ouvrir l’école</button></form>';
+            }
+            echo '</li>';
         }
-        echo '</ul><p id="sskc-school-search-empty" class="sskc-home-empty" hidden>Aucun établissement ne correspond à votre recherche.</p><p class="sskc-home-caption">L’ouverture utilise le changement d’école natif. Le serveur vérifie à nouveau vos autorisations ; aucun autre compte n’est créé.</p>';
+        echo '</ul><p id="sskc-school-search-empty" class="sskc-home-empty" hidden>Aucun établissement ne correspond à votre recherche.</p><p class="sskc-home-caption">'.(SchoolSafeGlobalAdmin()?'ProDéli prépare les établissements et leurs accès. Chaque administrateur scolaire ouvre lui-même son école après avoir choisi son mot de passe personnel.':'L’ouverture utilise le changement d’école natif et vérifie à nouveau votre périmètre.').'</p>';
     }else echo '<p class="sskc-home-empty">Aucun établissement accessible pour cette année. Un gestionnaire autorisé doit préparer votre école ou vérifier son attribution.</p>';
     echo '</section><section class="sskc-home-section" aria-labelledby="sskc-followup-title"><div class="sskc-section-heading"><h2 id="sskc-followup-title">Demandes à suivre</h2>';
     if(sskcOpeningCentral())echo '<a href="/schoolsafe-administrators.php?opening=1" target="_self">Voir les demandes</a>';
@@ -79,8 +84,8 @@ function sskcHomePage(): void
     if($waiting){echo '<h3>Accès à accompagner</h3><ul class="sskc-access-followup">';foreach(array_slice($waiting,0,3) as $account)echo '<li><strong>'.sskcEscape(trim($account['FIRST_NAME'].' '.$account['LAST_NAME'])?:$account['USERNAME']).'</strong><a class="sskc-row-action" target="_self" href="/schoolsafe-administrators.php?accounts=1#sskc-account-'.(int)$account['STAFF_ID'].'">Gérer cet accès</a><span>'.sskcEscape($account['FOLLOWUP']).'</span></li>';echo '</ul>';if(count($waiting)>3)echo '<p class="sskc-home-caption">Autres comptes à consulter dans la gestion des administrateurs.</p>';}
     else echo '<p class="sskc-home-caption">Aucune première connexion en attente parmi les administrateurs scolaires actifs.</p>';
     echo '</section><section class="sskc-home-section sskc-home-preparation"><h2>Préparer le dossier</h2><p>Les six étapes sont remplies par le gestionnaire autorisé.</p><details><summary>Informations à réunir</summary><ul><li>Nom officiel, coordonnées et directeur de l’établissement.</li><li>E-mail officiel, devise et informations des documents.</li><li>Nom, e-mail personnel, identifiant et profil du responsable principal.</li><li>Logo et portrait, si disponibles : zoom, recadrage et redimensionnement dans le parcours.</li><li>Modèle scolaire et base de notation.</li></ul></details><p class="sskc-home-caption">Après création, le client reçoit son mot de passe temporaire, complète ses informations et choisit son mot de passe personnel.</p></section></aside></div>';
-    if(SchoolSafeGlobalAdmin())echo '<section class="sskc-home-section" aria-labelledby="sskc-communications-title"><h2 id="sskc-communications-title">Communication SchoolSafe</h2><p>Retrouvez les services existants et leurs réglages. Leur configuration reste réservée aux gestionnaires habilités ; ouvrir ces pages ne déclenche aucun envoi.</p><div class="sskc-dashboard-actions"><a class="sskc-action" target="_self" href="/plateforme/prodeli/sms">Configurer les quatre réseaux SMS</a><a class="sskc-action" target="_self" href="/plateforme/prodeli/whatsapp">Gérer WhatsApp</a><a class="sskc-action sskc-action-secondary" target="_self" href="/Modules.php?modname=School_Setup/Configuration.php">Configuration générale de l’école</a></div><details><summary>Opérations administratives existantes</summary><p>La console native conserve ses commandes de comptes et d’établissements. Leur utilisation reste soumise aux droits et confirmations existants.</p><a class="sskc-action sskc-action-secondary" target="_self" href="/admin-console.php">Ouvrir les opérations administratives</a></details></section>';
-    if(isset($schools[$current]))echo '<section class="sskc-school-entry sskc-home-school-entry"><div><h2>Espace scolaire</h2><p>École sélectionnée : <strong>'.sskcEscape((string)$schools[$current]).'</strong>.</p><p>Retrouvez ici la gestion quotidienne des élèves, du personnel et de la scolarité.</p></div><a class="sskc-action" target="_self" href="/Modules.php?modname=misc/Portal.php">Ouvrir le tableau de bord de cette école</a></section>';
+    if(SchoolSafeGlobalAdmin())echo '<section class="sskc-home-section" aria-labelledby="sskc-communications-title"><h2 id="sskc-communications-title">Communication SchoolSafe</h2><p>Retrouvez les services existants et leurs réglages. Leur configuration reste réservée aux gestionnaires habilités ; ouvrir ces pages ne déclenche aucun envoi.</p><div class="sskc-dashboard-actions"><a class="sskc-action" target="_self" href="/plateforme/prodeli/sms">Configurer les quatre réseaux SMS</a><a class="sskc-action" target="_self" href="/plateforme/prodeli/whatsapp">Gérer WhatsApp</a></div><details><summary>Opérations administratives existantes</summary><p>La console native conserve ses commandes de comptes et d’établissements. Leur utilisation reste soumise aux droits et confirmations existants.</p><a class="sskc-action sskc-action-secondary" target="_self" href="/admin-console.php">Ouvrir les opérations administratives</a></details></section>';
+    if(!SchoolSafeGlobalAdmin() && isset($schools[$current]))echo '<section class="sskc-school-entry sskc-home-school-entry"><div><h2>Espace scolaire</h2><p>École sélectionnée : <strong>'.sskcEscape((string)$schools[$current]).'</strong>.</p><p>Retrouvez ici la gestion quotidienne des élèves, du personnel et de la scolarité.</p></div><a class="sskc-action" target="_self" href="/Modules.php?modname=misc/Portal.php">Ouvrir le tableau de bord de cette école</a></section>';
     echo '</div>';sskcUiEnd();exit;
 }
 function sskcWizardAllowed(): bool
@@ -95,10 +100,11 @@ function sskcActionReview(string $action,int $id): void
     sskcCsrf();$row=sskcTarget($id,true);
     $labels=['native_temporary'=>'Renouveler l’accès initial natif','link'=>'Configurer la connexion gérée','temporary'=>'Préparer un mot de passe temporaire','suspend'=>'Suspendre l’accès','resume'=>'Réactiver l’accès'];
     if(!isset($labels[$action]))throw new RuntimeException('Action inconnue.');
+    if($action==='native_temporary' && !SchoolSafeNativeOnboardingRow($id,(int)UserSyear()))$labels[$action]='Préparer l’accès initial natif';
     if($action==='link' && ($row['PROFILE']!=='admin' || !empty($row['SUBJECT'])))throw new RuntimeException('Ce compte possède déjà une liaison ou ne peut pas être activé.');
-    if($action==='native_temporary' && (!SchoolSafeGlobalAdmin() || !empty($row['SUBJECT']) || $row['PROFILE']!=='admin'
-        || $id===(int)User('STAFF_ID') || !SchoolSafeNativeOnboardingRow($id,(int)UserSyear())
-        || !empty(SchoolSafeNativeOnboardingRow($id,(int)UserSyear())['COMPLETED_AT'])))throw new RuntimeException('Ce compte ne possède pas d’accès initial natif à renouveler.');
+    if($action==='native_temporary' && (!SchoolSafeGlobalAdmin() || $id===(int)User('STAFF_ID')
+        || !SchoolSafeNativeOnboardingCanPrepare($row,SchoolSafeNativeOnboardingRow($id,(int)UserSyear()))))
+        throw new RuntimeException('Ce compte ne peut pas recevoir un accès initial natif : vérifiez son état et sa première connexion.');
     if(!in_array($action,['link','native_temporary'],true) && (empty($row['SUBJECT']) || $id===(int)User('STAFF_ID')))throw new RuntimeException('Cette opération n’est pas disponible pour ce compte.');
     if($action==='native_temporary')$_SESSION['sskc_native_renew']=['id'=>bin2hex(random_bytes(24)),
         'staff'=>$id,'actor'=>(int)User('STAFF_ID'),'year'=>(int)UserSyear(),'expires'=>time()+600];

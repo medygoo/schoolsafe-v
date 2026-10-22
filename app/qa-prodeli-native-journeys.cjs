@@ -15,7 +15,7 @@ const sql=q=>dockerRun(['exec','-i',db,'psql','-X','-v','ON_ERROR_STOP=1','-U','
 assert.equal(dockerRun(['network','inspect',process.env.PRODELI_QA_NETWORK||'schoolcef-harmonization-local','--format','{{.Internal}}'],{encoding:'utf8'}).trim(),'true');
 const prefix='qa.native.'+Date.now(),manager=prefix+'.global',client=prefix+'.principal',password=crypto.randomBytes(16).toString('hex'),personal='Personal fixture '+crypto.randomBytes(40).toString('hex'),wizardPersonal='Wizard fixture '+crypto.randomBytes(40).toString('hex');
 const secrets=[password,personal,wizardPersonal],sanitize=value=>secrets.reduce((text,secret)=>text.replaceAll(secret,'[synthetic-secret]'),String(value));
-let school,wizardSchool,adminId,clientId,wizardId,browser,page,failed=false;const results=[];
+let school,wizardSchool,adminId,clientId,wizardId,legacyId,browser,page,failed=false;const results=[];
 async function healthy(p){assert.ok(!/DB Execute Failed|WE HAVE A PROBLEM, PLEASE CONTACT|Fatal error:|Uncaught (?:Error|Exception)/.test(await p.locator('body').innerText()),'Application content must render, not just return HTTP 200');}
 async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-photo-dashboard').waitFor();assert.equal(await p.locator('.ss-central-dashboard-return').count(),0);assert.equal(sql(`SELECT current_school_id FROM staff WHERE staff_id=${id}`),key==='wizard'?String(wizardSchool):String(school));for(const width of [1280,390]){await p.setViewportSize({width,height:900});assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1);await p.screenshot({path:path.join(evidence,key+'-school-'+width+'.png'),fullPage:true});}}
 (async()=>{try{
@@ -31,6 +31,39 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  const preview=await context.newPage();await preview.goto(base+'/index.php');await loginPresentation(preview,evidence);await preview.close();
  results.push('SchoolSafe public welcome/login desktop/mobile, native fields and eye control');
  page=await login(context,manager,password);
+ await page.goto(base+'/schoolsafe-administrators.php?home=1');
+ assert.equal(await page.locator('input[name="action"][value="dashboard_school"]').count(),0);
+ assert.equal(await page.locator('a[href*="modname=misc/Portal.php"]').count(),0);
+ for(const route of ['/Modules.php?modname=misc/Portal.php','/Modules.php?modname=Users/User.php&staff_id='+adminId,
+  '/Modules.php?modname=Students/Student.php','/Modules.php?modname=School_Setup/Configuration.php',
+  '/Modules.php?modname=Users/Profiles.php','/ecoles/'+source+'/utilisateurs','/ecoles/'+source+'/profils',
+  '/schoolsafe-administrators.php?bottomfunc=print&modname=Users/User.php','/admin-console.php?bottomfunc=help&modname=Students/Student.php',
+  '/Side.php?sidefunc=update&school='+school,'/Side.php?sidefunc=update&side_staff_id='+adminId]) {
+  assert.equal((await context.request.get(base+route,{maxRedirects:0})).status(),403,'Central boundary refuses '+route);
+ }
+ await page.goto(base+'/schoolsafe-administrators.php');
+ const unexpectedLinks=await page.locator('a[href*="modname=Users/User.php"]').evaluateAll(es=>es.filter(e=>new URL(e.href).pathname==='/Modules.php').map(e=>({label:e.textContent,parents:[e.parentElement,e.parentElement?.parentElement].filter(Boolean).map(p=>({tag:p.tagName,id:p.id,class:p.className}))})));
+ fs.writeFileSync(path.join(evidence,'central-link-diagnostic.json'),JSON.stringify(unexpectedLinks,null,2));
+ assert.equal(unexpectedLinks.length,0);
+ for(const retained of ['/Modules.php?modname=Users/Preferences.php','/plateforme/prodeli/sms','/plateforme/prodeli/whatsapp']) {
+  const response=await context.request.get(base+retained);assert.equal(response.status(),200,'Central operation retained '+retained);
+  assert.ok(!/DB Execute Failed|Fatal error:|Uncaught (?:Error|Exception)/.test(await response.text()));
+ }
+ const boundaryToken=await page.locator('#sskc-add-admin input[name="token"]').inputValue();
+ assert.equal((await context.request.post(base+'/schoolsafe-administrators.php?home=1',{form:{action:'dashboard_school',token:boundaryToken,school:String(school)}})).status(),403);
+ assert.equal(sql(`SELECT current_school_id FROM staff WHERE staff_id=${adminId}`),String(source));
+ results.push('ProDéli cannot enter school dashboards, profiles or school context through UI, direct routes or forged POST');
+ await page.goto(base+'/admin-console.php');
+ assert.equal(await page.locator('a[href^="/ecoles/"]').count(),0);
+ assert.equal(await page.locator('a[href*="modname=misc/Portal.php"]').count(),0);
+ const consoleToken=await page.locator('input[name="console_token"]').first().inputValue();
+ for(const action of ['create','school_director_create','reset']) {
+  const refused=await context.request.post(base+'/admin-console.php',{form:{console_token:consoleToken,console_action:action,staff_id:String(adminId),first_name:'QA',last_name:'Forbidden',username:prefix+'.forbidden',school_id:String(school),'school_ids[]':String(school)}});
+  assert.match(await refused.text(),/Aucun mot de passe modifié ici/);
+ }
+ assert.equal(sql(`SELECT count(*) FROM staff WHERE username=${quote(prefix+'.forbidden')}`),'0');
+ assert.equal(sql(`SELECT password FROM staff WHERE staff_id=${adminId}`),hash,'Legacy central reset does not mutate the account');
+ results.push('legacy console credentials cannot bypass guarded native handoff and personal activation');
  await page.goto(base+'/schoolsafe-administrators.php?wizard=1');
  const steps=[{TITLE:prefix+' Wizard',SHORT_NAME:'QA Native'},{school_email:'school@example.invalid',school_slogan:'Fixture school'},
   {first_name:'Alice',last_name:'Wizard',username:prefix+'.wizard',email:'wizard@example.invalid'}, {},{REPORTING_GP_SCALE:'100'}];
@@ -59,6 +92,12 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  const wizardTemporary=await page.locator('dd code').innerText();secrets.push(wizardTemporary);
  const wizardContext=await newContext();
  const wp=await login(wizardContext,prefix+'.wizard',wizardTemporary);await wp.locator('#first-login-form').waitFor();
+ // A recorded connection is not proof that the personal password was saved.
+ sql(`UPDATE staff SET last_login=CURRENT_TIMESTAMP WHERE staff_id=${wizardId} AND username=${quote(prefix+'.wizard')}`);
+ const pendingHtml=await (await context.request.get(base+'/schoolsafe-administrators.php')).text();
+ const pendingRow=pendingHtml.split('id="sskc-account-'+wizardId+'"')[1]?.split('</tr>')[0]||'';
+ assert.match(pendingRow,/À activer/);assert.match(pendingRow,/Mot de passe personnel à créer/);
+ results.push('temporary login does not activate the displayed school administrator account');
  // Keep the authenticated cookie jar, but stop page background requests before testing
  // the first expired request: the guard intentionally destroys the rejected session.
  await wp.close();
@@ -84,7 +123,11 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  await Promise.all([rp.waitForURL(u=>u.pathname==='/Modules.php'),rp.locator('#first-login-form input[type=submit],#first-login-form button[type=submit]').click()]);
  await schoolDashboard(rp,wizardId,'wizard');
  assert.equal(sql(`SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id=${wizardId} AND completed_at IS NOT NULL`),'1');
+ const activeHtml=await (await context.request.get(base+'/schoolsafe-administrators.php')).text();
+ const activeRow=activeHtml.split('id="sskc-account-'+wizardId+'"')[1]?.split('</tr>')[0]||'';
+ assert.match(activeRow,/>Actif</);assert.ok(!activeRow.includes('Mot de passe personnel à créer'));
  results.push('wizard-created principal completes first access through the actual form and reaches their own SchoolSafe dashboard');
+ results.push('school account becomes displayed active only after successful personal password completion');
  const wizardReconnect=await newContext();const wizardAgain=await login(wizardReconnect,prefix+'.wizard',wizardPersonal);await schoolDashboard(wizardAgain,wizardId,'wizard');
  results.push('wizard principal reconnects using a long personal password, not the temporary password or old session');
  await page.goto(base+'/schoolsafe-administrators.php');let token=await page.locator('#sskc-add-admin input[name="token"]').inputValue();
@@ -115,13 +158,39 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  await schoolDashboard(cp,clientId,'direct');results.push('directly-created school administrator reaches a complete SchoolSafe dashboard desktop/mobile');
  const reconnect=await newContext();const again=await login(reconnect,client,personal);await schoolDashboard(again,clientId,'direct');
  results.push('directly-created administrator reconnects through the native form with the personal passphrase');
+ legacyId=Number(sql(`INSERT INTO staff(syear,first_name,last_name,username,password,profile,profile_id,schools,current_school_id,last_login) VALUES(2026,'QA','Legacy',${quote(prefix+'.legacy')},${quote(hash)},'admin',1,${quote(','+school+',')},${school},NULL) RETURNING staff_id`));
+ assert.equal(sql(`SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id=${legacyId}`),'0');
+ await page.goto(base+'/schoolsafe-administrators.php');
+ await page.locator('#sskc-account-'+legacyId).getByRole('button',{name:'Préparer l’accès initial natif',exact:true}).click();
+ const legacyForm=page.locator('form').filter({has:page.locator('input[name="native_renew_nonce"]')});
+ const legacyPayload=await legacyForm.evaluate(form=>Object.fromEntries(new FormData(form)));
+ await context.request.post(base+'/schoolsafe-administrators.php',{form:{...legacyPayload,token:'invalid'}});
+ assert.equal(sql(`SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id=${legacyId}`),'0');
+ await page.getByRole('button',{name:'Confirmer : Préparer l’accès initial natif',exact:true}).click();await page.locator('dd code').waitFor();
+ const legacyTemporary=await page.locator('dd code').innerText();secrets.push(legacyTemporary);
+ assert.equal(sql(`SELECT generation FROM schoolsafe_native_onboarding WHERE staff_id=${legacyId}`),'1');
+ await context.request.post(base+'/schoolsafe-administrators.php',{form:legacyPayload});
+ assert.equal(sql(`SELECT generation FROM schoolsafe_native_onboarding WHERE staff_id=${legacyId}`),'1');
+ const legacyContext=await newContext();const lp=await login(legacyContext,prefix+'.legacy',legacyTemporary);await lp.locator('#first-login-form').waitFor();
+ assert.equal((await legacyContext.request.get(base+'/Modules.php?modname=misc/Portal.php',{maxRedirects:0})).status(),303);
+ const legacyPersonal='Legacy fixture '+crypto.randomBytes(30).toString('hex');secrets.push(legacyPersonal);
+ await lp.locator('input[name="first_login[PASSWORD]"]').fill(legacyPersonal);
+ await Promise.all([lp.waitForURL(u=>u.pathname==='/Modules.php'),lp.locator('#first-login-form input[type=submit],#first-login-form button[type=submit]').click()]);
+ await lp.locator('#ss-photo-dashboard').waitFor();
+ assert.equal(sql(`SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id=${legacyId} AND completed_at IS NOT NULL`),'1');
+ results.push('unused legacy school administrator gets a real temporary credential, anti-CSRF/replay, and mandatory personal activation');
+ await page.goto(base+'/schoolsafe-administrators.php');
+ assert.equal(await page.locator('#sskc-account-'+legacyId+' input[value="native_temporary"]').count(),0);
+ assert.ok((await page.locator('#sskc-account-'+legacyId).innerText()).includes('Aucun accès initial à préparer pour ce compte.'));
+ assert.equal(await page.locator('#sskc-account-'+wizardId+' input[value="native_temporary"]').count(),0);
+ results.push('completed school accounts are never reset through the initial-access preparation flow');
 }catch(error){failed=true;throw error;}finally{
  console.log(JSON.stringify({completedBeforeCleanup:results},null,2));
  if(failed&&browser){const p=browser.contexts().flatMap(c=>c.pages()).filter(p=>!p.isClosed()).at(-1);if(p&&!await p.locator('dd code').count())await p.screenshot({path:path.join(evidence,'failure.png'),fullPage:true}).catch(()=>{});}
  if(browser)await browser.close();
  const extra=sql(`SELECT staff_id FROM staff WHERE username=${quote(prefix+'.wizard')}`);if(extra)wizardId=Number(extra);
  const extraSchool=sql(`SELECT id FROM schools WHERE title=${quote(prefix+' Wizard')}`);if(extraSchool)wizardSchool=Number(extraSchool);
- const ids=[adminId,clientId,wizardId].filter(Number.isInteger);if(ids.length)sql(`BEGIN;DELETE FROM schoolsafe_account_state WHERE person_key LIKE ${quote(prefix+'%')};DELETE FROM schoolsafe_account_audit WHERE person_key LIKE ${quote(prefix+'%')};DELETE FROM access_log WHERE user_agent=${quote(prefix)} OR username LIKE ${quote(prefix+'%')};DELETE FROM schoolsafe_native_onboarding WHERE staff_id IN (${ids});DELETE FROM schoolsafe_identity_audit WHERE actor_staff_id IN (${ids}) OR target_staff_id IN (${ids});DELETE FROM schoolsafe_school_leadership WHERE staff_id IN (${ids});DELETE FROM staff WHERE staff_id IN (${ids}) AND username LIKE ${quote(prefix+'%')};COMMIT;`);
+ const ids=[adminId,clientId,wizardId,legacyId].filter(Number.isInteger);if(ids.length)sql(`BEGIN;DELETE FROM schoolsafe_account_state WHERE person_key LIKE ${quote(prefix+'%')};DELETE FROM schoolsafe_account_audit WHERE person_key LIKE ${quote(prefix+'%')};DELETE FROM access_log WHERE user_agent=${quote(prefix)} OR username LIKE ${quote(prefix+'%')};DELETE FROM schoolsafe_native_onboarding WHERE staff_id IN (${ids});DELETE FROM schoolsafe_identity_audit WHERE actor_staff_id IN (${ids}) OR target_staff_id IN (${ids});DELETE FROM schoolsafe_school_leadership WHERE staff_id IN (${ids});DELETE FROM staff WHERE staff_id IN (${ids}) AND username LIKE ${quote(prefix+'%')};COMMIT;`);
  for(const [id,title]of [[school,prefix+' School'],[wizardSchool,prefix+' Wizard']])if(Number.isInteger(id)){
   const tables=['program_user_config','program_config','config','school_marking_periods','school_periods','school_gradelevels','report_card_grades','report_card_grade_scales','report_card_comments','report_card_comment_categories','eligibility_activities','attendance_codes','attendance_code_categories','schoolsafe_school_state'];
   sql('BEGIN;'+`DELETE FROM schoolsafe_opening_requests WHERE school_id=${id};`+

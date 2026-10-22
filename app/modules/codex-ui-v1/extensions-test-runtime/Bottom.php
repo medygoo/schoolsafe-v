@@ -99,11 +99,10 @@ if ( empty( $_REQUEST['bottomfunc'] ) ) : ?>
 				$ss_label = $ss_code === 'fr' ? 'Français' : ( $ss_code === 'en' ? 'English' : $ss_code );
 				$ss_active = ( isset( $_SESSION['locale'] ) && $_SESSION['locale'] === $ss_locale ) ? ' is-active' : '';
 
-				echo '<a class="ss-lang-link' . $ss_active . '" href="' . URLEscape( PreparePHP_SELF(
-					[],
-					[ 'locale' ],
-					[ 'locale' => $ss_locale ]
-				) ) . '">' . $ss_label . '</a>';
+				echo '<a class="ss-lang-link' . $ss_active . '" href="' . URLEscape( SchoolSafeGlobalAdmin()
+					? SchoolSafeCentralLocaleUrl( $ss_locale )
+					: PreparePHP_SELF( [], [ 'locale' ], [ 'locale' => $ss_locale ] )
+				) . '">' . $ss_label . '</a>';
 			}
 
 			echo '</span>';

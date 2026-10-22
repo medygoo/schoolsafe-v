@@ -9,6 +9,20 @@
 
 require_once 'Warehouse.php';
 
+// A central operator never selects a customer school, child or staff context.
+if ( SchoolSafeGlobalAdmin() )
+{
+	if ( ! SchoolSafeCentralRequestAllowed( '/Side.php', $_REQUEST ) )
+	{
+		http_response_code( 403 );
+		echo 'Le changement de contexte scolaire est réservé aux comptes de l’établissement.';
+		return;
+	}
+	echo '<nav aria-label="Gestion centrale"><a href="/schoolsafe-administrators.php?home=1" target="_self">ProDéli</a> · '
+		. '<a href="/index.php?modfunc=logout" target="_self">Déconnexion</a></nav>';
+	return;
+}
+
 if ( ! function_exists( 'SideMarkingPeriodSelect' ) ) :
 /**
  * Marking Period Select Input

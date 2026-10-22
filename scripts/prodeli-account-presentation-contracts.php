@@ -13,7 +13,7 @@ $row=['USERNAME'=>'fixture.school','PROFILE'=>'admin','SCHOOLS'=>',2,','SUBJECT'
 $GLOBALS['ready']=true;$GLOBALS['throws']=false;$GLOBALS['states']=[['school_id'=>2,'state'=>'active']];
 check('native connected account is active, not awaiting identity link',fn()=>same(sskcAccountPresentation($row)['access'],'Actif'));
 check('native connection identified without provisioning',fn()=>same(sskcAccountPresentation($row)['connection'],'Connexion native'));
-check('native first login remains separate from activation',fn()=>same(sskcAccountPresentation(array_replace($row,['LAST_LOGIN'=>null]))['onboarding'],'Première connexion à effectuer'));
+check('unused native school account requires initial access preparation',fn()=>same(sskcAccountPresentation(array_replace($row,['LAST_LOGIN'=>null]))['onboarding'],'Accès initial à préparer'));
 check('managed onboarding distinct from active account',fn()=>same(sskcAccountPresentation(array_replace($row,['SUBJECT'=>'fixture','STATE'=>'onboarding','IDENTITY_ENABLED'=>'Y']))['onboarding'],'Première connexion à terminer'));
 check('disabled managed identity not presented as active',fn()=>same(sskcAccountPresentation(array_replace($row,['SUBJECT'=>'fixture','STATE'=>'active','IDENTITY_ENABLED'=>'N']))['access'],'Accès désactivé'));
 check('managed suspension remains explicit with disabled native profile',fn()=>same(sskcAccountPresentation(array_replace($row,['SUBJECT'=>'fixture','STATE'=>'suspended','IDENTITY_ENABLED'=>'N','PROFILE'=>'none']))['access'],'Suspendu'));

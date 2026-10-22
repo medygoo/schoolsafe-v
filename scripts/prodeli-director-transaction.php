@@ -27,6 +27,7 @@ function User($key) {return $GLOBALS['fixture_user'][$key]??($key==='STAFF_ID' ?
 function UserSyear() {return 2026;}
 function SchoolSafeT($en,$fr) {return $en;}
 require $root.'/functions/DBUpsert.php';
+require $root.'/ProgramFunctions/SchoolSafeSchoolScope.fnc.php';
 require (getenv('PRODELI_SETUP_UNDER_TEST') ?: $root.'/ProgramFunctions/SchoolSafeSchoolSetup.fnc.php');
 require $root.'/ProgramFunctions/SchoolSafeNativeOnboarding.fnc.php';
 $schema='qa_director_'.bin2hex(random_bytes(6));
@@ -54,10 +55,13 @@ try {
         CREATE TABLE schoolsafe_identity_links(staff_id integer,subject text);
         CREATE TABLE students(username text);
         CREATE TABLE schoolsafe_identity_audit(actor_staff_id integer,target_staff_id integer,action text,result text);");
+    // Immutable runtime images need not contain installation SQL; supplied test
+    // migrations remain the unchanged canonical sources, outside the web root.
+    $migrationRoot=getenv('PRODELI_NATIVE_MIGRATION_ROOT') ?: $root.'/schoolsafe-remediation';
     // Use the actual additive migration twice; never touch public tables.
-    $migration=file_get_contents($root.'/schoolsafe-remediation/018-school-leadership.sql');
+    $migration=file_get_contents($migrationRoot.'/018-school-leadership.sql');
     DBQuery($migration);DBQuery($migration);
-    $onboarding=file_get_contents($root.'/schoolsafe-remediation/038-native-onboarding.sql');
+    $onboarding=file_get_contents($migrationRoot.'/038-native-onboarding.sql');
     DBQuery($onboarding);DBQuery($onboarding);
     check((int)DBGetOne('SELECT count(*) FROM schools')===5,'018 replay preserves schools');
     $first=createDirector('qa.first');
@@ -173,6 +177,25 @@ try {
         'temporary password no longer authenticates');
     check(!SchoolSafeNativeOnboardingComplete('Another personal passphrase 2026!'),'first-login completion replay refused');
     check(SchoolSafeNativeOnboardingRenew($id,2026,7)===false,'completed account is not reset by initial-access renewal');
+    $legacyHash=encrypt_password('Legacy fixture only 2026!');
+    $legacy=(int)DBGetOne("INSERT INTO staff(syear,username,password,profile,schools) VALUES(2026,'qa.legacy','".DBEscapeString($legacyHash)."','admin',',1,') RETURNING staff_id");
+    DBQuery("ALTER TABLE schoolsafe_identity_audit ADD CONSTRAINT reject_temporary CHECK(action<>'temporary') NOT VALID");
+    check(SchoolSafeNativeOnboardingRenew($legacy,2026,7)===false,'legacy initial-access audit failure releases no credential');
+    check((int)DBGetOne('SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id='.$legacy)===0,'legacy audit failure rolls back newly inserted onboarding');
+    check(DBGetOne('SELECT password FROM staff WHERE staff_id='.$legacy)===$legacyHash,'legacy audit failure preserves original password');
+    DBQuery('ALTER TABLE schoolsafe_identity_audit DROP CONSTRAINT reject_temporary');
+    $legacyTemporary=SchoolSafeNativeOnboardingRenew($legacy,2026,7);
+    check(is_string($legacyTemporary) && match_password((string)DBGetOne('SELECT password FROM staff WHERE staff_id='.$legacy),$legacyTemporary),'unused legacy account gets a real hashed temporary credential');
+    check((int)DBGetOne('SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id='.$legacy.' AND generation=1 AND completed_at IS NULL AND expires_at>CURRENT_TIMESTAMP')===1,'legacy initial access starts generation one and 24-hour pending state');
+    $connected=(int)DBGetOne("INSERT INTO staff(syear,username,password,profile,schools,last_login) VALUES(2026,'qa.legacy.connected','".DBEscapeString($legacyHash)."','admin',',1,',CURRENT_TIMESTAMP) RETURNING staff_id");
+    check(SchoolSafeNativeOnboardingRenew($connected,2026,7)===false,'previously connected legacy account is never silently enrolled');
+    check(DBGetOne('SELECT password FROM staff WHERE staff_id='.$connected)===$legacyHash && (int)DBGetOne('SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id='.$connected)===0,'connected legacy refusal preserves password and absence of onboarding');
+    $team=(int)DBGetOne("INSERT INTO staff(syear,username,password,profile,schools) VALUES(2026,'qa.legacy.team','".DBEscapeString($legacyHash)."','admin',NULL) RETURNING staff_id");
+    check(SchoolSafeNativeOnboardingRenew($team,2026,7)===false,'central team is not enrolled as a customer school account');
+    $managed=(int)DBGetOne("INSERT INTO staff(syear,username,password,profile,schools) VALUES(2026,'qa.legacy.managed','".DBEscapeString($legacyHash)."','admin',',1,') RETURNING staff_id");
+    DBQuery("INSERT INTO schoolsafe_identity_links VALUES(".$managed.",'fixture-managed-legacy')");
+    check(SchoolSafeNativeOnboardingRenew($managed,2026,7)===false,'managed legacy account is not converted to native access');
+    check(DBGetOne('SELECT password FROM staff WHERE staff_id='.$managed)===$legacyHash && (int)DBGetOne('SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id='.$managed)===0,'managed refusal rolls back new onboarding and preserves password');
 } finally {
     @pg_query($conn,'ROLLBACK');
     DBQuery('SET search_path TO public');DBQuery('DROP SCHEMA '.$schema.' CASCADE');
