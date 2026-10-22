@@ -28,20 +28,26 @@ body:has(.ss-native-workspace-header) #body :is(td,th){white-space:normal;overfl
 body:has(.ss-native-workspace-header) #body .tabbar{background:#e8effa;border-color:var(--workspace-line)}
 body:has(.ss-native-workspace-header) :is(button,input[type=submit],input[type=button],.button){min-height:44px;border-radius:7px;font:600 14px/1.4 system-ui,sans-serif;text-transform:none;cursor:pointer}
 body:has(.ss-native-workspace-header) #body :is(input,select,textarea){box-sizing:border-box;max-width:100%;font-family:inherit}
-body:has(.ss-native-workspace-header) #body input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]),body:has(.ss-native-workspace-header) #body :is(select,textarea){min-height:42px;padding:8px 10px;border:1px solid #c6d5e8;border-radius:6px;background:#fff;color:#172d4a;font-size:16px}
+body:has(.ss-native-workspace-header) #body input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]),body:has(.ss-native-workspace-header) #body :is(select,textarea){min-height:44px;padding:8px 10px;border:1px solid #c6d5e8;border-radius:6px;background:#fff;color:#172d4a;font-size:16px}
 body:has(.ss-native-workspace-header) #body :is(input[type=submit],button){padding:10px 16px;background:#175bcc;color:white;border:1px solid #175bcc}
 body:has(.ss-native-workspace-header) :is(a,button,input,select,textarea,summary):focus-visible{outline:3px solid #175bcc;outline-offset:3px}
 body:has(.ss-native-workspace-header) .card{min-width:0;border-color:var(--workspace-line);border-radius:10px;background:#fff}
 body:has(.ss-native-workspace-header) .inline>div{min-width:0}
+/* Native click-to-edit controls keep their handlers, with a larger hit area. */
+body:has(.ss-native-workspace-header) #body .onclick{display:inline-flex;flex-direction:column;align-items:flex-start;min-height:44px;box-sizing:border-box;padding:8px 10px;border:1px solid #d5e1f0;border-radius:6px;background:#fcfdff;color:#172d4a;font-size:16px}
+body:has(.ss-native-workspace-header) #body label:has(input[type=checkbox]),body:has(.ss-native-workspace-header) #body label:has(input[type=radio]){display:inline-flex;align-items:center;gap:8px;min-height:44px}
+body:has(.ss-native-workspace-header) #body :is(input[type=checkbox],input[type=radio]){width:20px;height:20px;accent-color:#175bcc}
+body:has(.ss-native-workspace-header) #body .tabbar a{display:inline-flex;align-items:center;min-height:44px;padding:6px 10px;box-sizing:border-box;color:#1751a3;font-size:14px;text-decoration:none}
+body:has(.ss-native-workspace-header) #body :is(.list,.postbox){background:#fff;border:1px solid var(--workspace-line);border-radius:8px}
 body:has(.ss-native-workspace-header) :is(.flash,.err){overflow-wrap:anywhere}
 @media(max-width:700px){
  body:has(.ss-native-workspace-header) #body{padding:0 14px 28px!important}
  body>.ss-native-workspace-header{padding-inline:14px}
  body:has(.ss-native-workspace-header)>main{padding:0 14px 28px}
- .ss-native-workspace-header{padding-top:16px;margin-bottom:20px}
+ .ss-native-workspace-header{padding-top:16px;padding-bottom:14px;margin-bottom:16px}
  .ss-native-workspace-top{align-items:flex-start;flex-direction:column;gap:10px}
  .ss-native-workspace-top nav{justify-content:flex-start;gap:4px 10px}
- .ss-native-workspace-heading{margin-top:18px}
+ .ss-native-workspace-heading{margin-top:12px}
  body:has(.ss-native-workspace-header) #body :is(td,th){padding:7px 5px}
  body:has(.ss-native-workspace-header) .card{padding:18px 14px}
 }

@@ -8,7 +8,7 @@ function SchoolSafeWorkspaceHeader(string $title, string $kind = 'school'): void
     $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
     $home = $global ? '/schoolsafe-administrators.php?home=1' : '/Modules.php?modname=misc/Portal.php';
     echo '<link rel="stylesheet" href="/assets/themes/SchoolSafeCodex/menu-logo.css?v=shared-2">'
-        . '<link rel="stylesheet" href="/assets/css/schoolsafe-native-workspace.css?v=1">'
+        . '<link rel="stylesheet" href="/assets/css/schoolsafe-native-workspace.css?v=2">'
         . '<header class="ss-native-workspace-header" data-workspace="' . ($central ? 'central' : 'school') . '">'
         . '<div class="ss-native-workspace-top"><a class="ss-native-workspace-brand" href="' . $home . '" target="_self">'
         . '<span class="ss-native-workspace-emblem"><img class="ss-animated-brand" src="/schoolsafe-logo.png" alt="" width="48" height="52"></span>'

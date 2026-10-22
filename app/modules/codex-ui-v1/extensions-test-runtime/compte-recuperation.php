@@ -111,11 +111,16 @@ $simulate = SchoolSafeRecoveryOtpSimulate();
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Récupération du compte | SchoolSafe</title>
-<style>body{font-family:system-ui,sans-serif;max-width:40rem;margin:0 auto;padding:1rem}.card{border:1px solid #ccc;border-radius:.5rem;padding:1rem;margin:1rem 0}label{display:block;margin:.5rem 0}input,select{max-width:100%}.ok{background:#e8f5e9;padding:.6rem;border-radius:.5rem}.ko{background:#fdecea;padding:.6rem;border-radius:.5rem}.sim{background:#fff8e1;padding:.6rem;border-radius:.5rem}</style>
+<link rel="stylesheet" href="/assets/css/schoolsafe-recovery.css?v=1">
 </head>
 <body>
-<header><p><a href="/index.php">← Retour à la connexion</a></p>
-<h1>Récupération du compte</h1></header>
+<main class="ss-recovery-shell">
+<header class="ss-recovery-header">
+<a class="ss-recovery-brand" href="/index.php" aria-label="SchoolSafe — connexion"><span class="ss-recovery-emblem"><img src="/schoolsafe-logo.png" alt="" width="48" height="52"></span><span><strong>SchoolSafe</strong><small>Votre école, en confiance.</small></span></a>
+<a class="ss-recovery-return" href="/index.php">← Retour à la connexion</a>
+</header>
+<h1>Récupération du compte</h1>
+<p class="ss-recovery-intro">Retrouvez l’accès à votre espace avec le courriel ou le téléphone associé à votre compte.</p>
 <?php if ( $simulate ) : ?>
 <p class="sim" role="note">Canal SMS simulé (recette isolée) : aucun SMS réel ne part.</p>
 <?php endif; ?>
@@ -125,8 +130,9 @@ $simulate = SchoolSafeRecoveryOtpSimulate();
 <?php if ( $error !== '' ) : ?>
 <p class="ko" role="alert"><?php echo htmlspecialchars( $error, ENT_QUOTES, 'UTF-8' ); ?></p>
 <?php endif; ?>
+<div class="ss-recovery-methods">
 <section class="card" aria-labelledby="t-mail">
-<h2 id="t-mail">Par courriel (moteur natif)</h2>
+<h2 id="t-mail">Par courriel</h2>
 <p><small>Le lien expire en 2 heures, usage unique, sans énumération de comptes.</small></p>
 <form method="post" action="/PasswordReset.php">
 <label>Courriel <input type="email" name="email" maxlength="255" autocomplete="email" required></label>
@@ -134,7 +140,8 @@ $simulate = SchoolSafeRecoveryOtpSimulate();
 </form>
 </section>
 <section class="card" aria-labelledby="t-sms">
-<h2 id="t-sms">Par SMS — téléphone du compte<?php echo $simulate ? ' (canal simulé)' : ''; ?></h2>
+<h2 id="t-sms">Par SMS<?php echo $simulate ? ' (canal simulé)' : ''; ?></h2>
+<p><small>Utilisez l’identifiant et le téléphone associés à votre compte.</small></p>
 <?php if ( ! $step_otp_code ) : ?>
 <form method="post" action="/compte/recuperation">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( $token, ENT_QUOTES, 'UTF-8' ); ?>">
@@ -152,5 +159,7 @@ $simulate = SchoolSafeRecoveryOtpSimulate();
 </form>
 <?php endif; ?>
 </section>
+</div>
+</main>
 </body>
 </html>

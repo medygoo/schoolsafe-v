@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {execFileSync} = require('node:child_process');
 const {chromium} = require('playwright');
+const {presentation} = require('./qa-prodeli-presentation.cjs');
 const base = process.env.PRODELI_QA_URL || 'http://127.0.0.1:8096';
 assert.equal(new URL(base).hostname, '127.0.0.1', 'Only the loopback qualification relay is allowed');
 const web = process.env.PRODELI_QA_WEB || 'schoolsafe-prodeli-presentation-qa';
@@ -81,6 +82,20 @@ async function responsive(page, key) {
     await assertHealthyPage(p,'native login');
     return p;
   };
+  await group('anonymous recovery retains native forms with SchoolSafe readable touch controls', async () => {
+    const c=await context();const p=await c.newPage();
+    const response=await p.goto(base+'/compte/recuperation');assert.equal(response.status(),200);
+    assert.match(response.headers()['cache-control'],/no-store/);
+    await presentation(p,'recovery',out);
+    await p.locator('input[name=username]').fill(prefix+'.unknown');
+    await p.locator('input[name=phone]').fill('+243000000000');
+    await p.locator('input[name=token]').evaluate(e=>{e.value='invalid-fixture-token';});
+    await p.getByRole('button',{name:'Préparer un code',exact:true}).click();
+    await p.getByRole('alert').filter({hasText:'Requête expirée. Rechargez la page.'}).waitFor();
+    assert.equal(await p.locator('input[name=code]').count(),0,'Invalid CSRF never advances OTP or sends');
+    await p.screenshot({path:path.join(out,'presentation-recovery-invalid-csrf-390.png'),fullPage:true});
+    await c.close();
+  });
   const global = await context();
   await group('native global login lands directly on the distinct ProDéli dashboard', async () => {
     page = await login(global,prefix+'.global');
@@ -101,6 +116,7 @@ async function responsive(page, key) {
     assert.equal(await page.locator('#ss-photo-dashboard').count(),0);
     assert.equal(await page.locator('[data-summary=schools]').innerText(),sql('SELECT count(*) FROM schools WHERE syear=2026'));
     await captureInventory(page,'central-home');await responsive(page,'central-home');
+    await presentation(page,'central',out);
   });
   await group('school search filters and restores the complete authorized directory', async () => {
     const search = page.getByRole('searchbox',{name:'Rechercher un établissement'});
@@ -144,6 +160,7 @@ async function responsive(page, key) {
     await page.getByRole('button',{name:'Enregistrer',exact:true}).first().waitFor();
     assert.ok(await page.locator('.ss-native-workspace-languages a[hreflang="fr"][aria-current="true"]').isVisible(),'Native French preference is honored, not a forced account conversion');
     await captureInventory(page,'settings');await responsive(page,'settings');
+    await presentation(page,'settings',out);
   });
   await group('native operations share the brand and clear central return without changing their handlers', async () => {
     assert.equal((await page.goto(base+'/admin-console.php')).status(),200);
@@ -166,6 +183,7 @@ async function responsive(page, key) {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1);
       await page.screenshot({path:path.join(out,'global-in-school-'+width+'.png'),fullPage:true});
     }
+    await presentation(page,'school',out);
   });
   await group('school modules action is honestly labeled and does not impersonate a central dashboard', async () => {
     await page.getByRole('link',{name:'Modules de l’école',exact:true}).first().click();
@@ -175,6 +193,11 @@ async function responsive(page, key) {
     assert.equal(await page.locator('.ss-fixed-pager select').locator('option:checked').innerText(),'Accueil','School dashboard tile must return to its actual home');
     await page.locator('.ss-central-dashboard-return a').click();
     await page.getByRole('heading',{name:'Tableau de bord ProDéli',exact:true}).waitFor();
+  });
+  await group('wizard keeps all six steps while exposing the first field on mobile', async () => {
+    await page.goto(base+'/schoolsafe-administrators.php?wizard=1');
+    await page.locator('.sskc-workarea').waitFor();
+    await presentation(page,'wizard',out);
   });
   const school = await context();let schoolPage;
   await group('school native administrator lands on their own dashboard without central controls', async () => {
