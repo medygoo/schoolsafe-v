@@ -162,7 +162,7 @@ async function responsive(page, key) {
     await page.locator('#ss-photo-dashboard').waitFor();
     for (const width of [1440,390]) {
       await page.setViewportSize({width,height:900});
-      assert.ok(await page.locator('.ss-fixed-header-brand .ss-central-dashboard-return a').isVisible(),'Return cannot be hidden inside account menu');
+      await page.locator('.ss-fixed-header-brand .ss-central-dashboard-return a').waitFor({state:'visible'});
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1);
       await page.screenshot({path:path.join(out,'global-in-school-'+width+'.png'),fullPage:true});
     }
