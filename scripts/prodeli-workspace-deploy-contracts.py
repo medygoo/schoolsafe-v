@@ -18,7 +18,7 @@ class Gates(unittest.TestCase):
         d.ROOT = Path(self.tmp.name)
         self.content = {d.PREFIX+f:('synthetic '+f).encode() for f in d.FILES}
         files = {f:hashlib.sha256(self.content[d.PREFIX+f]).hexdigest() for f in d.FILES}
-        self.release = {'commit':'a'*40,'image':'sha256:'+'b'*64,'source_digest':'c'*64,'files':files}
+        self.release = {'source_commit':'a'*40,'commit':'a'*40,'image':'sha256:'+'b'*64,'source_digest':'c'*64,'files':files}
         self.proofs = {
             'source-manifest.json':{'source_commit':'a'*40,'base_image':d.BASE,'payload_hashes':files,'source_digest':'c'*64},
             'image-prepare-proof.json':{'status':'READY','image':self.release['image'],'source_digest':'c'*64,
@@ -26,8 +26,8 @@ class Gates(unittest.TestCase):
                 'read_only_web':True,'internal_network':True,'published_ports':False},
             'exact-integration-result.json':{'status':'PASS','image':self.release['image'],
                 'suites':[{'suite':x,'exit':0} for x in ['workspace','native','recovery','concurrency']]},
-            'workspace-result.json':{'status':'PASS','cleanup':True,'groups':14},
-            'native-result.json':{'status':'PASS','cleanup':True,'groups':13},
+            'workspace-result.json':{'status':'PASS','cleanup':True,'results':['passed']*14},
+            'native-result.json':{'status':'PASS','cleanup':True,'results':['passed']*13},
             'image-verify-proof.json':{'status':'PASS','image':self.release['image'],'fixture_snapshot_unchanged':True,'production_containers_unchanged':True},
             'image-cleanup-proof.json':{'status':'REMOVED','only_owned_ephemeral_resources':True}}
         for local,path in [('deploy.py','ops/releases/prodeli-workspace-20261022/deploy.py'),('recovery.py','ops/releases/prodeli-recovery-sms-20261022/deploy.py'),('preservation.py','ops/releases/prodeli-native-access-20261021/deploy.py')]:
@@ -40,7 +40,7 @@ class Gates(unittest.TestCase):
         cases=[('image-prepare-proof.json','read_only_web',False),('image-prepare-proof.json','internal_network',False),
           ('image-prepare-proof.json','published_ports',True),('image-prepare-proof.json','unchanged_files',2745),
           ('image-prepare-proof.json','renderer_contracts',122),('image-prepare-proof.json','recovery_contracts',36),
-          ('image-prepare-proof.json','image','sha256:'+'d'*64),('native-result.json','groups',12),
+          ('image-prepare-proof.json','image','sha256:'+'d'*64),('native-result.json','results',['passed']*12),
           ('workspace-result.json','cleanup',False),('image-verify-proof.json','fixture_snapshot_unchanged',False),
           ('image-verify-proof.json','production_containers_unchanged',False),('image-cleanup-proof.json','status','PENDING')]
         for filename,key,value in cases:

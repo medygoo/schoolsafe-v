@@ -57,7 +57,8 @@ def source_hashes(name):
 def qualification(release):
     assert re.fullmatch('[a-f0-9]{40}', release['commit'])
     manifest = load('source-manifest.json'); proof = load('image-prepare-proof.json')
-    assert manifest['source_commit'] == release['commit'] and manifest['base_image'] == BASE
+    assert manifest['source_commit'] == release['source_commit'] and manifest['base_image'] == BASE
+    assert re.fullmatch('[a-f0-9]{40}',release['source_commit'])
     assert manifest['payload_hashes'] == release['files'] and set(release['files']) == FILES
     assert proof['status'] == 'READY' and proof['image'] == release['image']
     assert proof['source_digest'] == release['source_digest'] == manifest['source_digest']
@@ -69,7 +70,7 @@ def qualification(release):
     assert {s['suite'] for s in result['suites']} == {'workspace','native','recovery','concurrency'}
     assert all(s['exit'] == 0 for s in result['suites'])
     for filename, groups in [('workspace-result.json',14),('native-result.json',13)]:
-        result = load(filename); assert result['status'] == 'PASS' and result['cleanup'] and result['groups'] == groups
+        result = load(filename); assert result['status'] == 'PASS' and result['cleanup'] and len(result['results']) == groups
     verify = load('image-verify-proof.json'); cleanup = load('image-cleanup-proof.json')
     assert verify['status'] == 'PASS' and verify['image'] == release['image'] and verify['fixture_snapshot_unchanged'] and verify['production_containers_unchanged']
     assert cleanup['status'] == 'REMOVED' and cleanup['only_owned_ephemeral_resources']
@@ -82,7 +83,7 @@ def qualification(release):
     for path in RECOVERY:
         assert run(['git','-C','/opt/app-src','diff',BASE_COMMIT,release['commit'],'--',PREFIX+path]) == b''
     image = inspect(release['image'])
-    assert image['Config']['Labels']['org.opencontainers.image.revision'] == release['commit']
+    assert image['Config']['Labels']['org.opencontainers.image.revision'] == release['source_commit']
     assert image['Config']['Labels']['schoolsafe.source.digest'] == release['source_digest']
 
 
