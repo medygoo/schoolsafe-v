@@ -32,6 +32,9 @@ FILES = ['index.php', 'admin-console.php', 'ProgramFunctions/SchoolSafePhotoDash
          'plugins/SchoolSafe_Keycloak/central-ui.js']
 NEW_FILES = {'ProgramFunctions/SchoolSafeWorkspace.fnc.php', 'assets/css/schoolsafe-native-workspace.css'}
 CONTRACTS = {**qa.CONTRACTS, 'prodeli-workspace-contracts.php': 31}
+LABEL = 'prodeli-workspace-20261022'
+PATCH_SCOPE = 'prodeli-workspace'
+EXTRA_TEST_FILES = []
 
 
 def preparation_code():
@@ -63,12 +66,14 @@ def main():
         hashes = {f: hashlib.sha256(entries['payload/' + f]).hexdigest() for f in FILES}
         baseline = {f: hashlib.sha256(qa.git_source_bytes(BASE_COMMIT, PREFIX + f)).hexdigest() for f in FILES if f not in NEW_FILES}
         digest = hashlib.sha256(json.dumps({'base_image': BASE, 'payload_hashes': hashes}, sort_keys=True).encode()).hexdigest()
-        dockerfile = 'FROM ' + BASE_TAG + '\nLABEL schoolsafe.patch.scope="prodeli-workspace" schoolsafe.source.digest="' + digest + '" org.opencontainers.image.revision="' + commit + '"\n'
+        dockerfile = 'FROM ' + BASE_TAG + '\nLABEL schoolsafe.patch.scope="' + PATCH_SCOPE + '" schoolsafe.source.digest="' + digest + '" org.opencontainers.image.revision="' + commit + '"\n'
         dockerfile += ''.join('COPY --chmod=0644 payload/' + f + ' /var/www/html/' + f + '\n' for f in FILES)
         entries['Dockerfile'] = dockerfile.encode()
         entries['.dockerignore'] = b'**\n!Dockerfile\n!payload/\n!payload/**\n'
         for name in [*CONTRACTS, 'prodeli-recovery-sms-contracts.php']:
             entries['tests/' + name] = git('scripts/' + name)
+        for path in EXTRA_TEST_FILES:
+            entries['extra-tests/' + Path(path).name] = git(path)
         entries['fixture-config.php'] = git('ops/deployment/config.inc.production.php')
         assert qa.local(['docker', 'inspect', '--format', '{{index .Config.Labels "schoolcef.qualification"}}', 'schoolcef-harmonization-pg']).decode().strip() == 'harmonization-20261021'
         entries['fixture.private.dump'] = qa.local(['docker', 'exec', 'schoolcef-harmonization-pg', 'pg_dump', '-U', 'schoolcef_fixture', '-d', 'schoolcef_fixture', '-Fc', '--no-owner', '--no-acl'])
@@ -79,7 +84,7 @@ def main():
                  'network': 'schoolsafe-recovery-qa-' + nonce}
         manifest = {'base_image': BASE, 'base_tag': BASE_TAG, 'base_commit': BASE_COMMIT, 'source_commit': commit,
                     'source_digest': digest, 'payload_hashes': hashes, 'base_hashes': baseline,
-                    'new_files': sorted(NEW_FILES), 'contracts': CONTRACTS, 'qa_label': 'prodeli-workspace-20261022',
+                    'new_files': sorted(NEW_FILES), 'contracts': CONTRACTS, 'qa_label': LABEL,
                     'bundle_files': {f: hashlib.sha256(b).hexdigest() for f, b in entries.items()}}
         bundle = io.BytesIO()
         with tarfile.open(fileobj=bundle, mode='w:gz') as archive:
