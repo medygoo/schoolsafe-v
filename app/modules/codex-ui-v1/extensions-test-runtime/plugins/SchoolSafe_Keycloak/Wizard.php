@@ -131,7 +131,7 @@ function sskcWizardFields(): array
     return [1=>['TITLE'=>['Nom officiel',100,true],'SHORT_NAME'=>['Nom abrégé',25,false],'SCHOOL_NUMBER'=>['Numéro d’école',50,false],'ADDRESS'=>['Adresse',100,false],'CITY'=>['Ville',100,false],'STATE'=>['Code région / état',10,false],'ZIPCODE'=>['Code postal',10,false],'PHONE'=>['Téléphone officiel',30,false],'WWW_ADDRESS'=>['Site web',100,false],'PRINCIPAL'=>['Directeur / chef d’établissement',100,false]],
         2=>['school_email'=>['E-mail officiel',254,true],'school_slogan'=>['Devise / slogan',180,true],'extra1'=>['Expression complémentaire 2',180,false],'extra2'=>['Expression complémentaire 3',180,false],'extra3'=>['Expression complémentaire 4',180,false]],
         3=>['first_name'=>['Prénom du responsable',50,true],'last_name'=>['Nom du responsable',50,true],'middle_name'=>['Deuxième prénom',50,false],'admin_phone'=>['Téléphone personnel',30,false],'username'=>['Identifiant de connexion',100,true],'email'=>['E-mail personnel',254,true]],
-        5=>['REPORTING_GP_SCALE'=>['Base de notation',5,true]]];
+        5=>[]];
 }
 function sskcWizardValidate(array $d,int $step): void
 {
@@ -153,7 +153,6 @@ function sskcWizardValidate(array $d,int $step): void
     }
     if($step===4)foreach(['logo','portrait'] as $key)if(!empty($a[$key]))sskcWizardImage($a[$key]);
     if($step===5) {
-        if(!ctype_digit((string)$a['REPORTING_GP_SCALE']) || (int)$a['REPORTING_GP_SCALE']<1 || (int)$a['REPORTING_GP_SCALE']>10000) throw new RuntimeException('La base de notation doit être comprise entre 1 et 10 000.');
         if(!DBGetOne('SELECT ID FROM schools WHERE ID='.(int)$d['source'].' AND SYEAR='.(int)UserSyear()) || !SchoolSafeSchoolAllowed((string)$d['source'])) throw new RuntimeException('Modèle d’école indisponible dans votre périmètre.');
         // Le modèle doit avoir un calendrier cohérent (année, semestres,
         // trimestres) : une copie depuis un modèle cassé livrerait une école
@@ -265,7 +264,7 @@ function sskcWizardPreview(array $a): void
 function sskcWizardReview(array $d): void
 {
     $a=$d['data'];echo '<dl>';
-    foreach(['École'=>$a['TITLE']??'','Responsable'=>trim(($a['first_name']??'').' '.($a['last_name']??'')),'Identifiant'=>$a['username']??'','E-mail personnel'=>$a['email']??'','Accès'=>'Client — cette école uniquement','Base de notation'=>$a['REPORTING_GP_SCALE']??''] as $k=>$v)echo '<dt>'.sskcEscape($k).'</dt><dd>'.sskcEscape((string)$v).'</dd>';
+    foreach(['École'=>$a['TITLE']??'','Responsable'=>trim(($a['first_name']??'').' '.($a['last_name']??'')),'Identifiant'=>$a['username']??'','E-mail personnel'=>$a['email']??'','Accès'=>'Client — cette école uniquement',] as $k=>$v)echo '<dt>'.sskcEscape($k).'</dt><dd>'.sskcEscape((string)$v).'</dd>';
     echo '</dl>';sskcWizardPreview($a);
     if(!empty($d['staff'])) {
         echo '<h3>École et administrateur principal créés</h3><p>Le dossier est terminé. Affichez une seule fois l’accès temporaire, téléchargez la fiche confidentielle et remettez-la au responsable. Le parcours s’arrête à cette remise.</p>'
@@ -332,7 +331,7 @@ function sskcWizardAfterSchool(): void
     // Record the created ID first: a later image error must never offer duplicate creation.
     $d['school']=$school;$d['status']='school_created';$_SESSION['sskc_school_draft']=$d;
     if(!SchoolSafeSchoolAllowed((string)$school) || !AllowEdit('School_Setup/Schools.php'))return;
-    $values=[];foreach(['SHORT_NAME','SCHOOL_NUMBER','STATE','ZIPCODE','PRINCIPAL','REPORTING_GP_SCALE'] as $k)$values[$k]=DBEscapeString((string)($a[$k]??''));
+    $values=[];foreach(['SHORT_NAME','SCHOOL_NUMBER','STATE','ZIPCODE','PRINCIPAL'] as $k)$values[$k]=DBEscapeString((string)($a[$k]??''));
     DBUpdate('schools',$values,['ID'=>$school,'SYEAR'=>(int)UserSyear()]);
     if(!empty($a['logo'])){
         require_once 'ProgramFunctions/FileUpload.fnc.php';

@@ -14,6 +14,9 @@ SchoolSafeCard(
 );
 
 
+require_once 'modules/Grades/includes/SchoolScale.fnc.php';
+SchoolSafeSchoolScalePanel();
+
 if ( $_REQUEST['modfunc'] === 'update' )
 {
 	if ( ! empty( $_REQUEST['values'] )

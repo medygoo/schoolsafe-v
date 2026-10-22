@@ -57,9 +57,9 @@ if ( $_REQUEST['modfunc'] === 'update'
 
 			foreach ( (array) $_REQUEST['values'] as $column => $value )
 			{
-				$numeric_columns = [
-					'REPORTING_GP_SCALE',
-				];
+                // School-wide grading is edited only through the pedagogical program.
+                if ( strtoupper( (string) $column ) === 'REPORTING_GP_SCALE' ) continue;
+				$numeric_columns = [];
 
 				if ( ( ( ! empty( $fields_RET[str_replace( 'CUSTOM_', '', $column )][1]['TYPE'] )
 						&& $fields_RET[str_replace( 'CUSTOM_', '', $column )][1]['TYPE'] == 'numeric' )
@@ -345,13 +345,6 @@ if ( ! $_REQUEST['modfunc'] )
 		'values[SCHOOL_NUMBER]',
 		_( 'School Number' ),
 		'maxlength=50'
-	) . '</td></tr>';
-
-	echo '<tr><td colspan="3">' . TextInput(
-		(float) $schooldata['REPORTING_GP_SCALE'],
-		'values[REPORTING_GP_SCALE]',
-		_( 'Base Grading Scale' ),
-		'type="number" min="1" max="10000" required'
 	) . '</td></tr>';
 
 	// FJ add School Fields.

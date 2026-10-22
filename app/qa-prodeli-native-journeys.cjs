@@ -30,11 +30,11 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  page=await login(context,manager,password);
  await page.goto(base+'/schoolsafe-administrators.php?wizard=1');
  const steps=[{TITLE:prefix+' Wizard',SHORT_NAME:'QA Native'},{school_email:'school@example.invalid',school_slogan:'Fixture school'},
-  {first_name:'Alice',last_name:'Wizard',username:prefix+'.wizard',email:'wizard@example.invalid'}, {},{REPORTING_GP_SCALE:'100'}];
+  {first_name:'Alice',last_name:'Wizard',username:prefix+'.wizard',email:'wizard@example.invalid'}, {},{}];
  for(let i=1;i<=5;i++){
   for(const [key,value]of Object.entries(steps[i-1]))await page.locator('#'+key).fill(value);
   if(i===3)await page.locator('select[name="profile_id"]').selectOption('1');
-  if(i===5)await page.locator('select[name="source"]').selectOption(String(source));
+  if(i===5){assert.equal(await page.locator('#REPORTING_GP_SCALE').count(),0,'Central wizard does not ask for pedagogical scale');await page.locator('select[name="source"]').selectOption(String(source));}
   await Promise.all([page.waitForURL(u=>u.searchParams.get('step')===String(i+1)),page.getByRole('button',{name:'Enregistrer et continuer',exact:true}).click()]);
  }
  await page.getByRole('button',{name:'Confirmer la création de l’école',exact:true}).click();
@@ -42,6 +42,7 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  assert.equal(await page.locator('.ss-native-workspace-header').count(),1,'Creation result retains the SchoolSafe workspace');
  assert.equal(await page.getByRole('heading',{name:'New school',exact:true}).count(),0,'Wizard does not fall back to the English native copy page');
  wizardSchool=Number(sql(`SELECT id FROM schools WHERE title=${quote(prefix+' Wizard')}`));assert.ok(wizardSchool>0);
+ assert.equal(sql(`SELECT reporting_gp_scale FROM schools WHERE id=${wizardSchool} AND syear=2026`),sql(`SELECT reporting_gp_scale FROM schools WHERE id=${source} AND syear=2026`),'New school retains the template grading scale');
  assert.equal(sql(`SELECT COALESCE(schools,'') FROM staff WHERE staff_id=${adminId}`),'');
  await page.getByRole('link',{name:'Continuer : préparer le compte principal',exact:true}).click();
  await page.getByRole('button',{name:'Vérifier le compte principal',exact:true}).click();
