@@ -118,7 +118,7 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     }
     $now=new DateTimeImmutable('now',new DateTimeZone('Africa/Kinshasa'));
     $schoolName=ParseMLField(SchoolInfo('TITLE'));
-    echo '<link rel="stylesheet" href="assets/css/schoolsafe-photo-dashboard.css?v=workspace-20261022"><link rel="stylesheet" href="assets/css/schoolsafe-dashboard-matrices.css?v=1"><script defer src="assets/js/schoolsafe-matrix-primary.js?v=2"></script>';
+    echo '<link rel="stylesheet" href="assets/css/schoolsafe-photo-dashboard.css?v=presentation-20261022"><link rel="stylesheet" href="assets/css/schoolsafe-dashboard-matrices.css?v=1"><script defer src="assets/js/schoolsafe-matrix-primary.js?v=2"></script>';
     echo '<main id="ss-photo-dashboard" class="ss-photo-dashboard ss-connected-dashboard" data-dashboard-profile="admin" data-dashboard-tab="overview">';
     echo '<div class="ss-photo-toolbar"><a class="ss-photo-mobile-brand" href="Modules.php?modname=misc/Portal.php"><img src="/schoolsafe-card-bridge/studio-validated-20261008/logo-schoolsafe.png" alt="" width="38" height="38"><strong>School<span>Safe</span></strong></a><div data-photo-search></div><div data-photo-school></div><div data-photo-year></div></div>';
     echo '<section id="ss-photo-home" class="ss-photo-hero"><p class="ss-photo-greeting">Bonjour, <strong>Administrateur</strong></p><div class="ss-photo-introduction"><h1>Pilotez votre établissement<br>avec <span>clarté et confiance.</span></h1><p>'.$e($schoolName).' · Une vue claire de votre établissement.</p><div class="ss-photo-hero-actions"><a class="ss-photo-primary" href="#ss-photo-rubriques">'.SchoolSafePhotoIcon('ChartNoAxesCombined').'Modules de l’école</a>';

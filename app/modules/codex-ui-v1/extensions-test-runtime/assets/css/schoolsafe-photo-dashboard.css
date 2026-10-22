@@ -347,9 +347,18 @@ body:has(#ss-photo-dashboard) .sskc-manager-navigation{display:none!important}
 .ss-fixed-header-brand .ss-central-dashboard-return a{display:flex;align-items:center;min-height:44px;box-sizing:border-box;padding:7px 12px;border:1px solid var(--photo-line);border-radius:7px;color:var(--photo-ink);background:var(--photo-soft);font:600 13px/1.3 system-ui,sans-serif;text-decoration:none}
 .ss-fixed-header-brand .ss-central-dashboard-return a:focus-visible{outline:3px solid #175bcc;outline-offset:2px}
 @media(max-width:700px){
- .ss-fixed-header-brand:has(.ss-central-dashboard-return) .ss-photo-mobile-brand strong{display:none}
- .ss-fixed-header-brand .ss-central-dashboard-return{max-width:82px}
- .ss-fixed-header-brand .ss-central-dashboard-return a{padding:6px;font-size:12px}
+ /* Global return gets its own row instead of hiding the SchoolSafe wordmark. */
+ body.ss-school-shell:has(#ss-photo-dashboard):has(.ss-central-dashboard-return) #footer,body.ss-school-shell:has(#ss-photo-dashboard):has(.ss-central-dashboard-return) #footerwrap{height:118px!important}
+ body.ss-school-shell:has(#ss-photo-dashboard):has(.ss-central-dashboard-return) #footerwrap{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto;gap:4px 8px!important}
+ .ss-fixed-header-brand:has(.ss-central-dashboard-return){display:contents}
+ .ss-fixed-header-brand:has(.ss-central-dashboard-return) #BottomButtonMenu{grid-column:1;grid-row:1}
+ .ss-fixed-header-brand:has(.ss-central-dashboard-return) .ss-photo-mobile-brand{grid-column:2;grid-row:1;gap:6px}
+ .ss-fixed-header-brand:has(.ss-central-dashboard-return) .ss-photo-mobile-brand strong{display:block!important;font-size:17px!important}
+ body.ss-school-shell:has(.ss-central-dashboard-return) .ss-fixed-account{grid-column:3;grid-row:1;max-width:110px}
+ .ss-fixed-header-brand .ss-central-dashboard-return{grid-column:1/-1;grid-row:2;max-width:none}
+ .ss-fixed-header-brand .ss-central-dashboard-return a{padding:6px 10px;font-size:13px;min-height:44px}
+ body.ss-fixed-school:has(#ss-photo-dashboard):has(.ss-central-dashboard-return) #body{top:118px!important}
+ body.ss-school-shell:has(#ss-photo-dashboard):has(.ss-central-dashboard-return) #menu{top:118px!important}
 }
 
 /* The existing settings controller opens its form inside the native menu. */
