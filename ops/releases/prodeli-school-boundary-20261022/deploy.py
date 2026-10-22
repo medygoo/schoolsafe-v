@@ -85,7 +85,7 @@ def qualification(release):
     assert len(mobile['results']) == 24 and {(x['key'],x['width']) for x in mobile['results']} == {
         (key,width) for key in ['home','accounts','wizard','opening','console','sms','whatsapp','preferences']
         for width in [1280,390,360]}
-    assert all(x['headingVisible'] and x['overflow'] <= 1 for x in mobile['results'])
+    assert all(x['headingVisible'] and x['overflow'] <= 1 and x['nativeChromeNonObstructing'] for x in mobile['results'])
     verify = load('image-verify-proof.json'); cleanup = load('image-cleanup-proof.json')
     assert verify['status'] == 'PASS' and verify['image'] == release['image'] and verify['fixture_snapshot_unchanged'] and verify['production_containers_unchanged']
     assert cleanup['status'] == 'REMOVED' and cleanup['only_owned_ephemeral_resources']

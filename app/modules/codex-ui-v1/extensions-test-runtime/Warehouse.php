@@ -894,6 +894,23 @@ function Warehouse( $mode )
 function WarehouseHeaderJS()
 {
 	global $_ROSARIO;
+	// ProDéli has its own navigation; never overlay the school dock/header tools.
+	// Emitted only for authenticated global accounts, including their native preferences.
+	if ( function_exists( 'SchoolSafeGlobalAdmin' ) && SchoolSafeGlobalAdmin() )
+	{
+		echo '<style id="ss-central-chrome">'
+			. 'html body #ss-mobile-navigation,html body #ss-mobile-backdrop,html body .ss-page-back{display:none!important}'
+			. 'html body #footer,html body #footerwrap{position:static!important;inset:auto!important;width:auto!important;height:auto!important;max-width:100%;box-sizing:border-box}'
+			. 'html body #footerwrap{display:flex!important;flex-wrap:wrap;gap:16px;padding:12px!important;margin:16px 0!important}'
+			. 'html body #footerwrap>:not(.ss-lang):not(.ss-header-tools):not(a[href*="modfunc=logout"]),html body #footerwrap .ss-header-tools>:not(a[href*="modfunc=logout"]){display:none!important}'
+			. 'html body.modules #footerwrap .ss-header-tools,html body.modules #footerwrap .ss-lang{position:static!important;display:inline-flex!important;align-items:center;gap:12px;width:auto!important;height:auto!important;transform:none!important;min-height:44px}'
+			. 'html body #footerwrap .ss-header-tools a[href*="modfunc=logout"].BottomButton.ss-header-logout{position:static!important;display:inline-flex!important;align-items:center;justify-content:center;flex:0 0 auto!important;min-width:96px;max-width:none!important;width:auto!important;height:auto!important;min-height:44px;padding:8px 12px!important;white-space:nowrap!important;font-size:14px!important;color:#064b83!important;background:#fff!important;border:1px solid #bdd0e2!important;border-radius:4px!important}'
+			. 'html body #footerwrap a[href*="modfunc=logout"] img,html body #footerwrap a[href*="modfunc=logout"] span{display:none!important}'
+			. 'html body #footerwrap a[href*="modfunc=logout"]::after{content:attr(title);font-size:14px;color:#064b83}'
+			. 'html body.modules{padding-top:0!important;padding-bottom:0!important}'
+			. 'html body.modules #body{margin:0!important;width:100%!important;box-sizing:border-box}'
+			. '</style>';
+	}
 	if ( isset( $_REQUEST['ss_companion'] ) && $_REQUEST['ss_companion'] === '1'
 		&& isset( $_REQUEST['modname'] ) && $_REQUEST['modname'] === 'SchoolSafe_Jaspe/Assistant.php' ) {
         echo '<link rel="stylesheet" href="modules/SchoolSafe_Jaspe/companion-modern.css?v=9">';

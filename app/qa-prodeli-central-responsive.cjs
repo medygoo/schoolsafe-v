@@ -23,10 +23,14 @@ const prefix='qa.mobile.'+Date.now(),pw=crypto.randomBytes(24).toString('hex'),i
  fs.writeFileSync(path.join(out,'completed-account-diagnostic.json'),JSON.stringify({rows,locale:await p.locator('html').getAttribute('lang')},null,2));
  for(const width of [1280,390,360])for(const [key,route] of [['home','/schoolsafe-administrators.php?home=1'],['accounts','/schoolsafe-administrators.php'],['wizard','/schoolsafe-administrators.php?wizard=1'],['opening','/schoolsafe-administrators.php?opening=1'],['console','/admin-console.php'],['sms','/plateforme/prodeli/sms'],['whatsapp','/plateforme/prodeli/whatsapp'],['preferences','/Modules.php?modname=Users/Preferences.php']]){
   await p.setViewportSize({width,height:844});const response=await p.goto(base+route);assert.equal(response.status(),200,key+' status');const heading=p.locator(key==='preferences'?'.ss-page-heading h2':'h1').first();await heading.waitFor({state:'visible'});const body=await p.locator('body').innerText();assert.ok(body.length>150&& !/DB Execute Failed|Fatal error:|Uncaught (?:Error|Exception)/.test(body),key+' rendering');
+  assert.equal(await p.locator('#ss-central-chrome').count(),1,key+' global-only chrome boundary');
+  const nativeChromeNonObstructing=await p.evaluate(()=>[...document.querySelectorAll('#ss-mobile-navigation,#ss-mobile-backdrop,.ss-page-back')].every(e=>getComputedStyle(e).display==='none')&&[...document.querySelectorAll('#footer,#footerwrap')].every(e=>!['fixed','sticky','absolute'].includes(getComputedStyle(e).position)));
+  assert.ok(nativeChromeNonObstructing,key+' native school chrome must not overlay ProDeli');
+  if(key==='preferences'){assert.ok(await p.locator('#footerwrap a[href*="modfunc=logout"]').isVisible(),'Native preferences keep a visible logout');assert.ok((await p.locator('#footerwrap a[href*="modfunc=logout"]').boundingBox()).height>=44,'Logout touch target');}
   const overflow=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   await p.screenshot({path:path.join(out,key+'-'+width+'.png'),fullPage:true});
   assert.ok(overflow<=1,key+' viewport overflow '+width);
-  results.push({key,width,overflow,headingVisible:await heading.isVisible()});
+  results.push({key,width,overflow,headingVisible:await heading.isVisible(),nativeChromeNonObstructing});
  }
  console.log(JSON.stringify({results}));
 }finally{if(browser)await browser.close();if(ids.length)sql(`BEGIN;DELETE FROM access_log WHERE user_agent=${quote(prefix)} OR username LIKE ${quote(prefix+'%')};DELETE FROM schoolsafe_native_onboarding WHERE staff_id IN (${ids});DELETE FROM staff WHERE staff_id IN (${ids}) AND username LIKE ${quote(prefix+'%')};COMMIT;`);assert.equal(sql(`SELECT count(*) FROM staff WHERE username LIKE ${quote(prefix+'%')}`),'0');fs.writeFileSync(path.join(out,'mobile-audit.json'),JSON.stringify({status:results.length===24?'PASS':'FAIL',results,cleanup:true,image:state.image},null,2));console.log('Synthetic mobile fixture cleanup complete');}})().catch(e=>{console.error(String(e.stack).replaceAll(pw,'[synthetic-secret]'));process.exitCode=1;});
