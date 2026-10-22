@@ -78,4 +78,16 @@ for drift in [b'A /tmp/unexpected-file\n', b'C /var/www/html/PasswordReset.php\n
 p = subprocess.run([sys.executable, str(ROOT / 'ops/releases/prodeli-recovery-sms-20261022/deploy.py'), '--rollback'], capture_output=True)
 check(p.returncode == 2, 'no rollback CLI can start the known-vulnerable old runtime')
 check(not hasattr(release, 'rollback'), 'new deployment exposes no automatic rollback function')
+spec = importlib.util.spec_from_file_location('canonical_qa', ROOT / 'scripts/prodeli-recovery-image-qa.py')
+canonical = importlib.util.module_from_spec(spec); spec.loader.exec_module(canonical)
+calls = []
+canonical.local = lambda args: calls.append(args) or b'canonical LF\n'
+check(canonical.git_source_bytes('a' * 40, 'fixture.php') == b'canonical LF\n'
+      and calls[0][-2:] == ['show', 'a' * 40 + ':fixture.php'], 'image payload comes from Git blobs, not Windows normalization')
+try:
+    canonical.git_source_bytes('HEAD', 'fixture.php')
+except AssertionError:
+    check(True, 'unresolved or mutable source reference refused')
+else:
+    raise AssertionError('Unresolved image source accepted')
 print(str(count) + ' checks, 0 failures')

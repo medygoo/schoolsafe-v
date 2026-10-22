@@ -5,9 +5,9 @@
 ## Candidat vérifié
 
 - Base encore active : `sha256:36a9e2fbc24159f25f65247cb516f84a43df49b410e35ee208ef3d25e3cf0c78`.
-- Image candidate : `sha256:b7c276bec9487aa97d4003411d43bc83671d819b72ed3ca94bf2c4c6e2c161e8`.
-- Empreinte source (base + hashes des cinq fichiers) : `61eb80821a8a73cf1ccd473c9c42582e59157ee2eae13c3436fa7be0560b363e`.
-- Source locale : base Git `fbc17e2` + cinq changements runtime non commités ; manifeste privé exact disponible. Ce n'est pas une prétendue image issue de `fbc17e2` seul. Après commit, rattacher explicitement ce SHA aux mêmes hashes avant publication. Toute modification du payload impose une nouvelle qualification.
+- Image candidate canonique : `sha256:01c194f4817731cecbec65476926585c58dced9118423bf7bbbff2ef10c73c34`.
+- Empreinte source (base + hashes des cinq fichiers) : `2745039fd3e3362b15c6e4545b5f96ba40436727df0148bc33e667d0b7176339`.
+- Source applicative publiée : `9d56feea54b7696783c49fc3444d7ce806eb670e`. Image construite à partir des **blobs Git**, jamais des octets Windows du worktree. La première image `b7c276be…` provenait du worktree : après normalisation des fins de ligne lors du commit, elle a été remplacée par ce candidat canonique et la totalité des contrôles a été rejouée avec succès. Aucun changement fonctionnel supplémentaire, aucune sixième source runtime. Le commit de recette associé doit contenir les mêmes cinq blobs ; toute modification impose une nouvelle qualification.
 - Cinq chemins sous `app/modules/codex-ui-v1/extensions-test-runtime/` : `PasswordReset.php`, `compte-recuperation.php`, `plateforme-prodeli-sms.php`, `ProgramFunctions/SchoolSafeRecovery.fnc.php`, `ProgramFunctions/SchoolSafeSms.fnc.php`.
 - **2 755 autres fichiers identiques**, y compris contenu, mode, UID et GID. Aucun ajout/suppression de fichier runtime.
 - 92 contrats renderer + 37 contrats PG ; dix groupes de récupération/SMS, course HTTP native et deux pannes de révocation injectées, dix groupes de création/premier accès PASS sur l'image exacte.
@@ -15,7 +15,7 @@
 
 Outil de reproduction : `scripts/prodeli-recovery-image-qa.py prepare|verify|diagnose|cleanup --evidence <dossier-prive>`. Préparation seule, aucune commande de déploiement ni de publication. Le dossier de preuves doit être nouveau ; le nettoyage ne vise que les conteneurs/réseau temporaires possédant l'étiquette et le nonce attendus. Aucun transfert de l'image entière : l'archive de l'ancien essai était tronquée et n'a pas été réutilisée.
 
-Rapport : `docs/qualification/PRODELI_RECOVERY_SMS_20261022.md`. Preuves privées finales : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/recovery-sms/exact-image-r2/`.
+Rapport : `docs/qualification/PRODELI_RECOVERY_SMS_20261022.md`. Preuves privées finales : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/recovery-sms/exact-image-git-r1/`.
 
 ## Préconditions de livraison — à exécuter seulement après autorisation spécifique
 

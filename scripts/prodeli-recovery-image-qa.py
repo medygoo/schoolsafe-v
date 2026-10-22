@@ -44,6 +44,12 @@ def remote(code, evidence, timeout=240):
     return p.stdout
 
 
+def git_source_bytes(commit, path):
+    """Canonical published bytes; never normalize from the Windows worktree."""
+    assert re.fullmatch('[a-f0-9]{40}', commit)
+    return local(['git', '-C', str(ROOT), 'show', commit + ':' + path])
+
+
 REMOTE_COMMON = r'''
 import subprocess,json,pathlib,hashlib,time,secrets,tarfile
 ROOT=pathlib.Path(STATE['root']);WEB=STATE['web'];DB=STATE['db'];NET=STATE['network'];NONCE=STATE['nonce']
@@ -168,6 +174,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=['prepare', 'verify', 'diagnose', 'cleanup'])
     parser.add_argument('--evidence', required=True, type=Path)
+    parser.add_argument('--source-commit', help='Full Git SHA for canonical image payload (defaults to HEAD)')
     args = parser.parse_args()
     evidence = args.evidence.resolve()
     evidence.mkdir(parents=True, exist_ok=True)
@@ -178,21 +185,26 @@ def main():
         state = {'nonce': nonce, 'root': '/var/tmp/schoolsafe-recovery-qa-' + nonce,
                  'web': 'schoolsafe-recovery-qa-web-' + nonce, 'db': 'schoolsafe-recovery-qa-db-' + nonce,
                  'network': 'schoolsafe-recovery-qa-' + nonce}
-        entries = {'payload/' + f: (ROOT / RUNTIME / f).read_bytes() for f in FILES}
+        source_commit = args.source_commit or local(['git', '-C', str(ROOT), 'rev-parse', 'HEAD']).decode().strip()
+        assert re.fullmatch('[a-f0-9]{40}', source_commit)
+        # Git blobs, never Windows working-tree bytes: autocrlf must not change
+        # the relation between published source and the qualified image.
+        git_bytes = lambda f: git_source_bytes(source_commit, f)
+        entries = {'payload/' + f: git_bytes(RUNTIME + f) for f in FILES}
         base_hashes = {f: hashlib.sha256(local(['git', '-C', str(ROOT), 'show', BASE_COMMIT + ':' + RUNTIME + f])).hexdigest() for f in FILES}
         payload_hashes = {f: hashlib.sha256(entries['payload/' + f]).hexdigest() for f in FILES}
         digest = hashlib.sha256(json.dumps({'base_image': BASE, 'payload_hashes': payload_hashes}, sort_keys=True).encode()).hexdigest()
-        dockerfile = 'FROM ' + BASE_TAG + '\nLABEL schoolsafe.patch.scope="prodeli-recovery-sms" schoolsafe.worktree.digest="' + digest + '"\n'
+        dockerfile = 'FROM ' + BASE_TAG + '\nLABEL schoolsafe.patch.scope="prodeli-recovery-sms" schoolsafe.source.digest="' + digest + '" org.opencontainers.image.revision="' + source_commit + '"\n'
         dockerfile += ''.join('COPY --chmod=0644 payload/' + f + ' /var/www/html/' + f + '\n' for f in FILES)
         entries['Dockerfile'] = dockerfile.encode()
         entries['.dockerignore'] = ('**\n!Dockerfile\n!payload/\n!payload/**\n').encode()
         for name in [*CONTRACTS, 'prodeli-recovery-sms-contracts.php']:
-            entries['tests/' + name] = (ROOT / 'scripts' / name).read_bytes()
-        entries['fixture-config.php'] = (ROOT / 'ops/deployment/config.inc.production.php').read_bytes()
+            entries['tests/' + name] = git_bytes('scripts/' + name)
+        entries['fixture-config.php'] = git_bytes('ops/deployment/config.inc.production.php')
         assert local(['docker', 'inspect', '--format', '{{index .Config.Labels "schoolcef.qualification"}}', 'schoolcef-harmonization-pg']).decode().strip() == 'harmonization-20261021'
         entries['fixture.private.dump'] = local(['docker', 'exec', 'schoolcef-harmonization-pg', 'pg_dump', '-U', 'schoolcef_fixture', '-d', 'schoolcef_fixture', '-Fc', '--no-owner', '--no-acl'])
         assert len(entries['fixture.private.dump']) < 5_000_000, 'Unexpected fixture size'
-        manifest = {'base_image': BASE, 'base_tag': BASE_TAG, 'base_commit': BASE_COMMIT, 'source_digest': digest,
+        manifest = {'base_image': BASE, 'base_tag': BASE_TAG, 'base_commit': BASE_COMMIT, 'source_commit': source_commit, 'source_digest': digest,
                     'payload_hashes': payload_hashes, 'base_hashes': base_hashes, 'contracts': CONTRACTS,
                     'qa_label': LABEL, 'bundle_files': {f: hashlib.sha256(b).hexdigest() for f, b in entries.items()}}
         bundle = io.BytesIO()
