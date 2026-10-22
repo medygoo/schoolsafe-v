@@ -341,5 +341,16 @@ body.ss-school-shell:has(#ss-photo-dashboard) #BottomButtonMenu svg line{stroke:
 body.ss-school-shell:has(#ss-photo-dashboard) #menu .adminmenu>.menu-module{display:block!important;height:auto!important;min-height:44px!important;flex-shrink:0!important;overflow:visible!important}
 body.ss-school-shell:has(#ss-photo-dashboard) #menu .adminmenu>.menu-module>.menu-top{display:flex!important;float:none!important;min-height:44px!important;box-sizing:border-box!important}
 
+/* Global operators keep a visible way back; school accounts get no central link. */
+body:has(#ss-photo-dashboard) .sskc-manager-navigation{display:none!important}
+.ss-fixed-header-brand .ss-central-dashboard-return{display:block;margin:0;flex-shrink:0;max-width:165px}
+.ss-fixed-header-brand .ss-central-dashboard-return a{display:flex;align-items:center;min-height:44px;box-sizing:border-box;padding:7px 12px;border:1px solid var(--photo-line);border-radius:7px;color:var(--photo-ink);background:var(--photo-soft);font:600 13px/1.3 system-ui,sans-serif;text-decoration:none}
+.ss-fixed-header-brand .ss-central-dashboard-return a:focus-visible{outline:3px solid #175bcc;outline-offset:2px}
+@media(max-width:700px){
+ .ss-fixed-header-brand:has(.ss-central-dashboard-return) .ss-photo-mobile-brand strong{display:none}
+ .ss-fixed-header-brand .ss-central-dashboard-return{max-width:82px}
+ .ss-fixed-header-brand .ss-central-dashboard-return a{padding:6px;font-size:12px}
+}
+
 /* The existing settings controller opens its form inside the native menu. */
 body.ss-school-shell.ss-settings-open:has(#ss-photo-dashboard) #menu{display:block!important}

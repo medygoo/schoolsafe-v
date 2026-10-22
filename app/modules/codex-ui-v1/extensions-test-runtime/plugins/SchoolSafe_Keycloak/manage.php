@@ -92,9 +92,12 @@ if($failure!=='')echo '<p role="alert">'.sskcEscape($failure).'</p>';
 $csrf=sskcEscape((string)$_SESSION['token']);
 if($intent!==null) {
     $title=DBGetOne('SELECT TITLE FROM user_profiles WHERE id='.(int)$intent['profile']);
+    $reviewSchools=[];
+    foreach((array)DBGet('SELECT ID,TITLE FROM schools WHERE SYEAR='.(int)UserSyear()) as $reviewSchool)
+        if(SchoolSafeSchoolAllowed((string)$reviewSchool['ID']))$reviewSchools[(int)$reviewSchool['ID']]=$reviewSchool['TITLE'];
     echo '<h2>Confirmer la création</h2><dl><dt>Personne</dt><dd>'.sskcEscape($intent['first'].' '.$intent['last'])
         .'</dd><dt>Identifiant</dt><dd>'.sskcEscape($intent['username']).'</dd><dt>Profil</dt><dd>'.sskcEscape($title)
-        .'</dd><dt>Écoles</dt><dd>'.($intent['schools']===''?'Toutes les écoles':sskcEscape($intent['schools'])).'</dd></dl>';
+        .'</dd><dt>Écoles</dt><dd>'.sskcEscape(sskcAccountSchoolNames($intent['schools'],$reviewSchools)).'</dd></dl>';
     echo '<p>SchoolSafe vérifiera les champs et les permissions avant la création. Aucun accès SchoolSafe ne sera remis si la création complète échoue.</p>';
     if(!empty($intent['native_director'])) {
         echo '<p>Connexion native, une seule école. Rôle : '.(!empty($intent['principal'])?'principal (aucun remplacement automatique)':'adjoint si un principal existe, sinon principal').'.</p>';

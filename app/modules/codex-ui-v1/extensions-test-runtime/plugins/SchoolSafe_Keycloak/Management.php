@@ -397,7 +397,7 @@ function sskcExistingAction(string $action,int $id): void
 function sskcManagerNavigation(): void
 {
     if(basename((string)($_SERVER['SCRIPT_NAME']??''))==='schoolsafe-administrators.php')return;
-    if(sskcCanRead()) echo '<p><a href="/schoolsafe-administrators.php?opening=1">'.(SchoolSafeGlobalAdmin()?'Gestion centrale SchoolSafe':'Gestion de votre école').'</a> · <a href="/schoolsafe-administrators.php">Administrateurs et accès</a></p>';
+    if(sskcCanRead()) echo '<p class="sskc-manager-navigation"><a href="/schoolsafe-administrators.php?opening=1">'.(SchoolSafeGlobalAdmin()?'Gestion centrale SchoolSafe':'Gestion de votre école').'</a> · <a href="/schoolsafe-administrators.php">Administrateurs et accès</a></p>';
 }
 
 add_action('Users/User.php|create_user_checks','sskcBeforeNativeCreate');

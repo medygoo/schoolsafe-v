@@ -47,7 +47,15 @@ $table_list[] = TextInput(
 	false
 );
 
+$schoolsafe_wizard_result = isset( $_REQUEST['sskc_school_draft'] ) && empty( $_REQUEST['_ROSARIO_PDF'] );
+if ( $schoolsafe_wizard_result )
+{
+    require_once 'ProgramFunctions/SchoolSafeWorkspace.fnc.php';
+    SchoolSafeWorkspaceHeader( 'Ouverture d’une école', 'school' );
+    echo '<div hidden aria-hidden="true">';
+}
 DrawHeader( ProgramTitle() );
+if ( $schoolsafe_wizard_result ) echo '</div>';
 
 foreach ( [ 'ADDRESS' => [ 'Address', 'Adresse' ], 'CITY' => [ 'City', 'Ville' ], 'PHONE' => [ 'Phone', 'Téléphone' ], 'WWW_ADDRESS' => [ 'Website', 'Site web' ] ] as $field => $label )
 {
@@ -63,7 +71,7 @@ for ( $slogan_index = 0; $slogan_index < 3; $slogan_index++ )
 // @since 5.8 Hook.
 do_action( 'School_Setup/CopySchool.php|header' );
 
-if ( empty( $_REQUEST['_ROSARIO_PDF'] ) )
+if ( empty( $_REQUEST['_ROSARIO_PDF'] ) && ! $schoolsafe_wizard_result )
 {
 	echo '<header class="ss-f08 ss-rise">';
 	echo '<p class="ss-f08-kicker"><img src="assets/themes/SchoolSafe/icons/school.svg" alt="" width="20" height="20"> ' . SchoolSafeT( 'School', 'Établissement' ) . '</p>';
@@ -147,7 +155,9 @@ if ( $go
 	echo '<form action="' . URLEscape( 'Modules.php?modname=' . $_REQUEST['modname']  ) . '" method="POST">';
 
 	$note[] = button( 'check' ) .'&nbsp;' .
-		sprintf( _( 'The data have been copied to a new school called "%s".' ), $_REQUEST['title'] ) .
+		( $schoolsafe_wizard_result
+            ? 'L’école a été créée. Continuez pour préparer le compte principal.'
+            : sprintf( _( 'The data have been copied to a new school called "%s".' ), $_REQUEST['title'] ) ) .
 		' ' . SubmitButton( _( 'OK' ) );
 
 	echo ErrorMessage( $note, 'note' );

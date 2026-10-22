@@ -132,7 +132,7 @@ endforeach;
 
 				<div class="ss-input-shell">
 					<i data-lucide="lock-keyhole"></i>
-					<input class="ss-input" id="PASSWORD" name="PASSWORD" type="password" size="20" maxlength="42" autocomplete="current-password" value="<?php echo AttrEscape( $default_password ); ?>" required>
+					<input class="ss-input" id="PASSWORD" name="PASSWORD" type="password" size="20" maxlength="128" autocomplete="current-password" value="<?php echo AttrEscape( $default_password ); ?>" required>
 					<button class="ss-icon-button" id="ssBlueEye" type="button" aria-label="<?php echo AttrEscape( _( 'Afficher le mot de passe' ) ); ?>" aria-pressed="false" title="<?php echo AttrEscape( _( 'Afficher le mot de passe' ) ); ?>"><i data-lucide="eye"></i></button>
 				</div>
 

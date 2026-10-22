@@ -26,6 +26,7 @@
  */
 
 require_once __DIR__ . '/Warehouse.php';
+require_once __DIR__ . '/ProgramFunctions/SchoolSafeWorkspace.fnc.php';
 
 header( 'Content-Type: text/html; charset=utf-8' );
 header( 'X-Content-Type-Options: nosniff' );
@@ -757,6 +758,7 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 </style>
 </head>
 <body>
+<?php SchoolSafeWorkspaceHeader( 'Comptes et établissements', 'central' ); ?>
 <main>
 	<div class="top">
 		<div>

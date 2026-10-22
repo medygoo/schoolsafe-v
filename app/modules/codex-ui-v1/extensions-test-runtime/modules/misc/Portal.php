@@ -57,9 +57,9 @@ if ( ! empty( $_REQUEST['ss_setup'] ) )
 }
 
 // Central operators can return without replacing the school's native dashboard.
-if ( SchoolSafeGlobalAdmin() && AllowUse( 'Users/User.php' ) )
+if ( SchoolSafeGlobalAdmin() )
 {
-    echo '<p class="ss-central-dashboard-return"><a target="_self" href="/schoolsafe-administrators.php?home=1">Retour au tableau de bord ProDéli</a></p>';
+    echo '<p class="ss-central-dashboard-return"><a target="_self" href="/schoolsafe-administrators.php?home=1" aria-label="Retour au tableau de bord ProDéli">Retour à ProDéli</a></p>';
 }
 
 $salute = sprintf( _( 'Good Evening, %s.' ), User( 'NAME' ) );

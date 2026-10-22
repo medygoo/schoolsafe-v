@@ -659,10 +659,9 @@ if ( empty( $_SESSION['STAFF_ID'] )
 // Successfully logged in, display Portal.
 elseif ( ! isset( $_REQUEST['create_account'] ) )
 {
-	// Keep centrally authenticated SchoolSafe managers out of the school dashboard.
-	// School administrators continue through Rosario's existing portal route.
+	// Native and managed global operators share the same central landing.
+	// Explicit destinations and school administrators retain the native route.
 	if ( empty( $_REQUEST['redirect_to'] )
-		&& ! empty( $_SESSION['schoolsafe-keycloak-session'] )
 		&& User( 'PROFILE' ) === 'admin'
 		&& function_exists( 'SchoolSafeGlobalAdmin' )
 		&& SchoolSafeGlobalAdmin() )

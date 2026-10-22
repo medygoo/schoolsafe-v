@@ -5,7 +5,7 @@
     if(!shell)return;
     const route=shell.dataset.centralRoute;
     if(!/^\/schoolsafe-administrators\.php(?:\?(?:home=1|opening=1|accounts=central|wizard=1&step=[1-6]))?$/.test(route))return;
-    const accountAnchor=/^#sskc-(?:(?:account|request)-\d+|communications-title|schools-title|followup-title)$/.test(location.hash)?location.hash:'';
+    const accountAnchor=/^#sskc-(?:(?:account|request)-\d+|communications-title|schools-title|access-title|followup-title)$/.test(location.hash)?location.hash:'';
     const preserve=()=>{if(location.pathname+location.search!==route)history.replaceState(history.state,'',route+accountAnchor);};
     const ready=()=>setTimeout(preserve,0);
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();

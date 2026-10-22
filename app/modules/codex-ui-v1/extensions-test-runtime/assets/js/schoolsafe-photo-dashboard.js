@@ -150,8 +150,8 @@
   if(brand){const logo=brand.querySelector('img');if(logo){logo.src='/schoolsafe-logo.png';logo.classList.add('ss-animated-brand');}left.appendChild(brand);}
   account.append(summary,tools);header.append(left,account);
   // Keep the actual central links and connection information, not copies.
-  const central=Array.from(document.querySelector('#body')?.children||[]).find(e=>e.tagName==='P'&&e.querySelector('a[href*="schoolsafe-administrators.php"]'));
-  if(central)tools.appendChild(central);
+  const central=document.querySelector('#body > .ss-central-dashboard-return');
+  if(central)left.appendChild(central);
   const loginInfo=document.querySelector('#body>.ss-dashboard-login-info');if(loginInfo)tools.appendChild(loginInfo);
   const detailed=new URL(location.href).searchParams.has('details_tab');
   const generated=[];
@@ -208,7 +208,7 @@
   function show(index){current=Math.max(0,Math.min(pages.length-1,index));pages.forEach((p,i)=>p.panel.hidden=i!==current);select.value=String(current);previous.disabled=current===0;next.disabled=current===pages.length-1;status.textContent=(current+1)+' / '+pages.length;viewport.scrollTop=0;}
   previous.addEventListener('click',()=>show(current-1));next.addEventListener('click',()=>show(current+1));select.addEventListener('change',()=>show(Number(select.value)));
   nav.append(previous,select,status,next);root.append(park,nav,viewport);if(footer)root.appendChild(footer);
-  root.addEventListener('click',event=>{const link=event.target.closest('a[href^="#ss-photo-"]');if(!link)return;const target=link.getAttribute('href').includes('alert')?'Alertes importantes':'Modules';const index=pages.findIndex(p=>p.label.startsWith(target));if(index>=0){event.preventDefault();event.stopImmediatePropagation();show(index);}},true);
+  root.addEventListener('click',event=>{const link=event.target.closest('a[href^="#ss-photo-"]');if(!link)return;const href=link.getAttribute('href');const target=href==='#ss-photo-home'?'Accueil':href.includes('alert')?'Alertes importantes':'Modules';const index=pages.findIndex(p=>p.label.startsWith(target));if(index>=0){event.preventDefault();event.stopImmediatePropagation();show(index);}},true);
   show(0);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();

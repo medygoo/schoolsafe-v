@@ -2,19 +2,25 @@
 require_once 'ProgramFunctions/Theme.fnc.php';
 require_once 'ProgramFunctions/FileUpload.fnc.php';
 require_once 'modules/School_Setup/includes/SchoolReceiptIdentity.fnc.php';
+require_once 'ProgramFunctions/SchoolSafeWorkspace.fnc.php';
+
+if ( empty( $_REQUEST['_ROSARIO_PDF'] ) )
+{
+	SchoolSafeWorkspaceHeader( 'Paramètres de l’école', 'school' );
+}
 
 //FJ add School Configuration
 // move the Modules config.inc.php to the database table
 // 'config' if the value is needed in multiple modules
 // 'program_config' if the value is needed in one module
 
+// Keep native heading initialization and printed output, without duplicate UI titles.
+if ( empty( $_REQUEST['_ROSARIO_PDF'] ) ) echo '<div hidden aria-hidden="true">';
 DrawHeader( ProgramTitle() );
 
 if ( empty( $_REQUEST['_ROSARIO_PDF'] ) )
 {
-	echo '<header class="ss-f10 ss-rise">';
-	echo '<p class="ss-f10-kicker"><img src="assets/themes/SchoolSafe/icons/settings.svg" alt="" width="20" height="20"> ' . SchoolSafeT( 'Settings', 'Paramètres' ) . '</p>';
-	echo '<h2>' . SchoolSafeT( 'School settings', 'Paramètres de l’école' ) . '</h2>';
+	echo '</div><header class="ss-f10 ss-rise">';
 	echo '<p>' . SchoolSafeT( 'This page sets how the school works. Some settings affect several parts of the application. Change security and access settings with care.', 'Cette page règle le fonctionnement général de l’école. Certains réglages touchent plusieurs parties de l’application. Les réglages de sécurité et d’accès se modifient avec prudence.' ) . '</p>';
 	echo '</header>';
 }
