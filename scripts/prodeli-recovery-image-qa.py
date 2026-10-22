@@ -128,7 +128,7 @@ try:
   '--tmpfs','/var/lib/postgresql/data:rw,nosuid,nodev,size=512m','-e','PGDATA=/var/lib/postgresql/data/pgdata',
   '-e','POSTGRES_USER=schoolcef_fixture','-e','POSTGRES_DB=schoolcef_fixture','-e','POSTGRES_PASSWORD='+password,db_image])
  for _ in range(45):
-  if subprocess.run(['docker','exec',DB,'pg_isready','-U','schoolcef_fixture','-d','schoolcef_fixture'],capture_output=True).returncode==0:break
+  if subprocess.run(['docker','exec',DB,'pg_isready','-h','127.0.0.1','-U','schoolcef_fixture','-d','schoolcef_fixture'],capture_output=True).returncode==0:break
   time.sleep(1)
  else:raise RuntimeError('Synthetic PG did not start')
  run(['docker','exec','-i',DB,'pg_restore','-U','schoolcef_fixture','-d','schoolcef_fixture','--no-owner','--no-acl','--exit-on-error'],(ROOT/'fixture.private.dump').read_bytes())

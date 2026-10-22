@@ -59,7 +59,9 @@ async function group(name, fn) {await fn(); results.push(name); console.log('PAS
  await group('official hub links, desktop/mobile and no-store',async()=>{
   const page=await c.newPage();await page.goto(base+'/compte/recuperation');
   assert.equal(new URL(await page.locator('form').first().evaluate(f=>f.action)).pathname,'/PasswordReset.php');
-  assert.equal(new URL(await page.locator('header a').evaluate(a=>a.href)).pathname,'/index.php');
+  const headerLinks=await page.locator('header a').evaluateAll(links=>links.map(a=>a.href));
+  assert.equal(headerLinks.length,2,'SchoolSafe brand and explicit return both link to login');
+  for(const href of headerLinks){const url=new URL(href);assert.equal(url.origin,new URL(base).origin);assert.equal(url.pathname,'/index.php');}
   for(const width of [1280,390]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1);await page.screenshot({path:path.join(out,'recovery-'+width+'.png'),fullPage:true});}
   const response=await c.request.get(base+'/compte/recuperation');assert.match(response.headers()['cache-control'],/no-store/);await page.close();await getHub();
  });

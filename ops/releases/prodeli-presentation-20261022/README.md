@@ -1,0 +1,15 @@
+# Livraison ciblée SchoolSafe — présentation, 22 octobre 2026
+
+Autorisation propriétaire : aperçu accepté, mise en ligne demandée et confirmée, validation visuelle humaine ensuite. Déploiement limité aux deux lots graphiques ; aucune livraison de la notation.
+
+Base active `8fc3546`, image `59fb6b25…`. Source runtime publiée `9c9b338046a3fd213c9b274726a39f0838fdba06`, image exacte `sha256:a4a3cbf821083f60629031075c46dafdec8615fb91d591835408fa4afb260bf3`, digest source `11d25627ea5144279d83e692812abdfd61c13b82489e51b00192e2cc375afdea`.
+
+17 fichiers runtime seulement, deux CSS nouvelles, 2 747 autres fichiers identiques avec modes/propriétaires. Le wizard ne change que de clé de cache CSS ; Grades et Schools sont identiques à la base déployée. Dépendances de conservation : scripts récupération/SMS et accès natif déjà qualifiés, copiés en `recovery.py` / `preservation.py` dans la release privée du VPS. Pas de source worktree Windows utilisée pour construire l’image : blobs Git canoniques.
+
+Qualification : 150 contrats PHP + 37 PG, 14 groupes premier accès/natif, 17 workspace, dix récupération/SMS, course HTTP réelle et deux rollbacks simulés PASS. Preuves privées `presentation-release-20261022/exact-r10`. Les preuves natives proviennent de `exact-r7`, workspace de `exact-r9` : même ID d’image immuable a4a3cbf, pas seulement même tag. Ressources de recette recréées autour de cette même image, hashes canoniques recontrôlés ; provenance/SHA des résultats conservées. Snapshot fictif final identique et QA éphémère nettoyée. Aucun envoi externe.
+
+Difficultés de recette conservées : attentes CSS manquantes dans les assertions, budget global 420 secondes insuffisant pour le parcours via SSH, ancien sélecteur `header a` devenu ambigu avec deux liens officiels, course du healthcheck PG qui répondait pendant son serveur temporaire d’initialisation (sonde désormais TCP), sortie console Windows CP1252. Pas de modification runtime après l’image qualifiée ; le test d’expiration isolé a confirmé 403. Les pages temporaires ne restent plus actives lors du test du premier rejet d’une session, celui-ci la détruisant intentionnellement. Ces échecs ne sont ni occultés ni des qualifications PASS.
+
+Procédure : publier la recette ; transférer uniquement manifeste/preuves/scripts depuis Git en dossier privé 0700 ; `deploy.py prepare` exige source/branche/image actives attendues, Git propre, image exacte et preuves, configuration/services, backup PostgreSQL 0600 vérifié. `deploy.py deploy` exige backup <15 min, crée le candidat identique en réglages, préserve sessions/cache Chromium lors de l’arrêt, conserve ancien conteneur arrêté. `deploy.py status` puis vérification indépendante des hashes Git/public/permissions anonymes. Aucun rollback automatique, migration, restauration ou manipulation de compte réel.
+
+Le propriétaire fera ensuite la validation visuelle connectée. Cette livraison ne certifie pas tous les PDF/tablettes/modules ni une réception réelle de message ou un premier accès humain.
