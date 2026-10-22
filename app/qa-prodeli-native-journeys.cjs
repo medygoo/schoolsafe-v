@@ -49,6 +49,7 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  await page.getByRole('link',{name:'Continuer : préparer le compte principal',exact:true}).click();
  await page.getByRole('button',{name:'Vérifier le compte principal',exact:true}).click();
  await page.waitForFunction(expected=>[...document.querySelectorAll('dt')].some(e=>e.textContent==='Écoles'&&e.nextElementSibling?.textContent===expected),prefix+' Wizard');
+ await page.locator('dt').filter({hasText:/^Écoles$/}).waitFor({state:'visible',timeout:10000});
  assert.equal(await page.locator('dt').filter({hasText:/^Écoles$/}).evaluate(e=>e.nextElementSibling.innerText),prefix+' Wizard','Principal review names the assigned school, not its raw scope');
  await page.getByRole('button',{name:'Créer le compte et préparer l’accès',exact:true}).click();await page.locator('dd code').waitFor();
  wizardId=Number(sql(`SELECT staff_id FROM staff WHERE username=${quote(prefix+'.wizard')}`));assert.ok(wizardId>0);
