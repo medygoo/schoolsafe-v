@@ -18,34 +18,11 @@ if ( ! isset( $ss_blue_messages ) ) {
 	$ss_blue_messages = '';
 }
 
-/**
- * Feuilles de style des deux écrans bleus, copiées fidèlement du prototype
- * validé et chargées dans son ordre d'origine : jetons, système, composants,
- * écran, soi-disant JASPE, variante « companion », puis notre adaptation
- * Rosario (blue.css) en dernier pour que ses rares exceptions gagnent.
- */
-$ss_blue_styles = array(
-	'design-tokens',
-	'design-system',
-	'components',
-	'entry',
-	'auth',
-	'entree-visuel',
-	'jaspe2d',
-	'auth-companion',
-	'auth-models',
-	'visuel-global',
-	'dashboard-liquid-glass',
-	'blue',
-);
-
-foreach ( $ss_blue_styles as $ss_blue_style ) :
-
-	?>
-	<link rel="stylesheet" href="assets/login/blue/<?php echo $ss_blue_style; ?>.css?v=1">
-	<?php
-
-endforeach;
+// One SchoolSafe presentation; previous prototype styles remain on disk.
+// Native fields, hooks, redirects and the existing screen/eye script stay intact.
+?>
+<link rel="stylesheet" href="/assets/css/schoolsafe-access.css?v=1">
+<?php
 
 ?>
 

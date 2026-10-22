@@ -111,6 +111,13 @@ else
 
 			foreach ( (array) $_REQUEST['values']['config'] as $column => $value )
 			{
+				// Keep stored theme settings untouched while SchoolSafe selection
+				// is suspended. Also covers legacy CONFIG and forged case variants.
+				if ( in_array( strtoupper( (string) $column ), [ 'THEME', 'THEME_FORCE' ], true ) )
+				{
+					continue;
+				}
+
 				$numeric_columns = [
 					'ATTENDANCE_FULL_DAY_MINUTES',
 					'CREATE_STUDENT_ACCOUNT_DEFAULT_SCHOOL',
@@ -303,40 +310,9 @@ else
 				MLTextInput( Config( 'TITLE' ), 'values[config][TITLE]', _( 'Program Title' ) ) .
 			'</td></tr>';
 
-			$themes = glob( 'assets/themes/*', GLOB_ONLYDIR );
-
-			$theme_options = [];
-
-			foreach ( (array) $themes as $theme )
-			{
-				$theme_name = str_replace( 'assets/themes/', '', $theme );
-
-				$theme_options[ $theme_name ] = $theme_name;
-			}
-
-			echo '<tr><td>' . RadioInput(
-				Config( 'THEME' ),
-				'values[config][THEME]',
-				'',
-				$theme_options,
-				false
-			);
-
-			echo FormatInputTitle(
-				_( 'Default Theme' ),
-				'',
-				false,
-				( AllowEdit() ? '' : '<br />' )
-			) . ' ';
-
-			// Add Force Default Theme.
-			echo CheckboxInput(
-				Config( 'THEME_FORCE' ),
-				'values[config][THEME_FORCE]',
-				_( 'Force' ),
-				'',
-				true
-			) . '</td></tr>';
+			echo '<tr><td><p class="ss-theme-locked"><strong>SchoolSafe</strong> — '
+				. SchoolSafeT( 'Single presentation. Alternative theme selection is suspended.', 'Présentation unique. La sélection des autres thèmes est suspendue.' )
+				. '</p></td></tr>';
 
 			echo '<tr><td><fieldset class="ss-f10-caution"><legend>' . _( 'Public Registration' ) . '</legend><table>';
 

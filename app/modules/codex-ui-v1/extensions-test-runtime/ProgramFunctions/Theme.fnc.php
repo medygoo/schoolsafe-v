@@ -22,6 +22,13 @@
  */
 function ThemeLiveUpdate( $new_theme, $old_theme, $default = true )
 {
+	// Alternative selection is suspended. Do not rewrite historical preferences
+	// or reload after saving unrelated settings under the single presentation.
+	if ( Preferences( 'THEME' ) === 'SchoolSafeCodex' )
+	{
+		return false;
+	}
+
 	if ( ! $new_theme
 		|| ! $old_theme
 		|| ( $new_theme === $old_theme && ! $default ) )

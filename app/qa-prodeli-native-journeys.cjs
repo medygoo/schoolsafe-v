@@ -1,6 +1,7 @@
 'use strict';
 const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
 const {chromium}=require('playwright');
+const {loginPresentation,firstAccessPresentation,handoffPresentation}=require('./qa-prodeli-access-presentation.cjs');
 const path=require('node:path');
 const evidence=process.env.PRODELI_NATIVE_EVIDENCE;assert.ok(evidence,'Set a private PRODELI_NATIVE_EVIDENCE directory');fs.mkdirSync(evidence,{recursive:true});
 const base=process.env.PRODELI_QA_URL||'http://127.0.0.1:8096',db=process.env.PRODELI_QA_DB||'schoolcef-harmonization-pg',web=process.env.PRODELI_QA_WEB||'schoolsafe-prodeli-presentation-qa';
@@ -27,6 +28,8 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  const newContext=async()=>{const c=await browser.newContext({extraHTTPHeaders:{'User-Agent':prefix,'Connection':'close'}});await c.route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());return c;};
  const context=await newContext();
  const login=async(c,user,pw)=>{const p=await c.newPage();await p.goto(base+'/index.php');if(await p.locator('#enterSplash').isVisible())await p.locator('#enterSplash').click();await p.locator('#USERNAME').fill(user);await p.locator('#PASSWORD').fill(pw);await Promise.all([p.waitForURL(u=>!u.pathname.endsWith('/index.php')||u.searchParams.get('modfunc')==='first-login'),p.locator('#loginform button[type="submit"]').click()]);return p;};
+ const preview=await context.newPage();await preview.goto(base+'/index.php');await loginPresentation(preview,evidence);await preview.close();
+ results.push('SchoolSafe public welcome/login desktop/mobile, native fields and eye control');
  page=await login(context,manager,password);
  await page.goto(base+'/schoolsafe-administrators.php?wizard=1');
  const steps=[{TITLE:prefix+' Wizard',SHORT_NAME:'QA Native'},{school_email:'school@example.invalid',school_slogan:'Fixture school'},
@@ -45,7 +48,8 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  assert.equal(sql(`SELECT COALESCE(schools,'') FROM staff WHERE staff_id=${adminId}`),'');
  await page.getByRole('link',{name:'Continuer : préparer le compte principal',exact:true}).click();
  await page.getByRole('button',{name:'Vérifier le compte principal',exact:true}).click();
- assert.equal(await page.locator('dt').filter({hasText:/^Écoles$/}).locator('xpath=following-sibling::dd[1]').innerText(),prefix+' Wizard','Principal review names the assigned school, not its raw scope');
+ await page.waitForFunction(expected=>[...document.querySelectorAll('dt')].some(e=>e.textContent==='Écoles'&&e.nextElementSibling?.textContent===expected),prefix+' Wizard');
+ assert.equal(await page.locator('dt').filter({hasText:/^Écoles$/}).evaluate(e=>e.nextElementSibling.innerText),prefix+' Wizard','Principal review names the assigned school, not its raw scope');
  await page.getByRole('button',{name:'Créer le compte et préparer l’accès',exact:true}).click();await page.locator('dd code').waitFor();
  wizardId=Number(sql(`SELECT staff_id FROM staff WHERE username=${quote(prefix+'.wizard')}`));assert.ok(wizardId>0);
  assert.equal(sql(`SELECT count(*) FROM schoolsafe_opening_requests WHERE school_id=${wizardSchool} AND responsible_id=${wizardId} AND state='prepared'`),'1');
@@ -82,11 +86,12 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  response=await context.request.post(base+'/schoolsafe-administrators.php',{form:{...confirm,token:'invalid'},maxRedirects:0});assert.equal(sql(`SELECT count(*) FROM staff WHERE username=${quote(client)}`),'0');results.push('invalid confirmation CSRF creates nothing');
  response=await context.request.post(base+'/schoolsafe-administrators.php',{form:confirm,maxRedirects:0});assert.equal(response.status(),303);const credential=response.headers().location;clientId=Number(sql(`SELECT staff_id FROM staff WHERE username=${quote(client)}`));assert.ok(clientId>0);assert.equal(sql(`SELECT staff_id FROM schoolsafe_school_leadership WHERE school_id=${school} AND role='principal'`),String(clientId));
  await context.request.post(base+'/schoolsafe-administrators.php',{form:confirm});assert.equal(sql(`SELECT count(*) FROM staff WHERE username=${quote(client)}`),'1');results.push('confirmed creation, leadership and replay refusal');
- await page.goto(base+credential);const temporary=await page.locator('dd code').innerText();secrets.push(temporary);assert.ok(/24 heures/.test(await page.locator('main').innerText()));const download=await page.locator('a[download]').getAttribute('href');assert.ok(Buffer.from(download.split(',')[1],'base64').toString('utf8').includes('https://app.shoolsafe.tech/index.php'),'Confidential file uses the official login URL');
- await page.reload();assert.equal(await page.locator('dd code').count(),0);results.push('confidential one-display handoff, official URL');
+ const handoffResponse=await page.goto(base+credential);const temporary=await page.locator('dd code').innerText();secrets.push(temporary);assert.ok(/24 heures/.test(await page.locator('main').innerText()));const download=await page.locator('a[download]').getAttribute('href');assert.ok(Buffer.from(download.split(',')[1],'base64').toString('utf8').includes('https://app.shoolsafe.tech/index.php'),'Confidential file uses the official login URL');
+ await handoffPresentation(page,handoffResponse,evidence);
+ await page.reload();assert.equal(await page.locator('dd code').count(),0);results.push('confidential one-display handoff, official URL, script isolation, responsive brand and redacted print PDF');
  const clientContext=await newContext();const cp=await login(clientContext,client,temporary);assert.equal(new URL(cp.url()).searchParams.get('modfunc'),'first-login');await cp.locator('#first-login-form').waitFor();
- assert.equal(await cp.locator('#first-login-form img[alt="SchoolSafe"]').count(),1);
- for(const width of [1280,390]){await cp.setViewportSize({width,height:900});assert.ok(await cp.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1,'first-login overflow '+width);await cp.screenshot({path:path.join(evidence,'native-first-login-'+width+'.png'),fullPage:true});}
+ assert.equal(await cp.locator('.ss-access-brand img[alt="SchoolSafe"]').count(),1);
+ await firstAccessPresentation(cp,evidence);
  const bypass=await clientContext.request.get(base+'/Modules.php?modname=misc/Portal.php',{maxRedirects:0});assert.equal(bypass.status(),303);assert.match(bypass.headers().location,/first-login/);results.push('targeted first-login form and direct-route bypass refused');
  const secondContext=await newContext();const stale=await login(secondContext,client,temporary);await stale.locator('#first-login-form').waitFor();
  const firstToken=await cp.locator('#first-login-form input[name="token"]').inputValue();

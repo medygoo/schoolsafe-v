@@ -112,18 +112,17 @@ function Preferences( $item, $program = 'Preferences' )
 {
 	global $_ROSARIO;
 
-	static $theme;
-
-	if ( is_null( $theme ) )
-	{
-		// @since 12.5 Cache config values, avoid calling Config() function X times.
-		$theme = Config( 'THEME' );
-	}
-
 	if ( ! $item
 		|| ! $program )
 	{
 		return '';
+	}
+
+	// One effective SchoolSafe presentation for every role, including anonymous
+	// and student sessions. Historical DB preferences are not rewritten.
+	if ( $item === 'THEME' )
+	{
+		return 'SchoolSafeCodex';
 	}
 
 	// Get User Preferences.
@@ -143,7 +142,6 @@ function Preferences( $item, $program = 'Preferences' )
 		'DELIMITER' => 'Tab',
 		'HEADER' => '#333366',
 		'HIGHLIGHT' => '#FFFFFF',
-		'THEME' => $theme,
 		// @since 7.1 Select Date Format: Add Preferences( 'DATE' ).
 		// @link https://www.w3.org/International/questions/qa-date-format
 		'DATE' => ( $_SESSION['locale'] === 'en_US.utf8' ? '%B %d %Y' : '%d %B %Y' ),
@@ -178,22 +176,6 @@ function Preferences( $item, $program = 'Preferences' )
 		|| ! empty( $_SESSION['STUDENT_ID'] ) )
 	{
 		$_ROSARIO['Preferences'][ $program ]['SEARCH'][1]['VALUE'] = 'N';
-	}
-
-	if ( $item === 'THEME' )
-	{
-		if ( Config( 'THEME_FORCE' )
-			&& ! empty( $_SESSION['STAFF_ID'] ) )
-		{
-			/**
-			 * Force Default Theme.
-			 * Override user preference if any.
-			 */
-			$_ROSARIO['Preferences'][ $program ]['THEME'][1]['VALUE'] = $defaults['THEME'];
-		}
-
-		// Sanitize / escape URL as THEME is often included for button img src attribute.
-		$_ROSARIO['Preferences'][ $program ]['THEME'][1]['VALUE'] = URLEscape( $_ROSARIO['Preferences'][ $program ]['THEME'][1]['VALUE'] );
 	}
 
 	return $_ROSARIO['Preferences'][ $program ][ $item ][1]['VALUE'];

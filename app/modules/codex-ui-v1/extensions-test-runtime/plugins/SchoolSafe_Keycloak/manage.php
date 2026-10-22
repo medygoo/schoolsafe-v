@@ -55,8 +55,8 @@ try {
 } catch(Throwable $e) {$failure=$e->getMessage();}
 if(isset($_GET['credential'])) {
     // Keep the temporary credential away from the application's global scripts.
-    header("Content-Security-Policy: default-src 'none'; style-src 'self'; font-src 'self'; base-uri 'none'; frame-ancestors 'none'");
-    echo '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Accès temporaire SchoolSafe</title><link rel="stylesheet" href="/assets/themes/FlatSIS/stylesheet.css"><link rel="stylesheet" href="/plugins/SchoolSafe_Keycloak/central-ui.css?v=6"><main class="sskc-shell"><header class="sskc-top"><strong>SchoolSafe</strong><nav><a href="/schoolsafe-administrators.php">Administrateurs</a></nav></header>';
+    header("Content-Security-Policy: default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; frame-ancestors 'none'");
+    echo '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Accès temporaire SchoolSafe</title><link rel="stylesheet" href="/assets/css/schoolsafe-access.css?v=1"></head><body><main class="ss-access-shell ss-access-handoff"><header class="ss-access-header"><span class="ss-access-brand"><span class="ss-access-emblem"><img src="/schoolsafe-logo.png" alt="" width="48" height="52"></span><span><strong>SchoolSafe</strong><small>Remise confidentielle</small></span></span><nav aria-label="Retour à la gestion"><a href="/schoolsafe-administrators.php">Administrateurs</a></nav></header><section class="ss-access-card">';
     try {
         $id=(int)$_GET['credential'];$row=sskcTarget($id,true);
         $handoff=$_SESSION['sskc_handoff'][$id]??null;
@@ -65,7 +65,7 @@ if(isset($_GET['credential'])) {
         }
         unset($_SESSION['sskc_handoff'][$id]);
         sskcAudit('temporary_password_display',$id,'success');
-        echo '<h2>Accès à remettre confidentiellement</h2><p>Ce mot de passe est affiché une seule fois. Remettez-le directement à la personne concernée.</p>';
+        echo '<h1>Accès à remettre confidentiellement</h1><p>Ce mot de passe est affiché une seule fois. Remettez-le directement à la personne concernée.</p>';
         echo '<dl><dt>Identifiant</dt><dd>'.sskcEscape($row['USERNAME']).'</dd><dt>Mot de passe temporaire</dt><dd><code>'
             .sskcEscape($handoff['password']).'</code></dd></dl>';
         $client=!empty($handoff['client']) || is_array(SchoolSafeScopeParse($row['SCHOOLS']));
@@ -81,7 +81,7 @@ if(isset($_GET['credential'])) {
             :'Mot de passe personnel à choisir. L’authentification renforcée reste applicable aux comptes de l’équipe SchoolSafe.').'</p>';
         echo '<p><a href="/schoolsafe-administrators.php">Revenir à la gestion des administrateurs</a></p>';
     }catch(Throwable $e){echo '<p role="alert">'.sskcEscape($e->getMessage()).'</p>';}
-    echo '<p><a href="/schoolsafe-administrators.php">Retour aux administrateurs</a></p></main></html>';exit;
+    echo '<p class="ss-access-return"><a href="/schoolsafe-administrators.php">Retour aux administrateurs</a></p></section></main></body></html>';exit;
 }
 $_REQUEST['modname']='Users/User.php';$_ROSARIO['page']='modules';
 sskcUiStart($showCentral?'Comptes de l’équipe centrale':'Administrateurs scolaires');

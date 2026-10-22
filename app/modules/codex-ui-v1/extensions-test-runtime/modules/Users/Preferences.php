@@ -19,21 +19,6 @@ if ( empty( $_REQUEST['tab'] )
 	$_REQUEST['tab'] = 'password';
 }
 
-if ( $_REQUEST['tab'] === 'display_options' )
-{
-	// Set theme options for use by SelectInput() and to check if theme is valid before save
-	$theme_options = [];
-
-	$themes = glob( 'assets/themes/*', GLOB_ONLYDIR );
-
-	foreach ( (array) $themes as $theme )
-	{
-		$theme_name = str_replace( 'assets/themes/', '', $theme );
-
-		$theme_options[$theme_name] = $theme_name;
-	}
-}
-
 if ( $_REQUEST['tab'] === 'print_options' )
 {
 	// Set page size options for use by SelectInput() and to check if page size is valid before save
@@ -132,13 +117,8 @@ if ( $_REQUEST['modfunc'] === 'save'
 			$_REQUEST['values']['Preferences']['HIDE_ALERTS'] = 'N';
 		}
 
-		if ( $_REQUEST['tab'] == 'display_options'
-			&& isset( $_REQUEST['values']['Preferences']['THEME'] )
-			&& ! in_array( $_REQUEST['values']['Preferences']['THEME'], $theme_options ) )
-		{
-			// Security fix #352 selected theme does not exist
-			unset( $_REQUEST['values']['Preferences']['THEME'] );
-		}
+		// ProgramUserConfig() ignores theme writes for every tab and preserves
+		// historical values; other display and printing preferences still save.
 
 		if ( $_REQUEST['tab'] == 'print_options'
 			&& ! in_array( $_REQUEST['values']['Preferences']['PAGE_SIZE'], array_keys( $page_size_options ) ) )
@@ -403,29 +383,9 @@ if ( ! $_REQUEST['modfunc'] )
 	{
 		echo '<table class="cellpadding-5"><tr><td>';
 
-		$theme_value = Preferences( 'THEME' );
-
-		// http://stackoverflow.com/questions/1479233/why-doesnt-firefox-show-the-correct-default-select-option
-		$extra = 'autocomplete="off"';
-
-		if ( Config( 'THEME_FORCE' ) )
-		{
-			// Theme forced, we should not be able to change it.
-			$extra = 'disabled';
-
-			$theme_value = Config( 'THEME' );
-		}
-
-		// Theme.
-		echo SelectInput(
-			$theme_value,
-			'values[Preferences][THEME]',
-			_( 'Theme' ),
-			$theme_options,
-			$allow_na,
-			$extra,
-			$div
-		);
+		echo '<p class="ss-theme-locked"><strong>SchoolSafe</strong> — '
+			. SchoolSafeT( 'Single presentation. Alternative theme selection is suspended.', 'Présentation unique. La sélection des autres thèmes est suspendue.' )
+			. '</p>';
 
 		$extra = '';
 
