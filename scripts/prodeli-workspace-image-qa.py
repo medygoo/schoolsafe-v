@@ -44,6 +44,22 @@ def preparation_code():
     code = code.replace("assert before[f][0]==MANIFEST['base_hashes'][f]", "assert f not in before or before[f][0]==MANIFEST['base_hashes'][f]")
     code = code.replace("assert json.loads(output.decode().splitlines()[-1])=={'passed':expected,'failed':0};passed+=expected",
         "result=json.loads(output.decode().splitlines()[-1]);assert result['passed']==expected and result['failed']==0;passed+=expected")
+    build = ''' log=run(['docker','build','--network','none','--pull=false','-t',tag,str(ROOT)],timeout=120)
+ (ROOT/'build.log').write_bytes(log)
+ image=run(['docker','image','inspect','--format','{{.Id}}',tag]).decode().strip()
+'''
+    reuse = ''' if MANIFEST.get('existing_image'):
+  image=MANIFEST['existing_image'];d=inspect(image)
+  assert d['Id']==image and d['Config']['Labels']['schoolsafe.source.digest']==MANIFEST['source_digest']
+  assert d['Config']['Labels']['org.opencontainers.image.revision']==MANIFEST['source_commit']
+  (ROOT/'build.log').write_text('Reusing verified immutable image '+image)
+ else:
+  log=run(['docker','build','--network','none','--pull=false','-t',tag,str(ROOT)],timeout=120)
+  (ROOT/'build.log').write_bytes(log)
+  image=run(['docker','image','inspect','--format','{{.Id}}',tag]).decode().strip()
+'''
+    assert code.count(build) == 1
+    code = code.replace(build, reuse)
     return code.replace('Only the five scoped runtime files may differ', 'Only the declared workspace runtime files may differ')
 
 
@@ -52,7 +68,10 @@ def main():
     parser.add_argument('action', choices=['prepare', 'verify', 'diagnose', 'cleanup'])
     parser.add_argument('--evidence', required=True, type=Path)
     parser.add_argument('--source-commit')
+    parser.add_argument('--existing-image', help='Reuse this immutable image ID after label/full payload checks; no rebuild')
     args = parser.parse_args()
+    if args.existing_image:
+        assert args.action == 'prepare' and re.fullmatch('sha256:[a-f0-9]{64}', args.existing_image)
     evidence = args.evidence.resolve(); evidence.mkdir(parents=True, exist_ok=True)
     state_file = evidence / 'image-qa-state.json'
     if args.action == 'prepare':
@@ -85,6 +104,7 @@ def main():
         manifest = {'base_image': BASE, 'base_tag': BASE_TAG, 'base_commit': BASE_COMMIT, 'source_commit': commit,
                     'source_digest': digest, 'payload_hashes': hashes, 'base_hashes': baseline,
                     'new_files': sorted(NEW_FILES), 'contracts': CONTRACTS, 'qa_label': LABEL,
+                    'existing_image': args.existing_image,
                     'bundle_files': {f: hashlib.sha256(b).hexdigest() for f, b in entries.items()}}
         bundle = io.BytesIO()
         with tarfile.open(fileobj=bundle, mode='w:gz') as archive:
