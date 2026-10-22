@@ -59,8 +59,15 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  const wizardTemporary=await page.locator('dd code').innerText();secrets.push(wizardTemporary);
  const wizardContext=await newContext();
  const wp=await login(wizardContext,prefix+'.wizard',wizardTemporary);await wp.locator('#first-login-form').waitFor();
+ // Keep the authenticated cookie jar, but stop page background requests before testing
+ // the first expired request: the guard intentionally destroys the rejected session.
+ await wp.close();
  sql(`UPDATE schoolsafe_native_onboarding SET expires_at=CURRENT_TIMESTAMP-interval '1 minute' WHERE staff_id=${wizardId}`);
- assert.equal((await wizardContext.request.get(base+'/Modules.php?modname=misc/Portal.php',{maxRedirects:0})).status(),403);
+ assert.equal(sql(`SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id=${wizardId} AND expires_at<CURRENT_TIMESTAMP AND completed_at IS NULL`),'1');
+ const expiredResponse=await wizardContext.request.get(base+'/Modules.php?modname=misc/Portal.php',{maxRedirects:0});
+ const expiredBody=await expiredResponse.text();
+ fs.writeFileSync(path.join(evidence,'expired-access-diagnostic.json'),JSON.stringify({status:expiredResponse.status(),expiredMessage:/expired|expiré|remplacé/.test(expiredBody),loginForm:/id=["']loginform/.test(expiredBody),firstAccessForm:/id=["']first-login-form/.test(expiredBody),dashboard:/id=["']ss-photo-dashboard/.test(expiredBody),cookiesPresent:(await wizardContext.cookies()).length>0,locationPath:expiredResponse.headers().location?new URL(expiredResponse.headers().location,base).pathname:null},null,2));
+ assert.equal(expiredResponse.status(),403);
  await page.goto(base+'/schoolsafe-administrators.php');
  await page.locator('#sskc-account-'+wizardId).getByRole('button',{name:'Renouveler l’accès initial natif',exact:true}).click();
  const renewForm=page.locator('form').filter({has:page.locator('input[name="native_renew_nonce"]')});
@@ -94,7 +101,7 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  assert.equal(await cp.locator('.ss-access-brand img[alt="SchoolSafe"]').count(),1);
  await firstAccessPresentation(cp,evidence);
  const bypass=await clientContext.request.get(base+'/Modules.php?modname=misc/Portal.php',{maxRedirects:0});assert.equal(bypass.status(),303);assert.match(bypass.headers().location,/first-login/);results.push('targeted first-login form and direct-route bypass refused');
- const secondContext=await newContext();const stale=await login(secondContext,client,temporary);await stale.locator('#first-login-form').waitFor();
+ const secondContext=await newContext();const stale=await login(secondContext,client,temporary);await stale.locator('#first-login-form').waitFor();await stale.close();
  const firstToken=await cp.locator('#first-login-form input[name="token"]').inputValue();
  response=await clientContext.request.post(base+'/index.php?modfunc=first-login',{form:{token:firstToken,'first_login[PASSWORD]':'short'}});assert.equal(sql(`SELECT count(*) FROM schoolsafe_native_onboarding WHERE staff_id=${clientId} AND completed_at IS NULL`),'1');results.push('weak personal password cannot complete first access');
  await cp.locator('input[name="first_login[PASSWORD]"]').fill(personal);

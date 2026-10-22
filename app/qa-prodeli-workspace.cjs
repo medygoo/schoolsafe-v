@@ -70,6 +70,7 @@ async function responsive(page, key) {
   browser = await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || 'C:/Users/PC/AppData/Local/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-win64/chrome-headless-shell.exe'});
   const context = async () => {
     const c = await browser.newContext({extraHTTPHeaders:{'User-Agent':prefix,'Connection':'close'}});
+    c.setDefaultNavigationTimeout(process.env.PRODELI_QA_SSH?90000:30000);
     await c.route('**/*', route => route.request().url().startsWith(base+'/') ? route.continue() : route.abort());
     return c;
   };
