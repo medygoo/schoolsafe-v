@@ -49,7 +49,7 @@ async function group(name, fn) {await fn(); results.push(name); console.log('PAS
  browser = await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE||'C:/Users/PC/AppData/Local/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-win64/chrome-headless-shell.exe'});
  const context = async()=>{const c=await browser.newContext({extraHTTPHeaders:requestOptions.headers});await c.route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());return c;};
  const c=await context(), old=await context();
- const login=async(ctx,user,pw)=>{await ctx.request.get(base+'/index.php');const r=await ctx.request.post(base+'/index.php',{form:{USERNAME:user,PASSWORD:pw},maxRedirects:0});assert.equal(r.status(),302);assert.equal((await ctx.request.get(base+'/Modules.php?modname=misc/Portal.php',{maxRedirects:0})).status(),200);};
+ const login=async(ctx,user,pw)=>{await ctx.request.get(base+'/index.php');const r=await ctx.request.post(base+'/index.php',{form:{USERNAME:user,PASSWORD:pw},maxRedirects:0});assert.equal(r.status(),302);const central=user===prefix+'.global';assert.equal((await ctx.request.get(base+(central?'/schoolsafe-administrators.php?home=1':'/Modules.php?modname=misc/Portal.php'),{maxRedirects:0})).status(),200);if(central)assert.equal((await ctx.request.get(base+'/Modules.php?modname=misc/Portal.php',{maxRedirects:0})).status(),403);};
  await login(old,prefix+'.school',initial);
  let token;
  const getHub=async()=>{const r=await c.request.get(base+'/compte/recuperation');assert.equal(r.status(),200);const html=await r.text();token=tokenOf(html);assert.ok(token);return html;};

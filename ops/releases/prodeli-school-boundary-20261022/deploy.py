@@ -72,6 +72,14 @@ def qualification(release):
     assert all(s['exit'] == 0 for s in result['suites'])
     for filename, groups in [('native-result.json',21)]:
         result = load(filename); assert result['status'] == 'PASS' and result['cleanup'] and len(result['results']) == groups
+    retained = ROOT/'retained-results-proof.json'
+    if retained.exists():
+        provenance = load(retained.name)
+        assert provenance['image'] == release['image'] and provenance['source_digest'] == release['source_digest']
+        assert provenance['tests_unchanged'] and set(provenance['retained_files']) == {'native-result.json','mobile-audit.json'}
+        for filename,digest in provenance['retained_files'].items():
+            assert filename in ['native-result.json','mobile-audit.json']
+            assert hashlib.sha256((ROOT/filename).read_bytes()).hexdigest() == digest
     mobile = load('mobile-audit.json')
     assert mobile['status'] == 'PASS' and mobile['image'] == release['image'] and mobile['cleanup']
     assert len(mobile['results']) == 24 and {(x['key'],x['width']) for x in mobile['results']} == {
