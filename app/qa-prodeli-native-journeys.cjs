@@ -59,7 +59,7 @@ async function schoolConfigurationBoundary(p,id,key){
  browser=await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE||'C:/Users/PC/AppData/Local/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-win64/chrome-headless-shell.exe'});
  const newContext=async()=>{const c=await browser.newContext({extraHTTPHeaders:{'User-Agent':prefix,'Connection':'close'}});await c.route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());return c;};
  const context=await newContext();
- const login=async(c,user,pw)=>{const p=await c.newPage();await p.goto(base+'/index.php');if(await p.locator('#enterSplash').isVisible())await p.locator('#enterSplash').click();await p.locator('#USERNAME').fill(user);await p.locator('#PASSWORD').fill(pw);await Promise.all([p.waitForURL(u=>!u.pathname.endsWith('/index.php')||u.searchParams.get('modfunc')==='first-login'),p.locator('#loginform button[type="submit"]').click()]);return p;};
+ const login=async(c,user,pw)=>{const p=await c.newPage();await p.goto(base+'/index.php');if(await p.locator('#enterSplash').isVisible())await p.locator('#enterSplash').click();await p.locator('#USERNAME').fill(user);await p.locator('#PASSWORD').fill(pw);await Promise.all([p.waitForURL(u=>!u.pathname.endsWith('/index.php')||u.searchParams.get('modfunc')==='first-login',{waitUntil:'domcontentloaded'}),p.locator('#loginform button[type="submit"]').click()]);return p;};
  const preview=await context.newPage();await preview.goto(base+'/index.php');await loginPresentation(preview,evidence);await preview.close();
  results.push('SchoolSafe public welcome/login desktop/mobile, native fields and eye control');
  page=await login(context,manager,password);
