@@ -2,7 +2,7 @@
 
 ## Mandat et état
 
-GO explicite du propriétaire : finir ProDéli et déployer en production. Candidat en qualification, pas encore livré à la rédaction initiale. La récupération/SMS déjà active reste la base immuable `sha256:01c194f4817731cecbec65476926585c58dced9118423bf7bbbff2ef10c73c34`.
+**DÉPLOYÉ, CONTRÔLES TECHNIQUES ET NAVIGATION CONNECTÉE PASS.** GO explicite du propriétaire : finir ProDéli et déployer en production. Image `sha256:59fb6b25e57ea4f53237ff36dbdc0ae1122fdf57be34a6ab4fe5b3bf6fc5bb63`, source immuable `a3fbffb158ce057d4d7742803bb394f38678bcc4`, recette livrée `8fc3546bc47d23395d5802a9f612185e9193acaa` (mêmes 16 blobs applicatifs). Sauvegarde et contrôle séparé PASS, 91 sessions et dix entrées cache Chromium préservées. Navigation réelle desktop/mobile contrôlée, acceptation du propriétaire distincte. [Rapport](../../../docs/qualification/PRODELI_WORKSPACE_RELEASE_20261022.md). La récupération/SMS déjà active reste la base immuable `sha256:01c194f4817731cecbec65476926585c58dced9118423bf7bbbff2ef10c73c34`.
 
 16 sources runtime ciblées, dont deux ajouts : arrivée native globale, dashboard central distinct, retour scolaire visible, réglages/console/résultat de création habillés SchoolSafe, revue de portée lisible et limite de mot de passe cohérente. Contrôleurs, droits, données Rosario et fournisseurs réutilisés. Aucun changement de schéma, nouvelle identité, conversion Keycloak ou envoi externe.
 

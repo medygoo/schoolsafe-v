@@ -2,7 +2,7 @@
 
 ## État
 
-**EN COURS DE QUALIFICATION, LIVRAISON AUTORISÉE.** Le propriétaire donne son GO explicite pour finir ProDéli et déployer en production. Le dashboard précédent a été rejeté après vérification connectée ; aucune acceptation du candidat n’est déduite du GO. Source de départ `6e90fe5`, production technique précédente `68de604` / image `01c194f4…`. Les preuves récupération/SMS ne constituent pas une acceptation du dashboard. Le propriétaire autorise la correction et les parcours complets, dont une école/un administrateur de test jusqu'au premier accès et au tableau scolaire. Aucun utilisateur existant ne doit être modifié, aucun message réel envoyé sans destinataire expressément autorisé.
+**CORRECTIF DÉPLOYÉ, CONTRÔLES TECHNIQUES ET NAVIGATION CONNECTÉE PASS.** Image `59fb6b25…`, source applicative `a3fbffb`, recette `8fc3546`. [Rapport de livraison](PRODELI_WORKSPACE_RELEASE_20261022.md). Le propriétaire a donné son GO explicite pour finir ProDéli et déployer en production. Le dashboard précédent a été rejeté après vérification connectée ; aucune acceptation du candidat n’est déduite du GO. Source de départ `6e90fe5`, production technique précédente `68de604` / image `01c194f4…`. Les preuves récupération/SMS ne constituent pas une acceptation du dashboard. Le propriétaire autorise la correction et les parcours complets, dont une école/un administrateur de test jusqu'au premier accès et au tableau scolaire. Aucun utilisateur existant ne doit être modifié, aucun message réel envoyé sans destinataire expressément autorisé.
 
 ## Défauts reproduits avant patch
 
@@ -62,7 +62,7 @@ La matrice décrit les conditions à couvrir, **pas des PASS implicites**. Les e
 - **PASS recherche/accordéon** : recherche de l’école fictive -> un résultat sur deux ; effacement -> rétablissement des deux ; Informations à réunir effectivement ouvert.
 - **PASS création autorisée** : école `TEST PRODELI RECETTE 20261022` ID 2 et administrateur `qa.prodeli.20261022` ID 5, profil scolaire 7, scope `,2,`. Contacts fictifs `.invalid`, images synthétiques. Créations effectuées après autorisation spécifique, sans suppression ni envoi.
 - **PASS partiel images** : validation de cadrage obligatoire, contain/cover/zoom/flèches/rotation/réinitialisation/retrait/rechargement observés, reprise du brouillon et aperçu ; réception du fichier après téléchargement NON VÉRIFIÉE.
-- **FAIL présentation/destination** : arrivée native globale scolaire, confirmation Copy School / New school native anglaise, revue principal avec scope brut `,2,`, console ancienne présentation, bouton courriel pointant vers la configuration générale.
+- **FAIL avant livraison, corrigés par le lot** : arrivée native globale scolaire, confirmation Copy School / New school native anglaise, revue principal avec scope brut `,2,`, console ancienne présentation, bouton courriel pointant vers la configuration générale. Après livraison : arrivée globale native, configuration/console SchoolSafe et libellé exact contrôlés dans la vraie session ; confirmation d’école et revue du principal qualifiées sur l’image exacte sans créer une deuxième école de production.
 - **NON EXÉCUTÉ humain** : remise confidentielle conservée par le propriétaire, premier accès, changement personnel et reconnexion du nouvel administrateur. Aucun secret lu ou capturé par l’agent.
 - **PASS restauration du contexte** : sélection initiale Default School rétablie par le changement natif, puis retour à l’accueil central et nom sélectionné relu. École/compte fictifs conservés, aucune suppression autorisée.
 
@@ -72,7 +72,7 @@ La matrice décrit les conditions à couvrir, **pas des PASS implicites**. Les e
 - `native-after-r1/native-result.json` : 13 groupes navigateur/PostgreSQL fictif et nettoyage PASS, dont premier accès et reconnexion personnelle synthétiques. Ne prouve pas le parcours humain de production.
 - `browser-after-r6/workspace-result.json` : **14 groupes navigateur/PostgreSQL fictif PASS, nettoyage true**, avec ancres centrales conservées au rechargement, accordéons, arrivée globale/scolaire, phrase longue, refus CSRF et absence d’élévation.
 - `node --test scripts/prodeli-central-navigation.test.cjs` : RED 5 PASS/2 FAIL, puis **7 PASS**. Vrai script JS exécuté avec DOM substitué ; ancre access-title corrigée. Le lien Configuration générale de l’école est désormais nommé selon sa destination réelle, sans inventer un réglage SMTP. JS centrale v16.
-- Ces modifications ne sont pas visibles en production. Image Git immuable et requalification récupération/SMS de ce candidat : **NON EXÉCUTÉES**. Acceptation propriétaire : **NON OBTENUE**.
+- **Ces modifications sont désormais livrées.** `exact-image-r2` : 123 contrats renderer/contrôleur, 37 récupération PG, 14 groupes workspace, 13 native, dix récupération/SMS, concurrence un seul gagnant/époque 1 et deux rollbacks de panne PASS. Snapshot fictif identique, ressources QA retirées. Production : sauvegarde et contrôle séparé PASS ; session existante conservée, `/index.php` -> Tableau de bord ProDéli, mobile sans débordement, ancre après rechargement, réglages/console habillés et six destinations réelles relues. Aucun envoi externe. Acceptation propriétaire : **NON OBTENUE**, distincte de ces preuves.
 
 ### Dernières corrections avant qualification immuable
 
