@@ -166,6 +166,7 @@ async function responsive(page, key) {
     const configDigest=()=>sql("SELECT md5(string_agg(row_to_json(c)::text,'' ORDER BY row_to_json(c)::text)) FROM config c");
     const before=configDigest();
     await page.goto(base+'/Modules.php?modname=School_Setup/Configuration.php&tab=system');
+    await page.locator('.ss-theme-locked').waitFor({state:'visible',timeout:10000});
     assert.ok(await page.locator('.ss-theme-locked').isVisible());
     assert.equal(await page.locator('[name="values[config][THEME]"],[name="values[config][THEME_FORCE]"]').count(),0,'No administrator theme selector');
     const csrf=await page.locator('meta[name=token]').getAttribute('content');assert.ok(csrf,'Native CSRF token required for mutation proofs');
@@ -175,6 +176,7 @@ async function responsive(page, key) {
     }
     sql(`INSERT INTO program_user_config(user_id,program,title,value) VALUES(${ids[0]},'Preferences','THEME','WPadmin')`);
     await page.goto(base+'/Modules.php?modname=Users/Preferences.php&tab=display_options');
+    await page.locator('.ss-theme-locked').waitFor({state:'visible',timeout:10000});
     assert.equal(await page.locator('[name="values[Preferences][THEME]"]').count(),0,'Alternative selector removed');
     assert.ok(await page.locator('.ss-theme-locked').isVisible());
     assert.ok(await page.locator('link[href*="assets/themes/SchoolSafeCodex/stylesheet.css"]').count()>0,'Historical WPadmin preference does not change effective theme');
@@ -245,6 +247,8 @@ async function responsive(page, key) {
   if (lastPage && !lastPage.isClosed() && !await lastPage.locator('dd code').count()) {
     await lastPage.screenshot({path:path.join(out,'failure.png'),fullPage:true}).catch(()=>{});
     const text = (await lastPage.locator('body').innerText({timeout:5000})).replaceAll(password,'[synthetic-secret]').replaceAll(longPassword,'[synthetic-secret]');
+    const layout=await lastPage.locator('.ss-theme-locked').evaluateAll(es=>es.map(e=>{const chain=[];for(let n=e;n;n=n.parentElement){const s=getComputedStyle(n),r=n.getBoundingClientRect();chain.push({tag:n.tagName,id:n.id,class:n.className,display:s.display,visibility:s.visibility,opacity:s.opacity,contentVisibility:s.contentVisibility,x:r.x,y:r.y,width:r.width,height:r.height});}return chain;}));
+    fs.writeFileSync(path.join(out,'failure-layout.json'),JSON.stringify(layout,null,2));
     fs.writeFileSync(path.join(out,'failure-details.json'),JSON.stringify({path:new URL(lastPage.url()).pathname,title:await lastPage.title(),text:text.slice(0,5000)},null,2));
   }
 } finally {
