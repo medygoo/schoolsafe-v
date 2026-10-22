@@ -181,6 +181,11 @@ if ( ! empty( $_REQUEST['h'] )
 
 		foreach ( (array) $staff_RET as $staff )
 		{
+			// Recheck at redemption, including links issued before an account changed state.
+			if ( ! SchoolSafeRecoveryStaffEligible( (int) $staff['ID'] ) )
+			{
+				continue;
+			}
 			// Generate plain hash from user ID, username, name, password, email & last login.
 			$plain_hash = $staff['ID'] . $staff['USERNAME'] . $staff['FULL_NAME'] .
 				$staff['PASSWORD'] . $staff['EMAIL'] . $staff['LAST_LOGIN'];
@@ -239,30 +244,14 @@ if ( ! empty( $_REQUEST['h'] )
 
 				if ( $user_type === 'staff' )
 				{
-					/**
-					 * SQL update User password for all school years
-					 *
-					 * @since 12.0
-					 */
-					// Update password.
-					DBUpdate(
-						'staff',
-						[ 'PASSWORD' => encrypt_password( $new_password ) ],
-						[ 'USERNAME' => DBEscapeString( $staff['USERNAME'] ) ]
-					);
-
-					// SchoolSafe — usage unique du lien : invalider le jeton
-					// en ramenant LAST_LOGIN au présent (le lien exigeait
-					// LAST_LOGIN futur). Sans ceci, le lien restait
-					// réutilisable jusqu'à expiration des 2 heures.
-					DBQuery( "UPDATE staff SET LAST_LOGIN=CURRENT_TIMESTAMP
-						WHERE USERNAME='" . DBEscapeString( $staff['USERNAME'] ) . "'" );
-
-					// SchoolSafe L4 — mot de passe changé : les autres
-					// sessions sont révoquées (époque L1, garde Warehouse).
-					if ( function_exists( 'SchoolSafeAccountRevoke' ) )
+					// Preserve native all-school-years semantics, but consume the
+					// matched snapshot under a row lock and revoke in the same transaction.
+					if ( ! SchoolSafeRecoveryCompleteStaffReset( (int) $user_id,
+						(string) $staff['PASSWORD'], (string) $staff['LAST_LOGIN'], $new_password ) )
 					{
-						SchoolSafeAccountRevoke( $staff['USERNAME'], 0 );
+						// Expired/replayed/concurrent failure: no success or credentials exposed.
+						header( 'Location: PasswordReset.php' );
+						exit;
 					}
 
 					// If admin, send notification email to server admin.

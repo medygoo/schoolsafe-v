@@ -206,7 +206,7 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST' )
             else
             {
                 $out = SchoolSafeSmsSend( $to, 'SchoolSafe — test de ligne autorise (PRODELI).',
-                    [ 'purpose' => 'test', 'actor' => $actor,
+                    [ 'purpose' => 'test', 'actor' => $actor, 'line_id' => $id,
                         'dedup_key' => 'test:' . $id . ':' . time() . ':' . $to ] );
 
                 $ok = in_array( $out['status'], [ 'accepted', 'sent', 'delivered' ], true );

@@ -132,16 +132,21 @@ function SchoolSafeSmsSimulate()
  * possible, sinon n'importe quelle ligne active avec du quota et une
  * connexion non declaree hors ligne. Faux si aucune (avec le motif).
  */
-function SchoolSafeSmsPickLine( $network, $segments )
+function SchoolSafeSmsPickLine( $network, $segments, $line_id = null )
 {
     $candidates = DBGet( "SELECT * FROM schoolsafe_sms_lines
         WHERE status='active' AND conn_state <> 'offline'
+        " . ( $line_id === null ? '' : " AND id='" . (int) $line_id . "'" ) . "
         AND quota_used + '" . (int) $segments . "' <= quota_total
         ORDER BY CASE WHEN operator='" . DBEscapeString( (string) $network ) . "'
             THEN 0 ELSE 1 END, id" );
 
     if ( ! $candidates )
     {
+        if ( $line_id !== null )
+        {
+            return [ 'line' => false, 'error' => 'SELECTED_LINE_UNAVAILABLE' ];
+        }
         $any = DBGetOne( "SELECT COUNT(*) FROM schoolsafe_sms_lines
             WHERE status='active'" );
 
@@ -188,6 +193,7 @@ function SchoolSafeSmsLineCredentials( $line_id )
  *
  * $opts : school_id (int, 0 = plateforme), actor (string), dedup_key
  * (string, si absent = genere), purpose ('otp'|'alert'|'test'),
+ * line_id (int, purpose=test uniquement : jamais de repli vers une autre ligne),
  * http callable($method,$url,$user,$pass,$jsonBody) => array (tests).
  *
  * @return array ['outbox_id'=>int,'status'=>string,'via'|'error'=>string]
@@ -218,6 +224,18 @@ function SchoolSafeSmsSend( $to, $text, $opts = [] )
         $purpose = 'alert';
     }
 
+    $forced_line = null;
+    if ( array_key_exists( 'line_id', $opts ) )
+    {
+        if ( $purpose !== 'test' || ! ctype_digit( (string) $opts['line_id'] )
+            || (int) $opts['line_id'] < 1 )
+        {
+            return [ 'outbox_id' => 0, 'status' => 'blocked', 'error' => 'BAD_SMS_LINE' ];
+        }
+        $forced_line = (int) $opts['line_id'];
+    }
+    // Never persist recovery secrets in the operational SMS history.
+    $stored_text = $purpose === 'otp' ? '[SchoolSafe: confidential recovery code]' : $text;
     $dedup = (string) ( $opts['dedup_key'] ?? '' );
 
     if ( $dedup === '' )
@@ -227,11 +245,15 @@ function SchoolSafeSmsSend( $to, $text, $opts = [] )
     }
 
     // Idempotence d'abord : le rejeu rend le statut existant, sans ecrire.
-    $existing = DBGet( "SELECT ID,STATUS FROM schoolsafe_sms_outbox
+    $existing = DBGet( "SELECT ID,STATUS,LINE_ID FROM schoolsafe_sms_outbox
         WHERE idempotency_key='" . DBEscapeString( $dedup ) . "'" );
 
     if ( $existing )
     {
+        if ( $forced_line !== null && (int) $existing[1]['LINE_ID'] !== $forced_line )
+        {
+            return [ 'outbox_id' => 0, 'status' => 'blocked', 'error' => 'DEDUP_LINE_MISMATCH' ];
+        }
         return [ 'outbox_id' => (int) $existing[1]['ID'],
             'status' => (string) $existing[1]['STATUS'], 'via' => 'dedup' ];
     }
@@ -242,7 +264,8 @@ function SchoolSafeSmsSend( $to, $text, $opts = [] )
     {
         $sim_id = DBInsert( 'schoolsafe_sms_outbox', [
             'idempotency_key' => $dedup, 'school_id' => $school_id,
-            'recipient_e164' => $to, 'message_text' => $text,
+            'recipient_e164' => $to, 'message_text' => $stored_text,
+            'line_id' => $forced_line,
             'segments' => $segments, 'status' => 'accepted',
             'error_code' => 'SIMULATED', 'created_by' => $actor,
         ], 'id' );
@@ -253,13 +276,14 @@ function SchoolSafeSmsSend( $to, $text, $opts = [] )
 
     $national = '0' . mb_substr( $to, 4 );
     $network = SchoolSafeSmsNetworkOf( $national );
-    $pick = SchoolSafeSmsPickLine( $network === false ? '' : $network, $segments );
+    $pick = SchoolSafeSmsPickLine( $network === false ? '' : $network, $segments, $forced_line );
 
     if ( $pick['line'] === false )
     {
         $blocked_id = DBInsert( 'schoolsafe_sms_outbox', [
             'idempotency_key' => $dedup, 'school_id' => $school_id,
-            'recipient_e164' => $to, 'message_text' => $text,
+            'recipient_e164' => $to, 'message_text' => $stored_text,
+            'line_id' => $forced_line,
             'segments' => $segments, 'status' => 'blocked',
             'error_code' => $pick['error'], 'created_by' => $actor,
         ], 'id' );
@@ -275,7 +299,7 @@ function SchoolSafeSmsSend( $to, $text, $opts = [] )
     $claimed = DBQuery( "UPDATE schoolsafe_sms_lines
         SET quota_used=quota_used + '" . $segments . "',
             updated_at=CURRENT_TIMESTAMP
-        WHERE id='" . $line_id . "' AND status='active'
+        WHERE id='" . $line_id . "' AND status='active' AND conn_state <> 'offline'
         AND quota_used + '" . $segments . "' <= quota_total" );
 
     if ( ! $claimed || pg_affected_rows( $claimed ) < 1 )
@@ -289,7 +313,7 @@ function SchoolSafeSmsSend( $to, $text, $opts = [] )
 
     $outbox_id = DBInsert( 'schoolsafe_sms_outbox', [
         'idempotency_key' => $dedup, 'school_id' => $school_id,
-        'recipient_e164' => $to, 'message_text' => $text,
+        'recipient_e164' => $to, 'message_text' => $stored_text,
         'segments' => $segments, 'line_id' => $line_id,
         'status' => 'queued', 'created_by' => $actor,
     ], 'id' );

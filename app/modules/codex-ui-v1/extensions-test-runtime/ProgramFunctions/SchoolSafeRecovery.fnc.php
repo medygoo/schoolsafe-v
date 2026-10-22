@@ -5,8 +5,8 @@
  * AUCUNE logique d'authentification reconstruite : ce fichier factorise ce
  * que PasswordReset.php natif faisait en ligne (émission du lien, envoi du
  * courriel) pour le réutiliser depuis le parcours /compte/recuperation, et
- * ajoute l'invalidation des anciennes sessions (époque) + les défis OTP du
- * canal simulé (sans SMSGate, sans SIM réelle).
+ * ajoute l'invalidation des anciennes sessions (époque) + les défis OTP
+ * remis au routeur SMS existant (simulation uniquement en recette).
  *
  * - Invalidation des sessions : AUCUN doublon — on réutilise l'époque L1
  *   (schoolsafe_account_state.SESSION_EPOCH) via SchoolSafeAccountRevoke(),
@@ -115,6 +115,8 @@ function SchoolSafeRecoveryIssueReset( $user_id, $user_type, $email, $mailer = n
     }
     if ( $user_type === 'staff' )
     {
+        // Recovery must not bypass managed identity or the initial-access guard.
+        if ( ! SchoolSafeRecoveryStaffEligible( (int) $user_id ) ) return $out;
         $row_RET = DBGet( "SELECT USERNAME, PASSWORD,"
             . DisplayNameSQL() . " AS FULL_NAME
             FROM staff
@@ -183,6 +185,59 @@ function SchoolSafeRecoveryIssueReset( $user_id, $user_type, $email, $mailer = n
 }
 
 /**
+ * Consume a previously matched native staff reset atomically (PostgreSQL).
+ * The caller must have matched the native link. Its password/deadline snapshot
+ * is checked again under the staff row lock: only one concurrent submission
+ * can change all school-year passwords and revoke sessions. No new reset token.
+ * $revoke is an optional internal test callback; never supplied by the request.
+ */
+function SchoolSafeRecoveryCompleteStaffReset( $staff_id, $expected_password, $expected_deadline, $new_password, $revoke = null )
+{
+    global $db_connection;
+    if ( (int) $staff_id < 1 || ! is_string( $expected_password )
+        || ! is_string( $expected_deadline ) || ! is_string( $new_password ) || $new_password === ''
+        || pg_transaction_status( $db_connection ) !== PGSQL_TRANSACTION_IDLE ) return false;
+    try
+    {
+        $password = encrypt_password( $new_password );
+        SchoolSafeRecoveryQuery( 'BEGIN' );
+        SchoolSafeRecoveryQuery( "SET LOCAL lock_timeout='5s'" );
+        $rows = DBGet( SchoolSafeRecoveryQuery( "SELECT USERNAME,PASSWORD,LAST_LOGIN FROM staff
+            WHERE STAFF_ID='" . (int) $staff_id . "'
+            AND SYEAR='" . (int) Config( 'SYEAR' ) . "' FOR UPDATE" ) );
+        if ( ! $rows || ! hash_equals( $expected_password, (string) $rows[1]['PASSWORD'] )
+            || ! hash_equals( $expected_deadline, (string) $rows[1]['LAST_LOGIN'] )
+            || ! SchoolSafeRecoveryStaffEligible( (int) $staff_id ) )
+        {
+            SchoolSafeRecoveryQuery( 'ROLLBACK' );
+            return false;
+        }
+        // Read the clock after acquiring the lock, not at transaction start.
+        $valid = DBGet( SchoolSafeRecoveryQuery( "SELECT 1 FROM staff
+            WHERE STAFF_ID='" . (int) $staff_id . "' AND LAST_LOGIN>clock_timestamp()" ) );
+        if ( ! $valid )
+        {
+            SchoolSafeRecoveryQuery( 'ROLLBACK' );
+            return false;
+        }
+        $username = (string) $rows[1]['USERNAME'];
+        SchoolSafeRecoveryQuery( "UPDATE staff SET PASSWORD='" . DBEscapeString( $password ) . "',
+            LAST_LOGIN=CURRENT_TIMESTAMP WHERE USERNAME='" . DBEscapeString( $username ) . "'" );
+        $revoked = is_callable( $revoke ) ? $revoke( $username )
+            : ( function_exists( 'SchoolSafeAccountRevoke' ) && SchoolSafeAccountRevoke( $username, 0 ) );
+        if ( ! $revoked ) throw new RuntimeException( 'Recovery revocation unavailable' );
+        SchoolSafeRecoveryQuery( 'COMMIT' );
+        return true;
+    }
+    catch ( Throwable $error )
+    {
+        @db_query( 'ROLLBACK', false );
+        if ( function_exists( 'SchoolSafeAccountForget' ) ) SchoolSafeAccountForget();
+        return false;
+    }
+}
+
+/**
  * Canal simulé actif ? Config RECOVERY_SMS_SIMULATE='Y' (recette isolée
  * UNIQUEMENT — jamais en production : aucun SMS ne part sans SMSGate).
  */
@@ -200,67 +255,118 @@ function SchoolSafeRecoveryOtpSimulate()
  */
 function SchoolSafeRecoveryOtpIssue( $username, $phone, $rng = null, $ip = '' )
 {
+    global $db_connection;
     require_once 'ProgramFunctions/SchoolSafeIdentity.fnc.php';
     $username = trim( (string) $username );
-    if ( $username === '' ) return false;
-    $row_RET = DBGet( "SELECT STAFF_ID,CUSTOM_200000001 AS PHONE
-        FROM staff
-        WHERE USERNAME='" . DBEscapeString( $username ) . "'
-        AND SYEAR='" . Config( 'SYEAR' ) . "'" );
-    if ( ! $row_RET ) return false;
-    $registered = SchoolSafeIdentityNormalizePhoneCD( (string) $row_RET[1]['PHONE'] );
-    $given = SchoolSafeIdentityNormalizePhoneCD( (string) $phone );
-    if ( $registered === '' || $given === '' || ! hash_equals( $registered, $given ) )
+    $code = is_callable( $rng ) ? (string) $rng()
+        : str_pad( (string) random_int( 0, 999999 ), 6, '0', STR_PAD_LEFT );
+    if ( $username === '' || ! preg_match( '/^[0-9]{6}$/D', $code )
+        || pg_transaction_status( $db_connection ) !== PGSQL_TRANSACTION_IDLE ) return false;
+    try
     {
+        SchoolSafeRecoveryQuery( 'BEGIN' );
+        SchoolSafeRecoveryQuery( "SET LOCAL lock_timeout='5s'" );
+        $rows = DBGet( SchoolSafeRecoveryQuery( "SELECT STAFF_ID,CUSTOM_200000001 AS PHONE
+            FROM staff WHERE USERNAME='" . DBEscapeString( $username ) . "'
+            AND SYEAR='" . (int) Config( 'SYEAR' ) . "' FOR UPDATE" ) );
+        $registered = $rows ? SchoolSafeIdentityNormalizePhoneCD( (string) $rows[1]['PHONE'] ) : '';
+        $given = SchoolSafeIdentityNormalizePhoneCD( (string) $phone );
+        $user_id = $rows ? (int) $rows[1]['STAFF_ID'] : 0;
+        if ( count( $rows ) !== 1 || $registered === '' || $given === ''
+            || ! hash_equals( $registered, $given ) || ! SchoolSafeRecoveryStaffEligible( $user_id ) )
+        {
+            SchoolSafeRecoveryQuery( 'ROLLBACK' );
+            return false;
+        }
+        SchoolSafeRecoveryQuery( "UPDATE schoolsafe_recovery_otp SET consumed_at=CURRENT_TIMESTAMP
+            WHERE user_type='staff' AND user_id='" . $user_id . "'
+            AND channel='sms' AND consumed_at IS NULL" );
+        $plain = SchoolSafeRecoveryOtpSimulate() ? "'" . $code . "'" : 'NULL';
+        $row = DBGet( SchoolSafeRecoveryQuery( "INSERT INTO schoolsafe_recovery_otp
+            (user_type,user_id,channel,code_hash,code_plain,expires_at,created_ip)
+            VALUES('staff','" . $user_id . "','sms','" . hash( 'sha256', $code ) . "',"
+            . $plain . ",CURRENT_TIMESTAMP+INTERVAL '10 minute','"
+            . DBEscapeString( substr( (string) $ip, 0, 64 ) ) . "') RETURNING id" ) );
+        SchoolSafeRecoveryQuery( 'COMMIT' );
+        return (int) $row[1]['ID'];
+    }
+    catch ( Throwable $error )
+    {
+        @db_query( 'ROLLBACK', false );
         return false;
     }
-    $user_id = (int) $row_RET[1]['STAFF_ID'];
-    DBQuery( "UPDATE schoolsafe_recovery_otp SET consumed_at=CURRENT_TIMESTAMP
-        WHERE user_type='staff' AND user_id='" . $user_id . "'
-        AND channel='sms' AND consumed_at IS NULL" );
-    $code = is_callable( $rng )
-        ? (string) $rng()
-        : str_pad( (string) random_int( 0, 999999 ), 6, '0', STR_PAD_LEFT );
-    if ( ! preg_match( '/^[0-9]{6}$/', $code ) ) return false;
-    $simulate = SchoolSafeRecoveryOtpSimulate();
-    $id = DBInsert( 'schoolsafe_recovery_otp', [
-        'user_type' => 'staff',
-        'user_id' => $user_id,
-        'channel' => 'sms',
-        'code_hash' => hash( 'sha256', $code ),
-        'code_plain' => $simulate ? $code : null,
-        'expires_at' => date( 'Y-m-d H:i:s', time() + 600 ),
-        'created_ip' => substr( (string) $ip, 0, 64 ),
-    ], 'id' );
-    return $id ? (int) $id : false;
 }
 
-/**
- * Vérifier un code OTP : compare en temps constant, comptabilise l'essai,
- * verrouille à max_attempts (défi consommé), usage unique.
- */
+/** Sanitized SQL failure: never render a public database/secret error page. */
+function SchoolSafeRecoveryQuery( $sql )
+{
+    $result = @db_query( $sql, false );
+    if ( ! $result ) throw new RuntimeException( 'Recovery operation unavailable' );
+    return $result;
+}
+
+/** Native completed accounts only; first access and managed identities stay separate. */
+function SchoolSafeRecoveryStaffEligible( $staff_id )
+{
+    $username = DBGetOne( "SELECT USERNAME FROM staff WHERE STAFF_ID='" . (int) $staff_id
+        . "' AND SYEAR='" . (int) Config( 'SYEAR' ) . "'" );
+    if ( ! $username ) return false;
+    if ( DBGetOne( "SELECT to_regclass('schoolsafe_identity_links')" )
+        && DBGetOne( "SELECT 1 FROM schoolsafe_identity_links l JOIN staff s ON s.staff_id=l.staff_id
+            WHERE LOWER(s.username)=LOWER('" . DBEscapeString( $username ) . "') LIMIT 1" ) ) return false;
+    if ( DBGetOne( "SELECT to_regclass('schoolsafe_native_onboarding')" )
+        && DBGetOne( "SELECT 1 FROM schoolsafe_native_onboarding WHERE staff_id='" . (int) $staff_id
+            . "' AND syear='" . (int) Config( 'SYEAR' ) . "' AND completed_at IS NULL" ) ) return false;
+    return true;
+}
+
+/** Issue first, send the same code to the verified recipient, invalidate on failure. */
+function SchoolSafeRecoveryOtpRequest( $username, $phone, $ip = '', $sender = null, $rng = null )
+{
+    $id = false;
+    try
+    {
+        $code = is_callable( $rng ) ? (string) $rng()
+            : str_pad( (string) random_int( 0, 999999 ), 6, '0', STR_PAD_LEFT );
+        $id = SchoolSafeRecoveryOtpIssue( $username, $phone, static function() use ( $code ) { return $code; }, $ip );
+        if ( ! $id ) return false;
+        $recipient = SchoolSafeIdentityNormalizePhoneCD( (string) $phone );
+        $text = 'SchoolSafe : code de recuperation ' . $code . '. Valable 10 minutes. Ne le partagez jamais.';
+        $options = [ 'dedup_key' => 'recovery-otp:' . (int) $id ];
+        $sent = is_callable( $sender ) ? $sender( $recipient, $text, $options )
+            : SchoolSafeRecoverySmsSend( $recipient, $text, $options );
+        if ( ! empty( $sent['sent'] ) ) return (int) $id;
+    }
+    catch ( Throwable $error )
+    {
+        // Generic failure only; never log the OTP, transport credentials or payload.
+    }
+    if ( $id )
+    {
+        try { SchoolSafeRecoveryQuery( "UPDATE schoolsafe_recovery_otp SET consumed_at=CURRENT_TIMESTAMP
+            WHERE id='" . (int) $id . "' AND consumed_at IS NULL" ); }
+        catch ( Throwable $error ) { /* Fail closed at the caller: no challenge handed off. */ }
+    }
+    return false;
+}
+
+/** One atomic update: expiry, attempts and consumption also hold under concurrency. */
 function SchoolSafeRecoveryOtpVerify( $otp_id, $code )
 {
-    if ( (int) $otp_id < 1 ) return false;
-    $row_RET = DBGet( "SELECT code_hash,attempts,max_attempts,expires_at,consumed_at
-        FROM schoolsafe_recovery_otp WHERE id='" . (int) $otp_id . "'" );
-    if ( ! $row_RET || $row_RET[1]['CONSUMED_AT'] !== null ) return false;
-    if ( strtotime( (string) $row_RET[1]['EXPIRES_AT'] ) < time() ) return false;
-    if ( (int) $row_RET[1]['ATTEMPTS'] >= (int) $row_RET[1]['MAX_ATTEMPTS'] )
+    if ( (int) $otp_id < 1 || ! is_string( $code ) || ! preg_match( '/^[0-9]{6}$/D', $code ) ) return false;
+    $hash = hash( 'sha256', $code );
+    try
     {
-        DBQuery( "UPDATE schoolsafe_recovery_otp SET consumed_at=CURRENT_TIMESTAMP
-            WHERE id='" . (int) $otp_id . "'" );
-        return false;
+        $rows = DBGet( SchoolSafeRecoveryQuery( "UPDATE schoolsafe_recovery_otp
+            SET attempts=attempts+1,
+                consumed_at=CASE WHEN code_hash='" . $hash . "' OR attempts+1>=max_attempts
+                    THEN CURRENT_TIMESTAMP ELSE consumed_at END
+            WHERE id='" . (int) $otp_id . "' AND consumed_at IS NULL
+                AND expires_at>CURRENT_TIMESTAMP AND attempts<max_attempts
+            RETURNING CASE WHEN code_hash='" . $hash . "' THEN 1 ELSE 0 END AS valid" ) );
+        return $rows && (int) $rows[1]['VALID'] === 1;
     }
-    DBQuery( "UPDATE schoolsafe_recovery_otp SET attempts=attempts+1
-        WHERE id='" . (int) $otp_id . "'" );
-    if ( ! hash_equals( (string) $row_RET[1]['CODE_HASH'], hash( 'sha256', (string) $code ) ) )
-    {
-        return false;
-    }
-    DBQuery( "UPDATE schoolsafe_recovery_otp SET consumed_at=CURRENT_TIMESTAMP
-        WHERE id='" . (int) $otp_id . "'" );
-    return true;
+    catch ( Throwable $error ) { return false; }
 }
 
 /**
@@ -277,14 +383,14 @@ function SchoolSafeRecoveryOtpReadSimulated( $otp_id )
 /**
  * Contrat d-envoi SMS : parcours L4 simule, sinon routeur central
  * (lignes PRODELI, quotas, idempotence — voir SchoolSafeSms.fnc.php).
- * - simulation (recette isolée, config RECOVERY_SMS_SIMULATE='Y') : le code
- *   est déjà en base (outbox), rien à transmettre — succès simulé ;
- * - sinon : échec explicite NO_SMS_PROVIDER (jamais un faux succès, jamais
- *   de SMS sans SMSGate ni SIM réelle).
+ * - simulation (recette isolée, config RECOVERY_SMS_SIMULATE='Y') : le défi
+ *   est déjà en base, rien à transmettre — succès simulé ;
+ * - sinon : routeur SMS central existant ; échec explicite NO_SMS_PROVIDER
+ *   si aucun transport n'accepte le message. Accepté ne signifie pas livré.
  *
  * @return array ['sent'=>bool,'via'=>string]
  */
-function SchoolSafeRecoverySmsSend( $phone_e164, $text )
+function SchoolSafeRecoverySmsSend( $phone_e164, $text, $options = [] )
 {
     // Parcours L4 : defi OTP deja en base, rien a transmettre.
     if ( SchoolSafeRecoveryOtpSimulate() )
@@ -298,7 +404,8 @@ function SchoolSafeRecoverySmsSend( $phone_e164, $text )
     try
     {
         $out = SchoolSafeSmsSend( $phone_e164, $text,
-            [ 'purpose' => 'otp', 'actor' => 'recovery-otp' ] );
+            [ 'purpose' => 'otp', 'actor' => 'recovery-otp',
+                'dedup_key' => (string) ( $options['dedup_key'] ?? '' ) ] );
     }
     catch ( Exception $e )
     {

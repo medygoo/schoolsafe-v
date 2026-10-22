@@ -1,3 +1,7 @@
+## 2026-10-22 — Publication et livraison ciblées récupération/SMS
+
+**AUTORISÉ par le propriétaire (« go » après demande explicite de publication et déploiement)** : publier le lot récupération/SMS sur `work/prodeli-completion-20261021`, puis livrer l'image qualifiée `b7c276be…` après sauvegarde et préflight. Cinq fichiers runtime seulement ; ne pas refaire le tableau de bord, la création d'école, le rattachement ou le premier accès. Aucun merge main implicite, SMS réel, activation de ligne ou test de compte réel. Préserver sessions, cache d'impression, configuration et autres services ; aucun fallback automatique vers les failles corrigées ni restauration de base. [Rapport](qualification/PRODELI_RECOVERY_SMS_20261022.md).
+
 ## 2026-10-21 — Finition Communication : conserver l'organisation existante
 
 **VALIDÉ par le propriétaire :** le système de messages/notifications est déjà organisé ; examiner et conserver ses règles, destinataires et répartition des canaux. Terminer le lot de réglages SMS/WhatsApp dans le tableau de bord ProDéli existant, sans reconstruire le Studio, Brevo, les notifications ou les fournisseurs. Keycloak reste en pause. GO d'exécution et de livraison ciblée acquis. [Rapport et limites](qualification/PRODELI_COMMUNICATION_RELEASE_20261021.md).
