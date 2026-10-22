@@ -162,6 +162,30 @@ async function responsive(page, key) {
     await captureInventory(page,'settings');await responsive(page,'settings');
     await presentation(page,'settings',out);
   });
+  await group('SchoolSafe is fixed while historical theme values survive forged settings/preferences', async () => {
+    const configDigest=()=>sql("SELECT md5(string_agg(row_to_json(c)::text,'' ORDER BY row_to_json(c)::text)) FROM config c");
+    const before=configDigest();
+    await page.goto(base+'/Modules.php?modname=School_Setup/Configuration.php&tab=system');
+    assert.ok(await page.locator('.ss-theme-locked').isVisible());
+    assert.equal(await page.locator('[name="values[config][THEME]"],[name="values[config][THEME_FORCE]"]').count(),0,'No administrator theme selector');
+    const csrf=await page.locator('meta[name=token]').getAttribute('content');assert.ok(csrf,'Native CSRF token required for mutation proofs');
+    for(const table of ['config','CONFIG']){
+      const r=await global.request.post(base+'/Modules.php?modname=School_Setup/Configuration.php&tab=system&modfunc=update',{headers:{'X-CSRF-Token':csrf},form:{token:csrf,['values['+table+'][THEME]']:'WPadmin',['values['+table+'][tHeMe]']:'FlatSIS',['values['+table+'][theme_force]']:'N'}});
+      assert.ok(r.status()<400);assert.equal(configDigest(),before,'Forged theme config never changes persisted configuration');
+    }
+    sql(`INSERT INTO program_user_config(user_id,program,title,value) VALUES(${ids[0]},'Preferences','THEME','WPadmin')`);
+    await page.goto(base+'/Modules.php?modname=Users/Preferences.php&tab=display_options');
+    assert.equal(await page.locator('[name="values[Preferences][THEME]"]').count(),0,'Alternative selector removed');
+    assert.ok(await page.locator('.ss-theme-locked').isVisible());
+    assert.ok(await page.locator('link[href*="assets/themes/SchoolSafeCodex/stylesheet.css"]').count()>0,'Historical WPadmin preference does not change effective theme');
+    for(const title of ['THEME','theme','ThEmE']){
+      const r=await global.request.post(base+'/Modules.php?modname=Users/Preferences.php&tab=display_options&modfunc=save',{headers:{'X-CSRF-Token':csrf},form:{token:csrf,['values[Preferences]['+title+']']:'FlatSIS','values[Preferences][DATE]':'%d/%m/%Y'}});
+      const html=await r.text();
+      assert.ok(!/DB Execute Failed|Fatal error:|Invalid CSRF|Requête expirée/.test(html),'Preference POST must reach a healthy native controller');
+      assert.equal(sql(`SELECT value FROM program_user_config WHERE user_id=${ids[0]} AND program='Preferences' AND title='THEME'`),'WPadmin','Historical theme not overwritten');
+    }
+    assert.equal(sql(`SELECT value FROM program_user_config WHERE user_id=${ids[0]} AND program='Preferences' AND title='DATE'`),'%d/%m/%Y','Unrelated preference still saves');
+  });
   await group('native operations share the brand and clear central return without changing their handlers', async () => {
     assert.equal((await page.goto(base+'/admin-console.php')).status(),200);
     await page.locator('.ss-native-workspace-header').waitFor({state:'visible'});
@@ -226,7 +250,7 @@ async function responsive(page, key) {
 } finally {
   if (browser) await browser.close();
   if (ids.length) {
-    sql(`BEGIN;DELETE FROM schoolsafe_account_state WHERE person_key LIKE ${quote(prefix+'%')};DELETE FROM schoolsafe_account_audit WHERE person_key LIKE ${quote(prefix+'%')};DELETE FROM access_log WHERE user_agent=${quote(prefix)} OR username LIKE ${quote(prefix+'%')};DELETE FROM staff WHERE staff_id IN (${ids.join(',')}) AND username LIKE ${quote(prefix+'%')};COMMIT;`);
+    sql(`BEGIN;DELETE FROM program_user_config WHERE user_id IN (${ids.join(',')});DELETE FROM schoolsafe_account_state WHERE person_key LIKE ${quote(prefix+'%')};DELETE FROM schoolsafe_account_audit WHERE person_key LIKE ${quote(prefix+'%')};DELETE FROM access_log WHERE user_agent=${quote(prefix)} OR username LIKE ${quote(prefix+'%')};DELETE FROM staff WHERE staff_id IN (${ids.join(',')}) AND username LIKE ${quote(prefix+'%')};COMMIT;`);
     assert.equal(sql(`SELECT count(*) FROM staff WHERE username LIKE ${quote(prefix+'%')}`),'0');
   }
   fs.writeFileSync(path.join(out,'workspace-result.json'),JSON.stringify({status:failed?'FAIL':'PASS',results,inventory,cleanup:true,scope:'Synthetic PostgreSQL; real browser login and UI, no production writes or external delivery.'},null,2));

@@ -1,0 +1,80 @@
+/* One SchoolSafe access presentation. Standalone-safe: no imports, fonts or scripts. */
+body:has(.ss-access-shell),body:has(#ss-blue){margin:0;padding:0;background:#f2f6fc!important;color:#172d4a;font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+:is(.ss-access-shell,#ss-blue),:is(.ss-access-shell,#ss-blue) *{box-sizing:border-box}
+body:has(.ss-access-shell) :is(#menu,#footer,#ss-mobile-navigation,.sskc-manager-navigation),body:has(#ss-blue) :is(#menu,#footer){display:none!important}
+body:has(.ss-access-shell) #wrap,body:has(#ss-blue) #wrap{margin:0!important;padding:0!important}
+body:has(.ss-access-shell) #body,body:has(#ss-blue) #body{position:static!important;margin:0!important;padding:0!important;width:100%!important;min-height:100dvh;background:transparent!important}
+html:has(#ss-blue),html:has(.ss-access-shell){background:#f2f6fc!important}
+body:has(.ss-access-shell) #body .postbox-wrapper,body:has(#ss-blue) #body .postbox-wrapper{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0;background:transparent;box-shadow:none;overflow:visible}
+body:has(.ss-access-shell) #body .postbox,body:has(#ss-blue) #body .postbox{width:100%;max-width:none!important;margin:0;padding:0;background:transparent;border:0;box-shadow:none}
+body:has(.ss-access-shell) #body .popTable,body:has(#ss-blue) #body .popTable{padding:0}
+.ss-access-shell,#ss-blue{width:100%;max-width:1100px;margin:0 auto;padding:24px 32px 40px;font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;color:#172d4a}
+.ss-access-header,#ss-blue .auth-topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 20px;padding:0 0 22px;border-bottom:1px solid #d5e1f0;margin-bottom:28px}
+.ss-access-brand,#ss-blue .brand-button{display:inline-flex;align-items:center;gap:12px;color:#12305b;text-decoration:none;font:inherit;background:none;border:0;padding:0;text-align:left}
+.ss-access-emblem,#ss-blue .auth-shield{display:grid;place-items:center;width:60px;height:64px;border-radius:10px;background:#123466;flex-shrink:0;overflow:hidden}
+.ss-access-emblem img,#ss-blue .auth-shield img{display:block;width:48px;height:52px;object-fit:contain}
+.ss-access-brand strong,#ss-blue .auth-wordmark{display:block;font-size:25px;font-weight:750;letter-spacing:-.03em;line-height:1.25;color:#12305b}
+.ss-access-brand small{display:block;color:#526985;font-size:13px}
+.ss-access-shell a,#ss-blue a{color:#1751a3;text-underline-offset:3px}
+.ss-access-header a,.ss-access-return a,#ss-blue .language-switch a{display:inline-flex;align-items:center;min-height:44px;padding:6px;border-radius:6px}
+.ss-access-card,#ss-blue .login-panel{max-width:680px;margin:0 auto;padding:28px;background:#fff;border:1px solid #d5e1f0;border-radius:10px;min-width:0}
+.ss-access-shell h1,#ss-blue h1{font-size:clamp(25px,3vw,32px);line-height:1.2;letter-spacing:-.025em;color:#12305b;margin:0 0 20px;font-weight:750}
+.ss-access-shell p{margin:0 0 18px;max-width:76ch;overflow-wrap:anywhere}
+.ss-access-shell form{margin-top:20px}
+#first-login-form .password-input-wrapper{display:block;position:relative;width:100%}
+#first-login-form input[type=password],#first-login-form input[type=text]{padding-right:52px}
+#first-login-form .password-toggle{position:absolute;top:1px;right:1px;width:44px;height:44px;padding:12px;margin:0;box-sizing:border-box;background:transparent}
+#first-login-form .legend-red{color:#244263}
+#first-login-form p.center:last-child{margin-bottom:0}
+.ss-access-shell label,#ss-blue label{font-size:14px;font-weight:650;color:#244263}
+.ss-access-shell input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]),#ss-blue .ss-input{display:block;width:100%;min-height:46px;padding:10px 12px;border:1px solid #c6d5e8;border-radius:7px;background:#fcfdff;color:#172d4a;font:400 16px/1.4 system-ui,sans-serif;max-width:100%}
+.ss-access-shell :is(button,input[type=submit],.sskc-action),#ss-blue :is(button,.ss-button){display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 16px;max-width:100%;white-space:normal;border:1px solid #175bcc;border-radius:7px;background:#175bcc;color:#fff;font:600 16px/1.4 system-ui,sans-serif;cursor:pointer;text-decoration:none;text-transform:none}
+.ss-access-shell :is(button,input[type=submit],.sskc-action):hover,#ss-blue .login-button:hover{background:#104caf}
+.ss-access-shell :is(a,button,input,summary):focus-visible,#ss-blue :is(a,button,input,summary):focus-visible{outline:3px solid #175bcc;outline-offset:3px}
+.ss-access-shell :is(.error,[role=alert]),#ss-blue .error{color:#8d2532;background:#fff0f1;border:1px solid #e6b8c0;border-radius:7px;padding:12px 16px;overflow-wrap:anywhere}
+.ss-access-shell dl{display:grid;grid-template-columns:180px minmax(0,1fr);gap:12px 20px;padding:20px 0;margin:20px 0;border-block:1px solid #d5e1f0}
+.ss-access-shell dt{font-weight:650;color:#526985;font-size:14px}
+.ss-access-shell dd{margin:0;overflow-wrap:anywhere}
+.ss-access-shell code{font:600 18px/1.5 ui-monospace,monospace;white-space:normal;overflow-wrap:anywhere}
+.ss-access-handoff .ss-access-card{max-width:840px}
+#ss-blue .screen{display:none;position:static;min-height:0;inset:auto}
+#ss-blue .screen.active{display:block}
+#ss-blue :is(.splash-bubbles,.splash-note,.splash-country,.auth-values,.auth-jaspe,.auth-motto,.auth-panel-person,.auth-panel-logo){display:none}
+#ss-blue .splash-center{max-width:680px;margin:40px auto;text-align:center}
+#ss-blue .splash-shield{width:90px;height:100px;object-fit:contain;margin-bottom:16px}
+#ss-blue .splash-tagline{font-weight:650;color:#526985;margin:0 0 20px}
+#ss-blue .splash-slogan .line{display:block}
+#ss-blue .splash-slogan em{font-style:normal;color:#175bcc}
+#ss-blue .splash-description{max-width:55ch;margin:0 auto 24px;color:#526985}
+#ss-blue .splash-tap{gap:10px}
+#ss-blue .auth-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:48px;align-items:start;padding:24px 0}
+#ss-blue .auth-message{padding-top:30px}
+#ss-blue .auth-message p{max-width:40ch;color:#526985}
+#ss-blue #loginform{width:100%;max-width:none;margin:0;padding:28px;background:#fff}
+#ss-blue #loginform .ss-input{height:46px;box-shadow:none;margin:0;font-size:16px}
+#ss-blue .panel-brand{margin-bottom:24px}
+#ss-blue .panel-brand b{display:block;font-size:22px;color:#12305b}
+#ss-blue .panel-brand span{font-size:14px;color:#526985}
+#ss-blue .ss-field{margin-bottom:18px}
+#ss-blue .ss-label{display:block;margin-bottom:6px}
+#ss-blue .ss-input-shell{display:flex;align-items:center;gap:8px;min-width:0}
+#ss-blue .ss-input-shell>.ss-input{min-width:0;flex:1}
+#ss-blue svg{width:20px;height:20px;flex-shrink:0}
+#ss-blue .ss-input-shell>svg,#ss-blue .ss-input-shell>i{display:none}
+#ss-blue .label-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+#ss-blue .text-button{display:inline-flex;align-items:center;min-height:44px;font-size:14px}
+#ss-blue #ssBlueEye{background:#e8f0ff;color:#1751a3;border-color:#c6d5e8;width:46px;padding:10px;flex-shrink:0}
+#ss-blue #backToSplash{background:transparent;border:0;color:#12305b;padding:0;justify-content:flex-start}
+#ss-blue .login-button{width:100%;gap:10px;margin-top:24px}
+#ss-blue .ss-help-text{font-size:14px;color:#526985;margin:16px 0 0}
+#ss-blue .language-switch{display:flex;align-items:center;gap:8px}
+#ss-blue .language-switch a{justify-content:center;min-width:44px;border:1px solid transparent}
+#ss-blue .language-switch a[aria-pressed=true]{border-color:#175bcc;background:#e8f0ff}
+#ss-blue .language-switch img{width:24px;max-height:24px;object-fit:contain}
+#ss-blue :is(.ss-blue-secondary,.auth-footer){display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-top:20px;font-size:14px;color:#526985}
+#ss-blue .ss-blue-secondary a,#ss-blue .ss-blue-legal :is(a,summary){display:inline-flex;align-items:center;min-height:44px}
+#ss-blue .ss-blue-legal{margin-top:20px;padding-top:12px;border-top:1px solid #d5e1f0;font-size:13px;color:#526985}
+#ss-blue .ss-blue-legal p{max-width:90ch}
+#ss-blue .auth-footer span{display:flex;align-items:center;gap:8px}
+@media(max-width:700px){.ss-access-shell,#ss-blue{padding:16px 14px 28px}.ss-access-header,#ss-blue .auth-topbar{margin-bottom:20px;padding-bottom:14px}.ss-access-card,#ss-blue #loginform{padding:22px 18px}.ss-access-shell dl{grid-template-columns:1fr;gap:6px}.ss-access-shell dd{margin-bottom:12px}.ss-access-shell .sskc-action{width:100%}#ss-blue .auth-layout{grid-template-columns:1fr;gap:20px;padding:0}#ss-blue .auth-message{padding-top:0}#ss-blue .auth-message h1{margin-bottom:10px}#ss-blue .splash-center{margin-top:24px}#ss-blue .splash-slogan{font-size:30px}}
+@media print{body:has(.ss-access-shell){background:#fff!important;color:#172d4a}.ss-access-shell{max-width:none;padding:0}.ss-access-header{margin-bottom:18px;padding-bottom:12px}.ss-access-header nav,.ss-access-return,.ss-access-handoff a[download],.ss-access-shell input[type=submit]{display:none!important}.ss-access-card{border:0;padding:0;max-width:none}.ss-access-shell dl{grid-template-columns:180px minmax(0,1fr)}.ss-access-shell dt,.ss-access-shell dd{break-inside:avoid}.ss-access-shell h1{font-size:24px}.ss-access-emblem{print-color-adjust:exact;-webkit-print-color-adjust:exact}}

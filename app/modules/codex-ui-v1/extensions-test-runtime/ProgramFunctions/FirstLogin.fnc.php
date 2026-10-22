@@ -221,19 +221,22 @@ if ( ! function_exists( 'FirstLoginFormPasswordChange' ) )
 	{
 		ob_start();
 
-		PopTable( 'header', _( 'Password Change' ) ); ?>
+		echo '<link rel="stylesheet" href="/assets/css/schoolsafe-access.css?v=1">'
+			. '<main class="ss-access-shell"><header class="ss-access-header">'
+			. '<span class="ss-access-brand"><span class="ss-access-emblem"><img src="/schoolsafe-logo.png" alt="SchoolSafe" width="48" height="52"></span>'
+			. '<span><strong>SchoolSafe</strong><small>' . SchoolSafeT( 'Your school, in confidence.', 'Votre école, en confiance.' ) . '</small></span></span></header>'
+			. '<section class="ss-access-card"><h1>' . SchoolSafeT( 'Choose your personal password', 'Choisissez votre mot de passe personnel' ) . '</h1>'; ?>
 
 		<form action="index.php?modfunc=first-login" method="POST" id="first-login-form" target="_top">
             <input type="hidden" name="token" value="<?php echo htmlspecialchars( (string) $_SESSION['token'], ENT_QUOTES, 'UTF-8' ); ?>">
             <?php if ( SchoolSafeNativeOnboardingPending() ) : ?>
-            <p class="center"><img src="/schoolsafe-logo.png" alt="SchoolSafe" width="66" height="72"></p>
             <p><?php echo SchoolSafeT( 'Choose a personal password of 12 to 128 characters, different from the temporary password. Initial access expires after 24 hours.', 'Choisissez un mot de passe personnel de 12 à 128 caractères, différent du mot de passe temporaire. Cet accès initial expire après 24 heures.' ); ?></p>
             <?php endif; ?>
 			<p><?php echo implode( '</p><p>', FirstLoginFormFields( 'force_password_change' ) ); ?></p>
-			<p class="center"><?php echo Buttons( _( 'OK' ) ); ?></p>
+			<p class="center"><?php echo Buttons( SchoolSafeT( 'Save my personal password', 'Enregistrer mon mot de passe personnel' ) ); ?></p>
 		</form>
 
-		<?php PopTable( 'footer' );
+		<?php echo '</section></main>';
 
 		return ob_get_clean();
 	}

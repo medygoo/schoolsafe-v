@@ -232,6 +232,14 @@ function ProgramUserConfig( $program, $staff_id = 0, $values = null )
 	{
 		foreach ( $values as $title => $value )
 		{
+			// Suspend theme writes, including forged requests, without erasing
+			// existing user preferences or changing other settings.
+			if ( strcasecmp( (string) $program, 'Preferences' ) === 0
+				&& strcasecmp( (string) $title, 'THEME' ) === 0 )
+			{
+				continue;
+			}
+
 			if ( empty( $title ) && $title != '0' )
 			{
 				// TITLE column is NOT NULL.
