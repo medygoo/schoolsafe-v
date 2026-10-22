@@ -1,11 +1,11 @@
-# Candidat récupération/SMS — 22 octobre 2026
+# Livraison récupération/SMS — 22 octobre 2026
 
-**QUALIFIÉ SUR IMAGE EXACTE — PUBLICATION/LIVRAISON AUTORISÉES, EN PRÉPARATION.** GO explicite du propriétaire le 22/10 après demande de publication et déploiement avec sauvegarde. Aucune bascule n'est encore annoncée ; aucun fallback destructif.
+**DÉPLOYÉ — CONTRÔLES TECHNIQUES PASS, VALIDATION CONNECTÉE PROPRIÉTAIRE ATTENDUE.** GO explicite suivi de sauvegarde et préflight PASS, bascule avec source/recette `68de604de0973bf9a22b2873cf791899f822dbe1`. 118 sessions et cache Chromium préservés, autres services/configuration inchangés, image healthy et routes contrôlées séparément. Aucun SMS réel, migration ou fallback destructif. [Rapport de livraison](../../../docs/qualification/PRODELI_RECOVERY_SMS_RELEASE_20261022.md).
 
 ## Candidat vérifié
 
-- Base encore active : `sha256:36a9e2fbc24159f25f65247cb516f84a43df49b410e35ee208ef3d25e3cf0c78`.
-- Image candidate canonique : `sha256:01c194f4817731cecbec65476926585c58dced9118423bf7bbbff2ef10c73c34`.
+- Base précédente, conservée dans le conteneur arrêté : `sha256:36a9e2fbc24159f25f65247cb516f84a43df49b410e35ee208ef3d25e3cf0c78`.
+- Image livrée canonique : `sha256:01c194f4817731cecbec65476926585c58dced9118423bf7bbbff2ef10c73c34`.
 - Empreinte source (base + hashes des cinq fichiers) : `2745039fd3e3362b15c6e4545b5f96ba40436727df0148bc33e667d0b7176339`.
 - Source applicative publiée : `9d56feea54b7696783c49fc3444d7ce806eb670e`. Image construite à partir des **blobs Git**, jamais des octets Windows du worktree. La première image `b7c276be…` provenait du worktree : après normalisation des fins de ligne lors du commit, elle a été remplacée par ce candidat canonique et la totalité des contrôles a été rejouée avec succès. Aucun changement fonctionnel supplémentaire, aucune sixième source runtime. Le commit de recette associé doit contenir les mêmes cinq blobs ; toute modification impose une nouvelle qualification.
 - Cinq chemins sous `app/modules/codex-ui-v1/extensions-test-runtime/` : `PasswordReset.php`, `compte-recuperation.php`, `plateforme-prodeli-sms.php`, `ProgramFunctions/SchoolSafeRecovery.fnc.php`, `ProgramFunctions/SchoolSafeSms.fnc.php`.
@@ -13,7 +13,7 @@
 - 92 contrats renderer + 37 contrats PG ; dix groupes de récupération/SMS, course HTTP native et deux pannes de révocation injectées, dix groupes de création/premier accès PASS sur l'image exacte.
 - Le candidat a été construit hors réseau sur le même hôte que sa base, puis exécuté uniquement en QA temporaire interne : PostgreSQL fictif, aucun port publié, web en lecture seule, aucun montage/configuration/secret de production. Snapshot des onze tables fictives contrôlées identique après recette. Services de production et empreintes de leurs environnements inchangés ; ressources QA retirées avec contrôle d'étiquette.
 
-Outil de reproduction : `scripts/prodeli-recovery-image-qa.py prepare|verify|diagnose|cleanup --evidence <dossier-prive>`. Préparation seule, aucune commande de déploiement ni de publication. Le dossier de preuves doit être nouveau ; le nettoyage ne vise que les conteneurs/réseau temporaires possédant l'étiquette et le nonce attendus. Aucun transfert de l'image entière : l'archive de l'ancien essai était tronquée et n'a pas été réutilisée.
+Outil de reproduction : `scripts/prodeli-recovery-image-qa.py prepare --source-commit 9d56feea54b7696783c49fc3444d7ce806eb670e --evidence <nouveau-dossier-prive>`, puis `verify|diagnose|cleanup --evidence <meme-dossier>`. Le SHA est figé pour ne pas réétiqueter l'image avec un commit documentaire ultérieur. Préparation seule, aucune commande de déploiement ni de publication. Le dossier de preuves doit être nouveau ; le nettoyage ne vise que les conteneurs/réseau temporaires possédant l'étiquette et le nonce attendus. Aucun transfert de l'image entière : l'archive de l'ancien essai était tronquée et n'a pas été réutilisée.
 
 Rapport : `docs/qualification/PRODELI_RECOVERY_SMS_20261022.md`. Preuves privées finales : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/recovery-sms/exact-image-git-r1/`.
 

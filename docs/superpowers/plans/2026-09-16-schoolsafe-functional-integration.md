@@ -1,4 +1,8 @@
-## Récupération/SMS ProDéli — qualification locale du 22/10/2026
+## Récupération/SMS ProDéli — DÉPLOYÉ le 22/10/2026
+
+**Livraison autorisée et terminée techniquement** : source/recette `68de604de0973bf9a22b2873cf791899f822dbe1`, image canonique Git `01c194f4…` (remplace l'image worktree `b7c276be…` après normalisation des fins de ligne et requalification complète). Sauvegarde privée vérifiée, préflight colonnes/contraintes PASS, aucune migration. 118 sessions et cache Chromium préservés, paramètres/configuration/autres services inchangés, ancien conteneur conservé arrêté. Contrôle séparé PASS : healthy, cinq hashes = Git publié, HTTPS public 200 et routes protégées 302/403. Aucun compte réel manipulé pour essai, aucun envoi externe ni merge main/production. **Reste la validation connectée du propriétaire**, puis réception réelle seulement avec destinataire expressément autorisé. [Rapport de livraison](../../qualification/PRODELI_RECOVERY_SMS_RELEASE_20261022.md).
+
+### Historique de qualification avant autorisation/bascule (dépassé par la livraison ci-dessus)
 
 **QUALIFIÉ SUR IMAGE EXACTE, NON DÉPLOYÉ/NON PUBLIÉ** : candidat `b7c276be…`, cinq fichiers runtime et 2 755 autres identiques ; 37 contrôles PG (concurrence OTP), dix groupes récupération/SMS, course HTTP native (un succès/époque 1, deux pannes de révocation avec rollback), 92 contrats et dix groupes natifs de non-régression PASS. Snapshot fictif inchangé, QA temporaire retirée et services de production préservés. [Rapport et limites](../../qualification/PRODELI_RECOVERY_SMS_20261022.md), [préflight et retour arrière compatible](../../../ops/releases/prodeli-recovery-sms-20261022/README.md). Prochaine action : autorisation spécifique de publication/déploiement, commit associé au manifeste, sauvegarde/préflight/bascule et recette finale. Aucun push/merge/déploiement ni envoi externe. Tableau de bord et parcours de création/accès initial conservés, ne pas refaire les lots livrés.
 

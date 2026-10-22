@@ -1,4 +1,8 @@
-## 2026-10-22 — Publication et livraison ciblées récupération/SMS
+## 2026-10-22 — Récupération/SMS livrés après GO
+
+Source/recette livrée `68de604`, image canonique Git `01c194f4…` ; le candidat worktree antérieur a été remplacé après détection de normalisation des fins de ligne et requalification complète. Sauvegarde/préflight PASS, 118 sessions/cache Chromium préservés, aucun changement des lots déjà acceptés, configuration et autres services inchangés. Aucune migration ni envoi réel. Ancien conteneur conservé arrêté ; pas de fallback automatique vers une image vulnérable. Contrôle séparé PASS ; validation connectée du propriétaire et réception réelle expressément autorisée restent distinctes. [Rapport](qualification/PRODELI_RECOVERY_SMS_RELEASE_20261022.md).
+
+## 2026-10-22 — Publication et livraison ciblées récupération/SMS (historique d'autorisation)
 
 **AUTORISÉ par le propriétaire (« go » après demande explicite de publication et déploiement)** : publier le lot récupération/SMS sur `work/prodeli-completion-20261021`, puis livrer l'image qualifiée `b7c276be…` après sauvegarde et préflight. Cinq fichiers runtime seulement ; ne pas refaire le tableau de bord, la création d'école, le rattachement ou le premier accès. Aucun merge main implicite, SMS réel, activation de ligne ou test de compte réel. Préserver sessions, cache d'impression, configuration et autres services ; aucun fallback automatique vers les failles corrigées ni restauration de base. [Rapport](qualification/PRODELI_RECOVERY_SMS_20261022.md).
 
