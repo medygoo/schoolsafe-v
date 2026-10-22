@@ -53,4 +53,15 @@ check('multiple-school legacy account is not silently repaired',fn()=>!SchoolSaf
 check('managed identity is never converted by native preparation',fn()=>!SchoolSafeNativeOnboardingCanPrepare(array_replace($row,['SUBJECT'=>'fixture-identity','LAST_LOGIN'=>null]),[]));
 $GLOBALS['onboarding']['COMPLETED_AT']=null;$GLOBALS['state']='suspended';
 check('pending activation never hides a suspension',fn()=>sskcAccountPresentation($row)['access']==='Suspendu');
+foreach(['admin','teacher','parent','student'] as $profile) {
+ $GLOBALS['actor']=['PROFILE'=>$profile,'SCHOOLS'=>',2,','STAFF_ID'=>11];
+ foreach(['/schoolsafe-administrators.php','/admin-console.php','/plateforme-prodeli.php','/plateforme-prodeli-sms.php','/plateforme-prodeli-whatsapp.php','/plugins/SchoolSafe_Keycloak/manage.php'] as $script)
+  check($profile.' cannot enter platform management '.$script,fn()=>!SchoolSafeCentralRequestAllowed($script,[]));
+ check($profile.' retains own school configuration subject to native permission',fn()=>SchoolSafeCentralRequestAllowed('/Modules.php',['modname'=>'School_Setup/Configuration.php']));
+ foreach(['modules','plugins',['plugins']] as $tab)
+  check($profile.' cannot configure platform module/plugin installation '.json_encode($tab),fn()=>!SchoolSafeCentralRequestAllowed('/Modules.php',['modname'=>'School_Setup/Configuration.php','tab'=>$tab]));
+}
+$GLOBALS['actor']=[];
+check('anonymous platform requests retain existing authentication controllers',fn()=>SchoolSafeCentralRequestAllowed('/schoolsafe-administrators.php',[]));
+check('school configuration CTA is rooted, never relative to a nested school URL',fn()=>str_contains(file_get_contents($root.'/ProgramFunctions/SchoolSafePhotoDashboard.fnc.php'),'href="/Modules.php?modname=School_Setup/Configuration.php"'));
 echo json_encode(['passed'=>$passed,'failed'=>$failed])."\n";exit($failed?1:0);

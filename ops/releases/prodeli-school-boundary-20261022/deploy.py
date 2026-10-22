@@ -22,7 +22,8 @@ BASE = 'sha256:a4a3cbf821083f60629031075c46dafdec8615fb91d591835408fa4afb260bf3'
 PREFIX = 'app/modules/codex-ui-v1/extensions-test-runtime/'
 FILES = {'Bottom.php','Warehouse.php','Side.php','admin-console.php',
  'ProgramFunctions/SchoolSafeNativeOnboarding.fnc.php','ProgramFunctions/SchoolSafeSchoolScope.fnc.php',
- 'ProgramFunctions/SchoolSafeWorkspace.fnc.php','plugins/SchoolSafe_Keycloak/Management.php',
+ 'ProgramFunctions/SchoolSafeWorkspace.fnc.php','ProgramFunctions/SchoolSafePhotoDashboard.fnc.php',
+ 'modules/School_Setup/Configuration.php','plugins/SchoolSafe_Keycloak/Management.php',
  'plugins/SchoolSafe_Keycloak/Wizard.php','plugins/SchoolSafe_Keycloak/manage.php'}
 NEW_FILES = set()
 RECOVERY = {'PasswordReset.php','plateforme-prodeli-sms.php',
@@ -61,15 +62,15 @@ def qualification(release):
     assert manifest['payload_hashes'] == release['files'] and set(release['files']) == FILES
     assert proof['status'] == 'READY' and proof['image'] == release['image']
     assert proof['source_digest'] == release['source_digest'] == manifest['source_digest']
-    assert set(proof['changed_files']) == FILES and proof['unchanged_files'] == 2754
-    assert proof['renderer_contracts'] == 114 and proof['recovery_contracts'] == 37
+    assert set(proof['changed_files']) == FILES and proof['unchanged_files'] == 2752
+    assert proof['renderer_contracts'] == 156 and proof['recovery_contracts'] == 37
     assert proof['native_transaction_contracts'] == 57
     assert proof['read_only_web'] and proof['internal_network'] and not proof['published_ports']
     result = load('exact-integration-result.json')
     assert result['status'] == 'PASS' and result['image'] == release['image']
     assert {s['suite'] for s in result['suites']} == {'native','recovery','concurrency'}
     assert all(s['exit'] == 0 for s in result['suites'])
-    for filename, groups in [('native-result.json',20)]:
+    for filename, groups in [('native-result.json',21)]:
         result = load(filename); assert result['status'] == 'PASS' and result['cleanup'] and len(result['results']) == groups
     mobile = load('mobile-audit.json')
     assert mobile['status'] == 'PASS' and mobile['image'] == release['image'] and mobile['cleanup']

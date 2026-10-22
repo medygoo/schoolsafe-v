@@ -15,14 +15,15 @@ qa.BASE_TAG = 'schoolsafe-rosario:recovery-qa-11d25627ea51'
 qa.BASE_COMMIT = '8a969d5bcb4f9a97eda4181165d7db5dd2af2f38'
 qa.FILES = ['Bottom.php', 'Warehouse.php', 'Side.php', 'admin-console.php',
  'ProgramFunctions/SchoolSafeNativeOnboarding.fnc.php', 'ProgramFunctions/SchoolSafeSchoolScope.fnc.php',
- 'ProgramFunctions/SchoolSafeWorkspace.fnc.php', 'plugins/SchoolSafe_Keycloak/Management.php',
+ 'ProgramFunctions/SchoolSafeWorkspace.fnc.php', 'ProgramFunctions/SchoolSafePhotoDashboard.fnc.php',
+ 'modules/School_Setup/Configuration.php', 'plugins/SchoolSafe_Keycloak/Management.php',
  'plugins/SchoolSafe_Keycloak/Wizard.php', 'plugins/SchoolSafe_Keycloak/manage.php']
 qa.NEW_FILES = set()
 qa.LABEL = 'prodeli-school-boundary-20261022'
 qa.PATCH_SCOPE = 'prodeli-school-boundary'
 qa.CONTRACTS = {'prodeli-account-presentation-contracts.php':16, 'prodeli-dashboard-contracts.php':12,
  'prodeli-communication-contracts.php':28, 'prodeli-native-intent-contracts.php':16,
- 'prodeli-school-boundary-contracts.php':42}
+ 'prodeli-school-boundary-contracts.php':84}
 qa.EXTRA_TEST_FILES = ['scripts/prodeli-director-transaction.php',
  qa.PREFIX+'schoolsafe-remediation/018-school-leadership.sql',
  qa.PREFIX+'schoolsafe-remediation/038-native-onboarding.sql']

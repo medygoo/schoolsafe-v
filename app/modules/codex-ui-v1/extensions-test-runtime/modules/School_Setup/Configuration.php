@@ -4,6 +4,13 @@ require_once 'ProgramFunctions/FileUpload.fnc.php';
 require_once 'modules/School_Setup/includes/SchoolReceiptIdentity.fnc.php';
 require_once 'ProgramFunctions/SchoolSafeWorkspace.fnc.php';
 
+$schoolsafe_configuration_school = (int) UserSchool();
+if ( $schoolsafe_configuration_school < 1 || ! SchoolSafeSchoolAllowed( $schoolsafe_configuration_school ) )
+{
+	SchoolSafeScopeDeny();
+	exit;
+}
+
 if ( empty( $_REQUEST['_ROSARIO_PDF'] ) )
 {
 	SchoolSafeWorkspaceHeader( 'Paramètres de l’école', 'school' );
@@ -134,7 +141,14 @@ else
 					continue;
 				}
 
-				Config( $column, $value );
+				// This is the current school's configuration, not the platform's
+				// inherited defaults. Config() otherwise reuses SCHOOL_ID=0 when
+				// no local override exists and can change every school's default.
+				$config_mode = DBGetOne( "SELECT 1 FROM config WHERE TITLE='" . DBEscapeString( $column )
+					. "' AND SCHOOL_ID=" . $schoolsafe_configuration_school ) ? 'update' : 'insert';
+				DBUpsert( 'config', [ 'CONFIG_VALUE' => $value ],
+					[ 'TITLE' => $column, 'SCHOOL_ID' => $schoolsafe_configuration_school ], $config_mode );
+				unset( $_ROSARIO['Config'] );
 
 				$updated = true;
 			}

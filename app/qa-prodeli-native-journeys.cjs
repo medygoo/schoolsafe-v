@@ -13,11 +13,43 @@ const dockerRun=(args,options={})=>process.env.PRODELI_QA_SSH
 for(const n of [db,web])assert.equal(dockerRun(['inspect','--format','{{index .Config.Labels "schoolcef.qualification"}}',n],{encoding:'utf8'}).trim(),process.env.PRODELI_QA_LABEL||'harmonization-20261021');
 const sql=q=>dockerRun(['exec','-i',db,'psql','-X','-v','ON_ERROR_STOP=1','-U','schoolcef_fixture','-d','schoolcef_fixture','-qAt'],{input:q,encoding:'utf8'}).trim(),quote=s=>"'"+s.replaceAll("'","''")+"'";
 assert.equal(dockerRun(['network','inspect',process.env.PRODELI_QA_NETWORK||'schoolcef-harmonization-local','--format','{{.Internal}}'],{encoding:'utf8'}).trim(),'true');
+const scopedSetting='SCHOOLSAFE_QA_SCOPE_'+crypto.randomBytes(8).toString('hex').toUpperCase();
 const prefix='qa.native.'+Date.now(),manager=prefix+'.global',client=prefix+'.principal',password=crypto.randomBytes(16).toString('hex'),personal='Personal fixture '+crypto.randomBytes(40).toString('hex'),wizardPersonal='Wizard fixture '+crypto.randomBytes(40).toString('hex');
 const secrets=[password,personal,wizardPersonal],sanitize=value=>secrets.reduce((text,secret)=>text.replaceAll(secret,'[synthetic-secret]'),String(value));
-let school,wizardSchool,adminId,clientId,wizardId,legacyId,browser,page,failed=false;const results=[];
+let school,wizardSchool,adminId,clientId,wizardId,legacyId,browser,page,failed=false,configurationChecked=false;const results=[];
 async function healthy(p){assert.ok(!/DB Execute Failed|WE HAVE A PROBLEM, PLEASE CONTACT|Fatal error:|Uncaught (?:Error|Exception)/.test(await p.locator('body').innerText()),'Application content must render, not just return HTTP 200');}
-async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-photo-dashboard').waitFor();assert.equal(await p.locator('.ss-central-dashboard-return').count(),0);assert.equal(sql(`SELECT current_school_id FROM staff WHERE staff_id=${id}`),key==='wizard'?String(wizardSchool):String(school));for(const width of [1280,390]){await p.setViewportSize({width,height:900});assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1);await p.screenshot({path:path.join(evidence,key+'-school-'+width+'.png'),fullPage:true});}}
+async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-photo-dashboard').waitFor();assert.equal(await p.locator('.ss-central-dashboard-return').count(),0);assert.equal(sql(`SELECT current_school_id FROM staff WHERE staff_id=${id}`),key==='wizard'?String(wizardSchool):String(school));for(const width of [1280,390]){await p.setViewportSize({width,height:900});assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1);await p.screenshot({path:path.join(evidence,key+'-school-'+width+'.png'),fullPage:true});}await schoolConfigurationBoundary(p,id,key);}
+async function schoolConfigurationBoundary(p,id,key){
+ if(configurationChecked)return;
+ const target=key==='wizard'?wizardSchool:school;
+ const link=p.getByRole('link',{name:'Configurer mon école',exact:true});
+ assert.equal(await link.getAttribute('href'),'/Modules.php?modname=School_Setup/Configuration.php');
+ await Promise.all([p.waitForURL(u=>u.pathname==='/Modules.php'&&u.searchParams.get('modname')==='School_Setup/Configuration.php'),link.click()]);
+ const header=p.locator('.ss-native-workspace-header[data-workspace="school"]');await header.waitFor({state:'visible'});
+ assert.ok((await header.innerText()).includes(prefix+(key==='wizard'?' Wizard':' School')));
+ assert.equal(await p.locator('[data-central-route]').count(),0);
+ assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)<=1,'Own-school settings fit mobile');
+ await p.screenshot({path:path.join(evidence,'school-configuration-own-390.png'),fullPage:true});
+ sql(`INSERT INTO config(school_id,title,config_value) VALUES(0,${quote(scopedSetting)},'platform-default')`);
+ let token=await p.locator('head meta[name="token"]').getAttribute('content');
+ const route=base+'/Modules.php?modname=School_Setup/Configuration.php&modfunc=update';
+ await p.context().request.post(route,{form:{token:'invalid',['values[config]['+scopedSetting+']']:'invalid-write'}});
+ assert.equal(sql(`SELECT count(*) FROM config WHERE school_id=${target} AND title=${quote(scopedSetting)}`),'0');
+ await p.goto(base+'/Modules.php?modname=School_Setup/Configuration.php');
+ token=await p.locator('head meta[name="token"]').getAttribute('content');assert.ok(token,'Native CSRF metadata required');
+ const response=await p.context().request.post(route,{headers:{'X-CSRF-Token':token},form:{token,['values[config]['+scopedSetting+']']:'own-school-only'}});
+ assert.ok(!/DB Execute Failed|Fatal error:/.test(await response.text()));
+ assert.equal(sql(`SELECT config_value FROM config WHERE school_id=0 AND title=${quote(scopedSetting)}`),'platform-default');
+ assert.equal(sql(`SELECT config_value FROM config WHERE school_id=${target} AND title=${quote(scopedSetting)}`),'own-school-only');
+ for(const endpoint of ['/schoolsafe-administrators.php?home=1','/admin-console.php','/plateforme/prodeli','/plateforme/prodeli/sms','/plateforme/prodeli/whatsapp']){
+  const denied=await p.context().request.get(base+endpoint);assert.equal(denied.status(),403,'School cannot enter '+endpoint);
+  assert.ok(!(await denied.text()).includes('href="/schoolsafe-administrators.php?home=1"'));
+ }
+ for(const tab of ['modules','plugins'])assert.equal((await p.context().request.get(base+'/Modules.php?modname=School_Setup/Configuration.php&tab='+tab)).status(),403);
+ assert.equal(sql(`SELECT current_school_id FROM staff WHERE staff_id=${id}`),String(target));
+ await p.goto(base+'/Modules.php?modname=misc/Portal.php');await p.locator('#ss-photo-dashboard').waitFor();
+ configurationChecked=true;results.push('Configure my school stays in its tenant; platform and installation tabs denied; CSRF and school-only settings preserve platform defaults');
+}
 (async()=>{try{
  const source=Number(sql('SELECT id FROM schools WHERE syear=2026 ORDER BY id LIMIT 1'));
  school=Number(sql(`INSERT INTO schools(syear,title,reporting_gp_scale) SELECT 2026,${quote(prefix+' School')},reporting_gp_scale FROM schools WHERE id=${source} AND syear=2026 RETURNING id`));assert.ok(Number.isInteger(school));
@@ -199,6 +231,7 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
  if(browser)await browser.close();
  const extra=sql(`SELECT staff_id FROM staff WHERE username=${quote(prefix+'.wizard')}`);if(extra)wizardId=Number(extra);
  const extraSchool=sql(`SELECT id FROM schools WHERE title=${quote(prefix+' Wizard')}`);if(extraSchool)wizardSchool=Number(extraSchool);
+ sql(`DELETE FROM config WHERE school_id=0 AND title=${quote(scopedSetting)}`);
  const ids=[adminId,clientId,wizardId,legacyId].filter(Number.isInteger);if(ids.length)sql(`BEGIN;DELETE FROM schoolsafe_account_state WHERE person_key LIKE ${quote(prefix+'%')};DELETE FROM schoolsafe_account_audit WHERE person_key LIKE ${quote(prefix+'%')};DELETE FROM access_log WHERE user_agent=${quote(prefix)} OR username LIKE ${quote(prefix+'%')};DELETE FROM schoolsafe_native_onboarding WHERE staff_id IN (${ids});DELETE FROM schoolsafe_identity_audit WHERE actor_staff_id IN (${ids}) OR target_staff_id IN (${ids});DELETE FROM schoolsafe_school_leadership WHERE staff_id IN (${ids});DELETE FROM staff WHERE staff_id IN (${ids}) AND username LIKE ${quote(prefix+'%')};COMMIT;`);
  for(const [id,title]of [[school,prefix+' School'],[wizardSchool,prefix+' Wizard']])if(Number.isInteger(id)){
   const tables=['program_user_config','program_config','config','school_marking_periods','school_periods','school_gradelevels','report_card_grades','report_card_grade_scales','report_card_comments','report_card_comment_categories','eligibility_activities','attendance_codes','attendance_code_categories','schoolsafe_school_state'];

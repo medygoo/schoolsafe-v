@@ -53,7 +53,20 @@ function SchoolSafeGlobalAdmin()
  */
 function SchoolSafeCentralRequestAllowed( $script, array $request )
 {
-    if ( ! SchoolSafeGlobalAdmin() ) return true;
+    if ( ! SchoolSafeGlobalAdmin() )
+    {
+        if ( User( 'PROFILE' ) && $script === '/Modules.php'
+            && ( $request['modname'] ?? null ) === 'School_Setup/Configuration.php'
+            && isset( $request['tab'] ) && ( ! is_string( $request['tab'] )
+                || in_array( $request['tab'], [ 'modules', 'plugins' ], true ) ) ) return false;
+        // School accounts use their own native workspace, never the platform
+        // management controllers. Anonymous requests retain the existing login guards.
+        return ! User( 'PROFILE' ) || ! in_array( $script, [
+            '/schoolsafe-administrators.php', '/admin-console.php', '/plateforme-prodeli.php',
+            '/plateforme-prodeli-sms.php', '/plateforme-prodeli-whatsapp.php',
+            '/plugins/SchoolSafe_Keycloak/manage.php',
+        ], true );
+    }
     // Bottom's embedded print/help loader can include a native module even when
     // reached through an otherwise central script: never let it bypass this gate.
     if ( isset( $request['bottomfunc'] ) ) return false;
@@ -111,10 +124,15 @@ function SchoolSafeCentralRequestGuard()
     if ( SchoolSafeCentralRequestAllowed( $_SERVER['SCRIPT_NAME'] ?? '', $_REQUEST ) ) return;
     http_response_code( 403 );
     header( 'Cache-Control: no-store, private' );
-    echo '<!doctype html><html lang="fr"><meta charset="utf-8"><title>SchoolSafe — accès réservé</title>'
-        . '<h1>Espace réservé à l’établissement</h1><p>Connectez-vous avec le compte de son administrateur scolaire. '
-        . 'La gestion ProDéli ne permet pas d’entrer dans un espace client.</p>'
-        . '<p><a href="/schoolsafe-administrators.php?home=1">Retour à ProDéli</a></p></html>';
+    $global = SchoolSafeGlobalAdmin();
+    $heading = $global ? 'Espace réservé à l’établissement' : 'Gestion réservée à la plateforme';
+    $message = $global
+        ? 'Connectez-vous avec le compte de son administrateur scolaire. La gestion ProDéli ne permet pas d’entrer dans un espace client.'
+        : 'Votre compte scolaire ne permet pas d’ouvrir ProDéli. Configurez votre établissement depuis votre espace scolaire.';
+    $home = $global ? '/schoolsafe-administrators.php?home=1' : '/Modules.php?modname=misc/Portal.php';
+    echo '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SchoolSafe — accès réservé</title>'
+        . '<h1>' . $heading . '</h1><p>' . $message . '</p><p><a href="' . $home . '">'
+        . ( $global ? 'Retour à ProDéli' : 'Retour à mon école' ) . '</a></p></html>';
     exit;
 }
 
