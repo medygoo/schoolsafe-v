@@ -28,7 +28,7 @@ if ($action==='setup') {
     $pdo->exec("INSERT INTO config(school_id,title,config_value) VALUES(0,'CURRENCY','SYN');
         INSERT INTO schoolsafe_fee_consults(school_id,student_id,consulted_by,balance_status,fee_total,paid_total,balance) VALUES(1,11,9,'due',91,0,91)");
     $legacyConsult=$pdo->query('SELECT * FROM schoolsafe_fee_consults')->fetch(PDO::FETCH_ASSOC);
-    for($i=0;$i<2;$i++)$pdo->exec(file_get_contents($root.'/schoolsafe-remediation/040-fee-control-context.sql'));
+    for($i=0;$i<2;$i++)foreach(['040-fee-control-context.sql','041-entry-request-receipts.sql']as$file)$pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
     $expandedConsult=$pdo->query('SELECT * FROM schoolsafe_fee_consults')->fetch(PDO::FETCH_ASSOC);
     if(array_intersect_key($expandedConsult,$legacyConsult)!==$legacyConsult||$expandedConsult['syear']!==null||$expandedConsult['context_snapshot']!==null)throw new RuntimeException('LEGACY_FINANCIAL_RECORD_CHANGED');
     $pdo->exec("INSERT INTO entry_exit_student_records(student_id,checkpoint_id,type,comments,recorded_at) VALUES(11,7,'in','Synthetic legacy fixture',CURRENT_TIMESTAMP)");
@@ -146,8 +146,10 @@ if (in_array($action,['activate','family'],true)) {
 if (in_array($action,['entry','pickup'],true)) {
     require_once $root.'/ProgramFunctions/SchoolSafeEntryScan.fnc.php';
     $secret=str_repeat('0',64);$signature=substr(strtr(base64_encode(hash_hmac('sha256','QA-ENTRY',hex2bin($secret),true)),'+/','-_'),0,32);
-    $qr='schoolsafe://card/QA-ENTRY/'.$signature;$context=['user'=>9,'school'=>1,'year'=>2026];$now=strtotime('2026-10-23 16:30:00 UTC');
-    try{$result=$action==='entry' ? SchoolSafeEntryScan($qr,'7',$secret,$context,$db,$now)
+    $qr='schoolsafe://card/QA-ENTRY/'.$signature;$context=['user'=>9,'school'=>1,'year'=>2026];
+    if($action==='entry')$context=array_replace($context,json_decode($argv[2]??'{}',true,16,JSON_THROW_ON_ERROR));
+    $now=strtotime('2026-10-23 16:30:00 UTC');
+    try{$result=$action==='entry' ? SchoolSafeEntryScan($qr,$argv[3]??'7',$secret,$context,$db,$now)
         : SchoolSafePickupScan($qr,'7',$secret,$context,$db,($argv[2]??'prepare')==='prepare'
             ? ['authorized_person_id'=>'g:21'] : ['proof_token'=>$argv[2],'human_confirmed'=>true],$now);}
     catch(RuntimeException $error){$result=['error'=>$error->getMessage()];}

@@ -99,6 +99,28 @@ const markup=file=>{const source=fs.readFileSync(path.join(root,file),'utf8');re
    check('retry after later response loss still retains its correct operation UUID',sent.length===5&&sent[3].body.request_key===sent[4].body.request_key);
    check('financial retry JS has no exception',errors.length===0);await page.close();
   }
+  for(const denied of [false,true]){
+   const page=await browser.newPage({viewport:{width:390,height:844}}),sent=[];
+   await page.route('**/*',async route=>{
+    const request=route.request(),url=new URL(request.url());
+    if(url.pathname==='/scanner-native.php')return route.fulfill({contentType:'text/html',body:markup('scanner-native.php')});
+    if(url.pathname==='/scanner-relay.php'){
+     const operation=url.searchParams.get('operation');
+     if(operation==='capabilities')return route.fulfill({json:{csrfToken:'synthetic-only',data:{capabilities:['SCAN_ENTRY'],fee_policy_active:denied,request_key_modes:['entry','fees']}}});
+     if(operation==='locations')return route.fulfill({json:{data:{locations:[{id:'7',label:'Synthetic gate'}]}}});
+     sent.push(request.postDataJSON());if(sent.length===1)return route.abort('failed');
+     return route.fulfill({json:{data:denied?{result:'DENIED',reason:'FEE_CONTROL_DENIED',idempotent:true,financial:{state:'active',color:'red'}}:{result:'ALREADY_RECORDED',original_result:'PRESENT',idempotent:true,record_id:20}}});
+    }return assets(route,url);
+   });
+   await page.goto('http://finance.fixture.invalid/scanner-native.php');await page.locator('#scan-form').waitFor({state:'visible'});
+   await page.locator('#scan-qr').fill('Synthetic intercepted QR');await page.locator('#scan-form button[type=submit]').click();
+   await page.waitForFunction(()=>document.querySelector('#scan-result').textContent.includes('Aucune confirmation'));
+   await page.locator('#scan-form button[type=submit]').click();await page.waitForFunction(flag=>document.querySelector('#scan-result').textContent.includes(flag?'demande précédente':'aucune nouvelle arrivée'),denied);
+   check('entry retry keeps its original operation UUID '+denied,sent.length===2&&typeof sent[0].request_key==='string'&&sent[0].request_key===sent[1].request_key&&sent[1].location_id==='7');
+   check('entry replay never claims another actual arrival '+denied,await page.locator('#scan-result').textContent().then(text=>!text.includes('Arrivée enregistrée.')));
+   if(!denied)check('historical arrival does not reuse blue or yellow authorization',await page.locator('#scan-result').getAttribute('data-fee-color')==='');
+   await page.close();
+  }
  }finally{await browser.close();}
  console.log(JSON.stringify({status:failed?'FAIL':'PASS',checks:results.length,failed,scope:'Actual markup/JS; fully intercepted transport, not authenticated HTTP/camera',results},null,2));if(failed)process.exitCode=1;
 })().catch(error=>{console.error(error.stack);process.exitCode=1;});

@@ -71,11 +71,17 @@ function SchoolSafeFeeConsultReplay(int $student,array $ctx,array $db): ?array
     if(!is_array($rows))throw new RuntimeException('FEE_READ_UNAVAILABLE');
     if(!$rows)return null;
     if(count($rows)!==1||!isset($rows[1]['ID'],$rows[1]['STUDENT_ID'],$rows[1]['CONTEXT_SNAPSHOT']))throw new RuntimeException('FEE_READ_UNAVAILABLE');
-    if((int)$rows[1]['STUDENT_ID']!==$student)throw new RuntimeException('OPERATION_KEY_CONFLICT');
-    $snapshot=is_string($rows[1]['CONTEXT_SNAPSHOT'])?json_decode($rows[1]['CONTEXT_SNAPSHOT'],true):$rows[1]['CONTEXT_SNAPSHOT'];
+    return SchoolSafeFeeObservationDecode($rows[1],$student,$ctx,'consult');
+}
+
+function SchoolSafeFeeObservationDecode(array $row,int $student,array $ctx,string $operation): array
+{
+    [$school,$year]=SchoolSafeFeePolicyScope($ctx);
+    if((int)($row['STUDENT_ID']??0)!==$student)throw new RuntimeException('OPERATION_KEY_CONFLICT');
+    $snapshot=is_string($row['CONTEXT_SNAPSHOT']??null)?json_decode($row['CONTEXT_SNAPSHOT'],true):($row['CONTEXT_SNAPSHOT']??null);
     if(!is_array($snapshot)||($snapshot['version']??null)!==1||($snapshot['school']['id']??null)!==$school
         ||($snapshot['syear']??null)!==$year||($snapshot['student']['id']??null)!==$student
-        ||($snapshot['actor_staff_id']??null)!==(int)$ctx['user']||($snapshot['operation']??null)!=='consult')throw new RuntimeException('FEE_READ_UNAVAILABLE');
+        ||($snapshot['actor_staff_id']??null)!==(int)$ctx['user']||($snapshot['operation']??null)!==$operation)throw new RuntimeException('FEE_READ_UNAVAILABLE');
     $saved=$snapshot['ledger']??null;$financial=$snapshot['financial']??null;
     if(!is_array($saved)||!is_bool($saved['available']??null)||!is_array($financial)
         ||!in_array($saved['status']??null,['paid','partial','due','exempt','no_data'],true)
@@ -91,7 +97,7 @@ function SchoolSafeFeeConsultReplay(int $student,array $ctx,array $db): ?array
         'id'=>$policy['id']??null,'label'=>$policy['label']??null,'threshold'=>$policy['minimum']??null,
         'tolerance'=>$policy['tolerance_percent']??null,'active'=>true],$ledger);
     if(!SchoolSafeFeeDecisionMatches($expected,$financial))throw new RuntimeException('FEE_READ_UNAVAILABLE');
-    return ['id'=>(int)$rows[1]['ID'],'ledger'=>$ledger,'financial'=>$financial];
+    return ['id'=>(int)$row['ID'],'ledger'=>$ledger,'financial'=>$financial];
 }
 
 // Audit association only. The native arrival transaction owns both writes and rollback.

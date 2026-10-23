@@ -12,7 +12,7 @@ $canManageLocations=User('PROFILE')==='admin'&&AllowEdit('School_Setup/Configura
 ?>
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Contrôle par carte | SchoolSafe</title><link rel="stylesheet" href="schoolsafe-card-bridge/parent-notifications.css">
-<link rel="stylesheet" href="schoolsafe-card-bridge/fee-colors.css"><link rel="stylesheet" href="schoolsafe-card-bridge/scanner-native.css?v=scan-visual-2"><script defer src="assets/themes/SchoolSafeCodex/brand-presentation.js?v=scan-1"></script><script defer src="schoolsafe-card-bridge/scanner-native.js?v=native-fee-operation-2"></script></head>
+<link rel="stylesheet" href="schoolsafe-card-bridge/fee-colors.css"><link rel="stylesheet" href="schoolsafe-card-bridge/scanner-native.css?v=scan-visual-2"><script defer src="assets/themes/SchoolSafeCodex/brand-presentation.js?v=scan-1"></script><script defer src="schoolsafe-card-bridge/scanner-native.js?v=native-entry-operation-3"></script></head>
 <body><header><strong><img src="/schoolsafe-logo.png" alt="" width="56" height="56">SchoolSafe</strong><a href="Modules.php?modname=misc/Portal.php">Tableau de bord</a></header>
 <main><h1>Contrôle par carte</h1><p><a href="family-management.php">Familles, portraits et tâches de scan</a><?php if($canManageFees): ?> · <a href="fee-control.php">Barèmes de contrôle des frais</a><?php endif; ?><?php if($canManageLocations): ?> · <a href="scan-locations.php">Lieux de scan</a><?php endif; ?></p><nav id="modes" aria-label="Type de scan"></nav>
 <p id="scanner-state" role="status">Chargement des autorisations...</p>

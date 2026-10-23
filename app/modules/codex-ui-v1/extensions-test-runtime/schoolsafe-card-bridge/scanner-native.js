@@ -2,7 +2,7 @@
 (() => {
  const byId=id=>document.getElementById(id),form=byId('scan-form'),state=byId('scanner-state'),result=byId('scan-result'),people=byId('scan-people'),confirm=byId('pickup-confirm');
  const modes={entry:['Entrée','SCAN_ENTRY'],pickup:['Récupération','SCAN_PICKUP'],fees:['Frais scolaires','SCAN_FEES'],canteen:['Frais de cantine','SCAN_CANTEEN'],verify:['Vérification','SCAN_VERIFY']};
- const names={INVALID:'QR invalide.',VALID:'Carte valide.',PRESENT:'Arrivée enregistrée.',ALREADY_PRESENT:'Arrivée déjà enregistrée.',CONFIRMED:'Remise confirmée.',PICKUP_CHOICE:'Sélectionnez la personne présente.',NEED_HUMAN_CONFIRMATION:'Vérification humaine requise.',DENIED:'Remise refusée.',LOST:'Carte perdue.',REVOKED:'Carte révoquée.',REPLACED:'Carte remplacée.',NOT_DELEGATED:'Autorisation absente.',OUT_OF_SCOPE:'Hors du périmètre autorisé.'};
+ const names={INVALID:'QR invalide.',VALID:'Carte valide.',PRESENT:'Arrivée enregistrée.',ALREADY_PRESENT:'Arrivée déjà enregistrée.',ALREADY_RECORDED:'Opération déjà enregistrée — aucune nouvelle arrivée.',CONFIRMED:'Remise confirmée.',PICKUP_CHOICE:'Sélectionnez la personne présente.',NEED_HUMAN_CONFIRMATION:'Vérification humaine requise.',DENIED:'Remise refusée.',LOST:'Carte perdue.',REVOKED:'Carte révoquée.',REPLACED:'Carte remplacée.',NOT_DELEGATED:'Autorisation absente.',OUT_OF_SCOPE:'Hors du périmètre autorisé.'};
  const balances={paid:'À jour',partial:'Partiellement payé',due:'À régler',exempt:'Exonéré',no_data:'Données absentes'};
  let csrf='',mode='verify',busy=false,proof=null,campaign=null,stream=null,cameraRun=0,requestKeyModes=[],pendingOperation=null;
  function operationKey(){const bytes=crypto.getRandomValues(new Uint8Array(16));bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;const hex=Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);}
@@ -41,6 +41,7 @@
    else if(financial?.state==='inactive')result.textContent+=' Aucun contrôle financier actif.';
    else if(financial?.state==='unavailable')result.textContent+=' Contrôle financier indisponible — aucune autorisation financière.';
    if(data.idempotent===true&&mode==='fees')result.textContent+=' Opération déjà enregistrée — aucun nouveau contrôle.';
+   if(data.idempotent===true&&mode==='entry'&&data.result==='DENIED')result.textContent+=' Résultat de la demande précédente — aucune nouvelle arrivée ni nouveau contrôle.';
    if(typeof data.photo_url==='string'&&data.photo_url){
     let photo;try{photo=new URL(data.photo_url,location.href);}catch(_){}
     if(photo&&photo.origin===location.origin&&['http:','https:'].includes(photo.protocol)){
@@ -78,7 +79,7 @@
   byId('scanner-retry').hidden=true;form.hidden=true;clearPickup();stopCamera();
   try{const caps=await request('capabilities');csrf=caps.csrfToken;const data=caps.data;
    if(typeof csrf!=='string'||!Array.isArray(data?.capabilities))throw new Error('INVALID_RESULT');campaign=data.open_campaign_id||null;
-   requestKeyModes=Array.isArray(data.request_key_modes)?data.request_key_modes.filter(value=>value==='fees'):[];
+   requestKeyModes=Array.isArray(data.request_key_modes)?data.request_key_modes.filter(value=>['entry','fees'].includes(value)):[];
    byId('scan-location').replaceChildren();
    let locationsReady=false;
    if(data.capabilities.some(capability=>['SCAN_ENTRY','SCAN_PICKUP'].includes(capability))){

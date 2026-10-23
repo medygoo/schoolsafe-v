@@ -115,7 +115,7 @@ try {
      // A permitted consultation is not proof that a financial barrier is active.
      $result=['data'=>['capabilities'=>SchoolSafeFilterScanCapabilities($caps),'fee_policy_active'=>$activePolicy!==null,
        'fee_consult_available'=>in_array('SCAN_FEES',$caps,true),
-       'request_key_modes'=>['fees'],'open_campaign_id'=>null,'schoolId'=>(string)$school]];
+       'request_key_modes'=>['entry','fees'],'open_campaign_id'=>null,'schoolId'=>(string)$school]];
      $result['csrfToken']=$_SESSION['SchoolSafeScannerCsrf'];
      while(ob_get_level()>$level)ob_end_clean();
      SchoolSafeScanReply(200,$result);
@@ -224,15 +224,15 @@ try {
      SchoolSafeScanReply(200,['data'=>$data]);
    }
    if($operation==='scan'&&($input->mode??'')==='entry') {
-     if(array_diff(array_keys((array)$input),['mode','qr_payload','location_id'])
-       ||!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000
+     if(array_diff(array_keys((array)$input),['mode','qr_payload','location_id','request_key'])
+       ||!is_string($input->request_key??null)||!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000
        ||!is_string($input->location_id??null)) throw new RuntimeException('INVALID_INPUT');
      require_once __DIR__.'/ProgramFunctions/SchoolSafeEntryScan.fnc.php';
      $entrySecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
      // DBGet() n'exécute que les SELECT : passer par DBQuery pour INSERT...RETURNING.
      $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }];
      $done=SchoolSafeEntryScan($input->qr_payload,$input->location_id,$entrySecret,
-       ['user'=>$user,'school'=>$school,'year'=>$year],$db);
+       ['user'=>$user,'school'=>$school,'year'=>$year,'request_key'=>$input->request_key],$db);
      if($done===null) throw new RuntimeException('CONFIG_REQUIRED');
      $data=$enrichPortrait($done);
      while(ob_get_level()>$level)ob_end_clean();
