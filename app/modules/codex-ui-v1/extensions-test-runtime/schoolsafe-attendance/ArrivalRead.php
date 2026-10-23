@@ -59,6 +59,7 @@ function SchoolSafeArrivalReadScope(array $context, array $filters, callable $qu
         . ' FROM schoolsafe_attendance.arrival_ledger l';
     $branches = [];
     if (SchoolSafeArrivalTableReady($query, 'schoolsafe_attendance.arrival_ledger')) $branches[] = $ledger;
+    if (SchoolSafeArrivalNativeRecordsReady($query)) {
         $branches[] = 'SELECT r.student_id,e.school_id,e.syear,(r.recorded_at::date) AS school_date,'
             . "r.recorded_at AS occurred_at,current_setting('TIMEZONE') AS school_timezone,"
             . "md5('rosario-entry-'||r.id)::uuid AS source_event_id,e.id AS enrollment_id,"
@@ -66,8 +67,11 @@ function SchoolSafeArrivalReadScope(array $context, array $filters, callable $qu
             . ' FROM entry_exit_student_records r JOIN student_enrollment e ON e.student_id=r.student_id'
             . " WHERE r.type='in' AND r.unauthorized IS NULL"
             . ' AND e.start_date<=(r.recorded_at::date) AND (e.end_date IS NULL OR e.end_date>=(r.recorded_at::date))';
-    // Sans aucune source, le SQL historique est conservé : même 503 qu'avant, jamais de faux vide.
-    $native = $branches ? implode(' UNION ALL ', $branches) : $ledger;
+    }
+    // Optional sources must be checked before DBGet(), whose fatal DB error cannot
+    // be caught by the existing unavailable-state renderer. Never invent a zero.
+    if (!$branches) throw new RuntimeException('ARRIVAL_READ_UNAVAILABLE');
+    $native = implode(' UNION ALL ', $branches);
     $from = ' FROM (' . $native . ') l JOIN students s ON s.student_id=l.student_id'
         . ' JOIN student_enrollment e ON e.id=l.enrollment_id AND e.student_id=l.student_id'
         . ' AND e.school_id=l.school_id AND e.syear=l.syear';

@@ -12,14 +12,18 @@ Branche `fix/school-dashboard-stability-20261022`, départ `14365d0f86eb7d95baf9
 - Tests navigateur DOM fictif avec vrais assets : **122 PASS / 0 FAIL** après corrections.
 - Frontière centrale/scolaire : **84 contrats PASS**, autorisation et données substituées, pas une nouvelle certification HTTP.
 - Syntaxe des JS modifiés/harnais et AST Python, `git diff --check` : PASS.
-- Image exacte, parcours HTTP/PostgreSQL fictifs, revue visuelle de pages réellement rendues, livraison et contrôle indépendant : **À FAIRE**. Ne pas annoncer « tous les boutons fonctionnels » ou « production stabilisée » sur ces seuls contrôles DOM.
+- Premières images exactes r1/r2 : 156 contrats PHP + 37 PG PASS, 2760 fichiers inchangés, parcours réels des treize vues/menus/historique aux largeurs1280/390/768 PASS avant échec d’une destination de détail. Diagnostic r2 : `details_tab=presence` référence la table optionnelle `entry_exit_student_records` absente du fixture ; `DBGet()` arrête la page avant le `catch` du rendu indisponible. Aucun problème de production équivalent n’est supposé sans preuve. Snapshots de vérification et nettoyage r1/r2 PASS ; production inchangée.
+- Correctif de disponibilité étroit, cinquième fichier runtime : 7/3 avant, **10/0 après** dans les contrats SELECT-only. Ajouter la source native seulement si son helper de disponibilité existant la confirme ; sans bridge ni registre natif, lever `ARRIVAL_READ_UNAVAILABLE` avant SQL métier, laisser le renderer existant afficher son indisponibilité, jamais zéro inventé. Même périmètre école/année/inscription/date, autorisation enseignant et agrégats conservés.
+- Nouvelle image exacte, parcours HTTP/PostgreSQL fictifs complets, revue visuelle de pages réellement rendues, livraison et contrôle indépendant : **À FAIRE**. Ne pas annoncer « tous les boutons fonctionnels » ou « production stabilisée » sur ces seuls contrôles DOM.
 
-## Corrections candidates — quatre fichiers runtime seulement
+## Corrections candidates — cinq fichiers runtime ciblés
 
 1. `assets/js/schoolsafe-photo-dashboard.js` : les cartes délèguent au contrôleur de menu existant ; le clic déclencheur ne referme plus le panneau ; vrai href de repli et gestes Ctrl/Meta conservés. La pagination garde tous les blocs, notamment le corps des dossiers auparavant parqué ; vue nommée dans `dashboard_view`, historique navigateur, rechargement, ancres et formulaires GET du portail conservent le bon écran. Démontage réversible et retrait des gestionnaires, y compris lors d’un remontage du même DOM.
 2. `assets/themes/SchoolSafeCodex/scripts.js` : point d’entrée `schoolSafeNavigation.openBranch`, réutilisant les branches, liens, seuil 700, focus et états existants. Aucune destination ou permission ajoutée.
 3. `assets/css/schoolsafe-photo-dashboard.css` : retrait des remplacements du menu et de l’en-tête natifs par le tableau de bord ; contenu paginé positionné après le vrai menu principal/contexte et entre en-tête/dock. Couleurs, icônes, thèmes historiques et commandes natives restent leurs propriétaires d’origine. Les anciennes règles `ss-school-shell` restent inactives, plutôt qu’un nettoyage transversal hors lot.
 4. `ProgramFunctions/SchoolSafePhotoDashboard.fnc.php` : nouvelles URLs de cache CSS/JS `school-stability-20261022`, sans modification des calculs, requêtes, droits ou moteurs métier dans ce premier candidat.
+
+5. `schoolsafe-attendance/ArrivalRead.php` : garde des deux sources optionnelles décrite ci-dessus, déclenchée par une destination réellement en échec. Contrats `scripts/school-arrival-availability-contracts.php` : sources absentes/native/bridge/union, aucun SQL de table absente, indisponible distinct de zéro, périmètre et refus d’enseignant révoqué.
 
 Aucun changement du moteur Rosario `warehouse.js`, de l’authentification, de la récupération, de l’onboarding, des permissions, des transports ou du schéma. La notation reste un lot séparé. Watch ouvre son état existant honnête « aucune montre raccordée » ; ce n’est pas une intégration de montre ni une fonction simulée.
 
@@ -36,7 +40,7 @@ Preuves privées : `school-dashboard-stability-20261022/{before,after-r1,edge-be
 
 ## Qualification suivante
 
-`scripts/school-dashboard-image-qa.py` réemploie la chaîne éprouvée d’image immuable, snapshot de production en lecture seule, dump du seul fixture local étiqueté, réseau QA interne et nettoyage nonce-owned. Comparaison complète avec la base livrée : seules les quatre sources déclarées peuvent différer. Ce script ne déploie pas.
+`scripts/school-dashboard-image-qa.py` réemploie la chaîne éprouvée d’image immuable, snapshot de production en lecture seule, dump du seul fixture local étiqueté, réseau QA interne et nettoyage nonce-owned. Comparaison complète avec la base livrée : seules les cinq sources déclarées peuvent différer. Ce script ne déploie pas.
 
 `app/qa-school-dashboard-http.cjs`, opt-in `SCHOOL_NAV_HTTP=1` depuis le harnais natif déjà gardé par label/réseau/loopback : après activation des seuls comptes fictifs, vérifier les treize vues réellement rendues, leurs corps, les menus, l’historique et les destinations GET autorisées. Le harnais natif reste responsable de ses propres fixtures et de leur suppression. Pas de soumission métier à partir de ce complément. Les opérations financières, envois, copies d’école et comptes réels ne sont jamais testés en production.
 
