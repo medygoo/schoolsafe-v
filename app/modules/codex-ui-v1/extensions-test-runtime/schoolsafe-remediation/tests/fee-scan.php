@@ -116,12 +116,12 @@ check('dû => 1 échue', $r['overdue_count'], 1);
 // 5. Exempté (frais soldé par exonération, rien payé).
 resetState(
     [['ID' => 1, 'AMOUNT' => '100.00', 'DUE_DATE' => null],
-     ['ID' => 2, 'AMOUNT' => '100.00', 'WAIVED_FEE_ID' => 1, 'DUE_DATE' => null]], []);
+     ['ID' => 2, 'AMOUNT' => '-100.00', 'WAIVED_FEE_ID' => 1, 'DUE_DATE' => null]], []);
 $r = SchoolSafeFeeScan($qr('F-ACTIVE'), $secretHex, $ctx, $db, $day);
 check('exonéré => exempt', $r['balance_status'], 'exempt');
 check('exonéré => dû net 0.00', $r['fee_total'], '0.00');
 
-// 6. Remboursement exclu (paiement remboursé + ligne de remboursement ignorés).
+// 6. Remboursement intégral : somme signée du paiement et de son inverse.
 resetState(
     [['ID' => 1, 'AMOUNT' => '100.00', 'DUE_DATE' => null]],
     [['ID' => 1, 'AMOUNT' => '100.00', 'REFUNDED_PAYMENT_ID' => null],

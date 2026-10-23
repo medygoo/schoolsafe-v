@@ -13,7 +13,13 @@ $action=$argv[1]??'';
 if ($action==='setup') {
     if ((int)$pdo->query("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")->fetchColumn()!==0) throw new RuntimeException('EMPTY_DISPOSABLE_DATABASE_REQUIRED');
     $pdo->exec('CREATE TABLE students(student_id integer PRIMARY KEY,first_name text DEFAULT $$Synthetic$$,last_name text DEFAULT $$Fixture$$); CREATE TABLE staff(staff_id integer PRIMARY KEY,profile text DEFAULT $$admin$$); CREATE TABLE students_join_users(student_id integer,staff_id integer); CREATE TABLE student_enrollment(id serial PRIMARY KEY,student_id integer,school_id integer,syear integer,grade_id integer DEFAULT 1,start_date date DEFAULT $$2020-01-01$$,end_date date); CREATE TABLE school_gradelevels(id integer,title text); CREATE TABLE school_periods(school_id integer,syear integer,start_time text,sort_order integer);');
-    foreach (['020-school-cards.sql','021-entry-records.sql','022-pickup-guardians.sql'] as $file) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
+    foreach (['020-school-cards.sql','021-entry-records.sql','022-pickup-guardians.sql','023-fee-consults.sql'] as $file) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
+    $pdo->exec('CREATE TABLE schools(id integer,syear numeric(4,0),PRIMARY KEY(id,syear)); INSERT INTO schools VALUES(1,2026),(1,2025),(2,2026)');
+    $nativeDdl=file_get_contents($root.'/rosariosis.sql');
+    foreach(['billing_fees','billing_payments'] as $table) {
+        if(preg_match('/CREATE TABLE '.$table.' \\([\\s\\S]*?\\n\\);/',$nativeDdl,$match)!==1)throw new RuntimeException('NATIVE_BILLING_DDL_MISSING');
+        $pdo->exec($match[0]);
+    }
     $pdo->exec("CREATE TABLE qa_barrier(hold boolean NOT NULL, arrived boolean NOT NULL DEFAULT false); INSERT INTO qa_barrier(hold) VALUES(true);
         INSERT INTO students(student_id) VALUES(11),(12); INSERT INTO staff VALUES(9),(18); INSERT INTO student_enrollment(student_id,school_id,syear) VALUES(11,1,2026),(12,2,2026); INSERT INTO school_gradelevels VALUES(1,'Synthetic class');
         INSERT INTO entry_exit_checkpoints(id,title) VALUES(7,'Fixture checkpoint');
@@ -34,7 +40,7 @@ if ($action==='setup') {
     $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan'],true)) exit(2);
 require_once $root.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
 require_once $root.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
 $barrier=getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1';$barrierUsed=false;
@@ -53,6 +59,14 @@ $db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
     }
     return $result;
 }, 'exec'=>static function($sql) use ($pdo) {$pdo->exec($sql);}];
+if ($action==='fee-scan') {
+    require_once $root.'/ProgramFunctions/SchoolSafeFeeScan.fnc.php';
+    $secret=str_repeat('0',64);$signature=substr(strtr(base64_encode(hash_hmac('sha256','QA-ENTRY',hex2bin($secret),true)),'+/','-_'),0,32);
+    try{$result=SchoolSafeFeeScan('schoolsafe://card/QA-ENTRY/'.$signature,$secret,['user'=>9,'school'=>1,'year'=>2026,'detail'=>($argv[2]??'1')==='1'],$db,'2026-10-23');}
+    catch(RuntimeException $error){$result=['error'=>$error->getMessage()];}
+    if($pdo->inTransaction())throw new RuntimeException('TRANSACTION_LEFT_OPEN');
+    echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
 if ($action==='unlink-parent') {
     $pdo->exec('DELETE FROM students_join_users WHERE student_id=11 AND staff_id=27');
     echo json_encode(['unlinked'=>true])."\n";exit;

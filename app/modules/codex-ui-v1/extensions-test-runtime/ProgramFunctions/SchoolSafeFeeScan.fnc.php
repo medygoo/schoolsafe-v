@@ -8,12 +8,13 @@
 // moteur ne touche à aucun de ces chemins (aucun appel, aucune écriture).
 //
 // Règles de solde (miroir natif `Student_Billing/StudentFees.php`) :
-// - R1 : fees_total = SUM des frais à WAIVED_FEE_ID NULL (école+année+élève).
-// - R2 : un frais est exonéré s'il porte ≥1 ligne d'exonération
-//        (WAIVED_FEE_ID = son ID) ; exempt_total = SUM de ces frais.
-// - R3 : net_paid = SUM des paiements effectifs = REFUNDED_PAYMENT_ID NULL
-//        ET non remboursés par une autre ligne (miroir `StudentPayments.php`).
-// - R4 : balance = (fees_total − exempt_total) − net_paid.
+// - R1 : dû net = SUM de TOUTES les lignes de frais SIGNÉES du périmètre.
+// - R2 : exonération = son montant négatif réel, pas l'annulation fictive du
+//        montant actuel du frais lié (qui peut avoir été modifié entretemps).
+// - R3 : net_paid = SUM de TOUTES les lignes de paiement SIGNÉES ; un
+//        remboursement partiel ne supprime pas le paiement initial entier.
+// - R4 : balance = dû net − net_paid, calcul exact en centimes numeric(14,2).
+// Lectures fausses/montants invalides : indisponible, jamais un zéro inventé.
 // États : no_data (aucune ligne), exempt (dû soldé par exonérations, rien
 // payé), paid/À jour (balance ≤ 0), partial (payé > 0, reste > 0),
 // due/exigible (rien payé, reste > 0). Échéances = info (dépassées comptées).
@@ -46,47 +47,35 @@ function SchoolSafeFeeScan($qr, $secretHex, array $ctx, array $db, $day = null)
 
     $fees = $get('SELECT ID, AMOUNT FROM billing_fees WHERE ' . $where . ' AND WAIVED_FEE_ID IS NULL');
     $waivers = $get('SELECT WAIVED_FEE_ID, AMOUNT FROM billing_fees WHERE ' . $where . ' AND WAIVED_FEE_ID IS NOT NULL');
-    $waivedIds = [];
-    if (is_array($waivers)) foreach ($waivers as $w) {
-        if (isset($w['WAIVED_FEE_ID'])) $waivedIds[(int) $w['WAIVED_FEE_ID']] = true;
+    if (!is_array($fees)||!is_array($waivers)) throw new RuntimeException('FEE_READ_UNAVAILABLE');
+    $waivedAmounts=[];$feeAmounts=[];$feesTotal=0;$waiverTotal=0;
+    foreach ($fees as $fee) {
+        if (!isset($fee['ID'],$fee['AMOUNT'])) throw new RuntimeException('FEE_READ_UNAVAILABLE');
+        $amount=SchoolSafeFeeCents($fee['AMOUNT']);
+        $feesTotal=SchoolSafeFeeAddCents($feesTotal,$amount);
+        $feeAmounts[(int)$fee['ID']]=$amount;
     }
-    $feesTotal = 0.0;
-    $exemptTotal = 0.0;
-    $feeCount = 0;
-    if (is_array($fees)) foreach ($fees as $fee) {
-        if (!isset($fee['ID'], $fee['AMOUNT'])) continue;
-        $feeCount++;
-        $amount = (float) $fee['AMOUNT'];
-        $feesTotal += $amount;
-        if (isset($waivedIds[(int) $fee['ID']])) $exemptTotal += $amount;
+    foreach ($waivers as $waiver) {
+        if (!isset($waiver['WAIVED_FEE_ID'],$waiver['AMOUNT'])) throw new RuntimeException('FEE_READ_UNAVAILABLE');
+        $amount=SchoolSafeFeeCents($waiver['AMOUNT']);$id=(int)$waiver['WAIVED_FEE_ID'];
+        $waiverTotal=SchoolSafeFeeAddCents($waiverTotal,$amount);
+        $waivedAmounts[$id]=SchoolSafeFeeAddCents($waivedAmounts[$id]??0,$amount);
     }
-    $payments = $get('SELECT ID, AMOUNT, REFUNDED_PAYMENT_ID FROM billing_payments WHERE ' . $where);
-    $refundedIds = [];
-    $payRows = [];
-    if (is_array($payments)) foreach ($payments as $p) {
-        if (!isset($p['ID'])) continue;
-        $payRows[(int) $p['ID']] = $p;
-        if (isset($p['REFUNDED_PAYMENT_ID']) && $p['REFUNDED_PAYMENT_ID'] !== null && $p['REFUNDED_PAYMENT_ID'] !== '') {
-            $refundedIds[(int) $p['REFUNDED_PAYMENT_ID']] = true;
-        }
+    $feeCount=count($fees);
+    $payments=$get('SELECT ID, AMOUNT, REFUNDED_PAYMENT_ID FROM billing_payments WHERE '.$where);
+    if (!is_array($payments)) throw new RuntimeException('FEE_READ_UNAVAILABLE');
+    $netPaid=0;$payCount=count($payments);
+    foreach ($payments as $payment) {
+        if (!isset($payment['ID'],$payment['AMOUNT'])) throw new RuntimeException('FEE_READ_UNAVAILABLE');
+        $netPaid=SchoolSafeFeeAddCents($netPaid,SchoolSafeFeeCents($payment['AMOUNT']));
     }
-    $netPaid = 0.0;
-    $payCount = 0;
-    foreach ($payRows as $id => $p) {
-        if (!isset($p['AMOUNT']) || $p['AMOUNT'] === null) continue;
-        if ((isset($p['REFUNDED_PAYMENT_ID']) && $p['REFUNDED_PAYMENT_ID'] !== null && $p['REFUNDED_PAYMENT_ID'] !== '')
-            || isset($refundedIds[$id])) {
-            continue;
-        }
-        $payCount++;
-        $netPaid += (float) $p['AMOUNT'];
-    }
-    $dueNet = round($feesTotal - $exemptTotal, 2);
-    $balance = round($dueNet - $netPaid, 2);
+    $dueNet=SchoolSafeFeeAddCents($feesTotal,$waiverTotal);
+    if (($netPaid>0&&$dueNet<PHP_INT_MIN+$netPaid)||($netPaid<0&&$dueNet>PHP_INT_MAX+$netPaid)) throw new RuntimeException('FEE_READ_UNAVAILABLE');
+    $balance=$dueNet-$netPaid;
 
-    if ($feeCount === 0 && $payCount === 0) {
+    if ($feeCount === 0 && count($waivers) === 0 && $payCount === 0) {
         $status = 'no_data';
-    } elseif ($dueNet <= 0 && $netPaid <= 0 && $exemptTotal > 0) {
+    } elseif ($dueNet <= 0 && $netPaid <= 0 && $waiverTotal < 0) {
         $status = 'exempt';
     } elseif ($balance <= 0) {
         $status = 'paid';
@@ -101,8 +90,11 @@ function SchoolSafeFeeScan($qr, $secretHex, array $ctx, array $db, $day = null)
         $safeDay = "'" . str_replace("'", "''", $day) . "'";
         $candidates = $get('SELECT ID, DUE_DATE FROM billing_fees WHERE ' . $where
             . ' AND WAIVED_FEE_ID IS NULL AND DUE_DATE IS NOT NULL AND DUE_DATE<' . $safeDay);
-        if (is_array($candidates)) foreach ($candidates as $c) {
-            if (!isset($c['ID']) || isset($waivedIds[(int) $c['ID']])) continue;
+        if (!is_array($candidates)) throw new RuntimeException('FEE_READ_UNAVAILABLE');
+        // Nominal fee deadlines only: payments have no native per-fee allocation.
+        foreach ($candidates as $c) {
+            if (!isset($c['ID'])||!isset($feeAmounts[(int)$c['ID']])) throw new RuntimeException('FEE_READ_UNAVAILABLE');
+            if (SchoolSafeFeeAddCents($feeAmounts[(int)$c['ID']],$waivedAmounts[(int)$c['ID']]??0)<=0) continue;
             if (!isset($c['DUE_DATE']) || $c['DUE_DATE'] === null || $c['DUE_DATE'] === '') continue;
             if (strcmp((string) $c['DUE_DATE'], $day) < 0) $overdue++;
         }
@@ -114,8 +106,8 @@ function SchoolSafeFeeScan($qr, $secretHex, array $ctx, array $db, $day = null)
         $consult = $get('INSERT INTO schoolsafe_fee_consults(school_id, student_id, consulted_by,'
             . ' balance_status, fee_total, paid_total, balance)'
             . ' VALUES(' . $school . ',' . $studentId . ',' . $user . ",'" . $status . "',"
-            . number_format($dueNet, 2, '.', '') . ',' . number_format($netPaid, 2, '.', '') . ','
-            . number_format($balance, 2, '.', '') . ') RETURNING ID');
+            . SchoolSafeFeeFormatCents($dueNet) . ',' . SchoolSafeFeeFormatCents($netPaid) . ','
+            . SchoolSafeFeeFormatCents($balance) . ') RETURNING ID');
         if (!is_array($consult) || !isset($consult[1])) throw new RuntimeException('FEE_WRITE_FAILED');
         $exec('COMMIT');
         $consultId = (int) $consult[1]['ID'];
@@ -127,13 +119,35 @@ function SchoolSafeFeeScan($qr, $secretHex, array $ctx, array $db, $day = null)
     $result = ['result' => 'FEE_STATUS', 'decision' => 'allowed',
         'balance_status' => $status, 'consult_id' => $consultId] + $verify;
     if (!empty($ctx['detail'])) {
-        $result['fee_total'] = number_format($dueNet, 2, '.', '');
-        $result['paid_total'] = number_format($netPaid, 2, '.', '');
-        $result['balance'] = number_format($balance, 2, '.', '');
+        $result['fee_total'] = SchoolSafeFeeFormatCents($dueNet);
+        $result['paid_total'] = SchoolSafeFeeFormatCents($netPaid);
+        $result['balance'] = SchoolSafeFeeFormatCents($balance);
         $result['fee_count'] = $feeCount;
         $result['overdue_count'] = $overdue;
+        $result['overdue_basis'] = 'nominal_unallocated';
     }
     return $result;
+}
+
+// PostgreSQL numeric(14,2) rows are decimal strings, not binary floats.
+function SchoolSafeFeeCents($value): int
+{
+    if ((!is_string($value)&&!is_int($value))||preg_match('/^(-?)([0-9]{1,12})(?:\.([0-9]{1,2}))?$/D',(string)$value,$parts)!==1) {
+        throw new RuntimeException('FEE_READ_UNAVAILABLE');
+    }
+    $cents=(int)$parts[2]*100+(int)str_pad($parts[3]??'',2,'0',STR_PAD_RIGHT);
+    return $parts[1]==='-'?-$cents:$cents;
+}
+
+function SchoolSafeFeeAddCents(int $total,int $amount): int
+{
+    if (($amount>0&&$total>PHP_INT_MAX-$amount)||($amount<0&&$total<PHP_INT_MIN-$amount)) throw new RuntimeException('FEE_READ_UNAVAILABLE');
+    return $total+$amount;
+}
+
+function SchoolSafeFeeFormatCents(int $cents): string
+{
+    return ($cents<0?'-':'').abs(intdiv($cents,100)).'.'.str_pad((string)abs($cents%100),2,'0',STR_PAD_LEFT);
 }
 
 // Libellés FR pour les tableaux de bord (jamais de montant imposé à l'appelant).
