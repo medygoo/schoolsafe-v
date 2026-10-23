@@ -10,6 +10,15 @@ $fees=[];$payments=[];$failedRead=false;$writes=[];$consults=[];$pass=0;$fail=0;
 $db=['get'=>function($sql) use (&$fees,&$payments,&$failedRead,&$consults) {
     if (strpos($sql,'to_regclass')!==false)return [1=>['T'=>'public.schoolsafe_student_cards']];
     if (strpos($sql,'FROM schoolsafe_student_cards')!==false)return [1=>['STUDENT_ID'=>11,'SIGNATURE'=>$GLOBALS['signature'],'STATUS'=>'active','ENROLLED'=>'t','FIRST_NAME'=>'Synthetic','LAST_NAME'=>'Fixture','CLASS_NAME'=>'Synthetic class']];
+    if (strpos($sql,'FROM program_config')!==false)return [];
+    if (strpos($sql,'FROM schools WHERE')!==false)return [1=>['ID'=>1]];
+    if (strpos($sql,'LEDGER_KIND')!==false){
+        if($failedRead)return false;
+        $rows=[];
+        foreach($fees as $row){$row['LEDGER_KIND']='fee';$rows[count($rows)+1]=$row;}
+        foreach($payments as $row){$row['LEDGER_KIND']='payment';$rows[count($rows)+1]=$row;}
+        return $rows;
+    }
     if (strpos($sql,'FROM billing_fees')!==false) {
         if($failedRead)return false;
         $waivers=strpos($sql,'WAIVED_FEE_ID IS NOT NULL')!==false;$rows=[];

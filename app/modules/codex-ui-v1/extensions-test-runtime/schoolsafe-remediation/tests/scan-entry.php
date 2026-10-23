@@ -45,6 +45,7 @@ $writes = 0;
 $db = [
     'get' => function ($sql) {
         global $state, $sign, $writes;
+        if (strpos($sql, 'FROM schools WHERE') !== false) return [1=>['ID'=>1]];
         if (strpos($sql, 'information_schema.columns') !== false) return [1=>['N'=>7]];
         if (strpos($sql, 'FROM students WHERE') !== false) return [1=>['STUDENT_ID'=>11]];
         if (strpos($sql, 'FROM student_enrollment WHERE') !== false) return [1=>['OK'=>1]];

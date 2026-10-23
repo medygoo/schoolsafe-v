@@ -3,7 +3,7 @@
  const byId=id=>document.getElementById(id),form=byId('scan-form'),state=byId('scanner-state'),result=byId('scan-result'),people=byId('scan-people'),confirm=byId('pickup-confirm');
  const modes={entry:['Entrée','SCAN_ENTRY'],pickup:['Récupération','SCAN_PICKUP'],fees:['Frais scolaires','SCAN_FEES'],canteen:['Frais de cantine','SCAN_CANTEEN'],verify:['Vérification','SCAN_VERIFY']};
  const names={INVALID:'QR invalide.',VALID:'Carte valide.',PRESENT:'Arrivée enregistrée.',ALREADY_PRESENT:'Arrivée déjà enregistrée.',CONFIRMED:'Remise confirmée.',PICKUP_CHOICE:'Sélectionnez la personne présente.',NEED_HUMAN_CONFIRMATION:'Vérification humaine requise.',DENIED:'Remise refusée.',LOST:'Carte perdue.',REVOKED:'Carte révoquée.',REPLACED:'Carte remplacée.',NOT_DELEGATED:'Autorisation absente.',OUT_OF_SCOPE:'Hors du périmètre autorisé.'};
- const balances={paid:'Payé',partial:'Partiellement payé',due:'Impayé',exempt:'Exonéré',no_data:'Données absentes'};
+ const balances={paid:'Payé',partial:'Partiellement payé',due:'À régler',exempt:'Exonéré',no_data:'Données absentes'};
  let csrf='',mode='verify',busy=false,proof=null,campaign=null,stream=null,cameraRun=0;
  function clearPickup(){proof=null;confirm.hidden=true;byId('human-confirm').checked=false;people.replaceChildren();}
  function stopCamera(){cameraRun++;if(stream)stream.getTracks().forEach(track=>track.stop());stream=null;byId('scan-video').srcObject=null;byId('camera-area').hidden=true;}
@@ -25,6 +25,13 @@
    if(!data||typeof data.result!=='string')throw new Error('INVALID_RESULT');
    result.dataset.feeColor=data.result==='FEE_POLICY_STATUS'?data.color:'';
    if(data.result==='FEE_STATUS'){const who=data.student_name?data.student_name+(typeof data.class_name==='string'&&data.class_name?' ('+data.class_name+')':'')+' : ':'';const label=balances[data.balance_status]||'Statut indisponible';result.textContent=typeof data.balance==='string'?who+label+' — solde '+data.balance:who+label+' — Orienter au bureau, controle a verifier';}else result.textContent=data.result==='FEE_POLICY_STATUS'?data.label:(data.student_name?data.student_name+(typeof data.class_name==='string'&&data.class_name?' ('+data.class_name+')':'')+' : ':'')+(data.result==='CANTEEN_STATUS'?data.label:(names[data.result]||'Résultat du moteur : '+data.result))+(data.late===true?' (retard)':'');
+   const financial=data.financial;
+   if(financial&&['blue','yellow','red'].includes(financial.color))result.dataset.feeColor=financial.color;
+   if(mode==='entry'&&data.reason==='FEE_CONTROL_DENIED')result.textContent='Entrée non autorisée — contrôle financier rouge. Faites vérifier le dossier par l’école.';
+   else if(mode==='entry'&&data.reason==='FEE_CONTROL_UNAVAILABLE')result.textContent='Contrôle financier indisponible. Aucune arrivée enregistrée ; faites vérifier le dossier par l’école.';
+   else if(financial?.state==='active')result.textContent+=' '+({blue:'Contrôle bleu — en ordre.',yellow:'Contrôle jaune — tolérance autorisée, complément à prévoir.',red:'Contrôle rouge — validation du responsable requise.'}[financial.color]||'Contrôle à vérifier.');
+   else if(financial?.state==='inactive')result.textContent+=' Aucun contrôle financier actif.';
+   else if(financial?.state==='unavailable')result.textContent+=' Contrôle financier indisponible — aucune autorisation financière.';
    if(typeof data.photo_url==='string'&&data.photo_url){
     let photo;try{photo=new URL(data.photo_url,location.href);}catch(_){}
     if(photo&&photo.origin===location.origin&&['http:','https:'].includes(photo.protocol)){
@@ -76,7 +83,7 @@
     }catch(_){byId('scan-location').replaceChildren();}
    }
    byId('modes').replaceChildren();let first=null;
-   for(const [key,[label,capability]] of Object.entries(modes)){const button=document.createElement('button');button.type='button';button.textContent=label;button.dataset.mode=key;button.disabled=!data.capabilities.includes(capability)||(key==='fees'&&data.fee_policy_active!==true)||(['entry','pickup'].includes(key)&&!locationsReady);if(key==='fees'&&data.fee_policy_active!==true)button.title='Aucun barème actif';if(['entry','pickup'].includes(key)&&!locationsReady)button.title='Lieux de scan indisponibles';button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>setMode(key));byId('modes').append(button);if(!button.disabled&&!first)first=key;}
+   for(const [key,[label,capability]] of Object.entries(modes)){const button=document.createElement('button');button.type='button';button.textContent=label;button.dataset.mode=key;button.disabled=!data.capabilities.includes(capability)||(key==='fees'&&data.fee_policy_active!==true&&data.fee_consult_available!==true)||(['entry','pickup'].includes(key)&&!locationsReady);if(key==='fees'&&data.fee_policy_active!==true)button.title=data.fee_consult_available===true?'Consultation seule — aucun contrôle financier actif':'Aucun barème actif';if(['entry','pickup'].includes(key)&&!locationsReady)button.title='Lieux de scan indisponibles';button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>setMode(key));byId('modes').append(button);if(!button.disabled&&!first)first=key;}
    if(!first){state.textContent=data.capabilities.some(capability=>['SCAN_ENTRY','SCAN_PICKUP'].includes(capability))?'Aucun lieu de scan disponible dans cette école.':'Aucune tâche de scan attribuée.';byId('scanner-retry').hidden=false;return;}
    const requestedMode=location.hash.slice(1);
    const requestedButton=Array.from(byId('modes').querySelectorAll('button')).find(button=>button.dataset.mode===requestedMode&&!button.disabled);

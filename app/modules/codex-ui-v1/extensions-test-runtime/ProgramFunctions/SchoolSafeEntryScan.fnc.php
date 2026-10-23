@@ -44,7 +44,7 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
         return ['result' => 'DENIED', 'signature_valid' => true, 'reason' => 'LOCATION_DENIED'] + $verify;
     }
     $checkpoint = ['id' => (int) $cp[1]['ID'], 'label' => $cp[1]['TITLE']];
-    return SchoolSafePickupStudentTransaction($verify['student_id'], $ctx, $db, function() use ($verify, $school, $year, $clock, $checkpoint, $user, $db, $get, $exec) {
+    return SchoolSafePickupStudentTransaction($verify['student_id'], $ctx, $db, function() use ($verify, $school, $year, $clock, $checkpoint, $user, $db, $get, $exec, $now) {
         $point = $get('SELECT ID, TYPE, SCHOOLSAFE_SCAN_SCHOOL_ID, SCHOOLSAFE_SCAN_SYEAR, SCHOOLSAFE_SCAN_ENABLED FROM entry_exit_checkpoints WHERE ID=' . $checkpoint['id'] . ' FOR SHARE');
         if (!is_array($point) || !isset($point[1]) || !SchoolSafeScanCheckpointInScope($point[1], $school, $year)) {
             return ['result'=>'DENIED','signature_valid'=>true,'reason'=>'LOCATION_DENIED'] + $verify;
@@ -60,6 +60,18 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
         if ($last !== null && $last['TYPE'] === 'in') {
             return ['result' => 'ALREADY_PRESENT', 'decision' => 'allowed'] + $verify;
         }
+        require_once __DIR__.'/SchoolSafeFeePolicy.fnc.php';
+        $model=SchoolSafeFeePolicyActive(['school'=>$school,'year'=>$year],$db,true);
+        $financial=['state'=>'inactive','color'=>null,'reason'=>'no_active_policy'];
+        $consultId=null;
+        if($model!==null){
+            $ledger=SchoolSafeFeeLedgerRead((int)$verify['student_id'],$school,$year,$get,date('Y-m-d',$now));
+            $financial=SchoolSafeFeeClassify($model,$ledger);
+            $consultId=SchoolSafeFeeConsultRecord((int)$verify['student_id'],['school'=>$school,'year'=>$year,'user'=>$user],$ledger,$get);
+            if(!$financial['entry_allowed'])return ['result'=>'DENIED','decision'=>'denied',
+                'reason'=>$financial['state']==='unavailable'?'FEE_CONTROL_UNAVAILABLE':'FEE_CONTROL_DENIED',
+                'financial'=>$financial,'financial_consult_id'=>$consultId]+$verify;
+        }
         $late = SchoolSafeEntryIsLate($school, $year, $clock, $get);
         $comment = 'Entrée ' . substr($clock, 0, 5) . ($late ? ' (retard)' : '') . ' — staff #' . $user;
         $commentSql = "'" . str_replace("'", "''", $comment) . "'";
@@ -69,7 +81,7 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
         if (!is_array($inserted) || !isset($inserted[1])) throw new RuntimeException('ENTRY_WRITE_FAILED');
         return ['result' => 'PRESENT', 'decision' => 'allowed', 'late' => $late,
             'record_id' => (int) $inserted[1]['ID'], 'occurred_at' => $inserted[1]['RECORDED_AT'],
-            'checkpoint' => $checkpoint] + $verify;
+            'checkpoint' => $checkpoint,'financial'=>$financial,'financial_consult_id'=>$consultId] + $verify;
     });
 }
 

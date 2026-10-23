@@ -49,6 +49,14 @@ $db = [
                 'FIRST_NAME' => $c['first_name'], 'LAST_NAME' => $c['last_name'],
                 'CLASS_NAME' => $c['class_name'], 'ENROLLED' => $c['enrolled'] ? 't' : 'f']];
         }
+        if (strpos($sql, 'FROM program_config') !== false) return [];
+        if (strpos($sql, 'FROM schools WHERE') !== false) return [1=>['ID'=>1]];
+        if (strpos($sql, 'LEDGER_KIND') !== false) {
+            $rows=[];
+            foreach($state['fees'] as $row){$row['LEDGER_KIND']='fee';$rows[count($rows)+1]=$row;}
+            foreach($state['payments'] as $row){$row['LEDGER_KIND']='payment';$rows[count($rows)+1]=$row;}
+            return $rows;
+        }
         if (strpos($sql, 'FROM billing_fees') !== false && strpos($sql, 'COUNT') === false) {
             $waivedOnly = strpos($sql, 'WAIVED_FEE_ID IS NOT NULL') !== false;
             $rows = [];

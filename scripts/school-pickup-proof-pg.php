@@ -16,7 +16,7 @@ if ($action==='setup') {
     foreach (['020-school-cards.sql','021-entry-records.sql','022-pickup-guardians.sql','023-fee-consults.sql'] as $file) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
     $pdo->exec('CREATE TABLE schools(id integer,syear numeric(4,0),PRIMARY KEY(id,syear)); INSERT INTO schools VALUES(1,2026),(1,2025),(2,2026)');
     $nativeDdl=file_get_contents($root.'/rosariosis.sql');
-    foreach(['billing_fees','billing_payments'] as $table) {
+    foreach(['billing_fees','billing_payments','program_config'] as $table) {
         if(preg_match('/CREATE TABLE '.$table.' \\([\\s\\S]*?\\n\\);/',$nativeDdl,$match)!==1)throw new RuntimeException('NATIVE_BILLING_DDL_MISSING');
         $pdo->exec($match[0]);
     }
@@ -40,7 +40,7 @@ if ($action==='setup') {
     $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage'],true)) exit(2);
 require_once $root.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
 require_once $root.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
 $barrier=getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1';$barrierUsed=false;
@@ -48,6 +48,7 @@ $db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
     $result=[];
     foreach ($pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) as $i=>$row) $result[$i+1]=array_change_key_case($row,CASE_UPPER);
     if ($barrier&&!$barrierUsed&&((strpos($sql,'FROM schoolsafe_pickup_proofs')!==false&&strpos($sql,'FOR UPDATE')!==false&&$result)
+        ||(strpos($sql,'FROM program_config')!==false&&strpos($sql,'FOR SHARE')!==false)
         ||(strpos($sql,'FROM students_join_users')!==false&&strpos($sql,'FOR SHARE')!==false)
         ||strpos($sql,'SELECT SLOT_NO FROM schoolsafe_pickup_authorizations')!==false
         ||strpos($sql,'AND IS_PRIMARY AND IS_ACTIVE LIMIT 1')!==false)) {
@@ -59,6 +60,15 @@ $db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
     }
     return $result;
 }, 'exec'=>static function($sql) use ($pdo) {$pdo->exec($sql);}];
+if ($action==='fee-policy-manage') {
+    require_once $root.'/ProgramFunctions/SchoolSafeFeePolicy.fnc.php';
+    $db['quote']=static function($value) use($pdo){return $pdo->quote($value);};
+    $ctx=array_replace(['user'=>9,'school'=>1,'year'=>2026,'profile'=>'admin','can_edit_billing'=>true,'can_read'=>true,'can_manage'=>true],json_decode($argv[3]??'{}',true,16,JSON_THROW_ON_ERROR));
+    try{$result=SchoolSafeFeePolicyManage(json_decode($argv[2],true,16,JSON_THROW_ON_ERROR),$ctx,$db);}
+    catch(RuntimeException $error){$result=['error'=>$error->getMessage()];}
+    if($pdo->inTransaction())throw new RuntimeException('TRANSACTION_LEFT_OPEN');
+    echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
 if ($action==='fee-scan') {
     require_once $root.'/ProgramFunctions/SchoolSafeFeeScan.fnc.php';
     $secret=str_repeat('0',64);$signature=substr(strtr(base64_encode(hash_hmac('sha256','QA-ENTRY',hex2bin($secret),true)),'+/','-_'),0,32);
@@ -128,9 +138,10 @@ if (in_array($action,['entry','pickup'],true)) {
     require_once $root.'/ProgramFunctions/SchoolSafeEntryScan.fnc.php';
     $secret=str_repeat('0',64);$signature=substr(strtr(base64_encode(hash_hmac('sha256','QA-ENTRY',hex2bin($secret),true)),'+/','-_'),0,32);
     $qr='schoolsafe://card/QA-ENTRY/'.$signature;$context=['user'=>9,'school'=>1,'year'=>2026];$now=strtotime('2026-10-23 16:30:00 UTC');
-    $result=$action==='entry' ? SchoolSafeEntryScan($qr,'7',$secret,$context,$db,$now)
+    try{$result=$action==='entry' ? SchoolSafeEntryScan($qr,'7',$secret,$context,$db,$now)
         : SchoolSafePickupScan($qr,'7',$secret,$context,$db,($argv[2]??'prepare')==='prepare'
-            ? ['authorized_person_id'=>'g:21'] : ['proof_token'=>$argv[2],'human_confirmed'=>true],$now);
+            ? ['authorized_person_id'=>'g:21'] : ['proof_token'=>$argv[2],'human_confirmed'=>true],$now);}
+    catch(RuntimeException $error){$result=['error'=>$error->getMessage()];}
     if ($pdo->inTransaction()) throw new RuntimeException('TRANSACTION_LEFT_OPEN');
     echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
 }

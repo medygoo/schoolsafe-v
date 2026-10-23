@@ -70,6 +70,21 @@ try {
  }
  // Lot ENTRY : sans bridge, capabilities/lieux/entree servis en local (contrats identiques).
  if(!SchoolSafeScanBridgeAvailable()) {
+   if($operation==='fees') {
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeFeePolicy.fnc.php';
+     $db=['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);},
+       'quote'=>function($value){return "'".DBEscapeString($value)."'";}];
+     try{$data=SchoolSafeFeePolicyManage((array)$input,
+       ['user'=>$user,'school'=>$school,'year'=>$year,'profile'=>User('PROFILE'),
+        'can_edit_billing'=>(bool)AllowEdit('Student_Billing/StudentFees.php'),
+        'can_read'=>SchoolSafeNativeCommandPermission('SchoolSafe/FeeModelsRead.php'),
+        'can_manage'=>SchoolSafeNativeCommandPermission('SchoolSafe/FeeModelsManage.php')],$db);
+     }catch(RuntimeException $error){
+       $status=['FORBIDDEN'=>403,'INVALID_INPUT'=>400,'INVALID_CONTEXT'=>400][$error->getMessage()]??503;
+       while(ob_get_level()>$level)ob_end_clean();SchoolSafeScanReply($status,['error'=>'FEE_CONTROL_UNAVAILABLE']);
+     }
+     while(ob_get_level()>$level)ob_end_clean();SchoolSafeScanReply(200,['data'=>$data]);
+   }
    if($operation==='location-management') {
      require_once __DIR__.'/ProgramFunctions/SchoolSafeScanLocationManage.fnc.php';
      $db=['get'=>function($sql){return DBGet(DBQuery($sql));},
@@ -95,9 +110,11 @@ try {
      if(SchoolSafeNativeCommandPermission('SchoolSafe/ScanFees.php'))$caps[]='SCAN_FEES';
      if(!empty($RosarioModules['Food_Service'])&&SchoolSafeNativeCommandPermission('SchoolSafe/ScanCanteen.php'))$caps[]='SCAN_CANTEEN';
      if(SchoolSafeNativeCommandPermission('SchoolSafe/ScanVerify.php'))$caps[]='SCAN_VERIFY';
-     // Lot FEES : la consultation billing locale ne dépend d'aucun barème
-     // policy ; le bouton Frais est actif dès que SCAN_FEES est accordé.
-     $result=['data'=>['capabilities'=>SchoolSafeFilterScanCapabilities($caps),'fee_policy_active'=>in_array('SCAN_FEES',$caps,true),
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeFeePolicy.fnc.php';
+     $activePolicy=SchoolSafeFeePolicyActive(['school'=>$school,'year'=>$year],['get'=>function($sql){return DBGet(DBQuery($sql));}]);
+     // A permitted consultation is not proof that a financial barrier is active.
+     $result=['data'=>['capabilities'=>SchoolSafeFilterScanCapabilities($caps),'fee_policy_active'=>$activePolicy!==null,
+       'fee_consult_available'=>in_array('SCAN_FEES',$caps,true),
        'open_campaign_id'=>null,'schoolId'=>(string)$school]];
      $result['csrfToken']=$_SESSION['SchoolSafeScannerCsrf'];
      while(ob_get_level()>$level)ob_end_clean();
@@ -206,7 +223,8 @@ try {
      SchoolSafeScanReply(200,['data'=>$data]);
    }
    if($operation==='scan'&&($input->mode??'')==='entry') {
-     if(!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000
+     if(array_diff(array_keys((array)$input),['mode','qr_payload','location_id'])
+       ||!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000
        ||!is_string($input->location_id??null)) throw new RuntimeException('INVALID_INPUT');
      require_once __DIR__.'/ProgramFunctions/SchoolSafeEntryScan.fnc.php';
      $entrySecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
