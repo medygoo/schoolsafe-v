@@ -23,6 +23,8 @@ async function schoolDashboard(p,id,key){await healthy(p);await p.locator('#ss-p
 async function schoolConfigurationBoundary(p,id,key){
  if(configurationChecked)return;
  const target=key==='wizard'?wizardSchool:school;
+ const actions=p.locator('#ss-photo-actions-button');
+ if(await actions.isVisible()&&await p.locator('#ss-photo-actions-panel').isHidden())await actions.click();
  const link=p.getByRole('link',{name:'Configurer mon école',exact:true});
  assert.equal(await link.getAttribute('href'),'/Modules.php?modname=School_Setup/Configuration.php');
  await Promise.all([p.waitForURL(u=>u.pathname==='/Modules.php'&&u.searchParams.get('modname')==='School_Setup/Configuration.php'),link.click()]);
