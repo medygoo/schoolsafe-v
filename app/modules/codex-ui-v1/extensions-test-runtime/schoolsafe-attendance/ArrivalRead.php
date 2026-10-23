@@ -60,11 +60,12 @@ function SchoolSafeArrivalReadScope(array $context, array $filters, callable $qu
     $branches = [];
     if (SchoolSafeArrivalTableReady($query, 'schoolsafe_attendance.arrival_ledger')) $branches[] = $ledger;
     if (SchoolSafeArrivalNativeRecordsReady($query)) {
-        $branches[] = 'SELECT r.student_id,e.school_id,e.syear,(r.recorded_at::date) AS school_date,'
+        $branches[] = 'SELECT r.student_id,r.schoolsafe_scan_school_id AS school_id,r.schoolsafe_scan_syear AS syear,(r.recorded_at::date) AS school_date,'
             . "r.recorded_at AS occurred_at,current_setting('TIMEZONE') AS school_timezone,"
             . "md5('rosario-entry-'||r.id)::uuid AS source_event_id,e.id AS enrollment_id,"
             . "'arrival_evidence' AS status"
             . ' FROM entry_exit_student_records r JOIN student_enrollment e ON e.student_id=r.student_id'
+            . ' AND e.school_id=r.schoolsafe_scan_school_id AND e.syear=r.schoolsafe_scan_syear'
             . " WHERE r.type='in' AND r.unauthorized IS NULL"
             . ' AND e.start_date<=(r.recorded_at::date) AND (e.end_date IS NULL OR e.end_date>=(r.recorded_at::date))';
     }
@@ -100,12 +101,20 @@ function SchoolSafeArrivalTableReady(callable $query, $name): bool
         $rows = SchoolSafeArrivalReadRows($query("SELECT to_regclass('" . $name . "') AS t"));
     } catch (Throwable $error) { return false; }
     $found = (string) ($rows[0]['t'] ?? '');
-    return $found !== '' && substr($found, -strlen($name)) === $name;
+    // PostgreSQL renders a public regclass without its schema when visible on
+    // search_path. The explicitly qualified lookup still identified that table.
+    return $found !== '' && ($found === $name || (strpos($name,'public.')===0 && $found===substr($name,7)));
 }
 
 function SchoolSafeArrivalNativeRecordsReady(callable $query): bool
 {
-    return SchoolSafeArrivalTableReady($query, 'public.entry_exit_student_records');
+    if (!SchoolSafeArrivalTableReady($query, 'public.entry_exit_student_records')) return false;
+    try {
+        $rows=SchoolSafeArrivalReadRows($query("SELECT COUNT(*) AS n FROM information_schema.columns WHERE table_schema='public' AND ("
+            . "(table_name='entry_exit_student_records' AND column_name IN ('schoolsafe_scan_school_id','schoolsafe_scan_syear')) OR "
+            . "(table_name='entry_exit_checkpoints' AND column_name IN ('schoolsafe_scan_school_id','schoolsafe_scan_syear','schoolsafe_scan_enabled')))"));
+        return (int)($rows[0]['n']??0)===5;
+    } catch (Throwable $error) { return false; }
 }
 
 /** Only SELECT statements. No roster-minus-arrivals inference or attendance mutation. */

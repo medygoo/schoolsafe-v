@@ -12,7 +12,7 @@ $pdo=$connect();$pdo->exec("SET TIME ZONE 'UTC'; SET statement_timeout='20s'");
 $action=$argv[1]??'';
 if ($action==='setup') {
     if ((int)$pdo->query("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")->fetchColumn()!==0) throw new RuntimeException('EMPTY_DISPOSABLE_DATABASE_REQUIRED');
-    $pdo->exec('CREATE TABLE students(student_id integer PRIMARY KEY,first_name text DEFAULT $$Synthetic$$,last_name text DEFAULT $$Fixture$$); CREATE TABLE staff(staff_id integer PRIMARY KEY); CREATE TABLE students_join_users(student_id integer,staff_id integer); CREATE TABLE student_enrollment(student_id integer,school_id integer,syear integer,grade_id integer DEFAULT 1); CREATE TABLE school_gradelevels(id integer,title text); CREATE TABLE school_periods(school_id integer,syear integer,start_time text,sort_order integer);');
+    $pdo->exec('CREATE TABLE students(student_id integer PRIMARY KEY,first_name text DEFAULT $$Synthetic$$,last_name text DEFAULT $$Fixture$$); CREATE TABLE staff(staff_id integer PRIMARY KEY,profile text DEFAULT $$admin$$); CREATE TABLE students_join_users(student_id integer,staff_id integer); CREATE TABLE student_enrollment(id serial PRIMARY KEY,student_id integer,school_id integer,syear integer,grade_id integer DEFAULT 1,start_date date DEFAULT $$2020-01-01$$,end_date date); CREATE TABLE school_gradelevels(id integer,title text); CREATE TABLE school_periods(school_id integer,syear integer,start_time text,sort_order integer);');
     foreach (['020-school-cards.sql','021-entry-records.sql','022-pickup-guardians.sql'] as $file) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
     $pdo->exec("CREATE TABLE qa_barrier(hold boolean NOT NULL, arrived boolean NOT NULL DEFAULT false); INSERT INTO qa_barrier(hold) VALUES(true);
         INSERT INTO students(student_id) VALUES(11),(12); INSERT INTO staff VALUES(9),(18); INSERT INTO student_enrollment(student_id,school_id,syear) VALUES(11,1,2026),(12,2,2026); INSERT INTO school_gradelevels VALUES(1,'Synthetic class');
@@ -34,7 +34,7 @@ if ($action==='setup') {
     $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed'],true)) exit(2);
 require_once $root.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
 require_once $root.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
 $barrier=getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1';$barrierUsed=false;
@@ -52,6 +52,21 @@ $db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
     }
     return $result;
 }, 'exec'=>static function($sql) use ($pdo) {$pdo->exec($sql);}];
+if ($action==='arrival-read') {
+    require_once $root.'/schoolsafe-attendance/ArrivalRead.php';
+    try {$result=SchoolSafeArrivalRead(['profile'=>'admin','staff'=>'9','school'=>'1','year'=>'2026'],['date'=>gmdate('Y-m-d')],$db['get']);}
+    catch(RuntimeException $error) {$result=['error'=>$error->getMessage()];}
+    echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
+if ($action==='feed') {
+    chdir($root);
+    function DBGet($sql) {global $db;return $db['get']($sql);}
+    function Config($key) {return 'N';} // unrelated optional sources disabled in this fixture
+    require_once $root.'/ProgramFunctions/SchoolSafeNotificationFeed.fnc.php';
+    $degraded=[];
+    $items=SchoolSafeNotificationFeed([],[],explode(',',$argv[2]??'11'),(int)($argv[3]??27),1,2026,$degraded);
+    echo json_encode(['items'=>$items,'degraded'=>$degraded],JSON_THROW_ON_ERROR)."\n";exit;
+}
 if ($action==='location-manage') {
     require_once $root.'/ProgramFunctions/SchoolSafeScanLocationManage.fnc.php';
     $db['quote']=static function($value) use ($pdo) {return $pdo->quote($value);};

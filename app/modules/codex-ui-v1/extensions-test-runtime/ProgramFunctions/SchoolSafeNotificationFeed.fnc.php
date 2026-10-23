@@ -20,21 +20,39 @@ function SchoolSafeNotificationOrder(array $items): array
         ?:strcmp($a['id'],$b['id']));
     return array_slice($items,0,200);
 }
+// Read only committed official passages in the requested tenant/year, and
+// recheck the live native parent link even if the caller supplied a stale list.
+function SchoolSafeNotificationPassageRows(array $ids,int $user,int $school,int $year,string $direction,callable $query): array
+{
+    require_once __DIR__.'/../schoolsafe-attendance/ArrivalRead.php';
+    SchoolSafeArrivalReadId($user);SchoolSafeArrivalReadId($school);SchoolSafeArrivalReadId($year);
+    if (!in_array($direction,['in','out'],true)) throw new RuntimeException('INVALID_PASSAGE_DIRECTION');
+    if (!$ids) return [];
+    $ids=array_map(static fn($id)=>SchoolSafeArrivalReadId($id),$ids);
+    if (!SchoolSafeArrivalNativeRecordsReady($query)) throw new RuntimeException('SCAN_SCOPE_UNAVAILABLE');
+    $rows=$query('SELECT r.ID,r.STUDENT_ID,s.FIRST_NAME,s.LAST_NAME,r.RECORDED_AT,c.TITLE'
+        .' FROM entry_exit_student_records r JOIN students s ON s.STUDENT_ID=r.STUDENT_ID'
+        .' LEFT JOIN entry_exit_checkpoints c ON c.ID=r.CHECKPOINT_ID'
+        .' AND c.SCHOOLSAFE_SCAN_SCHOOL_ID=r.SCHOOLSAFE_SCAN_SCHOOL_ID AND c.SCHOOLSAFE_SCAN_SYEAR=r.SCHOOLSAFE_SCAN_SYEAR'
+        .' WHERE r.STUDENT_ID IN ('.implode(',',$ids).") AND r.TYPE='".$direction."' AND r.UNAUTHORIZED IS NULL"
+        .' AND r.SCHOOLSAFE_SCAN_SCHOOL_ID='.$school.' AND r.SCHOOLSAFE_SCAN_SYEAR='.$year
+        .' AND EXISTS(SELECT 1 FROM student_enrollment e WHERE e.STUDENT_ID=r.STUDENT_ID'
+        .' AND e.SCHOOL_ID=r.SCHOOLSAFE_SCAN_SCHOOL_ID AND e.SYEAR=r.SCHOOLSAFE_SCAN_SYEAR)'
+        .' AND EXISTS(SELECT 1 FROM students_join_users su JOIN staff st ON st.STAFF_ID=su.STAFF_ID'
+        ." WHERE su.STUDENT_ID=r.STUDENT_ID AND su.STAFF_ID=".$user." AND st.PROFILE='parent')"
+        ." AND r.RECORDED_AT>=CURRENT_TIMESTAMP - INTERVAL '7 days' ORDER BY r.RECORDED_AT DESC,r.ID DESC LIMIT 20");
+    if (!is_array($rows)) throw new RuntimeException('SCAN_PASSAGES_UNAVAILABLE');
+    return $rows;
+}
 function SchoolSafeNotificationFeed(array $scans,array $principal,array $ids,int $user,int $school,int $year,array &$degraded): array
 {
     require_once __DIR__.'/../schoolsafe-remediation/ParentInbox.fnc.php';
     require_once __DIR__.'/SchoolSafeDashboardNative.fnc.php';
     $sources=[
-        'arrivals'=>static function()use($ids,$school,$year){
+        'arrivals'=>static function()use($ids,$user,$school,$year){
             // Lot ENTRY : arrivées scannées des enfants, sans le bridge.
             if(!$ids)return[];
-            $in=implode(',',array_map('intval',$ids));
-            $rows=DBGet('SELECT r.ID, r.STUDENT_ID, s.FIRST_NAME, s.LAST_NAME, r.RECORDED_AT, c.TITLE'
-                . ' FROM entry_exit_student_records r JOIN students s ON s.STUDENT_ID=r.STUDENT_ID'
-                . ' LEFT JOIN entry_exit_checkpoints c ON c.ID=r.CHECKPOINT_ID'
-                . ' WHERE r.STUDENT_ID IN ('.$in.") AND r.TYPE='in' AND r.UNAUTHORIZED IS NULL"
-                . ' AND r.RECORDED_AT>=CURRENT_TIMESTAMP - INTERVAL \'7 days\''
-                . ' ORDER BY r.RECORDED_AT DESC LIMIT 20');
+            $rows=SchoolSafeNotificationPassageRows($ids,$user,$school,$year,'in',static fn($sql)=>DBGet($sql));
             $items=[];
             if(is_array($rows))foreach($rows as $row){
                 if(!isset($row['ID'],$row['STUDENT_ID'],$row['RECORDED_AT']))continue;
@@ -47,15 +65,10 @@ function SchoolSafeNotificationFeed(array $scans,array $principal,array $ids,int
             }
             return $items;
         },
-        'departures'=>static function()use($ids){
+        'departures'=>static function()use($ids,$user,$school,$year){
             // Lot PICKUP : sorties confirmées des enfants, sans le bridge.
             if(!$ids)return[];
-            $in=implode(',',array_map('intval',$ids));
-            $rows=DBGet('SELECT r.ID, r.STUDENT_ID, s.FIRST_NAME, s.LAST_NAME, r.RECORDED_AT, r.COMMENTS'
-                . ' FROM entry_exit_student_records r JOIN students s ON s.STUDENT_ID=r.STUDENT_ID'
-                . ' WHERE r.STUDENT_ID IN ('.$in.") AND r.TYPE='out' AND r.UNAUTHORIZED IS NULL"
-                . ' AND r.RECORDED_AT>=CURRENT_TIMESTAMP - INTERVAL \'7 days\''
-                . ' ORDER BY r.RECORDED_AT DESC LIMIT 20');
+            $rows=SchoolSafeNotificationPassageRows($ids,$user,$school,$year,'out',static fn($sql)=>DBGet($sql));
             $items=[];
             if(is_array($rows))foreach($rows as $row){
                 if(!isset($row['ID'],$row['STUDENT_ID'],$row['RECORDED_AT']))continue;

@@ -28,10 +28,17 @@ function rejectDashboard(callable $test, string $message): void {
 }
 $admin = ['profile' => 'admin', 'staff' => '7', 'school' => '2', 'year' => '2026'];
 $teacher = array_replace($admin, ['profile' => 'teacher']);
+// Source probes precede evidence SQL. This fixture selects the bridge only;
+// scoped native SQL is exercised separately on real PostgreSQL.
+function dashboardSourceProbe($sql) {
+    if (strpos($sql,'SELECT to_regclass(')!==0) return null;
+    return [['t'=>strpos($sql,'schoolsafe_attendance.arrival_ledger')!==false?'schoolsafe_attendance.arrival_ledger':null]];
+}
 
 testDashboard('admin aggregates isolate school year date and valid enrollment', function () use ($admin) {
     $calls = [];
     $data = SchoolSafeArrivalDashboardRead($admin, '2026-10-12', function ($sql) use (&$calls) {
+        if (($probe=dashboardSourceProbe($sql))!==null) return $probe;
         $calls[] = $sql;
         checkDashboard(strpos($sql, 'SELECT ') === 0 && strpos($sql, 'arrival_ledger') !== false);
         foreach (['l.school_id=2', 'l.syear=2026', "l.school_date='2026-10-12'",
@@ -49,6 +56,7 @@ testDashboard('admin aggregates isolate school year date and valid enrollment', 
 testDashboard('teacher first assigned class is reauthorized and evidence is dated', function () use ($teacher) {
     $calls = [];
     $data = SchoolSafeArrivalDashboardRead($teacher, '2026-10-12', function ($sql) use (&$calls) {
+        if (($probe=dashboardSourceProbe($sql))!==null) return $probe;
         $calls[] = $sql;
         checkDashboard(strpos($sql, 'cp.school_id=2') !== false || strpos($sql, 'cp.school_id=l.school_id') !== false);
         checkDashboard(strpos($sql, 'cp.teacher_id=7 OR cp.secondary_teacher_id=7') !== false);
@@ -67,6 +75,7 @@ testDashboard('teacher detail excludes foreign-school schedule from totals and r
         $evidenceQueries = 0;
         $data = SchoolSafeArrivalRead($teacher, ['date' => '2026-10-12', 'course_period_id' => '9'],
             function ($sql) use ($scheduleSchool, &$evidenceQueries) {
+                if (($probe=dashboardSourceProbe($sql))!==null) return $probe;
                 if (strpos($sql, 'SELECT cp.course_period_id FROM course_periods cp') === 0) {
                     return [['course_period_id' => '9']];
                 }
@@ -91,7 +100,7 @@ testDashboard('teacher without assignment cannot read evidence', function () use
     $calls = 0;
     rejectDashboard(function () use ($teacher, &$calls) {
         SchoolSafeArrivalDashboardRead($teacher, '2026-10-12',
-            function ($sql) use (&$calls) { ++$calls; return []; });
+            function ($sql) use (&$calls) { if (($probe=dashboardSourceProbe($sql))!==null) return $probe; ++$calls; return []; });
     }, 'ARRIVAL_ACCESS_DENIED');
     checkDashboard($calls === 1);
 });
@@ -99,7 +108,7 @@ testDashboard('revoked assignment fails before aggregate', function () use ($tea
     $calls = 0;
     rejectDashboard(function () use ($teacher, &$calls) {
         SchoolSafeArrivalDashboardRead($teacher, '2026-10-12',
-            function ($sql) use (&$calls) { return ++$calls === 1 ? [['course_period_id' => 9, 'title' => 'A']] : []; });
+            function ($sql) use (&$calls) { if (($probe=dashboardSourceProbe($sql))!==null) return $probe; return ++$calls === 1 ? [['course_period_id' => 9, 'title' => 'A']] : []; });
     }, 'ARRIVAL_ACCESS_DENIED');
     checkDashboard($calls === 2);
 });
@@ -133,8 +142,8 @@ testDashboard('enabled module requires exact read permission and handles revocat
         throw new RuntimeException('UNEXPECTED_QUERY');
     }) === '');
     $nativeGrant = true;
-    $html = SchoolSafeArrivalDashboardWidget(fn($sql) => strpos($sql, 'SELECT cp.course_period_id,cp.title,') === 0
-        ? [] : [['students' => '0', 'events' => '0']]);
+    $html = SchoolSafeArrivalDashboardWidget(fn($sql) => dashboardSourceProbe($sql) ?? (strpos($sql, 'SELECT cp.course_period_id,cp.title,') === 0
+        ? [] : [['students' => '0', 'events' => '0']]));
     checkDashboard(strpos($html, 'Eleves avec preuve') !== false);
     $nativeGrant = false;
     checkDashboard(SchoolSafeArrivalDashboardWidget(function () {
@@ -152,7 +161,8 @@ testDashboard('mysql never queries ledger', function () {
 });
 testDashboard('class list is bounded and titles escaped', function () use ($admin) {
     $calls = 0;
-    $data = SchoolSafeArrivalDashboardRead($admin, '2026-10-12', function () use (&$calls) {
+    $data = SchoolSafeArrivalDashboardRead($admin, '2026-10-12', function ($sql) use (&$calls) {
+        if (($probe=dashboardSourceProbe($sql))!==null) return $probe;
         return ++$calls === 1 ? [['students' => '1', 'events' => '1']]
             : array_fill(0, 101, ['title' => '<script>alert(1)</script>', 'students' => '1', 'events' => '1']);
     });
@@ -164,15 +174,17 @@ testDashboard('detail read contract remains paginated', function () use ($admin)
     $calls = 0;
     $data = SchoolSafeArrivalRead($admin, ['date' => '2026-10-12', 'page' => '2'],
         function ($sql) use (&$calls) {
+            if (($probe=dashboardSourceProbe($sql))!==null) return $probe;
             if (++$calls === 1) return [['STUDENTS' => '101', 'EVENTS' => '102']];
             checkDashboard(strpos($sql, 'LIMIT 100 OFFSET 100') !== false);
             return [];
         });
     checkDashboard($data['page'] === 2 && $data['summary']['students'] === '101');
 });
-testDashboard('portal mounts read-only adapter after shortcuts', function () {
-    $source = file_get_contents(__DIR__ . '/../modules/misc/Portal.php');
-    checkDashboard(strpos($source, 'SchoolSafeArrivalDashboardWidget') > strpos($source, 'SchoolSafeDashboardShortcuts();'));
+testDashboard('current native detail adapter keeps read permission and guarded DB callback', function () {
+    $source = file_get_contents(__DIR__ . '/../ProgramFunctions/SchoolSafeDashboardDetails.fnc.php');
+    checkDashboard(strpos($source, 'SchoolSafeArrivalViewPermission()') < strpos($source, 'SchoolSafeArrivalDashboardRead('));
     checkDashboard(strpos($source, '$rows = DBGet($sql);') !== false);
+    checkDashboard(strpos($source, 'SchoolSafeArrivalDashboardRender($read)') !== false);
 });
 echo "13 dashboard regression tests passed.\n";
