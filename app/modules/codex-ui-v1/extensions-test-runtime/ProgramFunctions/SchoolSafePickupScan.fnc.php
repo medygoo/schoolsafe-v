@@ -75,12 +75,13 @@ function SchoolSafePickupScan($qr, $locationId, $secretHex, array $ctx, array $d
         $exec('BEGIN');
         try {
             $safe = str_replace("'", "''", $token);
-            $get("INSERT INTO schoolsafe_pickup_proofs(token, school_id, student_id, guardian_id,"
+            $stored = $get("INSERT INTO schoolsafe_pickup_proofs(token, school_id, student_id, guardian_id,"
                 . ' authorization_id, is_principal, location_id, prepared_by, expires_at)'
                 . ' VALUES(' . "'" . $safe . "'" . ',' . $school . ',' . $studentId . ',' . $picked['guardian_id'] . ','
                 . ($picked['authorization_id'] === null ? 'NULL' : (int) $picked['authorization_id']) . ','
                 . ($picked['is_principal'] ? 'TRUE' : 'FALSE') . ',' . (int) $locationId . ',' . $user
                 . ",'" . $expires . "') RETURNING ID");
+            if (!is_array($stored) || !isset($stored[1]['ID'])) throw new RuntimeException('PICKUP_PROOF_WRITE_FAILED');
             $exec('COMMIT');
         } catch (Throwable $error) {
             try { $exec('ROLLBACK'); } catch (Throwable $ignored) { }
@@ -104,10 +105,10 @@ function SchoolSafePickupCandidates($school, $studentId, $day, array $db)
     $studentId = (int) $studentId;
     $people = [];
 
-    $principals = $get('SELECT g.ID, g.GUARDIAN_TYPE, g.FULL_NAME, g.PHOTO_PATH, g.STAFF_ID'
+    $principals = $get('SELECT g.ID, g.GUARDIAN_TYPE, g.FULL_NAME, g.PHOTO_PATH, g.STAFF_ID, g.IS_PRIMARY'
         . ' FROM schoolsafe_pickup_guardians g'
         . ' WHERE g.SCHOOL_ID=' . $school . ' AND g.STUDENT_ID=' . $studentId
-        . ' AND g.IS_PRIMARY AND g.IS_ACTIVE AND g.IS_AUTHORIZED_PICKUP'
+        . " AND g.GUARDIAN_TYPE IN ('pere','mere','tuteur') AND g.IS_ACTIVE AND g.IS_AUTHORIZED_PICKUP"
         . ' AND g.PHOTO_ACCEPTED AND g.PHOTO_PATH<>\'\''
         . ' ORDER BY g.ID');
     if (is_array($principals)) foreach ($principals as $row) {
@@ -121,9 +122,9 @@ function SchoolSafePickupCandidates($school, $studentId, $day, array $db)
             'id' => 'g:' . (int) $row['ID'],
             'guardian_id' => (int) $row['ID'],
             'authorization_id' => null,
-            'is_principal' => true,
+            'is_principal' => in_array($row['IS_PRIMARY'] ?? false, [true, 't', '1', 1], true),
             'name' => $row['FULL_NAME'],
-            'role' => SchoolSafePickupRoleLabel($row['GUARDIAN_TYPE'] ?? 'externe', true),
+            'role' => SchoolSafePickupRoleLabel($row['GUARDIAN_TYPE'] ?? 'externe', in_array($row['IS_PRIMARY'] ?? false, [true, 't', '1', 1], true)),
             'photo_path' => $row['PHOTO_PATH'],
             'photo_accepted' => true,
             'pickup_ready' => true,
@@ -133,12 +134,12 @@ function SchoolSafePickupCandidates($school, $studentId, $day, array $db)
     $safeDay = "'" . str_replace("'", "''", $day) . "'";
     $externals = $get('SELECT a.ID AS AUTH_ID, g.ID, g.GUARDIAN_TYPE, g.FULL_NAME, g.PHOTO_PATH'
         . ' FROM schoolsafe_pickup_authorizations a'
-        . ' JOIN schoolsafe_pickup_guardians g ON g.ID=a.GUARDIAN_ID'
+        . ' JOIN schoolsafe_pickup_guardians g ON g.ID=a.GUARDIAN_ID AND g.SCHOOL_ID=a.SCHOOL_ID AND g.STUDENT_ID=a.STUDENT_ID'
         . ' WHERE a.SCHOOL_ID=' . $school . ' AND a.STUDENT_ID=' . $studentId
         . " AND a.STATUS='active' AND a.PHOTO_VERIFIED"
         . ' AND (a.STARTS_ON IS NULL OR a.STARTS_ON<=' . $safeDay . ')'
         . ' AND (a.ENDS_ON IS NULL OR a.ENDS_ON>=' . $safeDay . ')'
-        . ' AND g.IS_ACTIVE AND g.PHOTO_ACCEPTED AND g.PHOTO_PATH<>\'\''
+        . " AND g.GUARDIAN_TYPE='externe' AND g.IS_ACTIVE AND g.PHOTO_ACCEPTED AND g.PHOTO_PATH<>''"
         . ' ORDER BY a.SLOT_NO NULLS LAST, a.ID');
     if (is_array($externals)) foreach ($externals as $row) {
         if (!isset($row['AUTH_ID'], $row['ID'], $row['FULL_NAME'])) continue;
@@ -172,6 +173,21 @@ function SchoolSafePickupRoleLabel($type, $principal)
 // Preuve déjà utilisée → même remise (idempotence), jamais de doublon.
 function SchoolSafePickupConfirm($token, $school, $studentId, $locationId, $user, $day, $clock, array $db, array $verify, array $checkpoint)
 {
+    $exec = $db['exec'];
+    $exec('BEGIN');
+    try {
+        $result = SchoolSafePickupConfirmLocked($token, $school, $studentId, $locationId, $user, $day, $clock, $db, $verify, $checkpoint);
+        $exec('COMMIT');
+        return $result;
+    } catch (Throwable $error) {
+        try { $exec('ROLLBACK'); } catch (Throwable $ignored) { }
+        throw $error;
+    }
+}
+
+// All early refusals, replay and writes run in the transaction owned above.
+function SchoolSafePickupConfirmLocked($token, $school, $studentId, $locationId, $user, $day, $clock, array $db, array $verify, array $checkpoint)
+{
     $get = $db['get'];
     $exec = $db['exec'];
     if (!preg_match('/^[a-f0-9]{64}$/D', $token)) {
@@ -179,19 +195,20 @@ function SchoolSafePickupConfirm($token, $school, $studentId, $locationId, $user
     }
     $safe = str_replace("'", "''", $token);
     $rows = $get('SELECT ID, SCHOOL_ID, STUDENT_ID, GUARDIAN_ID, AUTHORIZATION_ID, IS_PRINCIPAL,'
-        . ' LOCATION_ID, RECORD_ID, EXPIRES_AT, USED_AT FROM schoolsafe_pickup_proofs'
-        . " WHERE TOKEN='" . $safe . "' LIMIT 1");
+        . ' LOCATION_ID, PREPARED_BY, RECORD_ID, EXPIRES_AT, USED_AT FROM schoolsafe_pickup_proofs'
+        . " WHERE TOKEN='" . $safe . "' LIMIT 1 FOR UPDATE");
     if (!is_array($rows) || !isset($rows[1])) {
         return ['result' => 'DENIED', 'signature_valid' => true, 'reason' => 'PROOF_UNKNOWN'] + $verify;
     }
     $proof = $rows[1];
     if ((int) $proof['SCHOOL_ID'] !== (int) $school || (int) $proof['STUDENT_ID'] !== (int) $studentId
-        || (int) $proof['LOCATION_ID'] !== (int) $locationId) {
+        || (int) $proof['LOCATION_ID'] !== (int) $locationId || (int) $proof['PREPARED_BY'] !== (int) $user) {
         return ['result' => 'DENIED', 'signature_valid' => true, 'reason' => 'OUT_OF_SCOPE'] + $verify;
     }
     if (isset($proof['USED_AT']) && $proof['USED_AT'] !== null && $proof['USED_AT'] !== '') {
         $rec = $get('SELECT ID, RECORDED_AT FROM entry_exit_student_records WHERE ID=' . (int) $proof['RECORD_ID']);
-        $at = (is_array($rec) && isset($rec[1])) ? $rec[1]['RECORDED_AT'] : null;
+        if (!is_array($rec) || !isset($rec[1]['RECORDED_AT']) || (int) $proof['RECORD_ID'] < 1) throw new RuntimeException('PICKUP_RECORD_UNAVAILABLE');
+        $at = $rec[1]['RECORDED_AT'];
         return ['result' => 'CONFIRMED', 'decision' => 'allowed', 'idempotent' => true,
             'record_id' => (int) $proof['RECORD_ID'], 'occurred_at' => $at,
             'checkpoint' => $checkpoint] + $verify;
@@ -200,6 +217,17 @@ function SchoolSafePickupConfirm($token, $school, $studentId, $locationId, $user
     $nowStamp = date('Y-m-d H:i:s', strtotime($day . ' ' . $clock));
     if (strcmp((string) $proof['EXPIRES_AT'], $nowStamp) <= 0) {
         return ['result' => 'DENIED', 'signature_valid' => true, 'reason' => 'PROOF_EXPIRED'] + $verify;
+    }
+    // Lock identity and authorization before re-reading eligibility. Revocation
+    // or photo replacement cannot interleave between this check and the exit.
+    $guardian = $get('SELECT ID FROM schoolsafe_pickup_guardians WHERE ID=' . (int) $proof['GUARDIAN_ID']
+        . ' AND SCHOOL_ID=' . (int) $school . ' AND STUDENT_ID=' . (int) $studentId . ' FOR UPDATE');
+    if (!is_array($guardian) || !isset($guardian[1])) return ['result'=>'DENIED','signature_valid'=>true,'reason'=>'NOT_DELEGATED'] + $verify;
+    if ($proof['AUTHORIZATION_ID'] !== null) {
+        $authorization = $get('SELECT ID FROM schoolsafe_pickup_authorizations WHERE ID=' . (int) $proof['AUTHORIZATION_ID']
+            . ' AND GUARDIAN_ID=' . (int) $proof['GUARDIAN_ID'] . ' AND SCHOOL_ID=' . (int) $school
+            . ' AND STUDENT_ID=' . (int) $studentId . ' FOR UPDATE');
+        if (!is_array($authorization) || !isset($authorization[1])) return ['result'=>'DENIED','signature_valid'=>true,'reason'=>'NOT_DELEGATED'] + $verify;
     }
     // La personne doit être habilitée au moment de confirmer, pas seulement de préparer.
     $candidates = SchoolSafePickupCandidates($school, $studentId, $day, $db);
@@ -213,8 +241,6 @@ function SchoolSafePickupConfirm($token, $school, $studentId, $locationId, $user
     if (!$authOk) {
         return ['result' => 'DENIED', 'signature_valid' => true, 'reason' => 'NOT_DELEGATED'] + $verify;
     }
-    $exec('BEGIN');
-    try {
         $label = "Sortie " . substr($clock, 0, 5) . ' — ' . $picked['name'] . ' — staff #' . $user;
         $commentSql = "'" . str_replace("'", "''", $label) . "'";
         $inserted = $get('INSERT INTO entry_exit_student_records(STUDENT_ID, CHECKPOINT_ID, TYPE, COMMENTS, RECORDED_AT)'
@@ -224,12 +250,7 @@ function SchoolSafePickupConfirm($token, $school, $studentId, $locationId, $user
         $recordId = (int) $inserted[1]['ID'];
         $exec('UPDATE schoolsafe_pickup_proofs SET USED_AT=CURRENT_TIMESTAMP, RECORD_ID=' . $recordId
             . " WHERE ID=" . (int) $proof['ID'] . ' AND USED_AT IS NULL');
-        $exec('COMMIT');
         return ['result' => 'CONFIRMED', 'decision' => 'allowed', 'idempotent' => false,
             'record_id' => $recordId, 'occurred_at' => $inserted[1]['RECORDED_AT'],
             'person' => $picked, 'checkpoint' => $checkpoint] + $verify;
-    } catch (Throwable $error) {
-        try { $exec('ROLLBACK'); } catch (Throwable $ignored) { }
-        throw $error;
-    }
 }

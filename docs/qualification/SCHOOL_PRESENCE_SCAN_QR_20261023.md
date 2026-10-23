@@ -34,6 +34,20 @@ Quatre suites unitaires sur données substituées : CardVerify, EntryScan, FeeSc
 
 Preuves privées : `school-scan-20261023/installed-relations.json`, `entry-baseline.log`, `entry-red.log`, `native-unit-green.log`. Tests ne constituent pas une autorisation de livraison de ce lot incomplet.
 
+## Sous-lot sécurité remise — booléens, familial non principal et preuve verrouillée
+
+GO renouvelé ; le propriétaire demande expressément de finir Scan avant de reprendre le palmarès en matrice et les cinq classes les plus actives. Les brouillons palmarès locaux sont conservés et exclus de ce sous-lot.
+
+PickupManage : conversion stricte des booléens DB (`true/t/1` seulement ; `f`, inconnu ou absent refusent). Père/mère/tuteur se classent comme famille indépendamment d'IS_PRIMARY ; seuls les externes requièrent une accréditation externe. Photo rejetée non exposée par la liste. Approbation/revue sur personne inactive et photo non validée refusées. Réactivation d'une accréditation suspendue par son demandeur parent vérifié, avec les mêmes contrôles photo/date/place, et non une validation staff d'une demande pending. Lecture de l'autorisation de liste désormais bornée école/enfant et plus récente d'abord.
+
+PickupScan : les familiaux autorisés non principaux deviennent des candidats sans usurper le drapeau principal. La jointure d'accréditation lie guardian+école+enfant. Une préparation sans preuve effectivement insérée refuse et rollback. La confirmation commence sa transaction AVANT de lire/verrouiller la preuve FOR UPDATE, vérifie l'opérateur ayant préparé, puis verrouille personne/accréditation avant nouvelle lecture d'éligibilité et écriture de sortie. Le rejeu d'une preuve consommée ne refait pas la sortie ; un enregistrement disparu ne devient pas une confirmation fictive. Toutes les sorties de fonction/erreurs ferment la transaction.
+
+TDD :39contrats de gestion (19PASS/20FAIL avant correctif,39PASS après) ;13contrôles supplémentaires de scan, dont10RED avant correctif, puis vert. Quatre suites natives maintenant **116 assertions PASS**, ajout gestion39 => **155 assertions sur substituts PASS**,5lint PASS.
+
+**PostgreSQL réel local :12contrôles PASS**, scripts school-pickup-proof-qa.py / school-pickup-proof-pg.php. Base NEUVE éphémère schoolcef_fixture, identités exclusivement synthétiques, vraies migrations021/022 et vrai PHP SchoolSafePickupConfirm, images déjà locales, réseau interne sans port publié. Deux processus PHP/connexions indépendants : premier bloqué volontairement après acquisition de la preuve, second observé en attente Lock dans pg_stat_activity, puis libération ; un succès et un rejeu, même record_id, exactement UNE sortie PostgreSQL. Refus opérateur/école/enfant différents, preuve expirée, photo rejetée, personne inactive et habilitation familiale retirée sans sortie. Ressources supprimées uniquement après contrôle du label nonce propriétaire. Preuves privées proof-pg-r1/result.json, pickup-safety-green.log, pickup-proof-red.log, pickup-proof-green.log, pickup-regression-green.log.
+
+Limites : preuve de concurrence pour **la même preuve**, pas encore deux preuves différentes du même enfant ; plafonds familiaux/externes et activation concurrente à compléter. Les voies parent et le champ REQUESTED_BY du code récupéré doivent encore être réconciliés avec le parent principal réellement lié : un test de propriété synthétique ne certifie pas l'enrôlement réel. Le scoping annuel/points de passage, délégation opérateur, barrière financière, HTTP, caméra et image restent ouverts. Les migrations n'ont été exécutées que dans cette nouvelle base jetable, jamais production. Ne pas réutiliser les preuves dashboard comme qualification Scan.
+
 ## Ordre de continuation et arrêt de sécurité
 
 1. Finir la revue des invariants du moteur natif restauré (booléens, trois+trois, autorité, école/année, concurrence) avec régressions rouges/vertes.

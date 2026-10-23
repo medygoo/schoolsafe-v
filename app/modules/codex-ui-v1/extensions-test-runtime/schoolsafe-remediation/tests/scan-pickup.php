@@ -34,14 +34,14 @@ function resetState() {
         'checkpoints' => [7 => ['ID' => 7, 'TITLE' => 'Portail sortie']],
         'principals' => [
             ['ID' => 21, 'GUARDIAN_TYPE' => 'mere', 'FULL_NAME' => 'Maman Diallo',
-             'PHOTO_PATH' => '/assets/pickup/21.jpg', 'STAFF_ID' => null],
+             'PHOTO_PATH' => '/assets/pickup/21.jpg', 'STAFF_ID' => null, 'IS_PRIMARY' => 't'],
         ],
         'externals' => [
             ['AUTH_ID' => 31, 'ID' => 22, 'GUARDIAN_TYPE' => 'externe', 'FULL_NAME' => 'Tonton Ali',
              'PHOTO_PATH' => '/assets/pickup/22.jpg', 'STATUS' => 'active', 'PHOTO_VERIFIED' => true,
              'STARTS_ON' => null, 'ENDS_ON' => null],
         ],
-        'proofs' => [], 'records' => [],
+        'proofs' => [], 'records' => [], 'queries' => [], 'commands' => [], 'transaction' => false,
     ];
 }
 resetState();
@@ -49,6 +49,7 @@ $writes = 0;
 $db = [
     'get' => function ($sql) {
         global $state, $sign, $writes;
+        $state['queries'][] = $sql;
         if (strpos($sql, 'to_regclass') !== false) return [1 => ['T' => 'public.schoolsafe_student_cards']];
         if (strpos($sql, 'FROM schoolsafe_student_cards') !== false) {
             preg_match("/card_number='((?:[^']|'')+)'/", $sql, $m);
@@ -63,6 +64,20 @@ $db = [
         if (strpos($sql, 'FROM entry_exit_checkpoints') !== false) {
             preg_match('/ID=(\d+)/', $sql, $m);
             return isset($state['checkpoints'][(int) $m[1]]) ? [1 => $state['checkpoints'][(int) $m[1]]] : [];
+        }
+        if (strpos($sql, 'SELECT ID FROM schoolsafe_pickup_guardians') !== false) {
+            preg_match('/WHERE ID=(\d+)/', $sql, $m);
+            foreach (array_merge($state['principals'], $state['externals']) as $person) {
+                if ((int) $person['ID'] === (int) $m[1]) return [1=>['ID'=>$person['ID']]];
+            }
+            return [];
+        }
+        if (strpos($sql, 'SELECT ID FROM schoolsafe_pickup_authorizations') !== false) {
+            preg_match('/WHERE ID=(\d+)/', $sql, $m);
+            foreach ($state['externals'] as $person) {
+                if ((int) $person['AUTH_ID'] === (int) $m[1]) return [1=>['ID'=>$person['AUTH_ID']]];
+            }
+            return [];
         }
         if (strpos($sql, 'FROM schoolsafe_pickup_guardians') !== false && strpos($sql, 'IS_PRIMARY') !== false) {
             $out = [];
@@ -85,7 +100,7 @@ $db = [
                 if ($p['token'] === ($m[1] ?? '')) {
                     return [1 => ['ID' => $p['id'], 'SCHOOL_ID' => 1, 'STUDENT_ID' => 11,
                         'GUARDIAN_ID' => $p['gid'], 'AUTHORIZATION_ID' => $p['aid'],
-                        'IS_PRINCIPAL' => $p['principal'], 'LOCATION_ID' => 7,
+                        'IS_PRINCIPAL' => $p['principal'], 'LOCATION_ID' => 7, 'PREPARED_BY' => $p['prepared_by'],
                         'RECORD_ID' => $p['record'], 'EXPIRES_AT' => $p['expires'], 'USED_AT' => $p['used']]];
                 }
             }
@@ -98,7 +113,7 @@ $db = [
             $state['proofs'][] = ['id' => $id, 'token' => $m[1], 'gid' => (int) $m[4],
                 'aid' => strpos($sql, ',NULL,') !== false ? null : 31,
                 'principal' => $x[1] === 'TRUE', 'record' => null,
-                'expires' => $x[4], 'used' => null];
+                'expires' => $x[4], 'used' => null, 'prepared_by' => (int) $x[3]];
             $writes++;
             return [1 => ['ID' => $id]];
         }
@@ -119,6 +134,9 @@ $db = [
     },
     'exec' => function ($sql) {
         global $state;
+        $state['commands'][] = $sql;
+        if ($sql === 'BEGIN') $state['transaction'] = true;
+        if (in_array($sql, ['COMMIT', 'ROLLBACK'], true)) $state['transaction'] = false;
         if (strpos($sql, 'UPDATE schoolsafe_pickup_proofs') !== false) {
             preg_match('/RECORD_ID=(\d+) WHERE ID=(\d+)/', $sql, $m);
             foreach ($state['proofs'] as &$p) {
@@ -153,6 +171,9 @@ $r = SchoolSafePickupScan($qr('P-ACTIVE'), '7', $secretHex, $ctx, $db,
 check('confirm => CONFIRMED', $r['result'], 'CONFIRMED');
 check('confirm => 1 sortie', count($state['records']), 1);
 check('confirm => non idempotent', $r['idempotent'], false);
+$proofReads = array_values(array_filter($state['queries'], function($sql) { return strpos($sql, 'FROM schoolsafe_pickup_proofs') !== false; }));
+check('confirmation locks proof before consuming', strpos(end($proofReads), 'FOR UPDATE') !== false, true);
+check('confirmation closes transaction', $state['transaction'], false);
 
 // 4. Rejeu : idempotent, aucun doublon.
 $r = SchoolSafePickupScan($qr('P-ACTIVE'), '7', $secretHex, $ctx, $db,
@@ -207,6 +228,41 @@ $r = SchoolSafePickupScan('schoolsafe://card/P-ACTIVE/' . str_repeat('B', 32), '
 check('falsifiée => INVALID', $r['result'], 'INVALID');
 $r = SchoolSafePickupScan($qr('P-ACTIVE'), '7', 'pas-un-secret', $ctx, $db, [], $afternoon);
 check('sans secret => null', $r, null);
+
+// 10. Non-principal familial authorized person is not an external slot.
+resetState();
+$state['principals'][0]['GUARDIAN_TYPE'] = 'pere';
+$state['principals'][0]['IS_PRIMARY'] = 'f';
+$r = SchoolSafePickupScan($qr('P-ACTIVE'), '7', $secretHex, $ctx, $db, [], $afternoon);
+check('familial non principal => rôle père', $r['people'][0]['role'], 'Père');
+check('familial non principal => drapeau false', $r['people'][0]['is_principal'], false);
+$familyReads = array_values(array_filter($state['queries'], function($sql) { return strpos($sql, 'FROM schoolsafe_pickup_guardians g') !== false; }));
+check('family query includes authorized non principals', strpos($familyReads[0], 'AND g.IS_PRIMARY AND') === false, true);
+$externalReads = array_values(array_filter($state['queries'], function($sql) { return strpos($sql, 'FROM schoolsafe_pickup_authorizations a') !== false; }));
+check('external join binds school and student', strpos($externalReads[0], 'g.SCHOOL_ID=a.SCHOOL_ID') !== false && strpos($externalReads[0], 'g.STUDENT_ID=a.STUDENT_ID') !== false, true);
+
+// 11. A proof cannot be borrowed by another scanner operator, even when used.
+resetState();
+$prepared = SchoolSafePickupScan($qr('P-ACTIVE'), '7', $secretHex, $ctx, $db, ['authorized_person_id'=>'g:21'], $afternoon);
+$r = SchoolSafePickupScan($qr('P-ACTIVE'), '7', $secretHex, array_replace($ctx, ['user'=>18]), $db,
+    ['proof_token'=>$prepared['proof_token'], 'human_confirmed'=>true], $afternoon);
+check('other operator => DENIED', $r['result'], 'DENIED');
+check('other operator => scope refusal', $r['reason'] ?? '', 'OUT_OF_SCOPE');
+check('other operator => no handover record', count($state['records']), 0);
+check('scope refusal closes transaction', $state['transaction'], false);
+
+// 12. Never display a successful preparation if storing the proof failed.
+resetState();
+$noProofDb = $db;
+$noProofDb['get'] = function($sql) use ($db) {
+    return strpos($sql, 'INSERT INTO schoolsafe_pickup_proofs') !== false ? [] : $db['get']($sql);
+};
+try {
+    SchoolSafePickupScan($qr('P-ACTIVE'), '7', $secretHex, $ctx, $noProofDb, ['authorized_person_id'=>'g:21'], $afternoon);
+    check('missing stored proof refuses preparation', 'NO_ERROR', 'PICKUP_PROOF_WRITE_FAILED');
+} catch (RuntimeException $error) { check('missing stored proof refuses preparation', $error->getMessage(), 'PICKUP_PROOF_WRITE_FAILED'); }
+check('failed preparation rolls back', end($state['commands']), 'ROLLBACK');
+check('failed preparation never records exit', count($state['records']), 0);
 
 echo $failures === 0 ? "GREEN : tous les cas passent.\n" : "STOP : $failures échec(s).\n";
 exit($failures === 0 ? 0 : 1);

@@ -72,6 +72,16 @@ function SchoolSafePickupPhotoPath($path, $root): string
     return $path;
 }
 
+// pg_fetch_assoc returns PostgreSQL booleans as 't'/'f'. Unknown values
+// must fail closed, never become true through PHP's non-empty string rules.
+function SchoolSafePickupDatabaseFlags(array $row): array
+{
+    foreach (['IS_PRIMARY', 'IS_ACTIVE', 'IS_AUTHORIZED_PICKUP', 'PHOTO_ACCEPTED', 'PHOTO_VERIFIED'] as $key) {
+        if (array_key_exists($key, $row)) $row[$key] = in_array($row[$key], [true, 't', '1', 1], true);
+    }
+    return $row;
+}
+
 function SchoolSafePickupGuardian($guardianId, $studentId, array $ctx, array $db): array
 {
     $rows = $db['get']('SELECT ID, SCHOOL_ID, STUDENT_ID, GUARDIAN_TYPE, FULL_NAME, PHONE, STAFF_ID,'
@@ -79,16 +89,21 @@ function SchoolSafePickupGuardian($guardianId, $studentId, array $ctx, array $db
         . ' FROM schoolsafe_pickup_guardians WHERE ID=' . (int) $guardianId
         . ' AND STUDENT_ID=' . (int) $studentId . ' AND SCHOOL_ID=' . $ctx['school'] . ' LIMIT 1');
     if (!is_array($rows) || !isset($rows[1])) throw new RuntimeException('NOT_FOUND');
-    return $rows[1];
+    return SchoolSafePickupDatabaseFlags($rows[1]);
 }
 
 function SchoolSafePickupReady(array $guardian, $auth, $day): bool
 {
+    $guardian = SchoolSafePickupDatabaseFlags($guardian);
     if (empty($guardian['IS_ACTIVE']) || empty($guardian['PHOTO_ACCEPTED']) || empty($guardian['PHOTO_PATH'])) {
         return false;
     }
-    if (!empty($guardian['IS_PRIMARY'])) return !empty($guardian['IS_AUTHORIZED_PICKUP']);
-    if (!is_array($auth) || ($auth['STATUS'] ?? '') !== 'active' || empty($auth['PHOTO_VERIFIED'])) return false;
+    if (in_array($guardian['GUARDIAN_TYPE'] ?? '', ['pere', 'mere', 'tuteur'], true)) {
+        return !empty($guardian['IS_AUTHORIZED_PICKUP']);
+    }
+    if (($guardian['GUARDIAN_TYPE'] ?? '') !== 'externe' || !is_array($auth)) return false;
+    $auth = SchoolSafePickupDatabaseFlags($auth);
+    if (($auth['STATUS'] ?? '') !== 'active' || empty($auth['PHOTO_VERIFIED'])) return false;
     if (!empty($auth['STARTS_ON']) && strcmp($auth['STARTS_ON'], $day) > 0) return false;
     if (!empty($auth['ENDS_ON']) && strcmp($auth['ENDS_ON'], $day) < 0) return false;
     return true;
@@ -110,8 +125,10 @@ function SchoolSafePickupList($studentId, array $ctx, array $db, $day = null)
     $accredited = [];
     if (is_array($guardians)) foreach ($guardians as $g) {
         if (!isset($g['ID'])) continue;
+        $g = SchoolSafePickupDatabaseFlags($g);
         $auths = $db['get']('SELECT ID, STATUS, SLOT_NO, PHOTO_VERIFIED, STARTS_ON, ENDS_ON'
-            . ' FROM schoolsafe_pickup_authorizations WHERE GUARDIAN_ID=' . (int) $g['ID'] . ' ORDER BY ID');
+            . ' FROM schoolsafe_pickup_authorizations WHERE GUARDIAN_ID=' . (int) $g['ID']
+            . ' AND STUDENT_ID=' . $studentId . ' AND SCHOOL_ID=' . $ctx['school'] . ' ORDER BY ID DESC');
         $auth = (is_array($auths) && isset($auths[1])) ? $auths[1] : null;
         $row = [
             'guardian_id' => (string) $g['ID'],
@@ -122,8 +139,8 @@ function SchoolSafePickupList($studentId, array $ctx, array $db, $day = null)
             'authorization_id' => $auth === null ? '' : (string) $auth['ID'],
             'authorization_status' => $auth === null ? '' : $auth['STATUS'],
         ];
-        if (!empty($g['IS_PRIMARY'])) $family[] = $row;
-        else $accredited[] = $row;
+        if (in_array($g['GUARDIAN_TYPE'] ?? '', ['pere', 'mere', 'tuteur'], true)) $family[] = $row;
+        elseif (($g['GUARDIAN_TYPE'] ?? '') === 'externe') $accredited[] = $row;
     }
     return ['family' => $family, 'accredited' => $accredited];
 }
@@ -246,16 +263,17 @@ function SchoolSafePickupValidateAuthorization($studentId, $authorizationId, arr
     // $asParent : réactivation par le principal lui-même (propriété déjà
     // vérifiée par l'appelant) — mêmes contrôles métier, sans rôle staff.
     if (!$asParent) SchoolSafePickupRequireStaff($ctx);
+    elseif (SchoolSafePickupIsStaff($ctx) || ($ctx['parent'] ?? false) !== true) throw new RuntimeException('FORBIDDEN');
     $day = $day === null ? date('Y-m-d') : $day;
     $rows = $db['get']('SELECT ID, GUARDIAN_ID, STUDENT_ID, SCHOOL_ID, STATUS, PHOTO_VERIFIED, STARTS_ON, ENDS_ON'
         . ' FROM schoolsafe_pickup_authorizations WHERE ID=' . (int) $authorizationId
         . ' AND STUDENT_ID=' . (int) $studentId . ' AND SCHOOL_ID=' . $ctx['school'] . ' LIMIT 1');
     if (!is_array($rows) || !isset($rows[1])) throw new RuntimeException('NOT_FOUND');
-    $a = $rows[1];
-    if (($a['STATUS'] ?? '') !== 'pending') throw new RuntimeException('INVALID_STATE');
+    $a = SchoolSafePickupDatabaseFlags($rows[1]);
+    if (($a['STATUS'] ?? '') !== ($asParent ? 'suspended' : 'pending')) throw new RuntimeException('INVALID_STATE');
     $g = SchoolSafePickupGuardian($a['GUARDIAN_ID'], $studentId, $ctx, $db);
-    if (empty($g['IS_ACTIVE'])) throw new RuntimeException('INVALID_PERSON');
-    if (empty($a['PHOTO_VERIFIED']) || empty($g['PHOTO_ACCEPTED'])) throw new RuntimeException('PHOTO_NOT_VALIDATED');
+    if (empty($g['IS_ACTIVE']) || ($g['GUARDIAN_TYPE'] ?? '') !== 'externe') throw new RuntimeException('INVALID_PERSON');
+    if (empty($a['PHOTO_VERIFIED']) || empty($g['PHOTO_ACCEPTED']) || empty($g['PHOTO_PATH'])) throw new RuntimeException('PHOTO_NOT_VALIDATED');
     if (!empty($a['STARTS_ON']) && strcmp($a['STARTS_ON'], $day) > 0) throw new RuntimeException('INVALID_STATE');
     if (!empty($a['ENDS_ON']) && strcmp($a['ENDS_ON'], $day) < 0) throw new RuntimeException('INVALID_STATE');
     $active = $db['get']('SELECT COALESCE(MIN(SLOT_NO),0) AS TAKEN1 FROM schoolsafe_pickup_authorizations'
