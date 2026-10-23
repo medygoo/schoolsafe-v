@@ -10,6 +10,9 @@ module.exports=async function qualifySchoolDashboard(p,base,evidence,key){
  for(const width of [1280,390,768]){
   await p.setViewportSize({width,height:1000});await p.goto(portal,{waitUntil:'domcontentloaded'});
   await p.waitForFunction(()=>window.schoolSafeNavigation&&document.querySelector('.ss-fixed-pager'));
+  // The existing theme fetches authorized metadata before bind()/organizeMenu().
+  // Compare completed native menus, not one transient raw SSR menu against an organized menu.
+  await p.waitForSelector('#menu [data-ss-organized="1"]',{state:'attached'});
   await healthy();assert.equal(await p.locator('.ss-fixed-pager option').count(),13,'Keep all thirteen existing views, without dropping data');
   const labels=await p.locator('.ss-fixed-pager option').allTextContents();
   for(const label of labels){await view.selectOption({label});const active=p.locator('.ss-fixed-view:not([hidden])');assert.equal(await active.count(),1);assert((await active.innerText()).trim(),label+' must not be an empty or hidden panel');await healthy();}
