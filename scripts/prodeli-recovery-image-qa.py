@@ -36,7 +36,7 @@ def local(args, data=None, timeout=90):
 
 
 def remote(code, evidence, timeout=240):
-    p = subprocess.run(['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', SSH, 'python3', '-'],
+    p = subprocess.run(['ssh', '-4', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', SSH, 'python3', '-'],
                        input=code.encode(), capture_output=True, timeout=timeout)
     if p.returncode:
         (evidence / 'image-qa-error.private.log').write_bytes(p.stderr)
@@ -214,7 +214,7 @@ def main():
                 archive.addfile(info, io.BytesIO(data))
         assert len(bundle.getvalue()) < 6_000_000
         create = 'import pathlib,sys;p=pathlib.Path(' + repr(state['root']) + ');p.mkdir(mode=0o700);(p/"input.private.tar.gz").write_bytes(sys.stdin.buffer.read())'
-        local(['ssh', '-o', 'BatchMode=yes', SSH, 'python3 -c ' + shlex.quote(create)], bundle.getvalue(), 45)
+        local(['ssh', '-4', '-o', 'BatchMode=yes', SSH, 'python3 -c ' + shlex.quote(create)], bundle.getvalue(), 45)
         state_file.write_text(json.dumps(state, indent=2))
         (evidence / 'source-manifest.json').write_text(json.dumps(manifest, indent=2))
         code = 'STATE=' + repr(state) + '\nMANIFEST=' + repr(manifest) + '\n' + REMOTE_COMMON + PREPARE

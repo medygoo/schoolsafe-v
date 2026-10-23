@@ -17,7 +17,7 @@ assert.ok(out, 'Set PRODELI_RECOVERY_EVIDENCE to a private evidence directory');
 fs.mkdirSync(out, {recursive:true});
 const shellQuote = s => "'"+s.replaceAll("'","'\\''")+"'";
 const docker = (args, options={}) => process.env.PRODELI_QA_SSH
- ? execFileSync('ssh',['-o','BatchMode=yes',process.env.PRODELI_QA_SSH,'docker '+args.map(shellQuote).join(' ')],{encoding:'utf8',timeout:45000,...options}).trim()
+ ? execFileSync('ssh',['-4','-o','BatchMode=yes',process.env.PRODELI_QA_SSH,'docker '+args.map(shellQuote).join(' ')],{encoding:'utf8',timeout:45000,...options}).trim()
  : execFileSync('docker', args, {encoding:'utf8',timeout:45000,...options}).trim();
 for (const name of [web,db]) assert.equal(docker(['inspect','--format','{{index .Config.Labels "schoolcef.qualification"}}',name]),label);
 assert.equal(docker(['network','inspect',network,'--format','{{.Internal}}']), 'true');

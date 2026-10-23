@@ -113,7 +113,7 @@ def main():
                 archive.addfile(info, io.BytesIO(data))
         assert len(bundle.getvalue()) < 6_000_000
         create = 'import pathlib,sys;p=pathlib.Path(' + repr(state['root']) + ');p.mkdir(mode=0o700);(p/"input.private.tar.gz").write_bytes(sys.stdin.buffer.read())'
-        qa.local(['ssh', '-o', 'BatchMode=yes', qa.SSH, 'python3 -c ' + shlex.quote(create)], bundle.getvalue(), 45)
+        qa.local(['ssh', '-4', '-o', 'BatchMode=yes', qa.SSH, 'python3 -c ' + shlex.quote(create)], bundle.getvalue(), 45)
         state_file.write_text(json.dumps(state, indent=2))
         (evidence / 'source-manifest.json').write_text(json.dumps(manifest, indent=2))
         proof = json.loads(qa.remote('STATE=' + repr(state) + '\nMANIFEST=' + repr(manifest) + '\n' + qa.REMOTE_COMMON + preparation_code(), evidence))

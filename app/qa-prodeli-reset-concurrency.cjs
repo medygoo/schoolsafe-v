@@ -8,7 +8,7 @@ const db=process.env.PRODELI_QA_DB||'schoolcef-harmonization-pg',network=process
 const label=process.env.PRODELI_QA_LABEL||'harmonization-20261021';
 const out=process.env.PRODELI_RECOVERY_EVIDENCE;assert.ok(out,'Private evidence directory required');fs.mkdirSync(out,{recursive:true});
 const shellQuote=s=>"'"+s.replaceAll("'","'\\''")+"'";
-const command=args=>process.env.PRODELI_QA_SSH?['ssh',['-o','BatchMode=yes',process.env.PRODELI_QA_SSH,'docker '+args.map(shellQuote).join(' ')]]:['docker',args];
+const command=args=>process.env.PRODELI_QA_SSH?['ssh',['-4','-o','BatchMode=yes',process.env.PRODELI_QA_SSH,'docker '+args.map(shellQuote).join(' ')]]:['docker',args];
 const docker=(args,opts={})=>{const [exe,argv]=command(args);return execFileSync(exe,argv,{encoding:'utf8',timeout:30000,...opts}).trim();};
 for(const name of [web,db])assert.equal(docker(['inspect','--format','{{index .Config.Labels "schoolcef.qualification"}}',name]),label);
 assert.equal(docker(['network','inspect',network,'--format','{{.Internal}}']),'true');

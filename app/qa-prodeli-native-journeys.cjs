@@ -8,7 +8,7 @@ const base=process.env.PRODELI_QA_URL||'http://127.0.0.1:8096',db=process.env.PR
 assert.equal(new URL(base).hostname,'127.0.0.1','Only the isolated loopback relay is permitted');
 const shellQuote=s=>"'"+s.replaceAll("'","'\\''")+"'";
 const dockerRun=(args,options={})=>process.env.PRODELI_QA_SSH
- ? execFileSync('ssh',['-o','BatchMode=yes',process.env.PRODELI_QA_SSH,'docker '+args.map(shellQuote).join(' ')],{timeout:45000,...options})
+ ? execFileSync('ssh',['-4','-o','BatchMode=yes',process.env.PRODELI_QA_SSH,'docker '+args.map(shellQuote).join(' ')],{timeout:45000,...options})
  : execFileSync('docker',args,{timeout:45000,...options});
 for(const n of [db,web])assert.equal(dockerRun(['inspect','--format','{{index .Config.Labels "schoolcef.qualification"}}',n],{encoding:'utf8'}).trim(),process.env.PRODELI_QA_LABEL||'harmonization-20261021');
 const sql=q=>dockerRun(['exec','-i',db,'psql','-X','-v','ON_ERROR_STOP=1','-U','schoolcef_fixture','-d','schoolcef_fixture','-qAt'],{input:q,encoding:'utf8'}).trim(),quote=s=>"'"+s.replaceAll("'","''")+"'";
