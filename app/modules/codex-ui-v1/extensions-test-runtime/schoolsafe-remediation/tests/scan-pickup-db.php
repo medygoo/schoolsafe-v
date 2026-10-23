@@ -56,7 +56,7 @@ $gidExternal = 0;
 $today = date('Y-m-d');
 
 try {
-    $pdo->exec("INSERT INTO entry_exit_checkpoints(TITLE, TYPE) VALUES('Portail QA Pickup', NULL) RETURNING ID");
+    $pdo->exec("INSERT INTO entry_exit_checkpoints(TITLE, TYPE, SCHOOLSAFE_SCAN_SCHOOL_ID, SCHOOLSAFE_SCAN_SYEAR, SCHOOLSAFE_SCAN_ENABLED) VALUES('Portail QA Pickup', NULL,1,2026,TRUE) RETURNING ID");
     $cpId = (int) $pdo->query("SELECT ID FROM entry_exit_checkpoints WHERE TITLE='Portail QA Pickup'")->fetchColumn();
     $pdo->exec("INSERT INTO schoolsafe_student_cards(school_id, student_id, card_number, signature, status)"
         . " VALUES(1, 1, " . $q($card) . ", " . $q($sign($card)) . ", 'active')");
@@ -75,6 +75,9 @@ try {
         . " VALUES($gidExternal, 1, 1, 'active', 1, TRUE, 9, 'QA')");
     $aid = (int) $pdo->query("SELECT ID FROM schoolsafe_pickup_authorizations WHERE GUARDIAN_ID=$gidExternal")->fetchColumn();
     $qr = 'schoolsafe://card/' . $card . '/' . $sign($card);
+    require_once __DIR__ . '/../../ProgramFunctions/SchoolSafeEntryScan.fnc.php';
+    $arrival = SchoolSafeEntryScan($qr, (string) $cpId, $secretHex, $ctx, $db);
+    check('base => arrivée préalable vérifiée', $arrival['result'], 'PRESENT');
 
     $r = SchoolSafePickupScan($qr, (string) $cpId, $secretHex, $ctx, $db, []);
     check('base => PICKUP_CHOICE', $r['result'], 'PICKUP_CHOICE');
@@ -117,8 +120,8 @@ try {
     }
     check('fil => item student.pickup présent', $found, true);
 } finally {
-    $pdo->exec("DELETE FROM entry_exit_student_records WHERE STUDENT_ID=1 AND TYPE='out' AND RECORDED_AT::date='$today'");
-    $pdo->exec("DELETE FROM schoolsafe_pickup_proofs WHERE STUDENT_ID=1");
+    $pdo->exec("DELETE FROM schoolsafe_pickup_proofs WHERE STUDENT_ID=1 AND LOCATION_ID=$cpId");
+    $pdo->exec("DELETE FROM entry_exit_student_records WHERE CHECKPOINT_ID=$cpId");
     $pdo->exec("DELETE FROM schoolsafe_pickup_authorizations WHERE STUDENT_ID=1 AND REASON='QA'");
     $pdo->exec("DELETE FROM schoolsafe_pickup_guardians WHERE STUDENT_ID=1 AND FULL_NAME IN ('Maman QA','Tonton QA')");
     $pdo->exec("DELETE FROM schoolsafe_student_cards WHERE CARD_NUMBER=" . $q($card));

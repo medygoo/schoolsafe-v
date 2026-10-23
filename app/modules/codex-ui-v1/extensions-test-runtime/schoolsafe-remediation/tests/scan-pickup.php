@@ -31,7 +31,7 @@ function resetState() {
             'P-ACTIVE' => ['school_id' => 1, 'student_id' => 11, 'status' => 'active', 'enrolled' => true,
                 'first_name' => 'Awa', 'last_name' => 'Diallo', 'class_name' => '6e A'],
         ],
-        'checkpoints' => [7 => ['ID' => 7, 'TITLE' => 'Portail sortie']],
+        'checkpoints' => [7 => ['ID' => 7, 'TITLE' => 'Portail sortie', 'TYPE'=>null, 'SCHOOLSAFE_SCAN_SCHOOL_ID'=>1, 'SCHOOLSAFE_SCAN_SYEAR'=>2026, 'SCHOOLSAFE_SCAN_ENABLED'=>'t']],
         'principals' => [
             ['ID' => 21, 'GUARDIAN_TYPE' => 'mere', 'FULL_NAME' => 'Maman Diallo',
              'PHOTO_PATH' => '/assets/pickup/21.jpg', 'STAFF_ID' => null, 'IS_PRIMARY' => 't'],
@@ -41,7 +41,7 @@ function resetState() {
              'PHOTO_PATH' => '/assets/pickup/22.jpg', 'STATUS' => 'active', 'PHOTO_VERIFIED' => true,
              'STARTS_ON' => null, 'ENDS_ON' => null],
         ],
-        'proofs' => [], 'records' => [], 'queries' => [], 'commands' => [], 'transaction' => false,
+        'arrival'=>['ID'=>1,'TYPE'=>'in'], 'proofs' => [], 'records' => [], 'queries' => [], 'commands' => [], 'transaction' => false,
     ];
 }
 resetState();
@@ -50,6 +50,10 @@ $db = [
     'get' => function ($sql) {
         global $state, $sign, $writes;
         $state['queries'][] = $sql;
+        if (strpos($sql, 'information_schema.columns') !== false) return [1=>['N'=>7]];
+        if (strpos($sql, 'FROM students WHERE') !== false) return [1=>['STUDENT_ID'=>11]];
+        if (strpos($sql, 'FROM student_enrollment WHERE') !== false) return [1=>['OK'=>1]];
+        if (strpos($sql, 'FROM entry_exit_student_records WHERE STUDENT_ID=') !== false) return $state['arrival']===null ? [] : [1=>$state['arrival']];
         if (strpos($sql, 'to_regclass') !== false) return [1 => ['T' => 'public.schoolsafe_student_cards']];
         if (strpos($sql, 'FROM schoolsafe_student_cards') !== false) {
             preg_match("/card_number='((?:[^']|'')+)'/", $sql, $m);
@@ -99,7 +103,7 @@ $db = [
             foreach ($state['proofs'] as $p) {
                 if ($p['token'] === ($m[1] ?? '')) {
                     return [1 => ['ID' => $p['id'], 'SCHOOL_ID' => 1, 'STUDENT_ID' => 11,
-                        'GUARDIAN_ID' => $p['gid'], 'AUTHORIZATION_ID' => $p['aid'],
+                        'SYEAR'=>2026, 'ENTRY_RECORD_ID'=>$p['entry'], 'GUARDIAN_ID' => $p['gid'], 'AUTHORIZATION_ID' => $p['aid'],
                         'IS_PRINCIPAL' => $p['principal'], 'LOCATION_ID' => 7, 'PREPARED_BY' => $p['prepared_by'],
                         'RECORD_ID' => $p['record'], 'EXPIRES_AT' => $p['expires'], 'USED_AT' => $p['used']]];
                 }
@@ -113,13 +117,14 @@ $db = [
             $state['proofs'][] = ['id' => $id, 'token' => $m[1], 'gid' => (int) $m[4],
                 'aid' => strpos($sql, ',NULL,') !== false ? null : 31,
                 'principal' => $x[1] === 'TRUE', 'record' => null,
-                'expires' => $x[4], 'used' => null, 'prepared_by' => (int) $x[3]];
+                'expires' => $x[4], 'used' => null, 'prepared_by' => (int) $x[3], 'entry'=>$state['arrival']['ID']];
             $writes++;
             return [1 => ['ID' => $id]];
         }
         if (strpos($sql, 'INSERT INTO entry_exit_student_records') !== false) {
             $id = 100 + count($state['records']);
             $state['records'][] = ['id' => $id, 'at' => '2026-05-04 16:30:00'];
+            $state['arrival'] = ['ID'=>$id,'TYPE'=>'out'];
             $writes++;
             return [1 => ['ID' => $id, 'RECORDED_AT' => '2026-05-04 16:30:00']];
         }
@@ -182,7 +187,8 @@ check('rejeu => CONFIRMED', $r['result'], 'CONFIRMED');
 check('rejeu => idempotent', $r['idempotent'], true);
 check('rejeu => toujours 1 sortie', count($state['records']), 1);
 
-// 5. Preuve sans confirmation humaine : refus.
+// 5. Nouvelle arrivée fictive indépendante ; sans confirmation humaine : refus.
+resetState();
 $r2 = SchoolSafePickupScan($qr('P-ACTIVE'), '7', $secretHex, $ctx, $db, ['authorized_person_id' => 'g:21'], $afternoon);
 check('2e preuve => NEED_HUMAN', $r2['result'], 'NEED_HUMAN_CONFIRMATION');
 $r = SchoolSafePickupScan($qr('P-ACTIVE'), '7', $secretHex, $ctx, $db,

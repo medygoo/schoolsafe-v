@@ -55,7 +55,7 @@ $today = date('Y-m-d');
 $attendanceBefore = $pdo->query("SELECT * FROM attendance_day WHERE STUDENT_ID=1 AND SCHOOL_DATE='$today'")->fetchAll(PDO::FETCH_ASSOC);
 
 try {
-    $pdo->exec("INSERT INTO entry_exit_checkpoints(TITLE, TYPE) VALUES('Portail QA', NULL) RETURNING ID");
+    $pdo->exec("INSERT INTO entry_exit_checkpoints(TITLE, TYPE, SCHOOLSAFE_SCAN_SCHOOL_ID, SCHOOLSAFE_SCAN_SYEAR, SCHOOLSAFE_SCAN_ENABLED) VALUES('Portail QA', NULL,1,2026,TRUE) RETURNING ID");
     $cpId = (int) $pdo->query("SELECT ID FROM entry_exit_checkpoints WHERE TITLE='Portail QA'")->fetchColumn();
     $pdo->exec("INSERT INTO schoolsafe_student_cards(school_id, student_id, card_number, signature, status)"
         . " VALUES(1, 1, " . $q($card) . ", " . $q($sign($card)) . ", 'active')");
@@ -98,10 +98,10 @@ try {
     foreach ($feed as $item) { if (($item['id'] ?? '') !== '' && strpos($item['id'], 'arrival:') === 0) { $found = true; break; } }
     check('fil => item arrivée présent', $found, true);
 } finally {
-    $pdo->exec("DELETE FROM entry_exit_student_records WHERE COMMENTS LIKE '%staff #9%' AND RECORDED_AT::date='$today'");
+    $pdo->exec("DELETE FROM entry_exit_student_records WHERE CHECKPOINT_ID=$cpId");
     $pdo->exec("DELETE FROM schoolsafe_student_cards WHERE CARD_NUMBER=" . $q($card));
     $pdo->exec("DELETE FROM entry_exit_checkpoints WHERE TITLE='Portail QA'");
-    $left = $pdo->query("SELECT (SELECT COUNT(*) FROM entry_exit_student_records WHERE COMMENTS LIKE '%staff #9%')"
+    $left = $pdo->query("SELECT (SELECT COUNT(*) FROM entry_exit_student_records WHERE CHECKPOINT_ID=$cpId)"
         . " + (SELECT COUNT(*) FROM schoolsafe_student_cards WHERE CARD_NUMBER LIKE 'TEST-A1-ENTRY-%')"
         . " + (SELECT COUNT(*) FROM entry_exit_checkpoints WHERE TITLE='Portail QA')")->fetchColumn();
     check('nettoyage test', (int) $left, 0);

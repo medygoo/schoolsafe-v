@@ -34,8 +34,8 @@ function resetState() {
                 'first_name' => 'Moussa', 'last_name' => 'Keita', 'class_name' => '6e A'],
         ],
         'checkpoints' => [
-            7 => ['ID' => 7, 'TITLE' => 'Portail principal', 'TYPE' => null],
-            8 => ['ID' => 8, 'TITLE' => 'Sortie bus', 'TYPE' => 'out'],
+            7 => ['ID' => 7, 'TITLE' => 'Portail principal', 'TYPE' => null, 'SCHOOLSAFE_SCAN_SCHOOL_ID'=>1, 'SCHOOLSAFE_SCAN_SYEAR'=>2026, 'SCHOOLSAFE_SCAN_ENABLED'=>'t'],
+            8 => ['ID' => 8, 'TITLE' => 'Sortie bus', 'TYPE' => 'out', 'SCHOOLSAFE_SCAN_SCHOOL_ID'=>1, 'SCHOOLSAFE_SCAN_SYEAR'=>2026, 'SCHOOLSAFE_SCAN_ENABLED'=>'t'],
         ],
         'records' => [], 'attendance' => [], 'period_start' => '08:00:00', 'mp' => 3,
     ];
@@ -45,6 +45,9 @@ $writes = 0;
 $db = [
     'get' => function ($sql) {
         global $state, $sign, $writes;
+        if (strpos($sql, 'information_schema.columns') !== false) return [1=>['N'=>7]];
+        if (strpos($sql, 'FROM students WHERE') !== false) return [1=>['STUDENT_ID'=>11]];
+        if (strpos($sql, 'FROM student_enrollment WHERE') !== false) return [1=>['OK'=>1]];
         if (strpos($sql, 'to_regclass') !== false) return [1 => ['T' => 'public.schoolsafe_student_cards']];
         if (strpos($sql, 'FROM schoolsafe_student_cards') !== false) {
             preg_match("/card_number='((?:[^']|'')+)'/", $sql, $m);
@@ -62,8 +65,8 @@ $db = [
         }
         if (strpos($sql, 'FROM entry_exit_student_records WHERE') !== false) {
             preg_match('/STUDENT_ID=(\d+)/', $sql, $m);
-            foreach ($state['records'] as $r) {
-                if ($r['student'] === (int) $m[1] && $r['type'] === 'in' && $r['unauth'] === null) return [1 => ['ID' => $r['id']]];
+            foreach (array_reverse($state['records']) as $r) {
+                if ($r['student'] === (int) $m[1] && $r['unauth'] === null) return [1 => ['ID' => $r['id'], 'TYPE'=>$r['type']]];
             }
             return [];
         }
@@ -119,6 +122,9 @@ check('arrivée ne renseigne pas la présence pédagogique', $state['attendance'
 $r = SchoolSafeEntryScan($qr('E-ACTIVE'), '7', $secretHex, $ctx, $db, $morning);
 check('double => ALREADY_PRESENT', $r['result'], 'ALREADY_PRESENT');
 check('double => aucune écriture', $writes, 1);
+
+$r = SchoolSafeEntryScan($qr('E-ACTIVE'), '8', $secretHex, $ctx, $db, $morning);
+check('mauvais sens même déjà présent => DENIED', $r['result'], 'DENIED');
 
 // 3. Retard : PRESENT + late.
 resetState();

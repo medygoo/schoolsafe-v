@@ -2,9 +2,9 @@
 // SchoolSafe — Lot ENTRY : arrivée sur site (Rosario moteur principal).
 //
 // Enchaîne, dans une transaction : vérification QR (registre A1) → contrôle du
-// point de passage (entry_exit_checkpoints) → anti-doublon (un seul « in » par
-// jour) → record d'arrivée (entry_exit_student_records, heure exacte, école via
-// l'inscription, personnel en commentaire). Le passage sur site ne renseigne
+// point de passage borné école/année → état du dernier passage du même périmètre
+// → record natif d'arrivée. Après une sortie réelle, une nouvelle arrivée ouvre
+// un nouveau cycle ; deux scans sans sortie restent idempotents. Le passage ne renseigne
 // jamais attendance_day : la présence pédagogique reste une saisie distincte.
 //
 // Lecture seule quand la carte est refusée : aucun record pour une carte
@@ -28,7 +28,6 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
         return ['result' => 'DENIED', 'signature_valid' => true, 'reason' => 'LOCATION_DENIED'];
     }
     $now = $now === null ? time() : (int) $now;
-    $day = date('Y-m-d', $now);
     $clock = date('H:i:s', $now);
     $cardQuery = function ($number, $s) use ($db, $year) {
         return SchoolSafeCardVerifyQuery($number, $s, $year, $db['get']);
@@ -38,42 +37,40 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
     if (($verify['result'] ?? '') !== 'VALID') return $verify;
     $get = $db['get'];
     $exec = $db['exec'];
-    $cp = $get('SELECT ID, TITLE, TYPE FROM entry_exit_checkpoints WHERE ID=' . $locationId);
-    if (!is_array($cp) || !isset($cp[1])) {
+    require_once __DIR__ . '/SchoolSafeScanPassage.fnc.php';
+    SchoolSafeScanPassageRequireScope($db);
+    $cp = $get('SELECT ID, TITLE, TYPE, SCHOOLSAFE_SCAN_SCHOOL_ID, SCHOOLSAFE_SCAN_SYEAR, SCHOOLSAFE_SCAN_ENABLED FROM entry_exit_checkpoints WHERE ID=' . $locationId);
+    if (!is_array($cp) || !isset($cp[1]) || !SchoolSafeScanCheckpointInScope($cp[1], $school, $year)) {
         return ['result' => 'DENIED', 'signature_valid' => true, 'reason' => 'LOCATION_DENIED'] + $verify;
     }
     $checkpoint = ['id' => (int) $cp[1]['ID'], 'label' => $cp[1]['TITLE']];
-    $exec('BEGIN');
-    try {
-        $dup = $get('SELECT ID FROM entry_exit_student_records WHERE STUDENT_ID=' . (int) $verify['student_id']
-            . " AND TYPE='in' AND UNAUTHORIZED IS NULL AND RECORDED_AT::date='" . $day . "' LIMIT 1");
-        if (is_array($dup) && isset($dup[1])) {
-            $exec('COMMIT');
-            return ['result' => 'ALREADY_PRESENT', 'decision' => 'allowed'] + $verify;
+    return SchoolSafePickupStudentTransaction($verify['student_id'], $ctx, $db, function() use ($verify, $school, $year, $clock, $checkpoint, $user, $db, $get, $exec) {
+        $point = $get('SELECT ID, TYPE, SCHOOLSAFE_SCAN_SCHOOL_ID, SCHOOLSAFE_SCAN_SYEAR, SCHOOLSAFE_SCAN_ENABLED FROM entry_exit_checkpoints WHERE ID=' . $checkpoint['id'] . ' FOR SHARE');
+        if (!is_array($point) || !isset($point[1]) || !SchoolSafeScanCheckpointInScope($point[1], $school, $year)) {
+            return ['result'=>'DENIED','signature_valid'=>true,'reason'=>'LOCATION_DENIED'] + $verify;
         }
-        $type = $cp[1]['TYPE'];
+        $type = $point[1]['TYPE'];
         if ($type !== null && $type !== '' && $type !== 'in') {
-            $exec("INSERT INTO entry_exit_student_records(STUDENT_ID, CHECKPOINT_ID, TYPE, UNAUTHORIZED, COMMENTS, RECORDED_AT)"
+            $exec("INSERT INTO entry_exit_student_records(STUDENT_ID, CHECKPOINT_ID, TYPE, UNAUTHORIZED, COMMENTS, RECORDED_AT, SCHOOLSAFE_SCAN_SCHOOL_ID, SCHOOLSAFE_SCAN_SYEAR)"
                 . ' VALUES(' . (int) $verify['student_id'] . ',' . $checkpoint['id'] . ",'in','Y',"
-                . "'Portail sens unique — staff #" . $user . "',CURRENT_TIMESTAMP)");
-            $exec('COMMIT');
+                . "'Portail sens unique — staff #" . $user . "',CURRENT_TIMESTAMP," . $school . ',' . $year . ')');
             return ['result' => 'DENIED', 'decision' => 'denied', 'reason' => 'LOCATION_DENIED'] + $verify;
+        }
+        $last = SchoolSafeScanLatestPassage($verify['student_id'], $school, $year, $db);
+        if ($last !== null && $last['TYPE'] === 'in') {
+            return ['result' => 'ALREADY_PRESENT', 'decision' => 'allowed'] + $verify;
         }
         $late = SchoolSafeEntryIsLate($school, $year, $clock, $get);
         $comment = 'Entrée ' . substr($clock, 0, 5) . ($late ? ' (retard)' : '') . ' — staff #' . $user;
         $commentSql = "'" . str_replace("'", "''", $comment) . "'";
-        $inserted = $get("INSERT INTO entry_exit_student_records(STUDENT_ID, CHECKPOINT_ID, TYPE, COMMENTS, RECORDED_AT)"
-            . ' VALUES(' . (int) $verify['student_id'] . ',' . $checkpoint['id'] . ",'in'," . $commentSql . ',CURRENT_TIMESTAMP)'
+        $inserted = $get("INSERT INTO entry_exit_student_records(STUDENT_ID, CHECKPOINT_ID, TYPE, COMMENTS, RECORDED_AT, SCHOOLSAFE_SCAN_SCHOOL_ID, SCHOOLSAFE_SCAN_SYEAR)"
+            . ' VALUES(' . (int) $verify['student_id'] . ',' . $checkpoint['id'] . ",'in'," . $commentSql . ',CURRENT_TIMESTAMP,' . $school . ',' . $year . ')'
             . ' RETURNING ID, RECORDED_AT');
         if (!is_array($inserted) || !isset($inserted[1])) throw new RuntimeException('ENTRY_WRITE_FAILED');
-        $exec('COMMIT');
         return ['result' => 'PRESENT', 'decision' => 'allowed', 'late' => $late,
             'record_id' => (int) $inserted[1]['ID'], 'occurred_at' => $inserted[1]['RECORDED_AT'],
             'checkpoint' => $checkpoint] + $verify;
-    } catch (Throwable $error) {
-        try { $exec('ROLLBACK'); } catch (Throwable $ignored) { }
-        throw $error;
-    }
+    });
 }
 
 function SchoolSafeEntryIsLate($school, $year, $clock, callable $get)

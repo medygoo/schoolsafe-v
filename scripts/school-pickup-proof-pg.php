@@ -12,16 +12,24 @@ $pdo=$connect();$pdo->exec("SET TIME ZONE 'UTC'; SET statement_timeout='20s'");
 $action=$argv[1]??'';
 if ($action==='setup') {
     if ((int)$pdo->query("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")->fetchColumn()!==0) throw new RuntimeException('EMPTY_DISPOSABLE_DATABASE_REQUIRED');
-    $pdo->exec('CREATE TABLE students(student_id integer PRIMARY KEY); CREATE TABLE staff(staff_id integer PRIMARY KEY); CREATE TABLE students_join_users(student_id integer,staff_id integer); CREATE TABLE student_enrollment(student_id integer,school_id integer,syear integer);');
-    foreach (['021-entry-records.sql','022-pickup-guardians.sql'] as $file) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
+    $pdo->exec('CREATE TABLE students(student_id integer PRIMARY KEY,first_name text DEFAULT $$Synthetic$$,last_name text DEFAULT $$Fixture$$); CREATE TABLE staff(staff_id integer PRIMARY KEY); CREATE TABLE students_join_users(student_id integer,staff_id integer); CREATE TABLE student_enrollment(student_id integer,school_id integer,syear integer,grade_id integer DEFAULT 1); CREATE TABLE school_gradelevels(id integer,title text); CREATE TABLE school_periods(school_id integer,syear integer,start_time text,sort_order integer);');
+    foreach (['020-school-cards.sql','021-entry-records.sql','022-pickup-guardians.sql'] as $file) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
     $pdo->exec("CREATE TABLE qa_barrier(hold boolean NOT NULL, arrived boolean NOT NULL DEFAULT false); INSERT INTO qa_barrier(hold) VALUES(true);
-        INSERT INTO students VALUES(11),(12); INSERT INTO staff VALUES(9),(18); INSERT INTO student_enrollment VALUES(11,1,2026),(12,2,2026);
+        INSERT INTO students(student_id) VALUES(11),(12); INSERT INTO staff VALUES(9),(18); INSERT INTO student_enrollment(student_id,school_id,syear) VALUES(11,1,2026),(12,2,2026); INSERT INTO school_gradelevels VALUES(1,'Synthetic class');
         INSERT INTO entry_exit_checkpoints(id,title) VALUES(7,'Fixture checkpoint');
         INSERT INTO schoolsafe_pickup_guardians(id,school_id,student_id,guardian_type,full_name,is_primary,is_authorized_pickup,photo_path,photo_accepted)
             VALUES(21,1,11,'mere','Synthetic fixture guardian',true,true,'/synthetic-only/portrait.jpg',true);");
-    echo json_encode(['status'=>'SETUP','synthetic_only'=>true])."\n";exit;
+    $pdo->exec("INSERT INTO entry_exit_student_records(student_id,checkpoint_id,type,comments,recorded_at) VALUES(11,7,'in','Synthetic legacy fixture',CURRENT_TIMESTAMP)");
+    $before=$pdo->query('SELECT * FROM entry_exit_student_records')->fetch(PDO::FETCH_ASSOC);
+    for ($i=0;$i<2;$i++) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/039-scan-passage-scope.sql'));
+    $after=$pdo->query('SELECT * FROM entry_exit_student_records')->fetch(PDO::FETCH_ASSOC);
+    if (array_intersect_key($after,$before)!==$before || $after['schoolsafe_scan_school_id']!==null || $after['schoolsafe_scan_syear']!==null) throw new RuntimeException('LEGACY_RECORD_CHANGED');
+    $pdo->exec('UPDATE entry_exit_checkpoints SET schoolsafe_scan_school_id=1,schoolsafe_scan_syear=2026,schoolsafe_scan_enabled=true');
+    $signature=substr(strtr(base64_encode(hash_hmac('sha256','QA-ENTRY',hex2bin(str_repeat('0',64)),true)),'+/','-_'),0,32);
+    $statement=$pdo->prepare('INSERT INTO schoolsafe_student_cards(school_id,student_id,card_number,signature) VALUES(1,11,?,?)');$statement->execute(['QA-ENTRY',$signature]);
+    echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup'],true)) exit(2);
 require_once $root.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
 require_once $root.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
 $barrier=getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1';$barrierUsed=false;
@@ -49,8 +57,20 @@ if (in_array($action,['activate','family'],true)) {
     if ($pdo->inTransaction()) throw new RuntimeException('TRANSACTION_LEFT_OPEN');
     echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
 }
+if (in_array($action,['entry','pickup'],true)) {
+    require_once $root.'/ProgramFunctions/SchoolSafeEntryScan.fnc.php';
+    $secret=str_repeat('0',64);$signature=substr(strtr(base64_encode(hash_hmac('sha256','QA-ENTRY',hex2bin($secret),true)),'+/','-_'),0,32);
+    $qr='schoolsafe://card/QA-ENTRY/'.$signature;$context=['user'=>9,'school'=>1,'year'=>2026];$now=strtotime('2026-10-23 16:30:00 UTC');
+    $result=$action==='entry' ? SchoolSafeEntryScan($qr,'7',$secret,$context,$db,$now)
+        : SchoolSafePickupScan($qr,'7',$secret,$context,$db,($argv[2]??'prepare')==='prepare'
+            ? ['authorized_person_id'=>'g:21'] : ['proof_token'=>$argv[2],'human_confirmed'=>true],$now);
+    if ($pdo->inTransaction()) throw new RuntimeException('TRANSACTION_LEFT_OPEN');
+    echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
 $token=$argv[2]??'';$user=(int)($argv[3]??9);$school=(int)($argv[4]??1);$student=(int)($argv[5]??11);
-$result=SchoolSafePickupConfirm($token,$school,$student,7,$user,'2026-10-23','16:30:00',$db,
-    ['result'=>'VALID','signature_valid'=>true,'student_id'=>$student],['id'=>'7','label'=>'Fixture checkpoint']);
+try {
+    $result=SchoolSafePickupConfirm($token,$school,$student,7,$user,'2026-10-23','16:30:00',$db,
+        ['result'=>'VALID','signature_valid'=>true,'student_id'=>$student],['id'=>'7','label'=>'Fixture checkpoint'],2026);
+} catch (RuntimeException $error) { $result=['error'=>$error->getMessage()]; }
 if ($pdo->inTransaction()) throw new RuntimeException('TRANSACTION_LEFT_OPEN');
 echo json_encode($result,JSON_THROW_ON_ERROR)."\n";
