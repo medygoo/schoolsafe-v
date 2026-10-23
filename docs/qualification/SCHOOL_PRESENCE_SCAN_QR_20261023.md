@@ -72,6 +72,14 @@ Compatibilité/retour : anciens lecteurs natifs continuent de lire leurs colonne
 
 Restent en priorité : vrai parent principal/REQUESTED_BY, délégation opérateur et gestion/liste des points de passage bornées, policy financière bloquante depuis Finances, UI et lecteurs compatibles, HTTP/image/caméra. Le dashboard et les brouillons palmarès restent séparés. Aucune installation ou migration production.
 
+## Précisions propriétaire — accès natifs et communications de chaque scan
+
+Le propriétaire rappelle que choix et limites d'accès existent déjà : réutiliser Profiles/Exceptions, CAN_USE/CAN_EDIT et SchoolSafeNativePermission/Gateway. Catalog possède déjà cinq droits Scan et DelegationRead/DelegationManage ; examiner leur exécution native/bridge réelle avant toute extension, pas de table de permissions parallèle inventée.
+
+Nouvelle exigence : arrivée réellement enregistrée et sortie réellement confirmée => détails pour école/parent (enfant, école, date/heure, type de passage), notification dans l'application ET message WhatsApp automatique au destinataire parental autorisé. Contrôles financiers configurables par l'administrateur : rouge accès refusé au seuil, jaune rappel pour compléter avec tolérance autorisée, bleu en ordre pour le contrôle concerné. Ne jamais transformer rouge en preuve d'absence réelle ou pédagogique ; contrôle financier ≠ paiement reçu, ni présence. Données indisponibles ≠ jaune/bleu. Un même événement rejoué ne doit pas générer une nouvelle notification ou un deuxième message ; annulation/rollback du passage ne doit pas annoncer une arrivée/sortie réussie.
+
+Lecture du code, pas vérification d'un service en ligne : SchoolSafeNotificationFeed a des sources arrivals/departures natives ; SchoolSafeWhatsapp.fnc.php fournit le transport sous le Studio existant, sessions explicitement activées, consentement du destinataire et idempotence/outbox. Le canal WhatsApp n'est donc PAS à reconstruire. Mais ses types éligibles actuels incluent security.entry/student.pickup/payment.receipt, pas encore un événement dédié de consultation financière : ne pas émettre un faux reçu pour un scan de frais. scan-notification-policy.cjs décrit aussi arrivée/remise/contrôle financier, mais UUID et bridge séparé ; ce n'est pas une preuve du raccordement au PHP entier natif ni d'installation production. Vérifier l'émetteur/commit/outbox, les destinataires natifs et le dispatcher avant raccordement ; aucune activation de session ni envoi externe réel autorisé par cette analyse. Automatisation à qualifier avec transports substitués/simulation isolée, et statuts queued/accepted/sent/delivered non confondus. Les lecteurs du fil doivent également reprendre le scoping039 avant livraison.
+
 ## Ordre de continuation et arrêt de sécurité
 
 1. Finir la revue des invariants du moteur natif restauré (booléens, trois+trois, autorité, école/année, concurrence) avec régressions rouges/vertes.
