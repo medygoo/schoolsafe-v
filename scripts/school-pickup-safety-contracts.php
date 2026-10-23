@@ -71,6 +71,9 @@ $auth = ['ID'=>31,'GUARDIAN_ID'=>23,'STATUS'=>'suspended','REQUESTED_BY'=>42,
 $external['IS_ACTIVE']='t';
 $changeOwnerOnLock = false;
 $parentDb = ['get'=>function($sql) use (&$auth,$external,&$changeOwnerOnLock) {
+    if (strpos($sql,'SELECT ID, STAFF_ID FROM schoolsafe_pickup_guardians') !== false) return [1=>['ID'=>21,'STAFF_ID'=>42]];
+    if (strpos($sql,'FROM staff WHERE') !== false) return [1=>['STAFF_ID'=>42]];
+    if (strpos($sql,'FROM students_join_users') !== false) return [1=>['STUDENT_ID'=>11]];
     if (strpos($sql,'FROM students WHERE') !== false) return [1=>['STUDENT_ID'=>11]];
     if (strpos($sql,'FROM student_enrollment') !== false) return [1=>['OK'=>1]];
     if (strpos($sql,'FROM schoolsafe_pickup_guardians') !== false) return [1=>$external];

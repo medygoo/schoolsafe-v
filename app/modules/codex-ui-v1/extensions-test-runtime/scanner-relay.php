@@ -137,11 +137,12 @@ try {
      ['school-list','parent-list','register-family','register-external','school-family-approve',
       'photo-set','photo-review','validate-authorization','school-retire','parent-suspend','parent-activate'],true)) {
      require_once __DIR__.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
-     $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }];
+     $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); },
+       'quote'=>function($value){return "'".DBEscapeString($value)."'";}];
      $isParent=User('PROFILE')==='parent';
      $mctx=['user'=>$user,'school'=>$school,'year'=>$year,'profile'=>User('PROFILE'),'parent'=>$isParent,'root'=>'.'];
      $map=['FORBIDDEN'=>403,'NOT_FOUND'=>404,'PRIMARY_SELECTION_REQUIRED'=>409,'PRIMARY_EXISTS'=>409,
-       'LIMIT_REACHED'=>409,'INVALID_STATE'=>409,'PRIMARY_TRANSFER_REQUIRED'=>409,'WRITE_FAILED'=>503,
+       'LIMIT_REACHED'=>409,'INVALID_STATE'=>409,'PRIMARY_TRANSFER_REQUIRED'=>409,'PRIMARY_PARENT_REQUIRED'=>409,'WRITE_FAILED'=>503,'INVALID_INPUT'=>400,
        'REASON_REQUIRED'=>400,'CONSENT_REQUIRED'=>400,'INVALID_PERSON'=>400,'INVALID_PHOTO'=>400,'INVALID_DECISION'=>400];
      try {
        $action=$input->action;
@@ -158,7 +159,7 @@ try {
          $data=SchoolSafePickupRegisterExternal($student,(array)($input),$mctx,$db);
        } elseif($action==='school-family-approve') {
          $data=SchoolSafePickupApproveFamily($student,$input->guardianId??0,
-           $input->reason??'',$input->consent??'',$mctx,$db);
+           $input->reason??'',$input->consent??'',$mctx,$db,$input->parentStaffId??null);
        } elseif($action==='photo-set') {
          $data=SchoolSafePickupPhotoSet($student,$input->guardianId??0,$input->photoPath??'',$mctx,$db);
        } elseif($action==='photo-review') {
@@ -178,7 +179,8 @@ try {
        while(ob_get_level()>$level)ob_end_clean();
        $code=$map[$error->getMessage()]??503;
        if($code===400) SchoolSafeScanReply(400,['error'=>'INVALID_REQUEST']);
-       SchoolSafeScanReply($code,['error'=>$code===409?'CONFLICT':($code===404?'NOT_FOUND':'NATIVE_SCANNER_UNAVAILABLE')]);
+       $conflict=in_array($error->getMessage(),['PRIMARY_SELECTION_REQUIRED','PRIMARY_PARENT_REQUIRED','PRIMARY_TRANSFER_REQUIRED'],true)?$error->getMessage():'CONFLICT';
+       SchoolSafeScanReply($code,['error'=>$code===409?$conflict:($code===404?'NOT_FOUND':'NATIVE_SCANNER_UNAVAILABLE')]);
      }
      while(ob_get_level()>$level)ob_end_clean();
      SchoolSafeScanReply(200,['data'=>$data]);

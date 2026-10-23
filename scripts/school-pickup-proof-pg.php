@@ -34,7 +34,7 @@ if ($action==='setup') {
     $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent'],true)) exit(2);
 require_once $root.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
 require_once $root.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
 $barrier=getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1';$barrierUsed=false;
@@ -42,6 +42,7 @@ $db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
     $result=[];
     foreach ($pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) as $i=>$row) $result[$i+1]=array_change_key_case($row,CASE_UPPER);
     if ($barrier&&!$barrierUsed&&((strpos($sql,'FROM schoolsafe_pickup_proofs')!==false&&strpos($sql,'FOR UPDATE')!==false&&$result)
+        ||(strpos($sql,'FROM students_join_users')!==false&&strpos($sql,'FOR SHARE')!==false)
         ||strpos($sql,'SELECT SLOT_NO FROM schoolsafe_pickup_authorizations')!==false
         ||strpos($sql,'AND IS_PRIMARY AND IS_ACTIVE LIMIT 1')!==false)) {
         $barrierUsed=true;$watch=$connect();$watch->exec('UPDATE qa_barrier SET arrived=true');$deadline=microtime(true)+15;
@@ -52,6 +53,24 @@ $db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
     }
     return $result;
 }, 'exec'=>static function($sql) use ($pdo) {$pdo->exec($sql);}];
+if ($action==='unlink-parent') {
+    $pdo->exec('DELETE FROM students_join_users WHERE student_id=11 AND staff_id=27');
+    echo json_encode(['unlinked'=>true])."\n";exit;
+}
+if ($action==='parent-management') {
+    $input=json_decode($argv[2],true,16,JSON_THROW_ON_ERROR);
+    $context=array_replace(['user'=>9,'school'=>1,'year'=>2026,'profile'=>'admin','parent'=>false],json_decode($argv[3]??'{}',true,16,JSON_THROW_ON_ERROR));
+    $db['quote']=static function($value) use ($pdo) {return $pdo->quote($value);};
+    try {
+        if($input['action']==='bind')$result=SchoolSafePickupApproveFamily(11,21,'Synthetic reason','Synthetic consent',$context,$db,$input['parentStaffId']??null);
+        elseif($input['action']==='external')$result=SchoolSafePickupRegisterExternal(11,$input,$context,$db);
+        elseif($input['action']==='activate-staff')$result=SchoolSafePickupValidateAuthorization(11,$input['authorizationId'],$context,$db,'2026-10-23');
+        elseif($input['action']==='suspend')$result=SchoolSafePickupParentSuspend(11,$input['authorizationId'],'Synthetic reason',$context,$db);
+        else $result=SchoolSafePickupParentActivate(11,$input['authorizationId'],'Synthetic reason',$context,$db,'2026-10-23');
+    } catch(RuntimeException $error) {$result=['error'=>$error->getMessage()];}
+    if($pdo->inTransaction())throw new RuntimeException('TRANSACTION_LEFT_OPEN');
+    echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
 if ($action==='arrival-read') {
     require_once $root.'/schoolsafe-attendance/ArrivalRead.php';
     try {$result=SchoolSafeArrivalRead(['profile'=>'admin','staff'=>'9','school'=>'1','year'=>'2026'],['date'=>gmdate('Y-m-d')],$db['get']);}
