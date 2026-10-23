@@ -70,6 +70,35 @@ const markup=file=>{const source=fs.readFileSync(path.join(root,file),'utf8');re
    if(state==='unavailable')check('unknown financial data does not claim debt',!text.includes('Impayé')&&!text.includes('jaune')&&!text.includes('bleu'));
    await page.close();
   }
+  {
+   const page=await browser.newPage({viewport:{width:390,height:844}}),sent=[],errors=[];page.on('pageerror',error=>errors.push(error.message));
+   await page.route('**/*',async route=>{
+    const request=route.request(),url=new URL(request.url());
+    if(url.pathname==='/scanner-native.php')return route.fulfill({contentType:'text/html',body:markup('scanner-native.php')});
+    if(url.pathname==='/scanner-relay.php'){
+     if(url.searchParams.get('operation')==='capabilities')return route.fulfill({json:{csrfToken:'synthetic-only',data:{capabilities:['SCAN_FEES'],fee_policy_active:true,fee_consult_available:true,request_key_modes:['fees']}}});
+     sent.push({body:request.postDataJSON(),csrf:request.headers()['x-schoolsafe-csrf']});
+     if(sent.length===1||sent.length===4)return route.abort('failed'); // Lost response, not an external business submission.
+     return route.fulfill({json:{data:{result:'FEE_STATUS',student_name:'Synthetic fixture',balance_status:sent.length===5?'paid':'partial',idempotent:sent.length===2||sent.length===5,financial:{state:'active',color:sent.length===5?'blue':'yellow'}}}});
+    }return assets(route,url);
+   });
+   await page.goto('http://finance.fixture.invalid/scanner-native.php');await page.locator('#scan-form').waitFor({state:'visible'});
+   await page.locator('#scan-qr').fill('Synthetic intercepted QR');await page.locator('#scan-form button[type=submit]').click();
+   await page.waitForFunction(()=>document.querySelector('#scan-result').textContent.includes('Aucune confirmation'));
+   check('lost financial response never claims success',await page.locator('#scan-result').textContent()==='Scan indisponible. Aucune confirmation reçue.');
+   await page.locator('#scan-form button[type=submit]').click();await page.waitForFunction(()=>document.querySelector('#scan-result').textContent.includes('Opération déjà enregistrée'));
+   check('financial retry retains the original opaque operation UUID',sent.length===2&&sent[0].body.request_key===sent[1].body.request_key&&/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(sent[0].body.request_key));
+   check('financial replay is explicitly described as no new control',await page.locator('#scan-result').textContent().then(text=>text.includes('aucun nouveau contrôle')));
+   await page.locator('#scan-form button[type=submit]').click();await page.waitForFunction(()=>!document.querySelector('#scan-form button[type=submit]').disabled);
+   check('a deliberate subsequent control receives a new operation UUID',sent.length===3&&sent[2].body.request_key!==sent[1].body.request_key);
+   check('financial request carries no client money or invented financial facts',sent.every(item=>Object.keys(item.body).sort().join(',')==='mode,qr_payload,request_key'&&item.csrf==='synthetic-only'));
+   await page.locator('#scan-form button[type=submit]').click();await page.waitForFunction(()=>document.querySelector('#scan-result').textContent.includes('Aucune confirmation'));
+   check('lost response after known yellow never retains a financial color',await page.locator('#scan-result').getAttribute('data-fee-color')==='');
+   await page.locator('#scan-form button[type=submit]').click();await page.waitForFunction(()=>document.querySelector('#scan-result').textContent.includes('À jour'));
+   check('known zero debt never claims that an actual payment took place',await page.locator('#scan-result').textContent().then(text=>!text.includes('Payé')&&!text.includes('Paiement confirmé')));
+   check('retry after later response loss still retains its correct operation UUID',sent.length===5&&sent[3].body.request_key===sent[4].body.request_key);
+   check('financial retry JS has no exception',errors.length===0);await page.close();
+  }
  }finally{await browser.close();}
  console.log(JSON.stringify({status:failed?'FAIL':'PASS',checks:results.length,failed,scope:'Actual markup/JS; fully intercepted transport, not authenticated HTTP/camera',results},null,2));if(failed)process.exitCode=1;
 })().catch(error=>{console.error(error.stack);process.exitCode=1;});

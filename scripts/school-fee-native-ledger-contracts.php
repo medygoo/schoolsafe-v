@@ -10,8 +10,11 @@ $fees=[];$payments=[];$failedRead=false;$writes=[];$consults=[];$pass=0;$fail=0;
 $db=['get'=>function($sql) use (&$fees,&$payments,&$failedRead,&$consults) {
     if (strpos($sql,'to_regclass')!==false)return [1=>['T'=>'public.schoolsafe_student_cards']];
     if (strpos($sql,'FROM schoolsafe_student_cards')!==false)return [1=>['STUDENT_ID'=>11,'SIGNATURE'=>$GLOBALS['signature'],'STATUS'=>'active','ENROLLED'=>'t','FIRST_NAME'=>'Synthetic','LAST_NAME'=>'Fixture','CLASS_NAME'=>'Synthetic class']];
+    if (strpos($sql,'FROM students WHERE')!==false)return [1=>['STUDENT_ID'=>11]];
+    if (strpos($sql,'FROM student_enrollment WHERE')!==false)return [1=>['OK'=>1]];
     if (strpos($sql,'FROM program_config')!==false)return [];
-    if (strpos($sql,'FROM schools WHERE')!==false)return [1=>['ID'=>1]];
+    if (strpos($sql,'FROM schools WHERE')!==false)return [1=>['ID'=>1,'TITLE'=>'Synthetic school']];
+    if (strpos($sql,'FROM config WHERE')!==false)return [1=>['SCHOOL_ID'=>0,'CONFIG_VALUE'=>'SYN']];
     if (strpos($sql,'LEDGER_KIND')!==false){
         if($failedRead)return false;
         $rows=[];
@@ -28,7 +31,7 @@ $db=['get'=>function($sql) use (&$fees,&$payments,&$failedRead,&$consults) {
     if (strpos($sql,'FROM billing_payments')!==false)return $payments;
     if (strpos($sql,'INSERT INTO schoolsafe_fee_consults')!==false){$consults[]=$sql;return [1=>['ID'=>1]];}
     throw new RuntimeException('UNEXPECTED_SQL');
-},'exec'=>function($sql) use (&$writes){$writes[]=$sql;}];
+},'exec'=>function($sql) use (&$writes){$writes[]=$sql;},'quote'=>fn($value)=>"'".str_replace("'","''",$value)."'"];
 function ledgerCheck($name,$actual,$expected){global $pass,$fail;if($actual===$expected){$pass++;echo "PASS $name\n";}else{$fail++;echo "FAIL $name\n";}}
 function ledgerScan(){global $qr,$secret,$db;return SchoolSafeFeeScan($qr,$secret,['user'=>9,'school'=>1,'year'=>2026,'detail'=>true],$db,'2026-10-23');}
 foreach ([['100.00','-25.00','75.00'],['150.00','-100.00','50.00'],['100.00','-100.00','0.00'],['100.00','25.00','125.00']] as [$charge,$waiver,$net]) {

@@ -115,7 +115,7 @@ try {
      // A permitted consultation is not proof that a financial barrier is active.
      $result=['data'=>['capabilities'=>SchoolSafeFilterScanCapabilities($caps),'fee_policy_active'=>$activePolicy!==null,
        'fee_consult_available'=>in_array('SCAN_FEES',$caps,true),
-       'open_campaign_id'=>null,'schoolId'=>(string)$school]];
+       'request_key_modes'=>['fees'],'open_campaign_id'=>null,'schoolId'=>(string)$school]];
      $result['csrfToken']=$_SESSION['SchoolSafeScannerCsrf'];
      while(ob_get_level()>$level)ob_end_clean();
      SchoolSafeScanReply(200,$result);
@@ -210,13 +210,14 @@ try {
    // ni pickup (aucun appel, aucune écriture vers ces chemins).
    if($operation==='scan'&&($input->mode??'')==='fees') {
      if(!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000
-       ||array_diff(array_keys((array)$input),['mode','qr_payload'])) throw new RuntimeException('INVALID_INPUT');
+       ||!is_string($input->request_key??null)
+       ||array_diff(array_keys((array)$input),['mode','qr_payload','request_key'])) throw new RuntimeException('INVALID_INPUT');
      require_once __DIR__.'/ProgramFunctions/SchoolSafeFeeScan.fnc.php';
      $feeSecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
      $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }];
      $detail=AllowUse('Student_Billing/StudentFees.php');
      $done=SchoolSafeFeeScan($input->qr_payload,$feeSecret,
-       ['user'=>$user,'school'=>$school,'year'=>$year,'detail'=>$detail],$db);
+       ['user'=>$user,'school'=>$school,'year'=>$year,'detail'=>$detail,'request_key'=>$input->request_key],$db);
      if($done===null) throw new RuntimeException('CONFIG_REQUIRED');
      $data=$enrichPortrait($done);
      while(ob_get_level()>$level)ob_end_clean();
@@ -305,6 +306,6 @@ try {
  SchoolSafeScanReply($status,$result);
 } catch(Throwable $error) {
  while(ob_get_level()>$level)ob_end_clean();
- $status=in_array($error->getMessage(),['CSRF_REQUIRED','NATIVE_STUDENT_NOT_ACCESSIBLE','NATIVE_PERMISSION_REQUIRED'],true)?403:($error->getMessage()==='INVALID_INPUT'?400:503);
+ $status=in_array($error->getMessage(),['CSRF_REQUIRED','NATIVE_STUDENT_NOT_ACCESSIBLE','NATIVE_PERMISSION_REQUIRED'],true)?403:($error->getMessage()==='INVALID_INPUT'?400:($error->getMessage()==='OPERATION_KEY_CONFLICT'?409:503));
  SchoolSafeScanReply($status,['error'=>'NATIVE_SCANNER_UNAVAILABLE']);
 }

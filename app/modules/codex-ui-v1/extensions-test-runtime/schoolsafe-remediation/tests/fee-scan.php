@@ -49,8 +49,11 @@ $db = [
                 'FIRST_NAME' => $c['first_name'], 'LAST_NAME' => $c['last_name'],
                 'CLASS_NAME' => $c['class_name'], 'ENROLLED' => $c['enrolled'] ? 't' : 'f']];
         }
+        if (strpos($sql, 'FROM students WHERE') !== false) return [1=>['STUDENT_ID'=>11]];
+        if (strpos($sql, 'FROM student_enrollment WHERE') !== false) return [1=>['OK'=>1]];
         if (strpos($sql, 'FROM program_config') !== false) return [];
-        if (strpos($sql, 'FROM schools WHERE') !== false) return [1=>['ID'=>1]];
+        if (strpos($sql, 'FROM schools WHERE') !== false) return [1=>['ID'=>1,'TITLE'=>'Synthetic school']];
+        if (strpos($sql, 'FROM config WHERE') !== false) return [1=>['SCHOOL_ID'=>0,'CONFIG_VALUE'=>'SYN']];
         if (strpos($sql, 'LEDGER_KIND') !== false) {
             $rows=[];
             foreach($state['fees'] as $row){$row['LEDGER_KIND']='fee';$rows[count($rows)+1]=$row;}
@@ -83,6 +86,7 @@ $db = [
         return [];
     },
     'exec' => function ($sql) { },
+    'quote' => fn($value)=>"'".str_replace("'","''",$value)."'",
 ];
 $ctx = ['user' => 9, 'school' => 1, 'year' => 2026, 'detail' => true];
 $ctxNodetail = ['user' => 9, 'school' => 1, 'year' => 2026];

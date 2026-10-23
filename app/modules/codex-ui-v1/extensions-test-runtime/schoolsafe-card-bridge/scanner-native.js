@@ -3,8 +3,9 @@
  const byId=id=>document.getElementById(id),form=byId('scan-form'),state=byId('scanner-state'),result=byId('scan-result'),people=byId('scan-people'),confirm=byId('pickup-confirm');
  const modes={entry:['Entrée','SCAN_ENTRY'],pickup:['Récupération','SCAN_PICKUP'],fees:['Frais scolaires','SCAN_FEES'],canteen:['Frais de cantine','SCAN_CANTEEN'],verify:['Vérification','SCAN_VERIFY']};
  const names={INVALID:'QR invalide.',VALID:'Carte valide.',PRESENT:'Arrivée enregistrée.',ALREADY_PRESENT:'Arrivée déjà enregistrée.',CONFIRMED:'Remise confirmée.',PICKUP_CHOICE:'Sélectionnez la personne présente.',NEED_HUMAN_CONFIRMATION:'Vérification humaine requise.',DENIED:'Remise refusée.',LOST:'Carte perdue.',REVOKED:'Carte révoquée.',REPLACED:'Carte remplacée.',NOT_DELEGATED:'Autorisation absente.',OUT_OF_SCOPE:'Hors du périmètre autorisé.'};
- const balances={paid:'Payé',partial:'Partiellement payé',due:'À régler',exempt:'Exonéré',no_data:'Données absentes'};
- let csrf='',mode='verify',busy=false,proof=null,campaign=null,stream=null,cameraRun=0;
+ const balances={paid:'À jour',partial:'Partiellement payé',due:'À régler',exempt:'Exonéré',no_data:'Données absentes'};
+ let csrf='',mode='verify',busy=false,proof=null,campaign=null,stream=null,cameraRun=0,requestKeyModes=[],pendingOperation=null;
+ function operationKey(){const bytes=crypto.getRandomValues(new Uint8Array(16));bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;const hex=Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);}
  function clearPickup(){proof=null;confirm.hidden=true;byId('human-confirm').checked=false;people.replaceChildren();}
  function stopCamera(){cameraRun++;if(stream)stream.getTracks().forEach(track=>track.stop());stream=null;byId('scan-video').srcObject=null;byId('camera-area').hidden=true;}
  async function request(operation,input){
@@ -19,10 +20,17 @@
  }
  async function scan(input){
   if(busy)return;busy=true;stopCamera();confirm.hidden=true;
+  result.replaceChildren();result.dataset.feeColor='';result.setAttribute('aria-busy','true');
   form.querySelectorAll('button,input,select').forEach(button=>button.disabled=true);
   try {
+   if(requestKeyModes.includes(input.mode)){
+    const signature=JSON.stringify(input);
+    if(!pendingOperation||pendingOperation.signature!==signature)pendingOperation={signature,key:operationKey()};
+    input={...input,request_key:pendingOperation.key};
+   }
    const response=await request('scan',input),data=response.data;
    if(!data||typeof data.result!=='string')throw new Error('INVALID_RESULT');
+   if(requestKeyModes.includes(input.mode))pendingOperation=null;
    result.dataset.feeColor=data.result==='FEE_POLICY_STATUS'?data.color:'';
    if(data.result==='FEE_STATUS'){const who=data.student_name?data.student_name+(typeof data.class_name==='string'&&data.class_name?' ('+data.class_name+')':'')+' : ':'';const label=balances[data.balance_status]||'Statut indisponible';result.textContent=typeof data.balance==='string'?who+label+' — solde '+data.balance:who+label+' — Orienter au bureau, controle a verifier';}else result.textContent=data.result==='FEE_POLICY_STATUS'?data.label:(data.student_name?data.student_name+(typeof data.class_name==='string'&&data.class_name?' ('+data.class_name+')':'')+' : ':'')+(data.result==='CANTEEN_STATUS'?data.label:(names[data.result]||'Résultat du moteur : '+data.result))+(data.late===true?' (retard)':'');
    const financial=data.financial;
@@ -32,6 +40,7 @@
    else if(financial?.state==='active')result.textContent+=' '+({blue:'Contrôle bleu — en ordre.',yellow:'Contrôle jaune — tolérance autorisée, complément à prévoir.',red:'Contrôle rouge — validation du responsable requise.'}[financial.color]||'Contrôle à vérifier.');
    else if(financial?.state==='inactive')result.textContent+=' Aucun contrôle financier actif.';
    else if(financial?.state==='unavailable')result.textContent+=' Contrôle financier indisponible — aucune autorisation financière.';
+   if(data.idempotent===true&&mode==='fees')result.textContent+=' Opération déjà enregistrée — aucun nouveau contrôle.';
    if(typeof data.photo_url==='string'&&data.photo_url){
     let photo;try{photo=new URL(data.photo_url,location.href);}catch(_){}
     if(photo&&photo.origin===location.origin&&['http:','https:'].includes(photo.protocol)){
@@ -44,7 +53,7 @@
     proof={...input,proof_token:data.proof_token,human_confirmed:true};confirm.hidden=false;
    }
   }catch(error){clearPickup();result.textContent=['401','403'].includes(error.message)?'Connexion ou autorisation requise.':'Scan indisponible. Aucune confirmation reçue.';}
-  finally{busy=false;form.querySelectorAll('button,input,select').forEach(button=>button.disabled=false);}
+  finally{busy=false;result.setAttribute('aria-busy','false');form.querySelectorAll('button,input,select').forEach(button=>button.disabled=false);}
  }
  function enlargePhoto(src,alt){const overlay=document.createElement('div');overlay.className='scan-photo-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-label',alt||'Photo agrandie');overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:9999';const big=document.createElement('img');big.src=src;big.alt=alt||'';big.style.cssText='max-width:92vw;max-height:92vh;object-fit:contain';overlay.append(big);overlay.addEventListener('click',()=>overlay.remove());document.body.append(overlay);}
  function renderPeople(rows,input){for(const person of rows){
@@ -69,6 +78,7 @@
   byId('scanner-retry').hidden=true;form.hidden=true;clearPickup();stopCamera();
   try{const caps=await request('capabilities');csrf=caps.csrfToken;const data=caps.data;
    if(typeof csrf!=='string'||!Array.isArray(data?.capabilities))throw new Error('INVALID_RESULT');campaign=data.open_campaign_id||null;
+   requestKeyModes=Array.isArray(data.request_key_modes)?data.request_key_modes.filter(value=>value==='fees'):[];
    byId('scan-location').replaceChildren();
    let locationsReady=false;
    if(data.capabilities.some(capability=>['SCAN_ENTRY','SCAN_PICKUP'].includes(capability))){

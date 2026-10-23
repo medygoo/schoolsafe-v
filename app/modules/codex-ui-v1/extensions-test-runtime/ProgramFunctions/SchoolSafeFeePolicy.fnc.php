@@ -56,6 +56,16 @@ function SchoolSafeFeePolicyActive(array $ctx,array $db,bool $lock=false): ?arra
     return null;
 }
 
+// Same exact bounds for the decision and its immutable financial observation.
+function SchoolSafeFeePolicyBounds(array $model,array $ledger): array
+{
+    if(!SchoolSafeFeePolicyValidModel($model))throw new RuntimeException('FEE_POLICY_UNAVAILABLE');
+    if(($ledger['has_data']??false)!==true||!is_int($ledger['fee_cents']??null))throw new RuntimeException('FEE_READ_UNAVAILABLE');
+    $minimum=min(SchoolSafeFeeCents($model['threshold']),max(0,$ledger['fee_cents']));
+    // Ceiling to the first payable cent; never round a refusal into tolerance.
+    return ['minimum'=>$minimum,'tolerance_floor'=>intdiv($minimum*(100-$model['tolerance'])+99,100)];
+}
+
 function SchoolSafeFeeClassify(array $model,array $ledger): array
 {
     if(!SchoolSafeFeePolicyValidModel($model))throw new RuntimeException('FEE_POLICY_UNAVAILABLE');
@@ -63,10 +73,10 @@ function SchoolSafeFeeClassify(array $model,array $ledger): array
     foreach(['fee_cents','paid_cents','balance_cents'] as $key)if(!is_int($ledger[$key]??null))throw new RuntimeException('FEE_READ_UNAVAILABLE');
     if(SchoolSafeFeeAddCents($ledger['balance_cents'],$ledger['paid_cents'])!==$ledger['fee_cents'])throw new RuntimeException('FEE_READ_UNAVAILABLE');
     // Owner-approved: do not demand a minimum beyond the actual signed net fee.
-    $minimum=min(SchoolSafeFeeCents($model['threshold']),max(0,$ledger['fee_cents']));
+    $bounds=SchoolSafeFeePolicyBounds($model,$ledger);$minimum=$bounds['minimum'];
     $paid=$ledger['paid_cents'];$color='red';$reason='below_tolerance';
     if($paid>=$minimum||$ledger['balance_cents']<=0){$color='blue';$reason=$minimum===0?'net_obligation_zero':'threshold_met';}
-    elseif($paid>0&&$paid*100>=$minimum*(100-$model['tolerance'])){$color='yellow';$reason='within_tolerance';}
+    elseif($paid>0&&$paid>=$bounds['tolerance_floor']){$color='yellow';$reason='within_tolerance';}
     return ['state'=>'active','color'=>$color,'entry_allowed'=>$color!=='red','reason'=>$reason,'policy_id'=>$model['id']];
 }
 

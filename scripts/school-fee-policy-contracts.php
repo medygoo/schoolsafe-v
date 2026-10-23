@@ -7,7 +7,7 @@ $pass=0;$fail=0;
 function feePolicyCheck($name,$ok){global $pass,$fail;if($ok){$pass++;echo "PASS $name\n";}else{$fail++;echo "FAIL $name\n";}}
 function feePolicyFailure(callable $call){try{$call();return 'NO_REFUSAL';}catch(RuntimeException $error){return $error->getMessage();}}
 $model=['id'=>'11111111-1111-4111-8111-111111111111','label'=>'Synthetic annual control','threshold'=>'80.00','tolerance'=>10,'active'=>true];
-foreach([[7500,7000,'yellow'],[7500,6749,'red'],[7500,6750,'yellow'],[7500,7500,'blue'],[10000,8000,'blue'],[10000,7200,'yellow'],[10000,7199,'red'],[7500,0,'red'],[7500,-100,'red'],[0,0,'blue'],[7500,8000,'blue'],[-2500,-1000,'blue']] as [$net,$paid,$expected]){
+foreach([[7500,7000,'yellow'],[7500,6749,'red'],[7500,6750,'yellow'],[7501,6750,'red'],[7501,6751,'yellow'],[7500,7500,'blue'],[10000,8000,'blue'],[10000,7200,'yellow'],[10000,7199,'red'],[7500,0,'red'],[7500,-100,'red'],[0,0,'blue'],[7500,8000,'blue'],[-2500,-1000,'blue']] as [$net,$paid,$expected]){
     $decision=SchoolSafeFeeClassify($model,['has_data'=>true,'fee_cents'=>$net,'paid_cents'=>$paid,'balance_cents'=>$net-$paid]);
     feePolicyCheck('net '.$net.' paid '.$paid.' yields '.$expected,$decision['color']===$expected&&$decision['entry_allowed']===($expected!=='red'));
     feePolicyCheck('operator result contains no financial amounts',!array_intersect(['fee_total','paid_total','balance','threshold','tolerance'],array_keys($decision)));

@@ -14,9 +14,9 @@ if ($action==='setup') {
     if ((int)$pdo->query("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")->fetchColumn()!==0) throw new RuntimeException('EMPTY_DISPOSABLE_DATABASE_REQUIRED');
     $pdo->exec('CREATE TABLE students(student_id integer PRIMARY KEY,first_name text DEFAULT $$Synthetic$$,last_name text DEFAULT $$Fixture$$); CREATE TABLE staff(staff_id integer PRIMARY KEY,profile text DEFAULT $$admin$$); CREATE TABLE students_join_users(student_id integer,staff_id integer); CREATE TABLE student_enrollment(id serial PRIMARY KEY,student_id integer,school_id integer,syear integer,grade_id integer DEFAULT 1,start_date date DEFAULT $$2020-01-01$$,end_date date); CREATE TABLE school_gradelevels(id integer,title text); CREATE TABLE school_periods(school_id integer,syear integer,start_time text,sort_order integer);');
     foreach (['020-school-cards.sql','021-entry-records.sql','022-pickup-guardians.sql','023-fee-consults.sql'] as $file) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
-    $pdo->exec('CREATE TABLE schools(id integer,syear numeric(4,0),PRIMARY KEY(id,syear)); INSERT INTO schools VALUES(1,2026),(1,2025),(2,2026)');
+    $pdo->exec('CREATE TABLE schools(id integer,syear numeric(4,0),title varchar(100) NOT NULL DEFAULT $$Synthetic school$$,PRIMARY KEY(id,syear)); INSERT INTO schools(id,syear) VALUES(1,2026),(1,2025),(2,2026)');
     $nativeDdl=file_get_contents($root.'/rosariosis.sql');
-    foreach(['billing_fees','billing_payments','program_config'] as $table) {
+    foreach(['billing_fees','billing_payments','program_config','config'] as $table) {
         if(preg_match('/CREATE TABLE '.$table.' \\([\\s\\S]*?\\n\\);/',$nativeDdl,$match)!==1)throw new RuntimeException('NATIVE_BILLING_DDL_MISSING');
         $pdo->exec($match[0]);
     }
@@ -25,6 +25,12 @@ if ($action==='setup') {
         INSERT INTO entry_exit_checkpoints(id,title) VALUES(7,'Fixture checkpoint');
         INSERT INTO schoolsafe_pickup_guardians(id,school_id,student_id,guardian_type,full_name,is_primary,is_authorized_pickup,photo_path,photo_accepted)
             VALUES(21,1,11,'mere','Synthetic fixture guardian',true,true,'/synthetic-only/portrait.jpg',true);");
+    $pdo->exec("INSERT INTO config(school_id,title,config_value) VALUES(0,'CURRENCY','SYN');
+        INSERT INTO schoolsafe_fee_consults(school_id,student_id,consulted_by,balance_status,fee_total,paid_total,balance) VALUES(1,11,9,'due',91,0,91)");
+    $legacyConsult=$pdo->query('SELECT * FROM schoolsafe_fee_consults')->fetch(PDO::FETCH_ASSOC);
+    for($i=0;$i<2;$i++)$pdo->exec(file_get_contents($root.'/schoolsafe-remediation/040-fee-control-context.sql'));
+    $expandedConsult=$pdo->query('SELECT * FROM schoolsafe_fee_consults')->fetch(PDO::FETCH_ASSOC);
+    if(array_intersect_key($expandedConsult,$legacyConsult)!==$legacyConsult||$expandedConsult['syear']!==null||$expandedConsult['context_snapshot']!==null)throw new RuntimeException('LEGACY_FINANCIAL_RECORD_CHANGED');
     $pdo->exec("INSERT INTO entry_exit_student_records(student_id,checkpoint_id,type,comments,recorded_at) VALUES(11,7,'in','Synthetic legacy fixture',CURRENT_TIMESTAMP)");
     $before=$pdo->query('SELECT * FROM entry_exit_student_records')->fetch(PDO::FETCH_ASSOC);
     for ($i=0;$i<2;$i++) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/039-scan-passage-scope.sql'));
@@ -59,7 +65,7 @@ $db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
         }
     }
     return $result;
-}, 'exec'=>static function($sql) use ($pdo) {$pdo->exec($sql);}];
+}, 'exec'=>static function($sql) use ($pdo) {$pdo->exec($sql);},'quote'=>static function($value)use($pdo){return $pdo->quote($value);}];
 if ($action==='fee-policy-manage') {
     require_once $root.'/ProgramFunctions/SchoolSafeFeePolicy.fnc.php';
     $db['quote']=static function($value) use($pdo){return $pdo->quote($value);};
@@ -71,8 +77,11 @@ if ($action==='fee-policy-manage') {
 }
 if ($action==='fee-scan') {
     require_once $root.'/ProgramFunctions/SchoolSafeFeeScan.fnc.php';
-    $secret=str_repeat('0',64);$signature=substr(strtr(base64_encode(hash_hmac('sha256','QA-ENTRY',hex2bin($secret),true)),'+/','-_'),0,32);
-    try{$result=SchoolSafeFeeScan('schoolsafe://card/QA-ENTRY/'.$signature,$secret,['user'=>9,'school'=>1,'year'=>2026,'detail'=>($argv[2]??'1')==='1'],$db,'2026-10-23');}
+    $secret=str_repeat('0',64);$number=$argv[4]??'QA-ENTRY';
+    if(preg_match('/^QA-[A-Z0-9-]+$/D',$number)!==1)exit(2);
+    $signature=substr(strtr(base64_encode(hash_hmac('sha256',$number,hex2bin($secret),true)),'+/','-_'),0,32);
+    $ctx=array_replace(['user'=>9,'school'=>1,'year'=>2026,'detail'=>($argv[2]??'1')==='1'],json_decode($argv[3]??'{}',true,16,JSON_THROW_ON_ERROR));
+    try{$result=SchoolSafeFeeScan('schoolsafe://card/'.$number.'/'.$signature,$secret,$ctx,$db,'2026-10-23');}
     catch(RuntimeException $error){$result=['error'=>$error->getMessage()];}
     if($pdo->inTransaction())throw new RuntimeException('TRANSACTION_LEFT_OPEN');
     echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;

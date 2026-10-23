@@ -67,7 +67,11 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
         if($model!==null){
             $ledger=SchoolSafeFeeLedgerRead((int)$verify['student_id'],$school,$year,$get,date('Y-m-d',$now));
             $financial=SchoolSafeFeeClassify($model,$ledger);
-            $consultId=SchoolSafeFeeConsultRecord((int)$verify['student_id'],['school'=>$school,'year'=>$year,'user'=>$user],$ledger,$get);
+            require_once __DIR__.'/SchoolSafeFeeSnapshot.fnc.php';
+            $feeCtx=['school'=>$school,'year'=>$year,'user'=>$user];
+            $snapshot=SchoolSafeFeeControlSnapshot($verify,$feeCtx,$ledger,$model,$financial,SchoolSafeFeeControlMetadata($feeCtx,$get),'entry');
+            $snapshot['checkpoint']=$checkpoint;
+            $consultId=SchoolSafeFeeConsultRecord((int)$verify['student_id'],$feeCtx,$ledger,$db,$snapshot);
             if(!$financial['entry_allowed'])return ['result'=>'DENIED','decision'=>'denied',
                 'reason'=>$financial['state']==='unavailable'?'FEE_CONTROL_UNAVAILABLE':'FEE_CONTROL_DENIED',
                 'financial'=>$financial,'financial_consult_id'=>$consultId]+$verify;
@@ -79,6 +83,7 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
             . ' VALUES(' . (int) $verify['student_id'] . ',' . $checkpoint['id'] . ",'in'," . $commentSql . ',CURRENT_TIMESTAMP,' . $school . ',' . $year . ')'
             . ' RETURNING ID, RECORDED_AT');
         if (!is_array($inserted) || !isset($inserted[1])) throw new RuntimeException('ENTRY_WRITE_FAILED');
+        if($consultId!==null)SchoolSafeFeeConsultEntry($consultId,(int)$inserted[1]['ID'],(int)$verify['student_id'],['school'=>$school,'year'=>$year,'user'=>$user],$db);
         return ['result' => 'PRESENT', 'decision' => 'allowed', 'late' => $late,
             'record_id' => (int) $inserted[1]['ID'], 'occurred_at' => $inserted[1]['RECORDED_AT'],
             'checkpoint' => $checkpoint,'financial'=>$financial,'financial_consult_id'=>$consultId] + $verify;
