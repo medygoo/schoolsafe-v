@@ -1,4 +1,8 @@
-## Priorité courante — dashboard LIVRÉ ; Scan en lot distinct
+## Priorité courante — Présence & Scan QR en développement, dashboard livré protégé
+
+GO propriétaire après clôture dashboard. Branche dédiée feat/presence-scan-qr-20261023 depuis9d5cfad, agent pi seul écrivain. Lecture seule production : dépendances PHP du scanner absentes/config bridge absente ; tables natives entry_exit présentes. Sources retrouvées dans commit canonique8f81b8f sur main,16fichiers récupérés sans merge global ni migration. Premier correctif TDD arrivée≠présence pédagogique :3RED puis vert ;103assertions unitaires PHP/5lint PASS. Pas de preuve PostgreSQL/HTTP/caméra ni nouvelle livraison. Continuer la revue sécurité/3+3/booleans/scopes/concurrence, délégation opérateur et vraie politique financière bloquante avant UI et qualification. [État exact et critères](../../qualification/SCHOOL_PRESENCE_SCAN_QR_20261023.md). Ne pas réintroduire une deuxième implémentation ni modifier les sources du menu/dashboard livré.
+
+## Clôture — dashboard LIVRÉ, base du lot Scan
 
 Production qualifiée livrée après GO : recette4065f9406a3a525f6bd64478b5207dd732c2d498 / deployed/school-dashboard-composition-20261023, runtimeb10d8d3, image8770153a, digest9a84afb7. Bascule8,95s, backup privé valide649096octets/0600,73sessions/10cache/config/services préservés, prédécesseur arrêté conservé. Contrôle distinct PASS :3sources/15sources protégées/notation/thèmes,5services/22autres conteneurs identiques,aucune session non-expirée manquante. Aucune migration/restauration/login réel/envoi externe. Aucun changement runtime depuis la qualification exact-r2 ; docs de clôture seuls ensuite. Prochaine action : vérifier le chemin Scan réellement installé avant raccordement des commandes et de la politique financière explicitement demandée, en protégeant cette livraison et les familles.
 
