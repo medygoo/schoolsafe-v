@@ -1,4 +1,14 @@
-# Tableau de bord composé — candidat local, non déployé
+# Tableau de bord composé — qualifié exact-r2, livraison autorisée en préparation
+
+## Qualification exacte et GO de livraison du 23/10
+
+Le propriétaire demande explicitement de finir et mettre en production le dashboard avant de poursuivre le lot Scan. Source runtime `b10d8d3279349b293f0c1cec19f7c61e5a7da782`, harnais `84f526829f5929bbc7f008ef859f0338c01822dc`, image `sha256:8770153af9759e423008028268248973a230c47327c76b371f76a1f12028cac6`, digest `9a84afb7f386d2d628aad6a6f8ed949055bbcc8c6641cd841e06da637b6b7136`. Trois sources modifiées, 2761 autres fichiers runtime identiques à l'image livrée b271dcc5.
+
+Exact-r2 PASS : 186 contrats PHP/37 PostgreSQL, 25 groupes natifs authentifiés dont deux écoles fictives et leurs compositions aux largeurs1280/390/768, menus autorisés identiques, destinations GET200 et corps complets, dix groupes récupération, deux rollbacks de révocation, deux sessions concurrentes, un gagnant/un epoch. 126 contrôles navigateur locaux PASS avec le harnais publié. Captures authentifiées ordinateur/téléphone ouvertes et revues. Snapshot fixture inchangé et aucun compte/schéma de test restant ; conteneurs production inchangés pendant QA ; seuls objets éphémères du nonce retirés.
+
+Exact-r1 était rouge après sept groupes (composition authentifiée wizard déjà PASS) : le test historique cherchait Configurer mon école dans le rôle accessible alors que le lien est maintenant dans Actions fermé sur téléphone. Correction du seul harnais pour ouvrir Actions, puis mêmes assertions de href absolu, vrai clic, CSRF et isolation. Aucun changement du runtime ni assertion métier retirée. R1 vérifié/nettoyé PASS, R2 réutilise le même ID d'image sur fixture fraîche. Un défaut d'échappement dans le script privé de collecte a ensuite été corrigé via PurePath.as_posix(), sans refaire les suites ou modifier le produit.
+
+Recette dédiée `ops/releases/school-dashboard-composition-20261023/` : exige ces preuves exactes, sauvegarde PostgreSQL récente et privée, sessions/cache/configuration/conteneurs préservés, contrôle distinct après bascule. À ce point du rapport, QA terminée et production pas encore basculée. Les mentions locales ci-dessous sont historiques, remplacées par cette qualification.
 
 ## Mandat courant (remplace le découpage paginé)
 
@@ -48,12 +58,12 @@ Le JavaScript ne crée plus de `.ss-fixed-view`, pager ou parking masqué. Les a
 - Navigateur avec vrais assets : **126 contrôles PASS** sur 360/390/700/701/768/900/901/1280, dont deux captures issues du vrai renderer PHP avec données substituées, dispositions, regroupement/restauration, contrôle de débordement, focus Escape, filtres, accès limité, réduction des animations et absence d'erreur JS. Les captures des modes clair/nuit et Actions sont privées. Ce niveau n'est PAS un parcours HTTP authentifié PostgreSQL.
 - Contrats de frontière ProDéli/écoles : **84 PASS**, syntaxe PHP/JS et `git diff --check` PASS. Aucun changement des sources du menu/thème, de l'authentification ou des requêtes d'isolation.
 - `app/qa-school-dashboard-navigation.cjs` lance désormais les critères de composition par défaut ; ses critères paginés restent explicitement historiques via `SCHOOL_NAV_LEGACY_PAGER=1`, pour l'ancien runtime uniquement.
-- `app/qa-school-dashboard-http.cjs` a été adapté aux nouveaux critères. Il reste à exécuter dans une fixture authentifiée protégée ; ne pas réutiliser le PASS exact-r7 de la livraison antérieure comme preuve de ce nouveau candidat.
+- `app/qa-school-dashboard-http.cjs` a été adapté aux nouveaux critères. Depuis, exécuté dans la fixture authentifiée exact-r2 : PASS pour deux écoles ; le PASS exact-r7 de l'ancienne livraison n'est pas réutilisé comme preuve de ce candidat.
 
 Preuves locales privées : `school-dashboard-composition-20261022/{red,green-r1,green-r2,mobile-r1,mobile-r2,mobile-r3,php-render,rendered-r1,final-local}`. Les essais rouges sont conservés.
 
-## Statut de livraison
+## Statut historique avant qualification exacte
 
-**Implémentation locale seulement.** Aucune nouvelle image de production, connexion de compte réel, soumission métier réelle, migration, restauration, message externe ou bascule VPS. Menu livré et ProDéli restent protégés ; notation non livrée, Keycloak en pause, Watch honnêtement non raccordé.
+**À l'étape locale précédente seulement.** Aucune nouvelle image de production, connexion de compte réel, soumission métier réelle, migration, restauration, message externe ou bascule VPS. Menu livré et ProDéli restent protégés ; notation non livrée, Keycloak en pause, Watch honnêtement non raccordé.
 
 Avant clôture : revue visuelle propriétaire et qualification HTTP/PG sur candidat immuable si livraison demandée. Ne pas annoncer l'acceptation du dashboard ou un déploiement sur la base des seuls tests synthétiques.

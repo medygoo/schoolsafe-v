@@ -1,4 +1,8 @@
-## Priorité courante — composition du dashboard après validation du menu
+## Priorité courante — dashboard qualifié, livraison explicitement autorisée
+
+Le 23/10, le propriétaire demande de finir/livrer le dashboard puis d'attaquer Scan séparément. Exact-r2 PASS : image8770153a, sourceb10d8d3, harnais84f5268, digest9a84afb7 ; trois fichiers/2761 inchangés,186PHP/37PG,126DOM,25groupes natifs dont deux écoles et compositions1280/390/768,10récupérations et course/rollback. R1 rouge au test historique du lien configuration désormais dans Actions ; seul harnais corrigé, même image réutilisée sur fixture fraîche. Snapshot, absence de comptes QA et nettoyage nonce PASS, production inchangée. Recette ops/releases/school-dashboard-composition-20261023 en préparation : backup frais, préservation sessions/cache/config/services/prédécesseurs puis contrôle distinct. Ne pas modifier Scan/permissions/familles dans cette livraison. Détail du lot et preuves : [rapport](../../qualification/SCHOOL_DASHBOARD_COMPOSITION_20261022.md).
+
+## Historique — composition locale après validation du menu
 
 GO de réalisation reçu. Le propriétaire a rejeté le diaporama malgré le compteur fonctionnel et fourni les dispositions ordinateur et téléphone. Conserver toutes les informations, pas les 13 écrans paginés. Ajustements validés : quatre KPI et modules 4 × 2 sur téléphone, anniversaires en partie haute, informations détaillées en bas, effets lumineux/ombres/animations réduisibles sur les deux formats, deux commandes en haut du téléphone (Notifications et Actions regroupées). Sources menu/thème inchangées, éléments natifs déplacés/rétablis sans clones ni nouveaux droits.
 
