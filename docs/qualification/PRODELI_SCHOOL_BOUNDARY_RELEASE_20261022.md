@@ -4,7 +4,7 @@
 
 **GO explicite de production reçu**, puis confirmé : terminer/stabiliser/sécuriser ProDéli avant le point suivant. Le propriétaire ajoute le contrôle des écrans ProDéli sur téléphone et la correction du bouton scolaire « Configurer mon école », qui ne doit jamais ouvrir ProDéli. Le remaniement des treize vues/menus du tableau de bord scolaire demeure un sujet séparé.
 
-**À ce stade de ce rapport : qualification de l’image finale en préparation ; pas de bascule exécutée.** La production reste sur `a4a3cbf8…` / recette `8a969d5`. Ce statut sera remplacé par les preuves effectives de livraison, pas par une simple réussite locale.
+**Statut actualisé : qualification finale incomplète, bloquée par les interruptions réseau SSH puis GitHub HTTPS ; aucune bascule exécutée.** Runtime final `fb0774d07616c5618c7f142fc01ac57a966356ff`, image `sha256:1e8259e4af681d8d905c7a23d80cca860fe64bc44dd795adfcdab0d14c43981f`, digest `cd4172e453eac52067b923905e3a5aac28601349d3fba35703e9d8876da544de`. Les 156 contrats / 57 PG natifs / 37 PG récupération et les 24 vues responsive sont PASS sur cette image ; les 21 groupes natifs complets ne le sont pas encore. Les anciens succès complets sur `84321036…` ne certifient pas ce nouveau runtime. Aucun staging, backup de cette livraison ou déploiement ne doit être déduit de ces seuls résultats. La production reste sur `a4a3cbf8…` / recette `8a969d5`. Ce statut sera remplacé par les preuves effectives de livraison, pas par une simple réussite locale.
 
 ## Périmètre final — douze fichiers runtime
 
@@ -40,6 +40,17 @@ Aucune notation déplacée, migration de production, restauration, conversion d�
 - Nouvel ajout scolaire : 21 groupes locaux PASS, après adaptation du harnais au jeton CSRF natif dans le `<head>` (pas un input caché ; le balisage peut aussi dupliquer le meta dans le corps). Aucun contournement du contrôle CSRF.
 
 Ces preuves antérieures ne remplacent pas une exécution finale sur l’ID d’image livré. Les sources Git canoniques sont utilisées, pas les fins de ligne du worktree Windows.
+
+## Interruptions de fin de qualification — non clôturées
+
+- `exact-r6` : contrôle trop strict exigeant le marqueur de CSS centrale même dans la console autonome qui ne charge pas le JS de thème ; critère corrigé pour exiger l’absence effective de superposition, sans changer le runtime.
+- `exact-r7` : 24 vues PASS, 16 groupes natifs avant panne DNS SSH ; nettoyage rétabli et confirmé ensuite.
+- `exact-r8` : préparation échouée, source PG fictive vide après arrêt de Docker et perte normale de son tmpfs. Docker et le seul PG fictif relancés ; preuve zéro table publique avant restauration du dump **fictif** r7 dont le hash est vérifié. Pas de restauration de production.
+- `exact-r9/r10` : délais de navigation chargement/clic, malgré navigation amorcée. Échecs conservés, snapshots et nettoyage PASS. Le helper login attend DOMContentLoaded ; diagnostics ajoutés sans paramètres d’URL, en-têtes ou secrets ; délai borné à 90 s. Ces adaptations ne changent aucun contrôle métier.
+- `exact-r11` : transfert SSH expiré avant les tests. `exact-r12` : six groupes natifs puis réseau inaccessible ; nettoyage final non confirmé, ressources du nonce `eca82e43232b` éventuellement restantes. Des requêtes `central-navigation.php` sont restées pendantes : cause applicative non établie, à examiner si cela persiste sur liaison stable.
+- IPv4 fonctionne ponctuellement, IPv6 n’a pas d’adresse ; choix IPv4 explicite dans les harnais, pas de modification des configurations SSH ou de production. Dernier commit de ces outils `04793df` local seulement : push bloqué car `github.com:443` inaccessible. `exact-r13` non démarré. Dernier commit distant effectivement confirmé avant cette panne : `d026f84`.
+
+Ne pas continuer les relances coûteuses sans stabilisation du transport. Vérifier puis nettoyer les seuls objets QA appartenant au nonce ; ne jamais présenter un nettoyage non confirmé comme réussi. Le service de production était sain à la dernière vérification, sans bascule.
 
 ## Livraison et clôture — à renseigner après qualification
 
