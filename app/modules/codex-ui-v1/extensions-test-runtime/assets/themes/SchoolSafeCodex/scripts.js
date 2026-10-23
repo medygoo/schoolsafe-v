@@ -833,6 +833,20 @@
 		setMobilePanel(open ? 'primary' : '');
 	}
 
+	// Shared entry point for existing dashboard cards; never creates destinations.
+	function openBranch(branch) {
+		var menu = document.getElementById('menu');
+		var module = menu && Array.from(menu.querySelectorAll('.menu-module')).find(function (item) { return item.dataset.ssBranch === branch; });
+		var top = module && module.querySelector('.menu-top');
+		if (!top || !top.hasAttribute('aria-expanded')) return false;
+		if (menuIsNarrow()) setMobilePanel('primary');
+		else { setMobilePanel(''); menu.classList.remove('hide', 'slide'); }
+		if (!module.classList.contains('ss-open')) top.click();
+		else if (menuIsNarrow()) setMobilePanel('context');
+		(module.querySelector('.ss-context-close') || top).focus();
+		return true;
+	}
+
 	function onMenuButton(e) {
 		if (!menuIsNarrow()) {
 			return;
@@ -1075,6 +1089,7 @@
 		}
 
 		bind();
+		window.schoolSafeNavigation = {openBranch: openBranch};
 		presentNativePage();
 
 		if (!window.jQuery) {

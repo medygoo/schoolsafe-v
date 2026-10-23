@@ -5,27 +5,12 @@ html[data-ss-background="gray"] body:has(#ss-photo-dashboard){--photo-bg:#edf0f4
 html[data-ss-background="mint"] body:has(#ss-photo-dashboard){--photo-bg:#e8f7f0;--photo-panel:#f9fffc;--photo-soft:#d4eee1;--photo-line:#b7d8c6}
 html[data-ss-background="rose"] body:has(#ss-photo-dashboard){--photo-bg:#fff0f4;--photo-panel:#fffafb;--photo-soft:#fae0e9;--photo-line:#e9bfcd}
 html[data-ss-background="yellow"] body:has(#ss-photo-dashboard){--photo-bg:#fff8df;--photo-panel:#fffdf5;--photo-soft:#fff0b9;--photo-line:#e3d49b}
-body:has(#ss-photo-dashboard) #body{background:var(--photo-bg)!important;padding:70px 20px 28px!important;margin-left:220px!important;color:var(--photo-ink)!important}
+/* Content inherits the existing theme navigation and account chrome. */
+body:has(#ss-photo-dashboard) #body{background:var(--photo-bg)!important;color:var(--photo-ink)!important}
 body:has(#ss-photo-dashboard) #body>.ss-dashboard-context{display:none!important}
 body:has(#ss-photo-dashboard) #body>.ss-report-actions{position:static!important;float:none!important;margin:0 0 10px!important}
 body:has(#ss-photo-dashboard) #body>.ss-dashboard-login-info{margin:0 0 8px;font-size:11px}
-body:has(#ss-photo-dashboard) #footerwrap{background:var(--photo-bg)!important;border-color:var(--photo-line)!important;color:var(--photo-ink)!important;height:58px!important;min-height:58px!important}
-body:has(#ss-photo-dashboard) #footerwrap .ss-header-action{width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;background:var(--photo-panel)!important;border:1px solid var(--photo-line)!important;box-shadow:none!important;transform:none!important}
-body:has(#ss-photo-dashboard) #footerwrap .ss-header-tools{gap:6px!important}
-body:has(#ss-photo-dashboard) #footerwrap .ss-header-action img{width:17px;height:17px}
-body:has(#ss-photo-dashboard) #footerwrap .ss-header-action:hover{background:var(--photo-soft)!important}
-body:has(#ss-photo-dashboard) #menu{width:220px!important;box-sizing:border-box;background:var(--photo-bg)!important;border-right:1px solid var(--photo-line)!important;color:var(--photo-ink)!important;box-shadow:6px 0 20px #10253f12}
-body:has(#ss-photo-dashboard) #menu .adminmenu{gap:3px!important;padding:10px!important;background:var(--photo-bg)!important}
-body:has(#ss-photo-dashboard) #menu .ss-photo-sidebar-home{list-style:none;margin:0 0 10px!important}
-body:has(#ss-photo-dashboard) #menu .ss-photo-sidebar-home a{display:flex;align-items:center;gap:9px;background:#0757e8!important;color:white!important;padding:10px;border-radius:6px;font-size:12px;text-decoration:none}
-body:has(#ss-photo-dashboard) #menu .ss-photo-sidebar-home img{filter:brightness(0) invert(1)}
-body:has(#ss-photo-dashboard) #menu .adminmenu>.menu-module>.menu-top{min-height:34px!important;height:auto!important;padding:8px 10px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:var(--photo-ink)!important;font-size:12px!important;line-height:1.4!important;box-shadow:none!important}
-body:has(#ss-photo-dashboard) #menu .adminmenu>.menu-module>.menu-top:hover,body:has(#ss-photo-dashboard) #menu .adminmenu>.ss-open>.menu-top{background:var(--photo-soft)!important}
-body:has(#ss-photo-dashboard) #menu .module-icon{width:19px!important;height:19px!important;flex:0 0 19px!important;margin-right:9px!important}
-body:has(#ss-photo-dashboard) #menu #menu-top{background:var(--photo-bg)!important;min-height:76px!important;padding:12px!important;box-sizing:border-box}
-body:has(#ss-photo-dashboard) #menu .ss-brand-name{font-size:21px!important;color:var(--photo-ink)!important}
-body:has(#ss-photo-dashboard) #menu .ss-brand-safe{color:var(--photo-gold)!important}
-body:has(#ss-photo-dashboard) #menu #ss-settings-button{min-height:36px!important;border:0!important;background:transparent!important;color:var(--photo-ink)!important;font-size:12px!important}
+/* No dashboard-specific replacement of the native header, menu or branch colors. */
 .ss-photo-dashboard,.ss-photo-dashboard *{box-sizing:border-box;letter-spacing:0}
 .ss-photo-dashboard{max-width:1600px;margin:0 auto;font-family:inherit;color:var(--photo-ink);background:transparent!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 .ss-photo-school-life{display:flex;flex-direction:column;gap:16px;min-width:0}
@@ -45,7 +30,8 @@ body:has(#ss-photo-dashboard) #menu #ss-settings-button{min-height:36px!importan
 .ss-photo-dashboard :is(button,a,input,summary):focus-visible{outline:2px solid var(--photo-blue);outline-offset:3px}
 .ss-photo-dashboard ::selection{background:#c7e2ff;color:#0b284c}
 .ss-photo-dashboard input{caret-color:var(--photo-blue)}
-.ss-photo-toolbar{position:fixed;z-index:120;top:0;left:240px;right:400px;height:58px;display:flex;align-items:center;gap:14px;background:transparent;pointer-events:none}
+.ss-photo-toolbar{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding-bottom:8px;background:transparent;min-width:0}
+.ss-photo-toolbar :is([data-photo-search],[data-photo-school],[data-photo-year]){display:block!important}
 .ss-photo-toolbar>div{pointer-events:auto}
 .ss-photo-module,.ss-photo-metric{transition:background-color 180ms ease-out,box-shadow 180ms ease-out}
 .ss-photo-module:hover,.ss-photo-metric:hover{box-shadow:0 4px 12px #10253f12}
@@ -171,20 +157,12 @@ body:has(#ss-photo-dashboard) #menu #ss-settings-button{min-height:36px!importan
 .ss-photo-account-menu button{display:block;width:100%;background:transparent;border:0;padding:10px;text-align:left;font:inherit;color:var(--photo-ink)}
 .ss-photo-account-menu button:hover{background:var(--photo-soft)}
 html[data-ss-background="night"] .ss-photo-chart-area{fill:#146bbb;fill-opacity:.22}
-html[data-ss-background="night"] body:has(#ss-photo-dashboard) #menu .wp-submenu{background:var(--photo-panel)!important;color:var(--photo-ink)!important}
+/* The shared night palette also owns native submenu colors. */
 @media(min-width:1500px){.ss-photo-grid{grid-template-columns:minmax(0,1fr) 250px}.ss-photo-module{min-height:120px}.ss-photo-metric-copy strong{font-size:23px}.ss-photo-hero{min-height:265px}.ss-photo-campus{height:265px}.ss-photo-jaspe-stage{height:255px}}
 @media(max-width:1150px) and (min-width:901px){.ss-photo-toolbar [data-photo-year]{display:none}.ss-photo-toolbar{right:320px}.ss-photo-introduction{max-width:280px}.ss-photo-introduction h1{font-size:23px}.ss-photo-grid{grid-template-columns:minmax(0,1fr) 190px}.ss-photo-metric{padding:10px 7px;gap:5px}.ss-photo-metric .ss-photo-icon{width:26px;height:26px;flex-basis:26px}.ss-photo-metric-copy strong{font-size:16px}.ss-photo-module{flex-direction:column;padding:12px 8px;gap:7px}.ss-photo-charts{grid-template-columns:1fr 1fr}.ss-photo-charts>.ss-photo-chart:last-child{grid-column:1/-1}.ss-photo-campus{width:58%}}
 @media(max-width:900px){
- body:has(#ss-photo-dashboard) #body{margin-left:0!important;padding:86px 16px 95px!important}
- body:has(#ss-photo-dashboard) #footerwrap{height:70px!important;min-height:70px!important}
- body:has(#ss-photo-dashboard) #footerwrap .ss-header-tools>.ss-header-action:not(:first-child){display:none!important}
- body:has(#ss-photo-dashboard) #menu .adminmenu .wp-submenu,
- body:has(#ss-photo-dashboard) #menu .adminmenu .wp-submenu a{background:var(--photo-panel)!important;color:var(--photo-ink)!important}
- body:has(#ss-photo-dashboard) #menu .adminmenu .wp-submenu .menu-inter{background:var(--photo-soft)!important;color:var(--photo-ink)!important}
- body:has(#ss-photo-dashboard) .ss-photo-account-menu{display:block}
- body:has(#ss-photo-dashboard) #menu{width:min(310px,calc(100vw - 30px))!important}
- .ss-photo-toolbar{height:70px;left:16px;right:130px;background:transparent;pointer-events:none}
- .ss-photo-toolbar [data-photo-search],.ss-photo-toolbar [data-photo-school],.ss-photo-toolbar [data-photo-year]{display:none}
+ .ss-photo-toolbar{height:auto;background:transparent}
+ .ss-photo-toolbar [data-photo-search]{flex-basis:100%}
  .ss-photo-mobile-brand{display:flex;align-items:center;gap:7px;color:var(--photo-ink)!important;pointer-events:auto}
  .ss-photo-mobile-brand strong{font-size:23px}.ss-photo-mobile-brand strong span{color:var(--photo-gold)}
  .ss-photo-hero{padding:5px 0 18px;min-height:80px}
@@ -218,23 +196,11 @@ html[data-ss-background="night"] body:has(#ss-photo-dashboard) #menu .wp-submenu
  .ss-photo-jaspe-suggestions{grid-template-columns:1fr 1fr;gap:6px}.ss-photo-jaspe-suggestions button{font-size:9px;min-height:32px;text-align:center}.ss-photo-jaspe-suggestions button:nth-child(n+3){display:none}
  .ss-photo-question{margin-top:7px}.ss-photo-question input{font-size:11px!important}
  .ss-photo-charts{order:4;grid-template-columns:1fr 1fr;margin-top:0}.ss-photo-charts>.ss-photo-chart:last-child{grid-column:1/-1}
- body:has(#ss-photo-dashboard) #ss-mobile-navigation{display:flex!important;align-items:center;justify-content:space-between;gap:0!important;height:70px!important;min-height:70px!important;padding:5px 10px calc(5px + env(safe-area-inset-bottom))!important;background:var(--photo-panel)!important;border-top:1px solid var(--photo-line)!important;box-shadow:none!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;border-radius:0!important;overflow:visible!important}
- body:has(#ss-photo-dashboard) #ss-mobile-navigation>:is(a,button){flex:1!important;width:auto!important;min-width:0!important;height:55px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;background:none!important;border:0!important;box-shadow:none!important;border-radius:6px!important;transform:none!important;color:var(--photo-muted)!important;font-size:9px!important}
- body:has(#ss-photo-dashboard) #ss-mobile-navigation>:is(a,button)>img{width:22px;height:22px}
- body:has(#ss-photo-dashboard) #ss-mobile-navigation .ss-photo-mobile-home{color:var(--photo-blue)!important;background:var(--photo-soft)!important}
- body:has(#ss-photo-dashboard) #ss-mobile-navigation>#ss-jaspe-button,body:has(#ss-photo-dashboard) #ss-mobile-navigation>#ss-watch-button{display:flex!important}
- body:has(#ss-photo-dashboard) #ss-mobile-navigation>.ss-photo-mobile-add{flex:0 0 54px!important;width:54px!important;height:54px!important;border-radius:50%!important;background:#0757ef!important;color:#fff!important;font-size:34px!important;line-height:1!important;position:relative;top:-11px;box-shadow:0 4px 12px #0757ef30!important}
+ /* Keep the theme's Tableau de bord / JASPE / Watch / Menu dock unchanged. */
  .ss-photo-footer{font-size:9px;margin-top:16px;flex-direction:column;gap:5px}
 }
 @media(max-width:370px){body:has(#ss-photo-dashboard) #body{padding-left:10px!important;padding-right:10px!important}.ss-photo-mobile-brand strong{font-size:20px}.ss-photo-toolbar{left:10px}.ss-photo-metric{padding:10px 6px}.ss-photo-metric-copy strong{font-size:19px}.ss-photo-module h3{font-size:10px}.ss-photo-jaspe{grid-template-columns:75px minmax(0,1fr)}.ss-photo-charts{grid-template-columns:1fr}.ss-photo-charts>.ss-photo-chart:last-child{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){.ss-photo-dashboard *{animation:none!important;transition:none!important}}
-@media(max-width:900px){
- body[data-ss-mobile-panel="primary"] .ss-photo-toolbar,
- body[data-ss-mobile-panel="context"] .ss-photo-toolbar {
-  visibility:hidden;
-  pointer-events:none;
- }
-}
 
 /* Scoped to the school dashboard; central management and business pages unchanged. */
 body.ss-school-shell:has(#ss-photo-dashboard) #footer{position:fixed!important;inset:0 0 auto!important;height:68px!important;z-index:500!important;background:var(--photo-bg)!important}
@@ -267,7 +233,9 @@ body.ss-fixed-school:has(#ss-photo-dashboard) #wrap{padding:0!important;height:1
 /* min-height:0 : la regle de base body.modules #body{min-height:100vh} forcait la
    coque fixe a 68+900 px, donc 68 px de tableau de bord sortaient de l'ecran sans
    defilement possible (html overflow hidden). */
-body.ss-fixed-school:has(#ss-photo-dashboard) #body{position:fixed!important;inset:68px 0 0!important;padding:14px 20px 8px!important;overflow:hidden!important;height:auto!important;min-height:0!important}
+body.ss-fixed-school:has(#ss-photo-dashboard) #body{position:fixed!important;inset:64px 0 0 var(--ss-primary-width,220px)!important;margin:0!important;width:auto!important;padding:14px 20px 8px!important;overflow:hidden!important;height:auto!important;min-height:0!important}
+@media(min-width:701px){body.ss-fixed-school:has(#menu .menu-module.ss-open) #body{left:calc(var(--ss-primary-width,220px) + var(--ss-context-width,248px))!important}}
+@media(max-width:700px){body.ss-fixed-school:has(#ss-photo-dashboard) #body{inset:64px 0 calc(84px + env(safe-area-inset-bottom)) 0!important}}
 body.ss-fixed-school:has(#ss-photo-dashboard) #ss-photo-dashboard{height:100%!important;max-width:1440px!important;display:grid!important;grid-template-rows:auto auto minmax(0,1fr) auto;gap:8px;min-height:0}
 .ss-fixed-park,[hidden].ss-fixed-view{display:none!important}
 .ss-fixed-pager{display:flex;align-items:center;gap:12px;border-block:1px solid var(--photo-line);padding:8px 0}
