@@ -1,4 +1,8 @@
-## Priorité courante — dashboard qualifié, livraison explicitement autorisée
+## Priorité courante — dashboard LIVRÉ ; Scan en lot distinct
+
+Production qualifiée livrée après GO : recette4065f9406a3a525f6bd64478b5207dd732c2d498 / deployed/school-dashboard-composition-20261023, runtimeb10d8d3, image8770153a, digest9a84afb7. Bascule8,95s, backup privé valide649096octets/0600,73sessions/10cache/config/services préservés, prédécesseur arrêté conservé. Contrôle distinct PASS :3sources/15sources protégées/notation/thèmes,5services/22autres conteneurs identiques,aucune session non-expirée manquante. Aucune migration/restauration/login réel/envoi externe. Aucun changement runtime depuis la qualification exact-r2 ; docs de clôture seuls ensuite. Prochaine action : vérifier le chemin Scan réellement installé avant raccordement des commandes et de la politique financière explicitement demandée, en protégeant cette livraison et les familles.
+
+## Historique — dashboard qualifié, avant bascule
 
 Le 23/10, le propriétaire demande de finir/livrer le dashboard puis d'attaquer Scan séparément. Exact-r2 PASS : image8770153a, sourceb10d8d3, harnais84f5268, digest9a84afb7 ; trois fichiers/2761 inchangés,186PHP/37PG,126DOM,25groupes natifs dont deux écoles et compositions1280/390/768,10récupérations et course/rollback. R1 rouge au test historique du lien configuration désormais dans Actions ; seul harnais corrigé, même image réutilisée sur fixture fraîche. Snapshot, absence de comptes QA et nettoyage nonce PASS, production inchangée. Recette ops/releases/school-dashboard-composition-20261023 en préparation : backup frais, préservation sessions/cache/config/services/prédécesseurs puis contrôle distinct. Ne pas modifier Scan/permissions/familles dans cette livraison. Détail du lot et preuves : [rapport](../../qualification/SCHOOL_DASHBOARD_COMPOSITION_20261022.md).
 

@@ -1,4 +1,12 @@
-# Tableau de bord composé — qualifié exact-r2, livraison autorisée en préparation
+# Tableau de bord composé — LIVRÉ, contrôle distinct PASS
+
+## Clôture production du 23/10
+
+GO confirmé puis sauvegarde/préflight, bascule et contrôle distinct exécutés. Production https://app.shoolsafe.tech : recette/checkout propre `4065f9406a3a525f6bd64478b5207dd732c2d498`, branche `deployed/school-dashboard-composition-20261023`, image/source/digest exact-r2 ci-dessous. Bascule 8,95 secondes. Sauvegarde privée 649096 octets/0600, archive listée, SHA256 `4f16ab8497063d6ee62c834fe36ad7deb91bc6bca6a96012b2008cffde8b0ba2`, trois sources antérieures sauvegardées. 73 sessions et dix entrées cache Chromium copiées avant démarrage ; configuration, paramètres Docker et autres services préservés. Ancien conteneur `schoolsafe-rosario-pre-school-dashboard-composition-20261023` arrêté/conservé, aucun prédécesseur supprimé.
+
+Contrôle distinct PASS : trois sources = Git, 15 sources protégées auth/récupération/menu/scan/familles identiques à la base livrée, notation/création scolaire/thèmes inchangés ; cinq services liés et métadonnées des 22 autres conteneurs inchangées. Backup privé/relisté/hash exact, checkout propre, HTTPS login/récupération200, routes centrales anonymes302/403. Les 73 sessions copiées sont toujours présentes sur88au contrôle, aucune session non-expirée manquante, durée GC1440secondes. Aucun login/reset réel, compte réel utilisé pour essai, migration/restauration, envoi externe ou rollback automatique. La validation fonctionnelle authentifiée reste celle de la copie isolée avec écoles fictives ; aucun compte client n'a été ouvert pour vérifier visuellement en production.
+
+Preuves privées `school-dashboard-composition-20261022/exact-r2`, recette/proofs/backup sur VPS `/opt/schoolsafe-releases/school-dashboard-composition-20261023/`. Documentation de clôture publiée séparément ; ne pas redéployer à cause de son SHA ultérieur. Lot terminé ; Scan est le prochain lot distinct.
 
 ## Qualification exacte et GO de livraison du 23/10
 
