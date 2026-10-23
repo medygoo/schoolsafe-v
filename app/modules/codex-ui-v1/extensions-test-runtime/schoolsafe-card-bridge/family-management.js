@@ -2,6 +2,7 @@
 (() => {
  const byId=id=>document.getElementById(id),parent=document.body.dataset.parent==='true';
  const allowedActions=JSON.parse(document.body.dataset.actions||'[]');
+ const native=document.body.dataset.engine==='native';
  const actions={
  'parent-activate':['Réactiver une personne que j’ai désactivée',['nativeStudentId','guardianId','reason']],
  'parent-list':['Consulter les personnes de mes enfants',['nativeStudentId']],
@@ -22,6 +23,13 @@
  'delegate':['Attribuer ou retirer une tâche de scan',['profileId','capability','decision','reason']],
  'print-request':['Créer une demande d’impression',['nativeStudentId','format']]
  };
+ // The existing native PHP consumes authorization IDs for reactivation and
+ // requires a reason for an external request. Do not offer fields it discards.
+ if(native) {
+  actions['parent-activate'][1]=['nativeStudentId','authorizationId','reason'];
+  actions['register-external'][1]=['nativeStudentId','fullName','phone','reason','consent'];
+  actions['register-family'][1]=['nativeStudentId','guardianType','fullName','phone','isPrimary'];
+ }
  const labels={nativeStudentId:'Identifiant élève Rosario',authorizationId:'Référence de l’accréditation',guardianId:'Référence de la personne',profileId:'Référence du profil lié',reason:'Motif',fullName:'Nom complet',phone:'Téléphone',email:'Email',address:'Adresse',consent:'Consentement du parent principal',photoPath:'Photo enregistrée',decision:'Décision',capability:'Tâche',format:'Format',guardianType:'Lien familial',isPrimary:'Désigner comme principal'};
  let csrf='',busy=false;
  const action=byId('management-action'),fields=byId('management-fields'),state=byId('management-state'),output=byId('management-result'),submit=byId('management-submit');
@@ -40,6 +48,8 @@
     :key==='decision'?(action.value==='delegate'?{assign:'Attribuer',revoke:'Retirer'}:{accepted:'Accepter',rejected:'Refuser'}):null;
    if(choices){input=document.createElement('select');for(const [value,text] of Object.entries(choices)){const option=document.createElement('option');option.value=value;option.textContent=text;input.append(option);}}
    else{input=document.createElement('input');input.type=key==='isPrimary'?'checkbox':key==='nativeStudentId'?'number':key==='email'?'email':'text';input.maxLength=500;if(key==='nativeStudentId')input.min='1';}
+   if(native&&key==='fullName')input.maxLength=200;
+   if(native&&key==='phone')input.maxLength=64;
    input.name=key;input.required=!['phone','email','address','isPrimary'].includes(key);label.append(input);fields.append(label);
   }
  }
@@ -59,6 +69,7 @@
    paragraph('Responsable familial enregistré. Récupération non autorisée.');
    if(data.is_primary===true)paragraph('Responsable principal.');
   }else paragraph(data.status==='pending'?'Demande enregistrée, en attente de validation.':data.status==='revoked'?'Autorisation retirée. Dossier et historique conservés.':data.status==='active'?'Autorisation de récupération active.':data.status==='suspended'?'Autorisation de récupération désactivée.':'Opération confirmée par le moteur.');
+  if(native&&action.value==='register-external')paragraph('La photo doit encore être associée et validée avant toute récupération.');
   if(data.id)paragraph('Référence : '+data.id);
   if(data.guardian_id)paragraph('Personne : '+data.guardian_id);
   if(data.authorization_id)paragraph('Accréditation : '+data.authorization_id);

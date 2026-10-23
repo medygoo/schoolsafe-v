@@ -1,4 +1,10 @@
-## Priorité courante — Présence & Scan QR en développement, dashboard livré protégé
+## Mission courante — terminer Scan puis palmarès, classes actives et notation ; dashboard livré protégé
+
+### Périmètre étendu explicitement validé par le propriétaire
+
+Le propriétaire ajoute au mandat de finition/livraison : **Top10 école et classes en matrice près des anniversaires, confidentialité des noms pour les parents ; cinq classes les plus actives avec activités et enseignants ; barème de notation préparé séparément à terminer/qualifier/livrer**. Ce n'est plus une exclusion du mandat global : ces lots restent séquentiels APRÈS Scan, pas mélangés dans une livraison non qualifiée. Bouton Actions et écran Scan de la photo font partie du Scan à finir. Les six points Scan déjà listés par le propriétaire restent tous au périmètre. Aucune nouvelle demande de GO général. Les brouillons palmarès actuels ne satisfont pas encore cette spécification : ne pas les publier tels quels.
+
+Après clôture Scan : reprendre les propriétaires natifs notes/moyennes/classe/activité, préserver les dossiers d'autres enfants, confirmer la période de comptage des classes actives à partir des filtres natifs (elle n'a pas été fixée par le propriétaire), qualifier séparément la notation avant bascule. Pas de formule de moyenne inventée, pas d'activation implicite de publication. Même règle lire → réutiliser → corriger → tester → image exacte → livraison contrôlée pour chacun.
 
 ### Ordre exécutable confirmé — inspecter, réutiliser, corriger, tester
 
