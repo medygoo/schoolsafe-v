@@ -1,4 +1,14 @@
-## 2026-10-22 — Stabilisation scolaire autorisée : menu photographié et treize vues conservés
+## 2026-10-23 — Dashboard en production d’abord, puis Scan distinct
+
+Le propriétaire autorise explicitement de terminer et mettre en production le tableau de bord composé, puis de poursuivre le lot Scan. Qualification exacte, sauvegarde récente, sessions/cache/configuration et conteneurs antérieurs préservés ; aucun élargissement à Scan pendant cette livraison.
+
+Précisions validées pour le lot Scan suivant : bouton accessible visuellement à tous les profils, exécution soumise à l’accès accordé par l’administrateur scolaire ; commandes distinctes par type de scan ; contrôle des frais activé depuis Finances avec montant limite choisi par l’administrateur ; rouge refuse l’entrée, jaune représente la tolérance, bleu autorise. Ne pas créer ces décisions depuis une animation, ni changer des droits par simple visibilité. Vérifier la politique financière déjà présente et ses seuils avant raccordement ; pas de nouvelle implémentation Scan dans le candidat dashboard.
+
+## Clarification propriétaire — tableau de bord composé et disposition mobile validés
+
+Le menu est accepté ; le dashboard précédent ne l’est pas. Le compteur fonctionne mais les informations des 13 vues doivent être réunies dans la composition des références ordinateur/téléphone, sans personnage féminin ajouté. Cette précision et le GO remplacent l'interdiction historique de supprimer le découpage paginé : conserver l'information, pas le diaporama. Téléphone : quatre KPI, grille d'accès 4 × 2 selon droits, alertes, informations détaillées en bas. Anniversaires en haut sur les deux formats. Effets discrets d'animation/ombre/couleur lumineuse, réduction des animations respectée. Deux commandes en haut du téléphone : Notifications reste dehors, Actions regroupe les contrôles existants. Ne pas modifier les sources du menu validé ni élargir les accès ; réutiliser les vrais éléments et href. [Candidat local et niveaux de preuve](qualification/SCHOOL_DASHBOARD_COMPOSITION_20261022.md), non déployé et non accepté visuellement par simple réussite de tests.
+
+## Historique — 2026-10-22, stabilisation scolaire et conservation du pager (remplacé pour sa présentation)
 
 Le propriétaire fournit ses captures et confirme : réemployer son menu personnalisé existant (clair, branches colorées, panneau adjacent, commandes rondes, dock mobile), conserver les treize vues et leurs contenus, mêmes menus à droits identiques téléphone/ordinateur, boutons reliés aux fonctions existantes. Ordre obligatoire : analyse → correction → tests → stabilisation → mise en production explicitement autorisée après preuves. Pas de nouveau design ni suppression du découpage, pas de simulation de fonction non raccordée ou d’élargissement des permissions. Les captures identifient le visuel, pas une autorisation de restaurer d’anciens liens centraux. [Lot en cours et niveaux de preuve](qualification/SCHOOL_DASHBOARD_STABILITY_20261022.md). ProDéli livré et notation séparée restent inchangés.
 

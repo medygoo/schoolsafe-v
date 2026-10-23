@@ -44,6 +44,23 @@ function SchoolSafePhotoAttendanceChart(array $days): string
     return $html;
 }
 
+/** Reposition the already-authorized birthday fragment without another query or copy. */
+function SchoolSafePhotoSplitSchoolLife(string $html): array
+{
+    if($html==='')return ['',''];
+    $previous=libxml_use_internal_errors(true);$doc=new DOMDocument();
+    $doc->loadHTML('<?xml encoding="UTF-8"><div id="photo-school-life">'.$html.'</div>',LIBXML_NONET|LIBXML_NOERROR|LIBXML_NOWARNING);
+    $xpath=new DOMXPath($doc);$birthdays='';
+    foreach($xpath->query('//*[contains(concat(" ",normalize-space(@class)," ")," ss-birthday-visual ")]') as $node){
+        $details=$node->getElementsByTagName('details')->item(0);
+        if($details)$details->setAttribute('open','');
+        $birthdays.=$doc->saveHTML($node);$node->parentNode->removeChild($node);
+    }
+    $remaining='';foreach($doc->getElementById('photo-school-life')->childNodes as $node)$remaining.=$doc->saveHTML($node);
+    libxml_clear_errors();libxml_use_internal_errors($previous);
+    return [$birthdays===''?'':'<section id="ss-photo-birthdays" aria-label="Anniversaires de l’école">'.$birthdays.'</section>',$remaining];
+}
+
 function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
 {
     global $RosarioModules;
@@ -118,7 +135,8 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     }
     $now=new DateTimeImmutable('now',new DateTimeZone('Africa/Kinshasa'));
     $schoolName=ParseMLField(SchoolInfo('TITLE'));
-    echo '<link rel="stylesheet" href="assets/css/schoolsafe-photo-dashboard.css?v=school-stability-20261022"><link rel="stylesheet" href="assets/css/schoolsafe-dashboard-matrices.css?v=1"><script defer src="assets/js/schoolsafe-matrix-primary.js?v=2"></script>';
+    [$birthdays,$schoolLife]=SchoolSafePhotoSplitSchoolLife(SchoolSafeDashboardNativeWidget(false));
+    echo '<link rel="stylesheet" href="assets/css/schoolsafe-photo-dashboard.css?v=school-composition-20261022"><link rel="stylesheet" href="assets/css/schoolsafe-dashboard-matrices.css?v=1"><script defer src="assets/js/schoolsafe-matrix-primary.js?v=2"></script>';
     echo '<main id="ss-photo-dashboard" class="ss-photo-dashboard ss-connected-dashboard" data-dashboard-profile="admin" data-dashboard-tab="overview">';
     echo '<div class="ss-photo-toolbar"><a class="ss-photo-mobile-brand" href="Modules.php?modname=misc/Portal.php"><img src="/schoolsafe-card-bridge/studio-validated-20261008/logo-schoolsafe.png" alt="" width="38" height="38"><strong>School<span>Safe</span></strong></a><div data-photo-search></div><div data-photo-school></div><div data-photo-year></div></div>';
     echo '<section id="ss-photo-home" class="ss-photo-hero"><p class="ss-photo-greeting">Bonjour, <strong>Administrateur</strong></p><div class="ss-photo-introduction"><h1>Pilotez votre établissement<br>avec <span>clarté et confiance.</span></h1><p>'.$e($schoolName).' · Une vue claire de votre établissement.</p><div class="ss-photo-hero-actions"><a class="ss-photo-primary" href="#ss-photo-rubriques">'.SchoolSafePhotoIcon('ChartNoAxesCombined').'Modules de l’école</a>';
@@ -147,9 +165,10 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
         echo '<a class="ss-photo-metric" data-photo-metric="'.$kind.'" href="'.$e($url).'"><span class="ss-photo-icon">'.SchoolSafePhotoIcon($icon).'</span><span class="ss-photo-metric-copy"><small>'.$e($label).'</small><strong>'.($value===null?'&mdash;':$e($value)).'</strong><span>'.$e($detail).'</span></span></a>';
     }
     echo '<article class="ss-photo-metric ss-photo-mobile-presence" data-photo-metric="presence"><span class="ss-photo-icon">'.SchoolSafePhotoIcon('ChartNoAxesCombined').'</span><span class="ss-photo-metric-copy"><small>Taux de présence</small><strong>'.($rate===null?'&mdash;':$e($rate).'%').'</strong><span>'.($rate===null?'Relevés non renseignés':'Relevés du jour').'</span></span></article></section>';
-    echo '<section class="ss-closing-finance" aria-label="Encaissements et depenses">';
-    foreach([['Encaissements du jour',$dailyReceipts,'Aujourd\'hui'],['Encaissements du mois',$receipts,'Mois en cours'],['Depenses',$annualExpenses,'Annee scolaire, a ce jour'],['Recettes',$annualReceipts,'Annee scolaire, a ce jour']] as [$label,$amount,$period])if($amount!==null)echo '<article><span>'.$e($label).'</span><strong>'.$e($money($amount)).'</strong><small>'.$e($period).'</small></article>';
-    echo '</section>';
+    echo $birthdays;
+    $financeSummary='<section class="ss-closing-finance" aria-label="Encaissements et depenses">';
+    foreach([['Encaissements du jour',$dailyReceipts,'Aujourd\'hui'],['Encaissements du mois',$receipts,'Mois en cours'],['Depenses',$annualExpenses,'Annee scolaire, a ce jour'],['Recettes',$annualReceipts,'Annee scolaire, a ce jour']] as [$label,$amount,$period])if($amount!==null)$financeSummary.='<article><span>'.$e($label).'</span><strong>'.$e($money($amount)).'</strong><small>'.$e($period).'</small></article>';
+    $financeSummary.='</section>';
     echo '<div class="ss-photo-grid"><div class="ss-photo-core"><section id="ss-photo-rubriques" class="ss-photo-modules"><header><h2><span class="ss-photo-desktop-title">Modules principaux</span><span class="ss-photo-mobile-title">Accès rapides</span></h2><a href="#ss-photo-rubriques">Voir tout</a></header><div class="ss-photo-module-grid">';
     $modules=[['pilotage','Pilotage','LayoutDashboard','#ss-photo-home','Retour à l’accueil de l’école'],['school','École','School','Students/Student.php',($data['total']??0).' élèves inscrits'],['people','Personnel','ContactRound','Users/User.php',($staff??0).' membres'],['pedagogy','Pédagogie','BookOpenCheck','Scheduling/Courses.php',($subjects??0).' matières'],['finance','Finances','WalletCards','Student_Billing/DailyTransactions.php','Année scolaire '.$year],['accounting','Comptabilité','Landmark','Accounting/DailyTransactions.php','Année scolaire '.$year],['communication','Communication','MessagesSquare','School_Setup/PortalNotes.php',count($feed['activities']).' annonces accessibles'],['reports','Contrôle et rapports','ChartNoAxesCombined','Grades/GPARankList.php','Période sélectionnée']];
     foreach($modules as [$branch,$label,$icon,$route,$detail]){
@@ -162,13 +181,13 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     if(!$alerts)echo '<p class="ss-photo-empty">Aucune alerte prioritaire enregistrée.</p>';
     foreach(array_slice($alerts,0,3) as $i=>$alert)echo '<a class="ss-photo-top-alert" href="Modules.php?modname='.$e($alert[0]).'"><b>'.($i+1).'</b><span><strong>'.$e($alert[2]).'</strong><small>'.$e($alert[3]).'</small></span></a>';
     echo '</section></div></div><aside class="ss-photo-rail">';
-    echo '<div class="ss-photo-school-life" aria-label="Palmarès, anniversaires et rattrapages">'.SchoolSafeDashboardNativeWidget(false).SchoolSafeRemediationVisual().'</div>';
+    echo '<div class="ss-photo-school-life" aria-label="Palmarès, anniversaires et rattrapages">'.$schoolLife.SchoolSafeRemediationVisual().'</div>';
     echo '<section id="ss-photo-alerts" class="ss-photo-alerts"><header><h2>Alertes importantes</h2><a href="#ss-photo-rubriques">Tout voir</a></header>';
     if(!$alerts)echo '<p class="ss-photo-empty">Aucune alerte prioritaire enregistrée.</p>';
     foreach(array_slice($alerts,0,3) as $alert)echo '<a class="ss-photo-alert" data-severity="'.$alert[4].'" href="Modules.php?modname='.$e($alert[0]).'"><span class="ss-photo-icon">'.SchoolSafePhotoIcon($alert[1]).'</span><span><strong>'.$e($alert[2]).'</strong><small>'.$e($alert[3]).'</small></span><b aria-hidden="true">&rsaquo;</b></a>';
     require_once __DIR__.'/SchoolSafeDashboardDetails.fnc.php';
-    echo '</section></aside></div>'.SchoolSafeDashboardDetails($data,$feed).'<footer class="ss-photo-footer"><span>SchoolSafe · Votre allié serein et fort, près de vous.</span><span>&copy; '.$now->format('Y').' SchoolSafe.</span></footer>';
+    echo '</section></aside></div>'.$financeSummary.SchoolSafeDashboardDetails($data,$feed).'<footer class="ss-photo-footer"><span>SchoolSafe · Votre allié serein et fort, près de vous.</span><span>&copy; '.$now->format('Y').' SchoolSafe.</span></footer>';
     echo '<div id="ss-photo-create" hidden><h3>Actions rapides</h3>';
     foreach(['Students/Student.php&student_id=new'=>'Ajouter un élève','Users/User.php&staff_id=new'=>'Ajouter un utilisateur','Student_Billing/StudentPayments.php'=>'Enregistrer un paiement'] as $route=>$label){$permission=explode('&',$route)[0];if(AllowEdit($permission))echo '<a href="Modules.php?modname='.$e($route).'">'.$e($label).'</a>';}
-    echo '</div></main><script src="assets/js/schoolsafe-photo-dashboard.js?v=school-stability-20261022"></script>';
+    echo '</div></main><script src="assets/js/schoolsafe-photo-dashboard.js?v=school-composition-20261022"></script>';
 }

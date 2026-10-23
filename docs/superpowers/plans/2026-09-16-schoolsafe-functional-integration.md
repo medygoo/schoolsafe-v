@@ -1,4 +1,10 @@
-## Application scolaire — LIVRÉ, contrôle distinct PASS
+## Priorité courante — composition du dashboard après validation du menu
+
+GO de réalisation reçu. Le propriétaire a rejeté le diaporama malgré le compteur fonctionnel et fourni les dispositions ordinateur et téléphone. Conserver toutes les informations, pas les 13 écrans paginés. Ajustements validés : quatre KPI et modules 4 × 2 sur téléphone, anniversaires en partie haute, informations détaillées en bas, effets lumineux/ombres/animations réduisibles sur les deux formats, deux commandes en haut du téléphone (Notifications et Actions regroupées). Sources menu/thème inchangées, éléments natifs déplacés/rétablis sans clones ni nouveaux droits.
+
+Candidat local à trois sources produit, agent pi seul écrivain, branche fix/school-dashboard-stability-20261022, base716545c. 20 contrats du vrai renderer avec substituts et 126 contrôles navigateur à huit largeurs PASS avant les derniers ajustements visuels ; captures privées du renderer en clair/nuit et panneau Actions. Suite HTTP adaptée mais NON rejouée, aucun nouveau déploiement ni compte réel. Prochaine action : finir les gates locaux, présenter la composition, puis qualification authentifiée et livraison seulement dans le périmètre autorisé. Voir [suivi du nouveau lot](../../qualification/SCHOOL_DASHBOARD_COMPOSITION_20261022.md). Les exigences historiques ci-dessous de conserver le pager sont remplacées ; la livraison technique/menu reste acquise, pas l'acceptation du dashboard.
+
+## Historique — Application scolaire LIVRÉE, contrôle distinct PASS
 
 Runtimea69e745, recette/VPSf1dcb3b sur deployed/school-dashboard-stability-20261022, imageb271dcc5, digest257f7b79. Qualification finale ci-dessous confirmée, cinq sources exactes/2759 inchangées. Bascule9,21s,74sessions vérifiées conservées/cache10/configurations Docker inchangées, prédécesseur arrêté préservé. Backup649030octets0600 listé/hash336fb8a2, cinq sources sauvegardées, aucune migration/restauration. Vérification distincte PASS : sources/Git/auth8/notation, services5+historique20, aucune session non expirée manquante, routes HTTPS200/302/403 attendues. Aucun compte réel ou envoi testé. Rapport SCHOOL_DASHBOARD_STABILITY_20261022.md à jour ; lot clôturé, pas de nouveau déploiement implicite.
 

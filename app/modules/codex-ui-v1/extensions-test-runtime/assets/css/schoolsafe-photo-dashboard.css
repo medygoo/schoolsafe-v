@@ -331,3 +331,115 @@ body:has(#ss-photo-dashboard) .sskc-manager-navigation{display:none!important}
 
 /* The existing settings controller opens its form inside the native menu. */
 body.ss-school-shell.ss-settings-open:has(#ss-photo-dashboard) #menu{display:block!important}
+
+/* Composed dashboard: document scrolling, with the validated native chrome intact.
+   Former ss-fixed-school rules are inactive: the dashboard no longer mounts that shell. */
+body.ss-school-shell:has(#ss-photo-dashboard) #body{position:relative!important;inset:auto!important;margin:0 0 0 var(--ss-primary-width,220px)!important;width:auto!important;height:auto!important;min-height:calc(100dvh - 68px)!important;overflow:visible!important;padding:84px 20px 24px!important}
+@media(min-width:701px){
+ body.ss-school-shell:has(#ss-photo-dashboard):has(#menu .menu-module.ss-open) #body{margin-left:calc(var(--ss-primary-width,220px) + var(--ss-context-width,248px))!important}
+}
+#ss-photo-dashboard{display:block;min-width:0;height:auto}
+#ss-photo-dashboard :is(section,aside,[id]){scroll-margin-top:90px}
+#ss-photo-dashboard .ss-photo-toolbar{right:auto}
+#ss-photo-dashboard .ss-photo-introduction h1{color:var(--photo-ink)!important}
+#ss-photo-dashboard .ss-photo-hero-actions .ss-photo-primary{color:#3d330d!important}
+#ss-photo-dashboard .ss-photo-metric-copy small{font-size:12px}
+#ss-photo-dashboard .ss-photo-metric-copy>span{font-size:11px}
+#ss-photo-dashboard :is(.ss-photo-modules h2,.ss-photo-chart h2,.ss-photo-alerts h2){font-size:14px}
+#ss-photo-dashboard .ss-photo-module h3{font-size:13px}
+#ss-photo-dashboard .ss-photo-module p{font-size:11px}
+#ss-photo-dashboard .ss-photo-metric:not(.ss-photo-mobile-presence){display:flex}
+#ss-photo-dashboard .ss-photo-module p,#ss-photo-dashboard .ss-photo-module-link{display:block}
+#ss-photo-dashboard .ss-dashboard-details{margin-top:24px;min-width:0}
+#ss-photo-dashboard .ss-closing-finance{margin-top:20px}
+#ss-photo-dashboard .ss-photo-school-life{order:3}
+#ss-photo-dashboard .ss-photo-secondary-metrics:empty{display:none}
+#ss-photo-dashboard .ss-photo-secondary-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:20px 0}
+#ss-photo-birthdays{margin:0 0 18px}
+#ss-photo-birthdays .ss-birthday-visual{margin:0;padding:12px;border:1px solid var(--photo-line);border-radius:10px;background:var(--photo-panel)}
+#ss-photo-birthdays summary{cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:36px;color:var(--photo-ink);font-weight:650}
+#ss-photo-birthdays summary small{font-weight:400;color:var(--photo-muted)}
+#ss-photo-birthdays ul{display:flex;gap:12px;list-style:none;margin:10px 0 0;padding:0 0 6px;overflow-x:auto;scroll-snap-type:x proximity}
+#ss-photo-birthdays li{flex:0 0 190px;scroll-snap-align:start;display:flex;align-items:center;gap:10px;padding:10px;background:var(--photo-soft);border-radius:8px;color:var(--photo-ink)}
+#ss-photo-birthdays li div,#ss-photo-birthdays time{display:grid;gap:3px;font-size:12px}
+#ss-photo-birthdays li small{color:var(--photo-muted);font-size:11px}
+#ss-photo-birthdays time{flex-shrink:0;border-left:3px solid var(--photo-gold);padding-left:8px}
+/* Finite entrance and restrained colored light: never flashing or concealing data. */
+@keyframes ss-photo-arrive{from{opacity:.65;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+#ss-photo-dashboard :is(.ss-photo-metric,.ss-photo-module,.ss-photo-chart,.ss-photo-alerts,#ss-photo-birthdays){--photo-glow:36,112,208;box-shadow:0 5px 16px rgba(var(--photo-glow),.08),inset 0 1px 0 rgba(var(--photo-glow),.12);animation:ss-photo-arrive 420ms ease-out both;transition:transform 180ms ease-out,box-shadow 180ms ease-out,background-color 180ms ease-out}
+#ss-photo-dashboard :is([data-photo-metric="staff"],[data-photo-branch="school"]){--photo-glow:25,146,103}
+#ss-photo-dashboard :is([data-photo-metric="classes"],[data-photo-branch="pedagogy"]){--photo-glow:190,135,20}
+#ss-photo-dashboard :is([data-photo-metric="alerts"],.ss-photo-alerts){--photo-glow:211,88,67}
+#ss-photo-dashboard .ss-photo-icon{box-shadow:0 0 14px rgba(var(--photo-glow,36,112,208),.18)}
+@media(hover:hover){#ss-photo-dashboard :is(.ss-photo-module,.ss-photo-metric):hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(var(--photo-glow),.2)}}
+#ss-photo-dashboard :is(.ss-photo-module,.ss-photo-metric):active{transform:translateY(1px)}
+@media(prefers-reduced-motion:reduce){
+ #ss-photo-dashboard *,#ss-photo-actions-panel *{animation:none!important;transition:none!important;transform:none!important;scroll-behavior:auto!important}
+}
+@media(min-width:901px) and (max-width:1200px){
+ #ss-photo-dashboard .ss-photo-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:900px){
+ #ss-photo-dashboard .ss-photo-introduction h1{display:block;font-size:24px;max-width:600px;padding-right:40px}
+ #ss-photo-dashboard .ss-photo-introduction>p{margin-top:8px}
+ #ss-photo-dashboard .ss-photo-hero-actions{display:flex}
+ #ss-photo-dashboard .ss-photo-hero{padding-bottom:22px}
+ #ss-photo-dashboard .ss-photo-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #ss-photo-dashboard .ss-photo-module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #ss-photo-dashboard .ss-photo-module{align-items:flex-start;text-align:left;padding:14px;min-height:120px}
+ #ss-photo-dashboard .ss-photo-school-life{width:100%}
+}
+@media(max-width:700px){
+ body.ss-school-shell:has(#ss-photo-dashboard) #body{margin:0!important;padding:82px 12px calc(90px + env(safe-area-inset-bottom))!important}
+ body.ss-school-shell:has(#ss-photo-dashboard):has(.ss-central-dashboard-return) #body{padding-top:132px!important}
+ #ss-photo-dashboard .ss-photo-introduction h1{display:none}
+ #ss-photo-dashboard .ss-photo-hero{min-height:76px;padding-top:6px}
+ #ss-photo-dashboard .ss-photo-introduction>p{padding-right:0}
+ #ss-photo-dashboard .ss-photo-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+ #ss-photo-dashboard .ss-photo-module-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+ #ss-photo-dashboard .ss-photo-module{align-items:center;text-align:center;padding:10px 4px;min-height:96px}
+ #ss-photo-dashboard .ss-photo-module h3{font-size:11px}
+ #ss-photo-dashboard [data-open-native-branch="communication"] h3{font-size:10px}
+ #ss-photo-dashboard .ss-photo-module p,#ss-photo-dashboard .ss-photo-module-link{display:none}
+ #ss-photo-dashboard .ss-photo-metric{padding:10px 6px;gap:6px}
+ #ss-photo-dashboard .ss-photo-metrics .ss-photo-metric-copy strong{font-size:20px}
+ #ss-photo-dashboard .ss-photo-metrics .ss-photo-metric-copy small{font-size:11px;overflow-wrap:anywhere}
+ #ss-photo-dashboard .ss-photo-metrics .ss-photo-metric-copy>span{font-size:9px}
+ #ss-photo-dashboard .ss-photo-secondary-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #ss-photo-dashboard .ss-photo-charts{grid-template-columns:1fr}
+ #ss-photo-dashboard .ss-photo-charts>.ss-photo-chart:last-child{grid-column:auto}
+ #ss-photo-dashboard .ss-photo-metric{min-height:112px}
+ #ss-photo-dashboard .ss-photo-metric-copy small{min-height:0}
+ #ss-photo-dashboard .ss-photo-toolbar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ #ss-photo-dashboard .ss-photo-toolbar .ss-photo-mobile-brand{display:none}
+}
+/* Only Notifications and Actions remain outside the phone command panel. */
+@media(max-width:700px){
+ body:has(#ss-photo-dashboard) #footer .ss-photo-mobile-brand{display:flex;align-items:center;gap:6px;order:-1;margin-right:auto;color:#10253f;font-size:17px;min-width:0}
+ body:has(#ss-photo-dashboard) #footer .ss-photo-mobile-brand img{width:30px;height:34px;object-fit:contain}
+ body:has(#ss-photo-dashboard) #footer .ss-photo-mobile-brand strong{font-size:17px;color:#10253f!important}
+ body:has(#ss-photo-dashboard) #footer .ss-photo-mobile-brand strong span{color:#a86c00!important}
+ body:has(#ss-photo-dashboard) #footer .ss-header-tools{gap:8px;margin:0;position:static}
+ #ss-photo-actions-button{min-height:44px;padding:8px 12px;border:1px solid var(--photo-line);border-radius:9px;background:var(--photo-panel);color:var(--photo-ink);font-family:inherit;font-size:13px;font-weight:600;line-height:1.4;cursor:pointer}
+ #ss-photo-actions-button:focus-visible{outline:3px solid var(--photo-blue);outline-offset:2px}
+ #ss-photo-actions-panel{position:absolute;top:calc(100% + 8px);right:10px;width:min(360px,calc(100vw - 20px));max-height:calc(100dvh - 160px);overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px;border:1px solid var(--photo-line);border-radius:12px;background:var(--photo-panel);color:var(--photo-ink);box-shadow:0 10px 28px #10253f33;text-align:left}
+ #ss-photo-actions-panel,#ss-photo-actions-panel *{box-sizing:border-box}
+ #ss-photo-actions-panel[hidden]{display:none!important}
+ #footer #ss-photo-actions-panel .ss-header-action{white-space:normal}
+ html[data-ss-background="night"] #ss-photo-actions-panel :is(.ss-header-action>img,.ss-photo-theme>img,.ss-photo-hero-actions a:not(.ss-photo-primary)>img){filter:brightness(0) invert(1)}
+ #footer #ss-photo-actions-panel :is(.ss-header-action,.BottomButton,.ss-desktop-companion,.ss-photo-theme){position:relative!important;inset:auto!important;display:flex!important;justify-content:flex-start;gap:8px;min-width:0!important;width:100%!important;height:auto;min-height:44px;padding:10px!important;border-radius:8px!important;background:var(--photo-soft);color:var(--photo-ink);font-size:12px;box-shadow:none}
+ #footer #ss-photo-actions-panel .ss-header-tooltip,#footer #ss-photo-actions-panel .BottomButton span{position:static!important;display:inline!important;visibility:visible;opacity:1;transform:none!important;clip:auto!important;white-space:normal;width:auto!important;height:auto!important;max-width:none!important;padding:0!important;background:transparent;color:inherit;overflow:visible!important}
+ #footer #ss-photo-actions-panel :is([hidden],.hide){display:none!important}
+ #ss-photo-actions-panel .ss-photo-hero-actions{display:flex;flex-direction:column;grid-column:1/-1;margin:0}
+ #ss-photo-actions-panel .ss-photo-hero-actions a{display:flex;align-items:center;gap:8px;min-height:44px;padding:10px;border:1px solid var(--photo-line);border-radius:8px;color:var(--photo-ink)}
+ #ss-photo-actions-panel .ss-photo-hero-actions img{width:20px;height:20px}
+ #ss-photo-actions-panel .ss-photo-primary{color:#3d330d!important}
+ #footer #ss-photo-actions-panel .ss-header-languages:not([hidden]){position:static;grid-column:1/-1;display:flex;gap:12px;width:auto;transform:none;box-shadow:none}
+ #ss-photo-actions-panel .ss-report-actions{grid-column:1/-1}
+ #ss-photo-birthdays li{flex-basis:170px}
+}
+@media print{
+ body.ss-school-shell:has(#ss-photo-dashboard) #body{margin:0!important;padding:0!important}
+ #ss-photo-dashboard{max-width:none}
+ #ss-photo-dashboard .ss-photo-chart{break-inside:avoid}
+}
