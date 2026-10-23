@@ -38,9 +38,12 @@ module.exports=async function qualifySchoolDashboard(p,base,evidence,key){
   const u=new URL(href);if(u.origin!==new URL(base).origin||u.pathname!=='/Modules.php'||!allowed.has(u.searchParams.get('modname')))continue;
   if([...u.searchParams.keys()].some(k=>['modfunc','action','delete_ok','token','student_id','staff_id'].includes(k)))continue;
   const response=await p.context().request.get(u.href);
+  const text=await response.text(),error=/DB Execute Failed|Fatal error:|Uncaught (?:Error|Exception)/.exec(text);
+  reports.push({program:u.searchParams.get('modname'),status:response.status(),error:error?.[0]||null});
+  fs.writeFileSync(path.join(evidence,`school-destinations-${key}.json`),JSON.stringify(reports,null,2));
+  if(error)fs.writeFileSync(path.join(evidence,`school-destination-error-${key}.private.html`),text);
   assert.equal(response.status(),200,'Authorized dashboard destination '+u.searchParams.get('modname'));
-  assert(!/DB Execute Failed|Fatal error:|Uncaught (?:Error|Exception)/.test(await response.text()),'Readable destination, not a PHP/SQL error');
-  reports.push({program:u.searchParams.get('modname'),status:response.status()});
+  assert(!error,'Readable destination '+u.searchParams.get('modname')+', not a PHP/SQL error');
  }
  assert(reports.length>=8,'Exercise actual dashboard module/report links, not only the pager');
  await p.goto(portal,{waitUntil:'domcontentloaded'});await p.waitForSelector('.ss-fixed-pager');
