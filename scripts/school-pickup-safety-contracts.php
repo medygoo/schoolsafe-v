@@ -69,22 +69,37 @@ $parent = ['school'=>1,'year'=>2026,'user'=>42,'profile'=>'parent','parent'=>tru
 $auth = ['ID'=>31,'GUARDIAN_ID'=>23,'STATUS'=>'suspended','REQUESTED_BY'=>42,
     'PHOTO_VERIFIED'=>'t','STARTS_ON'=>null,'ENDS_ON'=>null];
 $external['IS_ACTIVE']='t';
-$parentDb = ['get'=>function($sql) use (&$auth,$external) {
+$changeOwnerOnLock = false;
+$parentDb = ['get'=>function($sql) use (&$auth,$external,&$changeOwnerOnLock) {
+    if (strpos($sql,'FROM students WHERE') !== false) return [1=>['STUDENT_ID'=>11]];
+    if (strpos($sql,'FROM student_enrollment') !== false) return [1=>['OK'=>1]];
     if (strpos($sql,'FROM schoolsafe_pickup_guardians') !== false) return [1=>$external];
     if (strpos($sql,'COUNT(*)') !== false) return [1=>['N'=>0]];
     if (strpos($sql,'MIN(SLOT_NO)') !== false) return [1=>['TAKEN1'=>0]];
     if (strpos($sql,'SELECT SLOT_NO') !== false) return [];
-    if (strpos($sql,'FROM schoolsafe_pickup_authorizations') !== false) return [1=>$auth];
+    if (strpos($sql,'FROM schoolsafe_pickup_authorizations') !== false) return [1=>
+        $changeOwnerOnLock && strpos($sql,'FOR UPDATE') !== false ? array_replace($auth,['REQUESTED_BY'=>99]) : $auth];
     throw new RuntimeException('UNEXPECTED_SQL');
 }, 'exec'=>function($sql) use (&$writes) { $writes[]=$sql; }];
 try {
     $reactivation = SchoolSafePickupParentActivate(11,31,'Fixture reactivation',$parent,$parentDb,$day);
     expectPickup('owned suspended authorization reactivates after same checks', $reactivation['status'], 'active');
 } catch (RuntimeException $error) { expectPickup('owned suspended authorization reactivates after same checks', $error->getMessage(), 'active'); }
+expectPickup('reactivation never rewrites ownership after transaction', count(array_filter($writes, function($sql) {
+    return strpos($sql,'SET REQUESTED_BY=') !== false;
+})), 0);
 $writes=[]; $auth['REQUESTED_BY']=99;
 expectPickup('another parent cannot reactivate', pickupFailure(function() use ($parent,$parentDb,$day) {
     SchoolSafePickupParentActivate(11,31,'Fixture',$parent,$parentDb,$day);
 }), 'FORBIDDEN');
 expectPickup('other-parent refusal made no write', $writes, []);
+$writes=[]; $auth['REQUESTED_BY']=42; $changeOwnerOnLock=true;
+expectPickup('ownership changed during reactivation is rechecked under lock', pickupFailure(function() use ($parent,$parentDb,$day) {
+    SchoolSafePickupParentActivate(11,31,'Fixture',$parent,$parentDb,$day);
+}), 'FORBIDDEN');
+expectPickup('changed ownership never mutates authorization', array_values(array_filter($writes, function($sql) {
+    return !in_array($sql,['BEGIN','COMMIT','ROLLBACK'],true);
+})), []);
+expectPickup('changed ownership rolls transaction back', end($writes), 'ROLLBACK');
 echo json_encode(['pass'=>$pass,'fail'=>$fail]) . "\n";
 exit($fail ? 1 : 0);

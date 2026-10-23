@@ -29,11 +29,30 @@ function SchoolSafePickupManageContext(array $ctx): array
     return $ctx;
 }
 
-function SchoolSafePickupStudentEnrolled($studentId, array $ctx, array $db): void
+function SchoolSafePickupStudentEnrolled($studentId, array $ctx, array $db, $lock = false): void
 {
     $rows = $db['get']('SELECT 1 FROM student_enrollment WHERE STUDENT_ID=' . (int) $studentId
-        . ' AND SCHOOL_ID=' . $ctx['school'] . ' AND SYEAR=' . $ctx['year']);
+        . ' AND SCHOOL_ID=' . $ctx['school'] . ' AND SYEAR=' . $ctx['year'] . ($lock ? ' FOR SHARE' : ''));
     if (!is_array($rows) || !isset($rows[1])) throw new RuntimeException('NOT_FOUND');
+}
+
+// Serialize slot/limit decisions for one child, including across school years.
+// The caller checks its operation-specific role before opening this transaction.
+function SchoolSafePickupStudentTransaction($studentId, array $ctx, array $db, callable $operation)
+{
+    $exec = $db['exec'];
+    $exec('BEGIN');
+    try {
+        $student = $db['get']('SELECT STUDENT_ID FROM students WHERE STUDENT_ID=' . (int) $studentId . ' FOR NO KEY UPDATE');
+        if (!is_array($student) || !isset($student[1])) throw new RuntimeException('NOT_FOUND');
+        SchoolSafePickupStudentEnrolled($studentId, $ctx, $db, true);
+        $result = $operation();
+        $exec('COMMIT');
+        return $result;
+    } catch (Throwable $error) {
+        try { $exec('ROLLBACK'); } catch (Throwable $ignored) { }
+        throw $error;
+    }
 }
 
 function SchoolSafePickupIsStaff(array $ctx): bool
@@ -82,12 +101,12 @@ function SchoolSafePickupDatabaseFlags(array $row): array
     return $row;
 }
 
-function SchoolSafePickupGuardian($guardianId, $studentId, array $ctx, array $db): array
+function SchoolSafePickupGuardian($guardianId, $studentId, array $ctx, array $db, $lock = false): array
 {
     $rows = $db['get']('SELECT ID, SCHOOL_ID, STUDENT_ID, GUARDIAN_TYPE, FULL_NAME, PHONE, STAFF_ID,'
         . ' IS_PRIMARY, IS_ACTIVE, IS_AUTHORIZED_PICKUP, PHOTO_PATH, PHOTO_ACCEPTED'
         . ' FROM schoolsafe_pickup_guardians WHERE ID=' . (int) $guardianId
-        . ' AND STUDENT_ID=' . (int) $studentId . ' AND SCHOOL_ID=' . $ctx['school'] . ' LIMIT 1');
+        . ' AND STUDENT_ID=' . (int) $studentId . ' AND SCHOOL_ID=' . $ctx['school'] . ' LIMIT 1' . ($lock ? ' FOR UPDATE' : ''));
     if (!is_array($rows) || !isset($rows[1])) throw new RuntimeException('NOT_FOUND');
     return SchoolSafePickupDatabaseFlags($rows[1]);
 }
@@ -151,6 +170,15 @@ function SchoolSafePickupRegisterFamily($studentId, array $fields, array $ctx, a
 {
     $ctx = SchoolSafePickupManageContext($ctx);
     SchoolSafePickupRequireStaff($ctx);
+    return SchoolSafePickupStudentTransaction($studentId, $ctx, $db, function() use ($studentId, $fields, $ctx, $db) {
+        return SchoolSafePickupRegisterFamilyLocked($studentId, $fields, $ctx, $db);
+    });
+}
+
+function SchoolSafePickupRegisterFamilyLocked($studentId, array $fields, array $ctx, array $db)
+{
+    $ctx = SchoolSafePickupManageContext($ctx);
+    SchoolSafePickupRequireStaff($ctx);
     $studentId = (int) $studentId;
     if ($studentId < 1) throw new RuntimeException('NOT_FOUND');
     SchoolSafePickupStudentEnrolled($studentId, $ctx, $db);
@@ -160,6 +188,9 @@ function SchoolSafePickupRegisterFamily($studentId, array $fields, array $ctx, a
     if ($name === '' || strlen($name) > 200) throw new RuntimeException('INVALID_PERSON');
     $phone = substr(trim((string) ($fields['phone'] ?? '')), 0, 64);
     $wantPrimary = !empty($fields['isPrimary']);
+    $count = $db['get']('SELECT COUNT(*) AS N FROM schoolsafe_pickup_guardians WHERE STUDENT_ID=' . $studentId
+        . ' AND SCHOOL_ID=' . $ctx['school'] . " AND IS_ACTIVE AND GUARDIAN_TYPE IN ('pere','mere','tuteur')");
+    if (!is_array($count) || !isset($count[1]['N']) || (int) $count[1]['N'] >= 3) throw new RuntimeException('LIMIT_REACHED');
     $existing = $db['get']('SELECT ID FROM schoolsafe_pickup_guardians WHERE STUDENT_ID=' . $studentId
         . ' AND SCHOOL_ID=' . $ctx['school'] . ' AND IS_PRIMARY AND IS_ACTIVE LIMIT 1');
     $hasPrimary = is_array($existing) && isset($existing[1]);
@@ -260,18 +291,35 @@ function SchoolSafePickupPhotoReview($studentId, $guardianId, $decision, $reason
 function SchoolSafePickupValidateAuthorization($studentId, $authorizationId, array $ctx, array $db, $day = null, $asParent = false)
 {
     $ctx = SchoolSafePickupManageContext($ctx);
+    if (!$asParent) SchoolSafePickupRequireStaff($ctx);
+    elseif (SchoolSafePickupIsStaff($ctx) || ($ctx['parent'] ?? false) !== true) throw new RuntimeException('FORBIDDEN');
+    return SchoolSafePickupStudentTransaction($studentId, $ctx, $db, function() use ($studentId, $authorizationId, $ctx, $db, $day, $asParent) {
+        return SchoolSafePickupValidateAuthorizationLocked($studentId, $authorizationId, $ctx, $db, $day, $asParent);
+    });
+}
+
+function SchoolSafePickupValidateAuthorizationLocked($studentId, $authorizationId, array $ctx, array $db, $day, $asParent)
+{
+    $ctx = SchoolSafePickupManageContext($ctx);
     // $asParent : réactivation par le principal lui-même (propriété déjà
     // vérifiée par l'appelant) — mêmes contrôles métier, sans rôle staff.
     if (!$asParent) SchoolSafePickupRequireStaff($ctx);
     elseif (SchoolSafePickupIsStaff($ctx) || ($ctx['parent'] ?? false) !== true) throw new RuntimeException('FORBIDDEN');
     $day = $day === null ? date('Y-m-d') : $day;
-    $rows = $db['get']('SELECT ID, GUARDIAN_ID, STUDENT_ID, SCHOOL_ID, STATUS, PHOTO_VERIFIED, STARTS_ON, ENDS_ON'
+    $query = 'SELECT ID, GUARDIAN_ID, STUDENT_ID, SCHOOL_ID, STATUS, PHOTO_VERIFIED, STARTS_ON, ENDS_ON, REQUESTED_BY'
         . ' FROM schoolsafe_pickup_authorizations WHERE ID=' . (int) $authorizationId
-        . ' AND STUDENT_ID=' . (int) $studentId . ' AND SCHOOL_ID=' . $ctx['school'] . ' LIMIT 1');
+        . ' AND STUDENT_ID=' . (int) $studentId . ' AND SCHOOL_ID=' . $ctx['school'] . ' LIMIT 1';
+    $rows = $db['get']($query);
     if (!is_array($rows) || !isset($rows[1])) throw new RuntimeException('NOT_FOUND');
+    // Same lock order as handover: guardian, then authorization. Re-read both
+    // under locks so revocation/photo replacement or ownership cannot race.
+    $guardianId = (int) $rows[1]['GUARDIAN_ID'];
+    $g = SchoolSafePickupGuardian($guardianId, $studentId, $ctx, $db, true);
+    $rows = $db['get']($query . ' FOR UPDATE');
+    if (!is_array($rows) || !isset($rows[1]) || (int) $rows[1]['GUARDIAN_ID'] !== $guardianId) throw new RuntimeException('INVALID_STATE');
     $a = SchoolSafePickupDatabaseFlags($rows[1]);
+    if ($asParent && (int) ($a['REQUESTED_BY'] ?? 0) !== $ctx['user']) throw new RuntimeException('FORBIDDEN');
     if (($a['STATUS'] ?? '') !== ($asParent ? 'suspended' : 'pending')) throw new RuntimeException('INVALID_STATE');
-    $g = SchoolSafePickupGuardian($a['GUARDIAN_ID'], $studentId, $ctx, $db);
     if (empty($g['IS_ACTIVE']) || ($g['GUARDIAN_TYPE'] ?? '') !== 'externe') throw new RuntimeException('INVALID_PERSON');
     if (empty($a['PHOTO_VERIFIED']) || empty($g['PHOTO_ACCEPTED']) || empty($g['PHOTO_PATH'])) throw new RuntimeException('PHOTO_NOT_VALIDATED');
     if (!empty($a['STARTS_ON']) && strcmp($a['STARTS_ON'], $day) > 0) throw new RuntimeException('INVALID_STATE');
@@ -350,8 +398,7 @@ function SchoolSafePickupParentActivate($studentId, $authorizationId, $reason, a
         throw new RuntimeException('FORBIDDEN');
     }
     $res = SchoolSafePickupValidateAuthorization($studentId, $authorizationId, $ctx, $db, $day, true);
-    // La réactivation parentale repasse par les mêmes contrôles qu'une validation.
-    $db['exec']('UPDATE schoolsafe_pickup_authorizations SET REQUESTED_BY=' . $ctx['user']
-        . ' WHERE ID=' . (int) $a['ID']);
+    // Ownership was rechecked under the validation lock. Never rewrite it
+    // after that transaction has committed.
     return $res + ['reactivated_by_parent' => true];
 }

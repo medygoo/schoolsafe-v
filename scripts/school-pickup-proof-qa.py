@@ -34,6 +34,22 @@ def main():
   sql("DELETE FROM schoolsafe_pickup_proofs; DELETE FROM entry_exit_student_records; DELETE FROM schoolsafe_pickup_authorizations; UPDATE qa_barrier SET hold=false,arrived=false; UPDATE schoolsafe_pickup_guardians SET is_active=true,photo_accepted=true,is_authorized_pickup=true;")
   sql("INSERT INTO schoolsafe_pickup_proofs(token,school_id,student_id,guardian_id,is_principal,location_id,prepared_by,expires_at) VALUES('"+token+"',1,11,21,true,7,9,'2099-01-01');")
  def worker(*extra):return json.loads(run(php_cmd('worker',token,*extra)))
+ def compete(action,left,right):
+  sql('UPDATE qa_barrier SET hold=true,arrived=false')
+  first=subprocess.Popen(php_cmd(action,left,barrier=True),env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  wait_sql('SELECT arrived FROM qa_barrier','t')
+  second=subprocess.Popen(php_cmd(action,right),env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  deadline=time.monotonic()+12
+  while second.poll() is None and sql("SELECT (count(*)>0) FROM pg_stat_activity WHERE datname='schoolcef_fixture' AND wait_event_type='Lock'")!='t':
+   if time.monotonic()>deadline:raise RuntimeError('No competing validation observed')
+   time.sleep(.04)
+  sql('UPDATE qa_barrier SET hold=false')
+  responses=[]
+  for process in [first,second]:
+   stdout,stderr=process.communicate(timeout=25)
+   if process.returncode:raise RuntimeError(stderr.decode(errors='replace').replace(password,'[fixture-secret]'))
+   responses.append(json.loads(stdout))
+  return responses
  def check(name,ok):
   assert ok,name
   results.append({'name':name,'status':'PASS'})
@@ -70,6 +86,24 @@ def main():
   seed();sql('UPDATE schoolsafe_pickup_guardians SET is_active=false');r=worker();check('inactive guardian denied at final recheck',r['result']=='DENIED' and r['reason']=='NOT_DELEGATED')
   seed();sql('UPDATE schoolsafe_pickup_guardians SET is_authorized_pickup=false');r=worker();check('withdrawn family pickup authority denied',r['result']=='DENIED' and r['reason']=='NOT_DELEGATED')
   check('all refusal scenarios left no exit',sql('SELECT count(*) FROM entry_exit_student_records')=='0')
+  seed()
+  sql("INSERT INTO schoolsafe_pickup_guardians(id,school_id,student_id,guardian_type,full_name,photo_accepted,photo_path) SELECT id,1,11,'externe','Synthetic external fixture',true,'/synthetic-only/portrait.jpg' FROM generate_series(31,34) id;")
+  sql("INSERT INTO schoolsafe_pickup_authorizations(id,guardian_id,student_id,school_id,status,slot_no,photo_verified,requested_by) SELECT id,id,11,1,CASE WHEN id<33 THEN 'active' ELSE 'pending' END,CASE WHEN id<33 THEN id-30 ELSE NULL END,true,9 FROM generate_series(31,34) id;")
+  activation=compete('activate','33','34')
+  activation_count=sql("SELECT count(*) FROM schoolsafe_pickup_authorizations WHERE status='active'")
+  slots=sql("SELECT count(DISTINCT slot_no) FROM schoolsafe_pickup_authorizations WHERE status='active'")
+  seed();sql("INSERT INTO schoolsafe_pickup_guardians(id,school_id,student_id,guardian_type,full_name) VALUES(22,1,11,'tuteur','Synthetic family fixture');")
+  registration=compete('family','','')
+  family_count=sql("SELECT count(*) FROM schoolsafe_pickup_guardians WHERE is_active AND guardian_type IN ('pere','mere','tuteur')")
+  (out/'limits-observed.json').write_text(json.dumps({'external_responses':activation,'external_active':activation_count,'external_distinct_slots':slots,'family_responses':registration,'family_active':family_count},indent=2))
+  check('concurrent validations preserve three external slots',activation_count=='3' and slots=='3' and sum(r.get('status')=='active' for r in activation)==1 and sum(r.get('error')=='LIMIT_REACHED' for r in activation)==1)
+  check('concurrent registrations preserve three active familial people',family_count=='3' and sum('guardian_id' in r for r in registration)==1 and sum(r.get('error')=='LIMIT_REACHED' for r in registration)==1)
+  seed();sql("INSERT INTO schoolsafe_pickup_authorizations(id,guardian_id,student_id,school_id,status,photo_verified,requested_by) VALUES(51,31,11,1,'pending',true,9)")
+  r=json.loads(run(php_cmd('activate','51','2025')));check('activation refuses absent enrollment year',r.get('error')=='NOT_FOUND')
+  r=json.loads(run(php_cmd('activate','51','2026','2')));check('activation refuses another school enrollment',r.get('error')=='NOT_FOUND')
+  sql('UPDATE schoolsafe_pickup_guardians SET photo_accepted=false WHERE id=31')
+  r=json.loads(run(php_cmd('activate','51')));check('activation refuses rejected photo in real PostgreSQL',r.get('error')=='PHOTO_NOT_VALIDATED')
+  check('failed activations reserve no slot',sql("SELECT count(*) FROM schoolsafe_pickup_authorizations WHERE status='active' OR slot_no IS NOT NULL")=='0')
  except Exception as error:fail=str(error)
  finally:
   for name in owned+[db]:
