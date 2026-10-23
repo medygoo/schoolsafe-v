@@ -43,14 +43,7 @@ try {
  }
  if($method==='GET'&&SchoolSafeEndpointGateway('scanner-relay.php',$method,$operation)==='deny') throw new RuntimeException('NATIVE_PERMISSION_REQUIRED');
  // Lots A1/ENTRY : d'abord en local (Rosario moteur principal). Sinon repli bridge inchangé.
- function SchoolSafeScanBridgeAvailable() {
-   try {
-     $config=json_decode(@file_get_contents('/var/lib/schoolsafe-card-bridge/relay-config.json'),true,16,JSON_THROW_ON_ERROR);
-   } catch(Throwable $ignored) { return false; }
-   return is_array($config)&&($config['environment']??'')==='local-isolated-test-only'
-     &&($config['sourceInstance']??'')==='codex-addons-local'
-     &&preg_match('/^[a-f0-9]{64}$/D',$config['secretHex']??'');
- }
+ require_once __DIR__.'/ProgramFunctions/SchoolSafeScanBackend.fnc.php';
  $enrichPortrait=function(array $data) {
    if(isset($data['nativeStudentId'])&&AllowUse('Student_ID_Card/StudentIDCard.php')){
      require_once __DIR__.'/schoolsafe-card-bridge/RosarioCardRead.fnc.php';
@@ -77,6 +70,24 @@ try {
  }
  // Lot ENTRY : sans bridge, capabilities/lieux/entree servis en local (contrats identiques).
  if(!SchoolSafeScanBridgeAvailable()) {
+   if($operation==='location-management') {
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeScanLocationManage.fnc.php';
+     $db=['get'=>function($sql){return DBGet(DBQuery($sql));},
+       'quote'=>function($value){return "'".DBEscapeString($value)."'";}];
+     try {
+       $data=SchoolSafeScanLocationManage((array)$input,
+         ['user'=>$user,'school'=>$school,'year'=>$year,'profile'=>User('PROFILE'),
+          'can_configure'=>(bool)AllowEdit('School_Setup/Configuration.php'),
+          'can_read'=>SchoolSafeNativeCommandPermission('SchoolSafe/ScanLocationsRead.php'),
+          'can_save'=>SchoolSafeNativeCommandPermission('SchoolSafe/ScanLocationsManage.php')],$db);
+     } catch(RuntimeException $error) {
+       $status=['FORBIDDEN'=>403,'INVALID_INPUT'=>400,'NOT_FOUND'=>404][$error->getMessage()]??503;
+       while(ob_get_level()>$level)ob_end_clean();
+       SchoolSafeScanReply($status,['error'=>'LOCATION_CONFIGURATION_UNAVAILABLE']);
+     }
+     while(ob_get_level()>$level)ob_end_clean();
+     SchoolSafeScanReply(200,['data'=>$data]);
+   }
    if($operation==='capabilities') {
      $caps=[];
      if(SchoolSafeNativeCommandPermission('SchoolSafe/ScanArrival.php'))$caps[]='SCAN_ENTRY';

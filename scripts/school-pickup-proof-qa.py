@@ -75,6 +75,23 @@ def main():
   check('both granted modes expose only current-school enabled locations',sorted(r['id'] for r in locations['locations'])==['11','12','7'])
   locations=json.loads(run(php_cmd('locations','')))
   check('no granted location mode exposes no locations',locations['locations']==[])
+  def manage(body,ctx=None):return json.loads(run(php_cmd('location-manage',json.dumps(body),json.dumps(ctx or {}))))
+  listed=manage({'action':'list'})['locations']
+  check('native administration lists current scope including disabled but not legacy points',sorted(r['id'] for r in listed)==['10','11','12','7'] and next(r for r in listed if r['id']=='10')['is_active'] is False)
+  body={'action':'save','label':"Synthetic l'école \\ '); SELECT 1; --",'direction':'both','is_active':False}
+  created=manage(body);cid=created['id']
+  check('create uses real native checkpoint with scoped inactive state',sql('SELECT schoolsafe_scan_school_id||\':\'||schoolsafe_scan_syear||\':\'||schoolsafe_scan_enabled::text FROM entry_exit_checkpoints WHERE id='+cid)=='1:2026:false')
+  check('database quoting preserves apostrophe backslash and SQL-shaped text',next(r for r in manage({'action':'list'})['locations'] if r['id']==cid)['label']==body['label'])
+  check('inactive newly configured point unavailable to scanner',cid not in [r['id'] for r in json.loads(run(php_cmd('locations','entry')))['locations']])
+  sql('UPDATE entry_exit_checkpoints SET authorized_from=\'08:00\',authorized_to=\'17:00\',sort_order=3 WHERE id='+cid)
+  changed=manage(dict(body,id=cid,label='Synthetic edited gate',direction='in',is_active=True))
+  check('admin update activates real arrival point',changed=={'id':cid} and cid in [r['id'] for r in json.loads(run(php_cmd('locations','entry')))['locations']] and cid not in [r['id'] for r in json.loads(run(php_cmd('locations','pickup')))['locations']])
+  check('native update preserves hours and sort order',sql('SELECT authorized_from||\':\'||authorized_to||\':\'||sort_order FROM entry_exit_checkpoints WHERE id='+cid)=='08:00:00:17:00:00:3')
+  for point,reason in [('8','foreign'),('9','old year'),('13','unassigned legacy')]:
+   check('admin cannot adopt '+reason+' point',manage(dict(body,id=point))=={'error':'NOT_FOUND'})
+  check('reader cannot save in real PostgreSQL',manage(body,{'can_save':False})=={'error':'FORBIDDEN'})
+  check('writer does not acquire implicit list',manage({'action':'list'},{'can_read':False})=={'error':'FORBIDDEN'})
+  check('configuration never records a child passage',sql('SELECT count(*) FROM entry_exit_student_records')=='1')
   seed();sql('UPDATE qa_barrier SET hold=true,arrived=false')
   first=subprocess.Popen(php_cmd('worker',token,barrier=True),env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   wait_sql('SELECT arrived FROM qa_barrier','t')

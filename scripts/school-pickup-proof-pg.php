@@ -29,10 +29,12 @@ if ($action==='setup') {
     $statement=$pdo->prepare('INSERT INTO schoolsafe_student_cards(school_id,student_id,card_number,signature) VALUES(1,11,?,?)');$statement->execute(['QA-ENTRY',$signature]);
     $pdo->exec("INSERT INTO entry_exit_checkpoints(id,title,type,schoolsafe_scan_school_id,schoolsafe_scan_syear,schoolsafe_scan_enabled) VALUES
         (8,'Synthetic foreign point',NULL,2,2026,true),(9,'Synthetic prior year point',NULL,1,2025,true),
-        (10,'Synthetic inactive point',NULL,1,2026,false),(11,'Synthetic entrance','in',1,2026,true),(12,'Synthetic exit','out',1,2026,true)");
+        (10,'Synthetic inactive point',NULL,1,2026,false),(11,'Synthetic entrance','in',1,2026,true),(12,'Synthetic exit','out',1,2026,true),
+        (13,'Synthetic unassigned legacy point',NULL,NULL,NULL,false)");
+    $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage'],true)) exit(2);
 require_once $root.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
 require_once $root.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
 $barrier=getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1';$barrierUsed=false;
@@ -50,6 +52,15 @@ $db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
     }
     return $result;
 }, 'exec'=>static function($sql) use ($pdo) {$pdo->exec($sql);}];
+if ($action==='location-manage') {
+    require_once $root.'/ProgramFunctions/SchoolSafeScanLocationManage.fnc.php';
+    $db['quote']=static function($value) use ($pdo) {return $pdo->quote($value);};
+    $ctx=array_replace(['user'=>9,'school'=>1,'year'=>2026,'profile'=>'admin','can_configure'=>true,'can_read'=>true,'can_save'=>true],json_decode($argv[3]??'{}',true,16,JSON_THROW_ON_ERROR));
+    try {$result=SchoolSafeScanLocationManage(json_decode($argv[2],true,16,JSON_THROW_ON_ERROR),$ctx,$db);}
+    catch(RuntimeException $error) {$result=['error'=>$error->getMessage()];}
+    if($pdo->inTransaction())throw new RuntimeException('TRANSACTION_LEFT_OPEN');
+    echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
 if ($action==='locations') {
     require_once $root.'/ProgramFunctions/SchoolSafeScanPassage.fnc.php';
     $modes=($argv[2]??'')==='' ? [] : explode(',',$argv[2]);
