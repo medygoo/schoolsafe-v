@@ -27,9 +27,12 @@ if ($action==='setup') {
     $pdo->exec('UPDATE entry_exit_checkpoints SET schoolsafe_scan_school_id=1,schoolsafe_scan_syear=2026,schoolsafe_scan_enabled=true');
     $signature=substr(strtr(base64_encode(hash_hmac('sha256','QA-ENTRY',hex2bin(str_repeat('0',64)),true)),'+/','-_'),0,32);
     $statement=$pdo->prepare('INSERT INTO schoolsafe_student_cards(school_id,student_id,card_number,signature) VALUES(1,11,?,?)');$statement->execute(['QA-ENTRY',$signature]);
+    $pdo->exec("INSERT INTO entry_exit_checkpoints(id,title,type,schoolsafe_scan_school_id,schoolsafe_scan_syear,schoolsafe_scan_enabled) VALUES
+        (8,'Synthetic foreign point',NULL,2,2026,true),(9,'Synthetic prior year point',NULL,1,2025,true),
+        (10,'Synthetic inactive point',NULL,1,2026,false),(11,'Synthetic entrance','in',1,2026,true),(12,'Synthetic exit','out',1,2026,true)");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations'],true)) exit(2);
 require_once $root.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
 require_once $root.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
 $barrier=getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1';$barrierUsed=false;
@@ -47,6 +50,11 @@ $db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
     }
     return $result;
 }, 'exec'=>static function($sql) use ($pdo) {$pdo->exec($sql);}];
+if ($action==='locations') {
+    require_once $root.'/ProgramFunctions/SchoolSafeScanPassage.fnc.php';
+    $modes=($argv[2]??'')==='' ? [] : explode(',',$argv[2]);
+    echo json_encode(['locations'=>SchoolSafeScanLocations(1,2026,$modes,$db)],JSON_THROW_ON_ERROR)."\n";exit;
+}
 if (in_array($action,['activate','family'],true)) {
     $context=['user'=>9,'school'=>(int)($argv[4]??1),'year'=>(int)($argv[3]??2026),'profile'=>'admin','parent'=>false];
     try {

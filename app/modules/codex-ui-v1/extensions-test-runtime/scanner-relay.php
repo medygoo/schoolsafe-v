@@ -93,12 +93,11 @@ try {
      SchoolSafeScanReply(200,$result);
    }
    if($operation==='locations') {
-     $rows=DBGet('SELECT ID, TITLE FROM entry_exit_checkpoints ORDER BY SORT_ORDER NULLS LAST, TITLE');
-     $list=[];
-     if(is_array($rows))foreach($rows as $row) {
-       if(!isset($row['ID'],$row['TITLE']))throw new RuntimeException('RELAY_UNAVAILABLE');
-       $list[]=['id'=>(string)$row['ID'],'label'=>$row['TITLE']];
-     }
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeScanPassage.fnc.php';
+     $modes=[];
+     if(SchoolSafeNativeCommandPermission('SchoolSafe/ScanArrival.php'))$modes[]='entry';
+     if(SchoolSafeNativeCommandPermission('SchoolSafe/ScanPickup.php'))$modes[]='pickup';
+     $list=SchoolSafeScanLocations($school,$year,$modes,['get'=>function($sql){return DBGet($sql);}]);
      while(ob_get_level()>$level)ob_end_clean();
      SchoolSafeScanReply(200,['data'=>['locations'=>$list]]);
    }

@@ -18,6 +18,31 @@ function SchoolSafeScanCheckpointInScope(array $checkpoint, $school, $year): boo
         && in_array($checkpoint['SCHOOLSAFE_SCAN_ENABLED'] ?? false, [true,'t','1',1], true);
 }
 
+// The caller supplies modes resolved from the existing native rights, never
+// from a client-selected school or a client-provided permission flag.
+function SchoolSafeScanLocations($school, $year, array $modes, array $db): array
+{
+    $school = (int) $school;
+    $year = (int) $year;
+    if ($school < 1 || $year < 1) throw new RuntimeException('INVALID_CONTEXT');
+    if (array_diff($modes, ['entry','pickup'])) throw new RuntimeException('INVALID_SCAN_MODE');
+    if (!$modes) return [];
+    SchoolSafeScanPassageRequireScope($db);
+    $directions = ["TYPE IS NULL", "TYPE=''"];
+    if (in_array('entry', $modes, true)) $directions[] = "TYPE='in'";
+    if (in_array('pickup', $modes, true)) $directions[] = "TYPE='out'";
+    $rows = $db['get']('SELECT ID, TITLE FROM entry_exit_checkpoints WHERE SCHOOLSAFE_SCAN_SCHOOL_ID=' . $school
+        . ' AND SCHOOLSAFE_SCAN_SYEAR=' . $year . ' AND SCHOOLSAFE_SCAN_ENABLED AND (' . implode(' OR ', $directions) . ')'
+        . ' ORDER BY SORT_ORDER NULLS LAST, TITLE, ID');
+    if (!is_array($rows)) throw new RuntimeException('SCAN_LOCATIONS_UNAVAILABLE');
+    $locations = [];
+    foreach ($rows as $row) {
+        if (!isset($row['ID'], $row['TITLE'])) throw new RuntimeException('SCAN_LOCATIONS_UNAVAILABLE');
+        $locations[] = ['id'=>(string)$row['ID'], 'label'=>$row['TITLE']];
+    }
+    return $locations;
+}
+
 // Call while holding the per-child transaction lock. Unscoped historical events
 // and refused attempts cannot establish a current arrival in another tenant.
 // A newer unassigned/foreign event invalidates the old episode; never infer
