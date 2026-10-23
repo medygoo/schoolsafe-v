@@ -12,7 +12,8 @@ const command=args=>process.env.PRODELI_QA_SSH?['ssh',['-4','-o','BatchMode=yes'
 const docker=(args,opts={})=>{const [exe,argv]=command(args);return execFileSync(exe,argv,{encoding:'utf8',timeout:30000,...opts}).trim();};
 for(const name of [web,db])assert.equal(docker(['inspect','--format','{{index .Config.Labels "schoolcef.qualification"}}',name]),label);
 assert.equal(docker(['network','inspect',network,'--format','{{.Internal}}']),'true');
-const sql=q=>docker(['exec','-i',db,'psql','-X','-v','ON_ERROR_STOP=1','-U','schoolcef_fixture','-d','schoolcef_fixture','-qAt'],{input:q});
+const fixtureSql=require('./qa-fixture-sql.cjs');
+const sql=q=>fixtureSql(q)??docker(['exec','-i',db,'psql','-X','-v','ON_ERROR_STOP=1','-U','schoolcef_fixture','-d','schoolcef_fixture','-qAt'],{input:q});
 const quote=s=>"'"+String(s).replaceAll("'","''")+"'";
 const user='qa.reset.'+crypto.randomBytes(6).toString('hex'),passwords=[0,1].map(()=>crypto.randomBytes(20).toString('hex'));
 const clients=[],results=[];let staffId,locker;

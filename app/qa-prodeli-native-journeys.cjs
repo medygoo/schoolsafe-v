@@ -11,7 +11,8 @@ const dockerRun=(args,options={})=>process.env.PRODELI_QA_SSH
  ? execFileSync('ssh',['-4','-o','BatchMode=yes',process.env.PRODELI_QA_SSH,'docker '+args.map(shellQuote).join(' ')],{timeout:45000,...options})
  : execFileSync('docker',args,{timeout:45000,...options});
 for(const n of [db,web])assert.equal(dockerRun(['inspect','--format','{{index .Config.Labels "schoolcef.qualification"}}',n],{encoding:'utf8'}).trim(),process.env.PRODELI_QA_LABEL||'harmonization-20261021');
-const sql=q=>dockerRun(['exec','-i',db,'psql','-X','-v','ON_ERROR_STOP=1','-U','schoolcef_fixture','-d','schoolcef_fixture','-qAt'],{input:q,encoding:'utf8'}).trim(),quote=s=>"'"+s.replaceAll("'","''")+"'";
+const fixtureSql=require('./qa-fixture-sql.cjs');
+const sql=q=>fixtureSql(q)??dockerRun(['exec','-i',db,'psql','-X','-v','ON_ERROR_STOP=1','-U','schoolcef_fixture','-d','schoolcef_fixture','-qAt'],{input:q,encoding:'utf8'}).trim(),quote=s=>"'"+s.replaceAll("'","''")+"'";
 assert.equal(dockerRun(['network','inspect',process.env.PRODELI_QA_NETWORK||'schoolcef-harmonization-local','--format','{{.Internal}}'],{encoding:'utf8'}).trim(),'true');
 const scopedSetting='SCHOOLSAFE_QA_SCOPE_'+crypto.randomBytes(8).toString('hex').toUpperCase();
 const prefix='qa.native.'+Date.now(),manager=prefix+'.global',client=prefix+'.principal',password=crypto.randomBytes(16).toString('hex'),personal='Personal fixture '+crypto.randomBytes(40).toString('hex'),wizardPersonal='Wizard fixture '+crypto.randomBytes(40).toString('hex');

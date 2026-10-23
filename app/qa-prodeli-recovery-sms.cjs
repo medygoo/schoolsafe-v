@@ -21,7 +21,8 @@ const docker = (args, options={}) => process.env.PRODELI_QA_SSH
  : execFileSync('docker', args, {encoding:'utf8',timeout:45000,...options}).trim();
 for (const name of [web,db]) assert.equal(docker(['inspect','--format','{{index .Config.Labels "schoolcef.qualification"}}',name]),label);
 assert.equal(docker(['network','inspect',network,'--format','{{.Internal}}']), 'true');
-const sql = q => docker(['exec','-i',db,'psql','-X','-v','ON_ERROR_STOP=1','-U','schoolcef_fixture','-d','schoolcef_fixture','-qAt'],{input:q});
+const fixtureSql=require('./qa-fixture-sql.cjs');
+const sql = q => fixtureSql(q)??docker(['exec','-i',db,'psql','-X','-v','ON_ERROR_STOP=1','-U','schoolcef_fixture','-d','schoolcef_fixture','-qAt'],{input:q});
 const quote = value => "'"+String(value).replaceAll("'","''")+"'";
 const prefix = 'qa.recovery.'+crypto.randomBytes(6).toString('hex');
 const initial = 'Initial fixture '+crypto.randomBytes(16).toString('hex');
