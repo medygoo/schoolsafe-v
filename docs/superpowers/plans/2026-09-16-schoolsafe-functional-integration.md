@@ -2,6 +2,8 @@
 
 ### Ordre exécutable confirmé — inspecter, réutiliser, corriger, tester
 
+**Ordre validé expressément par le propriétaire. Règle obligatoire à chaque point : lire le code interne concerné et suivre ses appels, propriétaires de données, permissions et tests existants AVANT toute correction, raccordement ou lancement de scénario. Vérifier les effets des scripts avant exécution. Réutiliser le natif ; corriger seulement les manques/écarts prouvés, puis tester. Ne pas changer l'ordre ni reconstruire un système déjà présent.**
+
 1. **Vérification des accès natifs : faite sur code +53contrats locaux PASS.** Tableau Users/Profiles et droits personnalisés, affectation du profil nommé à la création, filtres de délégabilité, Catalog/Permissions/Gateway. Aucun nouveau moteur de permissions ni élargissement ProDéli/école. Ce n'est pas un parcours HTTP de création de profil.
 2. **Finir le raccordement natif des routes Scan existantes** : principal/REQUESTED_BY réel, points de passage listés/configurés dans leur école/année, backend des commandes déjà cataloguées et lecteurs de passages compatibles039. Tester les refus, ne pas confondre clé publiée, configuration installée et opération fonctionnelle.
 3. **Barrière financière** : commencer par un RED de conformité du solde FeeScan aux montants natifs d'exonération (natif : montant négatif additionné ; code récupéré : annulation de tout le frais dès référence, fixture positif douteux). Corriger seulement l'écart prouvé, puis reprendre modèles/minimum/tolérance existants et vraies écritures de facturation, préserver exonérations/remboursements et devises ; appliquer rouge avant arrivée, jaune toléré/bleu en ordre, indisponible distinct. Aucun paiement fabriqué.
