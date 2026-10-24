@@ -57,7 +57,9 @@ try{
  $dashboard=req('/Modules.php?modname=misc/Portal.php');
  gate($dashboard['status']===200&&str_contains($dashboard['body'],'data-school-logo')&&str_contains($dashboard['body'],'data-logo-stage="campus"'),'synthetic school dashboard renders its real school scope with campus fallback, not a fabricated logo');
  gate(str_contains($dashboard['body'],'schoolsafe-school-logo.js?v=1')&&str_contains($dashboard['body'],'ss-photo-footer'),'authenticated dashboard completes and loads shared logo animation');
- gate(str_contains($dashboard['body'],'schoolsafe-photo-dashboard.css?v=school-logo-20261024'),'authenticated dashboard invalidates logo styling cache');
+ gate(str_contains($dashboard['body'],'schoolsafe-photo-dashboard.css?v=school-logo-toolbar-20261024'),'authenticated dashboard invalidates logo styling cache');
+ $logoPosition=strpos($dashboard['body'],'class="ss-photo-school-logo"');
+ gate($logoPosition!==false && $logoPosition<strpos($dashboard['body'],'data-photo-search') && $logoPosition<strpos($dashboard['body'],'id="ss-photo-home"'),'authenticated native renderer positions the school logo before the shorter search and hero');
  $scanner=req('/scanner-native.php');gate($scanner['status']===200,'confirmed fixture bootstrap opens the school administrator scanner page');
  gate(str_contains($scanner['body'],'Présence &amp; Scan QR')&&str_contains($scanner['body'],'scanner-theme.js?v=1')&&str_contains($scanner['body'],'scanner-native.css?v=scan-theme-1')&&str_contains($scanner['body'],'id="camera"')&&str_contains($scanner['body'],'disabled'),'authenticated scanner serves approved layout, theme bootstrap and inert camera until capability load');
  $scannerCss=req('/schoolsafe-card-bridge/scanner-native.css?v=scan-theme-1');gate($scannerCss['status']===200&&str_contains($scannerCss['body'],'data-ss-background="night"')&&str_contains($scannerCss['body'],'data-ss-background="mint"')&&!str_contains($scannerCss['body'],'background:#030c25'),'authenticated scanner stylesheet follows dashboard palettes rather than a fixed dark blue canvas');
