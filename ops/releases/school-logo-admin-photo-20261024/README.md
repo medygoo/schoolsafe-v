@@ -1,0 +1,7 @@
+# Cadre mobile du logo et portraits des administrateurs
+
+Le cadre de droite suit les dimensions du rectangle rouge fourni (mobile : 172 px de haut et demi-largeur disponible) ; le JPEG remplit presque tout ce cadre, sans distorsion (`object-fit:contain`), avec nom encore accessible par le texte alternatif et dans l'en-tête. À gauche, recherche raccourcie et deux sélecteurs en dessous. Desktop, repli campus/SchoolSafe et mouvement réduit restent inchangés. La version CSS change pour invalider les anciens caches.
+
+L'avatar de chaque compte utilise uniquement son identifiant natif de personnel connecté. Les JPEG valides de son année courante sont préférés ; à défaut, même repli sur son propre `ROLLOVER_ID` d'année précédente que la fiche native. Une photo absente/corrompue ne produit pas de portrait fictif : initiales de secours. Pas d'association codée en dur pour une école ou un responsable, pas de nouveau droit/compte/photo.
+
+Image exacte sur la dernière livraison : quatre fichiers runtime (un nouveau lecteur), 178 contrats de rendu, 37 de récupération, 62 parcours HTTP fictifs, six contrôles de deux admins synthétiques/rollover/JPEG corrompu, huit tailles/thèmes CSS incluant le vrai volume du cadre et la taille de l'image. La recette garde trois montages, fichiers média réels, sessions/configuration/services, dump privé et prédécesseur arrêté. Audit réel en lecture seule : 4 comptes administrateurs 2026, 1 seul portrait enregistré. Les trois autres affichent leurs initiales jusqu'à un téléversement autorisé ; aucun portrait n'est inventé.
