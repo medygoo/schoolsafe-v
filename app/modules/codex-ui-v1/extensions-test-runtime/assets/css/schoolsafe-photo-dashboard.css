@@ -493,3 +493,15 @@ body.ss-school-shell:has(#ss-photo-dashboard) #ss-photo-dashboard .ss-photo-tool
 #ss-photo-dashboard .ss-photo-top-ten-details ul{list-style:none;margin:4px 0;padding:0;display:grid;gap:3px}
 @media(max-width:700px){#ss-photo-dashboard .ss-photo-top-row{grid-template-columns:minmax(0,1fr)}#ss-photo-dashboard .ss-photo-top-ten-list{max-height:310px}}
 @media(prefers-reduced-motion:reduce){#ss-photo-dashboard .ss-photo-reel{animation:none!important}}
+/* Native course sections ranked by recorded practical assignments, never by student scores. */
+#ss-photo-dashboard .ss-photo-practical-classes{margin:0 0 18px;padding:14px;border:1px solid var(--photo-line);border-radius:10px;background:var(--photo-panel);color:var(--photo-ink)}
+#ss-photo-dashboard .ss-photo-practical-classes h2{margin:0;font-size:17px}
+#ss-photo-dashboard .ss-photo-practical-classes p{margin:4px 0 0;color:var(--photo-muted);font-size:11px}
+#ss-photo-dashboard .ss-photo-practical-list{list-style:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0 0;padding:0}
+#ss-photo-dashboard .ss-photo-practical-list li{min-width:0;display:flex;align-items:flex-start;gap:7px;background:var(--photo-soft);padding:10px;border-radius:8px;font-size:12px}
+#ss-photo-dashboard .ss-photo-practical-list li div{min-width:0;display:grid;gap:4px;flex:1;overflow-wrap:anywhere}
+#ss-photo-dashboard .ss-photo-practical-list li small{font-size:10px;color:var(--photo-muted)}
+#ss-photo-dashboard .ss-photo-practical-list li b{white-space:nowrap;font-variant-numeric:tabular-nums}
+#ss-photo-dashboard .ss-photo-practical-rank{flex:0 0 21px;height:21px;display:grid;place-items:center;border:1px solid var(--photo-line);border-radius:5px;font-weight:700}
+@media(max-width:1150px){#ss-photo-dashboard .ss-photo-practical-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){#ss-photo-dashboard .ss-photo-practical-list{grid-template-columns:minmax(0,1fr)}}
