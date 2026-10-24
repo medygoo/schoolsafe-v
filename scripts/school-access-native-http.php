@@ -52,7 +52,10 @@ try{
  gate((int)$pdo->query('SELECT count(*) FROM staff WHERE staff_id IN('.implode(',',$ids).')')->fetchColumn()===6,'bootstrap creates no account');
  gate(req('/scanner-native.php')['status']===403&&req('/ecoles/'.$school.'/profils')['status']===403,'ProDéli still has no school membership after bootstrap');
  $directorCookie=loginAs($prefix.'.1');$hub='/ecoles/'.$school.'/profils';
- gate(req('/scanner-native.php')['status']===200,'confirmed fixture bootstrap opens the school administrator scanner page');
+ $scanner=req('/scanner-native.php');gate($scanner['status']===200,'confirmed fixture bootstrap opens the school administrator scanner page');
+ gate(str_contains($scanner['body'],'Présence &amp; Scan QR')&&str_contains($scanner['body'],'scanner-theme.js?v=1')&&str_contains($scanner['body'],'scanner-native.css?v=scan-theme-1')&&str_contains($scanner['body'],'id="camera"')&&str_contains($scanner['body'],'disabled'),'authenticated scanner serves approved layout, theme bootstrap and inert camera until capability load');
+ $scannerCss=req('/schoolsafe-card-bridge/scanner-native.css?v=scan-theme-1');gate($scannerCss['status']===200&&str_contains($scannerCss['body'],'data-ss-background="night"')&&str_contains($scannerCss['body'],'data-ss-background="mint"')&&!str_contains($scannerCss['body'],'background:#030c25'),'authenticated scanner stylesheet follows dashboard palettes rather than a fixed dark blue canvas');
+ $scannerTheme=req('/schoolsafe-card-bridge/scanner-theme.js?v=1');gate($scannerTheme['status']===200&&str_contains($scannerTheme['body'],"localStorage.getItem('schoolsafe-background')")&&str_contains($scannerTheme['body'],"window.addEventListener('storage'")&&str_contains($scannerTheme['body'],"includes(saved)?saved:'white'"),'authenticated scanner theme script reuses dashboard preference with safe fallback');
  $scans=[];foreach(['ScanArrival','ScanPickup','ScanFees','ScanCanteen','ScanVerify']as$key)$scans['SchoolSafe/'.$key.'.php']=['use'=>'Y','edit'=>'Y'];
  $operatorCookies=[];
  for($i=2;$i<=4;$i++){
