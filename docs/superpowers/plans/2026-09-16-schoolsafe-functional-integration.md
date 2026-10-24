@@ -1,4 +1,8 @@
-## Porte courante — ProDéli, étape 2 correctif état école LOCAL, rapport puis STOP
+## Porte courante — ProDéli, étape 3 image+HTTP état école qualifiés, non déployés
+
+Après GO : base production image1df5f857/checkout3ecdf9e ; candidat Gitb8c997e image **0edd4889bd802f61cf0582e6fa066703a134590591ba441e83c129d5747f8569** / digest edddd39a, **un runtime/2801inchangés**,178contrats+37récupPG et **10HTTP natifs authentifiés synthétiques PASS** (CSRF/date invalide/état+audit/rollback). Verify snapshot/production inchangés et cleanup noncePASS. [Rapport](../../qualification/PRODELI_STABILITY_STEP1.md). **Pas déployé**, pas compte réel/caméra/provider. CONTINUE propriétaire reçu ensuite : prochain examen borné des autres mutations sensibles ProDéli (état compte/révocation) avant prétendre tout stable ; aucun déploiement implicite.
+
+## Porte précédente — ProDéli, étape 2 correctif état école LOCAL, rapport puis STOP
 
 Après GO : setter natif `SchoolSafeSchoolStateSet()` valide la date civile et rend état+audit atomiques dans sa propre transaction avec verrou/rollback, sans élargir la console ou les droits. PostgreSQL17.11 jetable **FIX_VERIFIED** : panne audit ne suspend plus sans audit, date invalide refusée sans écriture, contrôle positif et162régressions PASS, PHP lint/Python syntaxe/cleanup PASS. [Preuves et limites](../../qualification/PRODELI_STABILITY_STEP1.md). **Pas de qualification HTTP/image exacte ni de déploiement ; autres mutations non auditées.** Informer puis STOP pour GO de l'étape suivante.
 
