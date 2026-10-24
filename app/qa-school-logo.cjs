@@ -20,7 +20,9 @@ try{for(const initial of ['school','campus'])for(const missing of ['none','prima
   const stage=await page.locator('[data-school-logo]').getAttribute('data-logo-stage');
   assert.equal(stage,missing==='none'?initial:missing==='all'?'brand':'campus',`${initial}-${missing}-${width}`);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  assert.equal(await page.locator('[data-school-logo] img').evaluate(e=>getComputedStyle(e).objectFit),'contain');
   if(missing==='none')assert.equal(await page.locator('[data-school-logo] img').evaluate(e=>getComputedStyle(e).animationName),'none');
+  else assert.equal(await page.locator('[data-school-logo] img').evaluate(e=>getComputedStyle(e).animationName),'ss-logo-float');
   if(out&&initial==='school'&&missing==='none'){fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,`logo-${width}.png`),fullPage:true});}
   results.push(`${initial}-${missing}-${width}`);
  }finally{await ctx.close();}
