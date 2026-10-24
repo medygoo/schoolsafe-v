@@ -1,5 +1,9 @@
 # Mise en service du Scan — état et décisions nécessaires
 
+## Candidat accès natifs qualifié — déploiement EN ATTENTE DU GO étape3
+
+Étapes1/2 terminées après leurs GO respectifs. Runtime5cf4c9c/image1b3843de/digestc1ed8014 qualifiés hors production :387contrats+37recovery,3suites exactes native/récupération/concurrence,58HTTPScan+49HTTPaccès incluant vrais POST de profils partagés,55PG jetables et21Chrome fragment PASS. Trois refus d'autorité ajoutés après RED, puis toutes les suites rejouées sur le candidat corrigé. Fixtures restituées et ressources éphémères supprimées ; production e17357b/image7bed toujours propre/saine/inchangée. [Rapport et limites](SCHOOL_NATIVE_ACCESS_20261024.md). **Ne pas poursuivre vers la recette/sauvegarde/bascule sans nouveau GO explicite.** Aucun droit réel choisi ou attribué, aucune preuve physique caméra/provider/impression ajoutée. L'état actuellement livré ci-dessous reste donc exact.
+
 ## Correctif logiciel livré — mise en service toujours incomplète
 
 Livraison ciblée effectuée : recette/VPS `e17357bbcf59068d8276c260314d3ffa8a1733a2`, runtime source `127d6cdfcebf6cd284ea5a0a663f20664a9baabf`, image `sha256:7bedfc1e37289136d9a54ac87f82603784053a47bd45c90c1b1d3c159dc7c628`, digestebebf34ea4ecea50b51457c3d083b349d477413ee755a4b8bb1f9d036ea5e14d. Delta4runtime (3modifications+1helper), **aucune migration ni attribution réelle**. Bascule8,8s ;144sessions et cache Chromium préservés, environnement complet/HMAC durable et configuration inchangés, cinq services voisins inchangés, ancien conteneur `schoolsafe-rosario-pre-school-scan-profile-owner-20261024` arrêté/conservé. Backup PG privé685797octets0600, archive validée, SHA256 `2cc3c559627556c4a7a026ad27cef982f3aa80e9f3330bcbd3d645470ede3055`, jamais restauré.

@@ -1,8 +1,8 @@
-# Administration native des accès — étape 1 HTTP validée, NON DÉPLOYÉ
+# Administration native des accès — étapes 1 et 2 validées, NON DÉPLOYÉ
 
 ## Porte propriétaire la plus récente
 
-Traiter les étapes une par une, informer après chaque étape finie puis attendre un GO. **Étape 1 terminée ; étape 2 et déploiement interdits sans nouveau GO.** Cette instruction remplace la poursuite automatique du mandat précédent.
+Traiter les étapes une par une, informer après chaque étape finie puis attendre un GO. **Étape 1 terminée ; après GO explicite, étape 2 terminée également. Attendre un nouveau GO avant l'étape 3 / tout déploiement.** Cette instruction remplace la poursuite automatique du mandat précédent.
 
 ## Périmètre
 
@@ -35,10 +35,36 @@ Preuve privée `access-http-image-r1/access-authenticated-http-r1.private.json` 
 
 `image-verify-proof.json` PASS : empreintes des tables de fixture identiques à l'état initial après retrait des seules lignes synthétiques ; conteneurs de production inchangés. `image-cleanup-proof.json` REMOVED : ressources éphémères possédées supprimées et production toujours inchangée. Nonce110d3a93c386. Première commande avec SHA court refusée avant création de ressources, relancée avec SHA complet ; pas un échec produit.
 
-## Étapes suivantes — EN ATTENTE DU GO
+## Étape 2 — qualification image et régressions : PASS
 
-2. Qualification complète de l'image Git/régressions exactes, notamment parcours navigateur natifs/récupération/concurrence et contrôles de livraison. L'image utilisée comme fixture existe, mais cette étape n'est pas déclarée terminée.
-3. Après un GO distinct et uniquement si qualifié : sauvegarde privée récente, bascule ciblée et contrôle indépendant. Choix des vrais bénéficiaires toujours humain et explicite.
+**Candidat final : runtime `5cf4c9cbfaf379a252afc27f76fac17bc6c45d04`, image `sha256:1b3843de24caa121243f231b147ddf0a9597b155deca7271ed699994f306fb86`, digest `c1ed80141175ab4ecc2c5110839a6b48a75a66e13eea79d27dc61936386cdded`.** L'image d6dc de l'étape 1 n'est PAS le candidat final.
+
+La revue a reproduit trois refus manquants : schéma natif des états de compte indisponible, schéma des états d'école indisponible, état cible inconnu. RED conservé `access-step2-schema-red/pg.log` :53contrôles,3échecs. Correction bornée au nouvel owner : les deux writers refusent si les sondes natives Ready échouent ; cible limitée aux états natifs active/readonly. Puis **55PG jetables PASS**, dont les deux contrôles de schéma dans l'éditeur partagé, rollback/audit et concurrence ; authentification/états substitués dans cette preuve, pas une simulation d'auth HTTP.
+
+Sur le candidat final :
+
+| Contrôle | Résultat et preuve privée |
+| --- | --- |
+| Préparation immuable hors checkout sale |71sources/2731inchangées ;387contrats et37recovery PASS ; `access-step2-image-r2/image-prepare-proof.json` |
+| Parcours natifs Chromium |PASS exit0 ; `access-step2-image-r2/exact-integration-result.json` et artefacts privés distants |
+| Récupération de compte Chromium |PASS exit0 ; même preuve |
+| Concurrence des réinitialisations |PASS exit0 ; même preuve |
+| HTTP authentifié Scan historique |58PASS : QR réel synthétique, arrivée/pickup/idempotence, finances/cantine sans fuite, famille, notifications historiques/révocation ; `card-authenticated-http-scan-regression-r1.private.json` |
+| HTTP accès rejoué après correction |38PASS ; `access-authenticated-http-access-regression-r1.private.json` |
+| HTTP accès + écritures de profils partagés |49PASS ; `access-step2-shared-http-r1/access-authenticated-http-shared-writes-r1.private.json` |
+| Formulaire PHP synthétique Chromium1280/390 |21PASS ; `access-step2-browser-final/result.json` ; pas un navigateur authentifié sur les nouveaux formulaires |
+| Restitution des fixtures |PASS après chaque série ; tables identiques à leur empreinte initiale, `image-verify-proof.json` dans les deux fixtures finales |
+| Nettoyage + frontière de livraison |REMOVED puis contrôle indépendant PASS : aucun conteneur/réseau des trois nonces, delta5runtime exact,3hashes dashboard protégés, production propre/saine/image inchangée ; `candidate-provenance-and-final-cleanup-proof.json` |
+
+L'extension de test HTTP vient du commit **`80739b7b21c7940057ef3e849354aec38814ca77`**, sans modification runtime supplémentaire. Elle prouve les POST réels de création scolaire, retrait Edit en gardant Use, refus de formulaire ancien, refus de suppression d'un profil attribué sans conversion en Custom, révocation partagée et perte dans une session ouverte, suppression seulement sans détenteur, audit natif obligatoire pour chaque écriture et aucun audit de refus. Deux détenteurs partagés sont préparés par SQL uniquement comme fixture synthétique ; leur attribution initiale n'est pas présentée comme une nouvelle preuve du contrôleur Users.
+
+Nonces nettoyés :34ad532a86d7 (premier candidat),7c84919d7564 (candidat corrigé et suites complètes),4f744d7270c0 (extension HTTP partagé). Réseaux internes, web readonly, aucun port publié, aucun provider externe. Le premier candidat avait aussi passé ses suites ; elles ont toutes été rejouées sur le candidat corrigé. Le runner privé reprend le harnais qualifié et normalise seulement le refus Docker `no such object/container` sans casse lors du second nettoyage.
+
+**Limites :** pas de pourcentage de couverture instrumenté revendiqué ; pas de caméra physique, WhatsApp connecté, impression officielle ou droits réels. Pas de nouvelle recette de déploiement exécutée, pas de sauvegarde récente présentée comme déjà acquise.
+
+## Étape 3 — EN ATTENTE DU NOUVEAU GO
+
+Préparer et contrôler la recette ciblée sur les cinq runtime qualifiés, vérifier les préconditions actuelles et une sauvegarde privée récente, puis bascule contrôlée et vérification indépendante. Ne pas changer le HMAC, les sessions, les services voisins ni octroyer des droits à une personne réelle implicitement. Les bénéficiaires réels restent un choix humain explicite.
 
 Outils : `scripts/school-access-native-{qa.py,pg.php,http.php}`, `school-access-policy-contracts.php`, `school-access-image-qa.py`, option `--access` du lanceur HTTP existant, `app/qa-school-native-access.cjs`. Le script HTTP a été exécuté avec succès uniquement dans la fixture synthétique isolée.
 
