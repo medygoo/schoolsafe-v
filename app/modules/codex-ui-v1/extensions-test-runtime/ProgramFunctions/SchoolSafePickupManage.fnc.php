@@ -232,7 +232,9 @@ function SchoolSafePickupRegisterFamilyLocked($studentId, array $fields, array $
     $q = function ($v) { return "'" . str_replace("'", "''", $v) . "'"; };
     $row = $db['get']('INSERT INTO schoolsafe_pickup_guardians(school_id, student_id, guardian_type,'
         . ' full_name, phone, is_primary, is_active, is_authorized_pickup)'
-        . ' VALUES(' . $ctx['school'] . ',' . $studentId . ',' . $q($type) . ',' . $q($name) . ',' . $q($phone)
+        // Rosario DBQuery normalizes literal empty strings to NULL. Preserve the
+        // native optional-phone default instead of violating PHONE NOT NULL.
+        . ' VALUES(' . $ctx['school'] . ',' . $studentId . ',' . $q($type) . ',' . $q($name) . ',' . ($phone === '' ? 'DEFAULT' : $q($phone))
         . ',' . ($wantPrimary ? 'TRUE' : 'FALSE') . ',TRUE,FALSE) RETURNING ID');
     if (!is_array($row) || !isset($row[1])) throw new RuntimeException('WRITE_FAILED');
     return ['guardian_id' => (string) $row[1]['ID'], 'status' => 'pending',
@@ -267,7 +269,7 @@ function SchoolSafePickupRegisterExternalLocked($studentId, array $fields, array
     $q = $db['quote'];
     $g = $db['get']('INSERT INTO schoolsafe_pickup_guardians(school_id, student_id, guardian_type,'
         . ' full_name, phone, is_primary, is_active, is_authorized_pickup)'
-        . ' VALUES(' . $ctx['school'] . ',' . $studentId . ",'externe'," . $q($name) . ',' . $q($phone)
+        . ' VALUES(' . $ctx['school'] . ',' . $studentId . ",'externe'," . $q($name) . ',' . ($phone === '' ? 'DEFAULT' : $q($phone))
         . ',FALSE,TRUE,FALSE) RETURNING ID');
     if (!is_array($g) || !isset($g[1])) throw new RuntimeException('WRITE_FAILED');
     $gid = (int) $g[1]['ID'];

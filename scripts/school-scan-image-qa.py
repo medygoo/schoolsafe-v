@@ -85,7 +85,7 @@ qa.CONTRACTS={'prodeli-account-presentation-contracts.php':16,'prodeli-dashboard
  'school-dashboard-composition-contracts.php':20,'school-scan-native-access-contracts.php':62,
  'school-canteen-scan-contracts.php':12,'school-scan-notify-contracts.php':23,
  'school-wa-acceptance-contracts.php':21,'school-wa-session-contracts.php':20,
- 'school-card-native-issue-contracts.php':21}
+ 'school-card-native-issue-contracts.php':21,'school-pickup-native-db-contracts.php':4}
 qa.qa.REMOTE_COMMON+="\nTABLES += ['schoolsafe_native_onboarding','schoolsafe_school_leadership','school_marking_periods','schoolsafe_opening_requests']\n"
 original=qa.preparation_code
 

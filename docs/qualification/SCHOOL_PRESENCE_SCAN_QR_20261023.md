@@ -1,6 +1,12 @@
 # Présence & Scan QR — en cours, moteur natif récupéré, NON DÉPLOYÉ
 
-## Image exacte et émission HTTP authentifiée — candidat non déployé
+## Intégration SQL native — téléphone familial facultatif (nouvelle image à qualifier)
+
+Le parcours HTTP étendu sur96f372e2 passe28contrôles (émission/arrivée/replay/finance sans détail ni reçu/cantine et droit séparé sans débit), puis révèle un **RED produit** à l’ajout d’un familial sans téléphone : HTTP200 HTML DB Execute Failed, PHONE NOT NULL, dans pickup-r3.private.json. Le formulaire marque phone facultatif et la colonne native022 a DEFAULT ''; le filtre réel Rosario db_sql_filter transforme le littéral vide d’INSERT en NULL, contrairement au callback PDO de la qualification pure/PG. Aucun numéro fictif n’est ajouté pour masquer ce cas et aucune contrainte du registre n’est relâchée.
+
+Correction au propriétaire des deux INSERT familiaux/externes : le téléphone absent/blanc utilise DEFAULT natif, les valeurs renseignées gardent le quoteur existant. **4contrats purs utilisant le vrai db_sql_filter PASS** (absent/vide/espaces/renseigné), **251contrôles PG réels PASS** pickup-native-optional-phone-pg-r1, ressources possédées nettoyées. Pas de changement au moteur SQL global. Nouvelle image Git nécessaire avant revendication de GREEN HTTP famille/pickup ; le candidat précédent ne doit pas être promu comme correction de ce RED. Photo/confirmation de pickup supplémentaires du harness resteront strictement synthétiques, pas une preuve humaine physique.
+
+## Image exacte et émission HTTP authentifiée — candidat antérieur non déployé
 
 Source **954c5e5378eb0fe629a3e54738aa53cca68d040c**, image **sha256:96f372e2e6999aea74d23ecc3eb9ddf6e2c136d5d10117c67d9608f2f046c87f**, digest de payload **9c60ad804918905bed071d5b8076edb048ccb3114d59af8309d52b84a5a3db4f**. Base protégée8770153, overlay Git explicite65fichiers dont35nouveaux ; aucun fichier dashboard/palmarès sale embarqué, autres fichiers/modes/owners contrôlés. Build sans réseau/pull, pas de transfert d’image complète. **349contrats dans cette image +37contrôles recovery PostgreSQL PASS**, native-exact-image-r3/image-prepare-proof.json. Réseau interne, aucun port publié, web readonly, migrations sur la seule base jetable. Secret zéro uniquement dans le conteneur synthétique, pas dans l’image ni la production.
 
