@@ -465,8 +465,8 @@ body.ss-school-shell:has(#ss-photo-dashboard) #ss-photo-dashboard .ss-photo-tool
 @media(max-width:700px){
  body.ss-school-shell:has(#ss-photo-dashboard) #ss-photo-dashboard .ss-photo-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-rows:72px 92px!important;gap:8px;align-items:start}
  #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo{grid-column:2;grid-row:1/3;width:100%;height:172px;flex-basis:auto;border-radius:12px}
- #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo img{width:90%;height:132px;max-height:132px}
- #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo figcaption{font-size:11px}
+ #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo img{position:absolute;inset:5px;width:calc(100% - 10px);height:calc(100% - 10px);max-height:none;object-fit:contain}
+ #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo figcaption{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
  #ss-photo-dashboard .ss-photo-toolbar [data-photo-search]{grid-column:1;grid-row:1;width:100%;align-self:center;max-width:100%!important}
  #ss-photo-dashboard .ss-photo-toolbar [data-photo-school],#ss-photo-dashboard .ss-photo-toolbar [data-photo-year]{grid-column:1;grid-row:2;width:calc(50% - 4px);min-width:0;max-width:none;align-self:start}
  #ss-photo-dashboard .ss-photo-toolbar [data-photo-school]{justify-self:start}

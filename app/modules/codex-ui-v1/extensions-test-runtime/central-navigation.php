@@ -51,9 +51,10 @@ foreach ($links as &$link) {
     }
 }
 unset($link);
-$identity = DBGet('SELECT FIRST_NAME, LAST_NAME FROM staff WHERE STAFF_ID=' . (int) User('STAFF_ID'));
-$photos = glob($UserPicturesPath . UserSyear() . '/' . (int) User('STAFF_ID') . '.*jpg') ?: [];
-$photo = $photos ? end($photos) : '';
+$identity = DBGet('SELECT FIRST_NAME, LAST_NAME, ROLLOVER_ID FROM staff WHERE STAFF_ID=' . (int) User('STAFF_ID'));
+require_once __DIR__ . '/ProgramFunctions/SchoolSafeStaffPhoto.fnc.php';
+$photo = SchoolSafeStaffPhotoUrl($UserPicturesPath, (int) UserSyear(), (int) User('STAFF_ID'),
+    (int) ($identity[1]['ROLLOVER_ID'] ?? 0));
 $profile = [
     'name' => trim(($identity[1]['FIRST_NAME'] ?? '') . ' ' . ($identity[1]['LAST_NAME'] ?? '')),
     'photo' => $photo,
