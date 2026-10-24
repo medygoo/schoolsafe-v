@@ -109,10 +109,10 @@
   if(busy)return;if(!('BarcodeDetector'in window)){state.textContent='Caméra QR non prise en charge. Utilisez le lecteur externe.';return;}
   stopCamera();const run=cameraRun;
   try{const acquired=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
-   if(run!==cameraRun){acquired.getTracks().forEach(track=>track.stop());return;}stream=acquired;const video=byId('scan-video');video.srcObject=stream;byId('camera-area').hidden=false;await video.play();
+   if(run!==cameraRun){acquired.getTracks().forEach(track=>track.stop());return;}stream=acquired;const video=byId('scan-video');video.srcObject=stream;byId('camera-area').hidden=false;await video.play();if(run!==cameraRun)return;
    const detector=new BarcodeDetector({formats:['qr_code']});
-   const detect=async()=>{if(run!==cameraRun)return;try{const codes=await detector.detect(video);if(codes[0]){byId('scan-qr').value=codes[0].rawValue;stopCamera();form.requestSubmit();return;}}catch(_){stopCamera();state.textContent='Lecture caméra indisponible.';return;}if(run===cameraRun)setTimeout(detect,250);};detect();
-  }catch(_){stopCamera();state.textContent='Accès caméra indisponible.';}
+   const detect=async()=>{if(run!==cameraRun)return;try{const codes=await detector.detect(video);if(run!==cameraRun)return;if(codes[0]){byId('scan-qr').value=codes[0].rawValue;stopCamera();form.requestSubmit();return;}}catch(_){if(run!==cameraRun)return;stopCamera();state.textContent='Lecture caméra indisponible.';return;}if(run===cameraRun)setTimeout(detect,250);};detect();
+  }catch(_){if(run!==cameraRun)return;stopCamera();state.textContent='Accès caméra indisponible.';}
  });
  byId('camera-stop').addEventListener('click',stopCamera);byId('scanner-retry').addEventListener('click',initialize);
  byId('scan-qr').addEventListener('input',clearPickup);byId('scan-location').addEventListener('change',clearPickup);

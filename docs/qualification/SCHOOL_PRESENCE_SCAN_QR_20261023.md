@@ -1,6 +1,14 @@
 # Présence & Scan QR — en cours, moteur natif récupéré, NON DÉPLOYÉ
 
-## Intégration SQL native — téléphone familial facultatif (nouvelle image à qualifier)
+## Clôture logicielle — annulation caméra et cache Studio
+
+Sur source0c0b461, image **sha256:f354051436e860ee2bbbc4ec933be79e88878630383ec04103d43fdb1e3f4401**, **353contrats image+37recovery PG et47HTTP authentifiés réels PASS**, native-exact-image-r4 ; verify final PASS (fixture restaurée exactement, production inchangée). HTTP couvre les quatre modes, enregistrement familial sans téléphone ni compte forcé, choix non approuvé refusé, preuve/confirmation synthétique et replay pickup, nouveau refus financier réel après activation du modèle, pas de reçu/débit/arrivée inventés, inbox du destinataire financier original, révocation SJU et nouveau parent sans héritage financier. financial-barrier-r1 est un défaut de harness (operation fee-policy-manage au lieu de fees), corrigé pour r2, pas un RED métier. Les étapes photo/confirmation restent synthétiques, pas une validation humaine physique.
+
+Contrôle de fin caméra : **4RED Chromium intercepté** observés (fermeture/changement de mode pendant detect => POST tardif ; ancienne erreur après redémarrage ferme la nouvelle caméra ; play tardif initialise un détecteur fermé). Correction locale des quatre continuations async : recontrôle du cameraRun après play/detect et avant traitement des erreurs. **4GREEN**, camera-lifecycle-green.log ; **10Studio+60scanner régressions Chromium PASS**, card-cache-browser-green.log/scanner-regression-closure.log. Pas une preuve caméra physique ni une nouvelle compatibilité navigateur. Pas de décodeur ou moteur parallèle ajouté.
+
+Studio versionne désormais les scripts par hash de contenu ; le scanner invalide native-entry-operation-3 vers4. Évite de servir le vieux client natif depuis un cache utilisateur malgré le nouveau serveur. Nouvelle image et50HTTP (47+3assertions cache HTML) à qualifier sur ce dernier changement, avant promotion. Impression officielle reste distincte/non qualifiée ; fournisseur réel et caméra physique demeurent des validations humaines, pas des preuves fabriquées.
+
+## Intégration SQL native — téléphone familial facultatif (corrigé et HTTP qualifié sur f354)
 
 Le parcours HTTP étendu sur96f372e2 passe28contrôles (émission/arrivée/replay/finance sans détail ni reçu/cantine et droit séparé sans débit), puis révèle un **RED produit** à l’ajout d’un familial sans téléphone : HTTP200 HTML DB Execute Failed, PHONE NOT NULL, dans pickup-r3.private.json. Le formulaire marque phone facultatif et la colonne native022 a DEFAULT ''; le filtre réel Rosario db_sql_filter transforme le littéral vide d’INSERT en NULL, contrairement au callback PDO de la qualification pure/PG. Aucun numéro fictif n’est ajouté pour masquer ce cas et aucune contrainte du registre n’est relâchée.
 

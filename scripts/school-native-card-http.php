@@ -6,7 +6,7 @@ $pdo=new PDO('pgsql:host=schoolcef-harmonization-pg;dbname=schoolcef_fixture',ge
 require '/var/www/html/functions/Password.php';
 require '/var/www/html/ProgramFunctions/SchoolSafeAccountState.fnc.php';
 $prefix='qa.scan.'.bin2hex(random_bytes(8));$password=bin2hex(random_bytes(20));$cookie=tempnam('/tmp','scan-http-');
-$uid=null;$students=[];$results=[];$failure=null;$person=SchoolSafeAccountPerson($prefix);$moduleOriginal=null;$moduleRow=null;$checkpoint=null;$foodAccount=null;$policyRows=null;
+$uid=null;$students=[];$parents=[];$cookies=[$cookie];$operatorCookie=$cookie;$results=[];$failure=null;$person=SchoolSafeAccountPerson($prefix);$moduleOriginal=null;$moduleRow=null;$checkpoint=null;$foodAccount=null;$policyRows=null;
 $q=fn($s)=>$pdo->quote($s);
 function gate($ok,$name){global$results;if(!$ok)throw new RuntimeException($name);$results[]=$name;}
 function requestNative($path,$fields=null,$headers=[]){global$cookie;
@@ -26,16 +26,24 @@ try{
     $pdo->exec("UPDATE config SET config_value=".$q(serialize($modules))." WHERE school_id=0 AND title='MODULES'");
     $uid=(int)$pdo->query('SELECT COALESCE(max(staff_id),0)+100 FROM staff')->fetchColumn();
     $pdo->exec("INSERT INTO staff(staff_id,syear,first_name,last_name,username,password,profile,profile_id,schools,current_school_id,last_login) VALUES(".$uid.",2026,'Synthetic','HTTP',".$q($prefix).','.$q(encrypt_password($password)).",'admin',NULL,".$q(','.$school.',').','.$school.',CURRENT_TIMESTAMP)');
-    foreach(['misc/Portal.php','Students/Student.php','Student_ID_Card/StudentIDCard.php','SchoolSafe/Studio.php','SchoolSafe/IssueCard.php','SchoolSafe/ScanVerify.php','SchoolSafe/ScanArrival.php','SchoolSafe/ScanFees.php','SchoolSafe/ScanCanteen.php','SchoolSafe/ScanPickup.php','SchoolSafe/FamilyRead.php','SchoolSafe/FamilyRegister.php']as$key)$pdo->exec("INSERT INTO staff_exceptions(user_id,modname,can_use,can_edit) VALUES(".$uid.','.$q($key).",'Y','Y')");
+    foreach(['misc/Portal.php','Students/Student.php','Student_ID_Card/StudentIDCard.php','SchoolSafe/Studio.php','SchoolSafe/IssueCard.php','SchoolSafe/ScanVerify.php','SchoolSafe/ScanArrival.php','SchoolSafe/ScanFees.php','SchoolSafe/ScanCanteen.php','SchoolSafe/ScanPickup.php','SchoolSafe/FamilyRead.php','SchoolSafe/FamilyRegister.php','SchoolSafe/FeeModelsRead.php','SchoolSafe/FeeModelsManage.php']as$key)$pdo->exec("INSERT INTO staff_exceptions(user_id,modname,can_use,can_edit) VALUES(".$uid.','.$q($key).",'Y','Y')");
     $grade=(int)$pdo->query('SELECT id FROM school_gradelevels WHERE school_id='.$school.' ORDER BY id LIMIT 1')->fetchColumn();
     $next=(int)$pdo->query('SELECT COALESCE(max(student_id),0)+100 FROM students')->fetchColumn();
     foreach([$next,$next+1]as$id){$pdo->exec("INSERT INTO students(student_id,first_name,last_name) VALUES(".$id.",'Synthetic','HTTP fixture')");$students[]=$id;
         $pdo->exec('INSERT INTO student_enrollment(student_id,school_id,syear,grade_id,start_date) VALUES('.$id.','.$school.',2026,'.($grade?:'NULL').",CURRENT_DATE-interval '1 day')");}
+    $parentId=$uid+1;$parentName=$prefix.'.parent';
+    $pdo->exec("INSERT INTO staff(staff_id,syear,first_name,last_name,username,password,profile,profile_id,schools,current_school_id,last_login) VALUES(".$parentId.",2026,'Synthetic','Parent',".$q($parentName).','.$q(encrypt_password($password)).",'parent',NULL,".$q(','.$school.',').','.$school.',CURRENT_TIMESTAMP)');$parents[$parentId]=$parentName;
+    foreach(['misc/Portal.php','SchoolSafe/Notifications.php']as$key)$pdo->exec("INSERT INTO staff_exceptions(user_id,modname,can_use,can_edit) VALUES(".$parentId.','.$q($key).",'Y','N')");
+    $pdo->exec('INSERT INTO students_join_users(student_id,staff_id) VALUES('.$next.','.$parentId.')');
     $r=requestNative('/index.php');$doc=new DOMDocument();@$doc->loadHTML($r['body']);$xp=new DOMXPath($doc);$form=['USERNAME'=>$prefix,'PASSWORD'=>$password];
     foreach($xp->query('//form[@id="loginform"]//input[@name]')as$input){$name=$input->getAttribute('name');if(!isset($form[$name]))$form[$name]=$input->getAttribute('value');}
     requestNative('/index.php',$form);
     $r=requestNative('/studio-native.php');$doc=new DOMDocument();@$doc->loadHTML($r['body']);$xp=new DOMXPath($doc);$nodes=$xp->query('//*[@id="native-issue-csrf"]');
     gate($r['status']===200&&$nodes->length===1,'Real native login reaches authorized Studio');$csrf=$nodes->item(0)->getAttribute('value');
+    foreach(['studio-native-client.js','restored-studio-native.js']as$asset){
+        $version=substr(hash_file('sha256','/var/www/html/schoolsafe-card-bridge/'.$asset),0,16);
+        gate(str_contains($r['body'],'/schoolsafe-card-bridge/'.$asset.'?v='.$version),'Fresh Studio HTML versions changed native asset '.$asset);
+    }
     $r=requestNative('/card-bridge-prepare.php?resource=studio-input&student_id='.$next);
     gate($r['status']===200&&($r['json']['data']['backend']??null)==='native-registry','Authenticated preparation uses native provider without lab bridge');
     gate(($r['json']['operationPerformed']??null)===false,'Authenticated preparation performs no issuance');
@@ -51,6 +59,8 @@ try{
     $r=requestNative('/card-bridge-issue.php',$body);gate($r['status']===200&&($r['json']['result']??null)==='ISSUED'&&$count($next)===1,'Authorized HTTP action writes one native card [status='.$r['status'].']');$qr=$r['json']['data']['credential']['qr_payload'];
     $r=requestNative('/card-bridge-prepare.php?resource=studio-input&student_id='.$next);gate(($r['json']['data']['input']['credential']['qr_payload']??null)===$qr,'Actual Studio rereads the issued QR');
     $r=requestNative('/card-bridge-issue.php',$body);gate(($r['json']['result']??null)==='ALREADY_ISSUED'&&($r['json']['operationPerformed']??null)===false&&$count($next)===1,'HTTP replay is stable and not another issuance');
+    $r=requestNative('/scanner-native.php');
+    gate(str_contains($r['body'],'scanner-native.js?v=native-entry-operation-4'),'Fresh scanner HTML invalidates the pre-cancellation client cache');
     $r=requestNative('/scanner-relay.php?operation=capabilities');$scanToken=$r['json']['csrfToken']??'';gate($scanToken!=='','Native scanner supplies its separate CSRF token');
     $r=requestNative('/scanner-relay.php?operation=scan',json_encode(['mode'=>'verify','qr_payload'=>$qr]),['Content-Type: application/json','X-SchoolSafe-CSRF: '.$scanToken]);
     gate($r['status']===200&&($r['json']['data']['result']??null)==='VALID','Actual authenticated scanner accepts the actual HTTP-issued QR');
@@ -90,10 +100,13 @@ try{
     $r=requestNative('/scanner-relay.php?operation=scan',json_encode($canteenBody),$scanHeaders);$canteen=$r['json']['data']??[];
     gate(($canteen['balance']??null)==='12.50','Explicit native account read right enables actual canteen detail');
     gate((string)$pdo->query('SELECT balance FROM food_service_accounts WHERE account_id='.$foodAccount)->fetchColumn()==='12.50','Canteen verification performs no debit');
+    $staffBefore=(int)$pdo->query('SELECT count(*) FROM staff')->fetchColumn();
     $familyBody=['action'=>'register-family','nativeStudentId'=>(string)$next,'guardianType'=>'mere','fullName'=>'Synthetic collector','phone'=>'','isPrimary'=>true];
     $r=requestNative('/scanner-relay.php?operation=management',json_encode($familyBody),$scanHeaders);$guardian=$r['json']['data']['guardian_id']??null;
     if($r['json']===null)throw new RuntimeException('Native family HTTP non-JSON: '.substr(preg_replace('/\s+/',' ',strip_tags($r['body'])),0,1400));
-    gate($r['status']===200&&is_string($guardian),'Actual family registration uses native identity without creating an account [status='.$r['status'].',error='.(string)($r['json']['error']??'non-json').']');
+    gate($r['status']===200&&is_string($guardian),'Actual family registration uses native identity without creating an account [status='.$r['status'].',error='.(string)($r['json']['error']??($r['json']===null?'non-json':'none')).']');
+    gate($pdo->query('SELECT phone FROM schoolsafe_pickup_guardians WHERE id='.(int)$guardian)->fetchColumn()==='','Missing phone retains exact native empty default, not NULL or invented number');
+    gate((int)$pdo->query('SELECT count(*) FROM staff')->fetchColumn()===$staffBefore,'Family registration creates no forced account');
     $r=requestNative('/scanner-relay.php?operation=management',json_encode(['action'=>'school-list','nativeStudentId'=>(string)$next]),$scanHeaders);
     gate($r['status']===200&&is_array($r['json']['data']??null),'Actual scoped family list is available without bridge');
     $pickupBody=['mode'=>'pickup','qr_payload'=>$qr,'location_id'=>(string)$checkpoint];
@@ -114,12 +127,44 @@ try{
     gate((int)$pdo->query("SELECT count(*) FROM entry_exit_student_records WHERE student_id=".$next." AND type='out'")->fetchColumn()===1,'Pickup proof replay creates no second departure');
     $r=requestNative('/scanner-relay.php?operation=scan',json_encode($entryBody),$scanHeaders);
     gate(($r['json']['data']['entry_allowed']??null)===false&&(int)$pdo->query("SELECT count(*) FROM entry_exit_student_records WHERE student_id=".$next." AND type='in'")->fetchColumn()===1,'Old arrival intention after pickup is not a new admission');
+    $pdo->exec("INSERT INTO staff_exceptions(user_id,modname,can_use,can_edit) VALUES(".$uid.",'Student_Billing/StudentFees.php','Y','Y')");
+    $eventsBefore=(int)$pdo->query('SELECT count(*) FROM schoolsafe_notify_events WHERE student_id='.$next)->fetchColumn();
+    $r=requestNative('/scanner-relay.php?operation=fees',json_encode(['action'=>'save','label'=>'Synthetic HTTP policy','threshold'=>'80.00','tolerance'=>10]),$scanHeaders);$models=$r['json']['data']??[];$model=$models[0]??[];
+    gate($r['status']===200&&is_string($model['id']??null)&&($model['active']??null)===false,'Actual native financial model HTTP save is inactive initially');
+    $r=requestNative('/scanner-relay.php?operation=fees',json_encode(['action'=>'activate','id'=>$model['id']]),$scanHeaders);
+    gate($r['status']===200&&($r['json']['data'][0]['active']??null)===true,'Actual native financial model HTTP activation works');
+    gate((int)$pdo->query('SELECT count(*) FROM schoolsafe_notify_events WHERE student_id='.$next)->fetchColumn()===$eventsBefore,'Policy preparation/activation creates no business notification');
+    $redEntry=$entryBody;$redEntry['request_key']='aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+    $r=requestNative('/scanner-relay.php?operation=scan',json_encode($redEntry),$scanHeaders);
+    gate(($r['json']['data']['reason']??null)==='FEE_CONTROL_DENIED'&&(int)$pdo->query("SELECT count(*) FROM entry_exit_student_records WHERE student_id=".$next." AND type='in'")->fetchColumn()===1,'Real native financial red blocks a new admission without creating absence or arrival');
+    // Parent one was a legal native recipient at business-write time.
+    // Parent two is linked only afterward and cannot inherit the frozen money.
+    $lateParent=$uid+2;$lateName=$prefix.'.late';
+    $pdo->exec("INSERT INTO staff(staff_id,syear,first_name,last_name,username,password,profile,profile_id,schools,current_school_id,last_login) VALUES(".$lateParent.",2026,'Synthetic','Late parent',".$q($lateName).','.$q(encrypt_password($password)).",'parent',NULL,".$q(','.$school.',').','.$school.',CURRENT_TIMESTAMP)');$parents[$lateParent]=$lateName;
+    foreach(['misc/Portal.php','SchoolSafe/Notifications.php']as$key)$pdo->exec("INSERT INTO staff_exceptions(user_id,modname,can_use,can_edit) VALUES(".$lateParent.','.$q($key).",'Y','N')");
+    $pdo->exec('INSERT INTO students_join_users(student_id,staff_id) VALUES('.$next.','.$lateParent.')');
+    foreach($parents as$parent=>$name){
+        $cookie=tempnam('/tmp','scan-http-parent-');$cookies[]=$cookie;
+        $r=requestNative('/index.php');$doc=new DOMDocument();@$doc->loadHTML($r['body']);$xp=new DOMXPath($doc);$form=['USERNAME'=>$name,'PASSWORD'=>$password];
+        foreach($xp->query('//form[@id="loginform"]//input[@name]')as$input){$field=$input->getAttribute('name');if(!isset($form[$field]))$form[$field]=$input->getAttribute('value');}
+        requestNative('/index.php',$form);
+        $r=requestNative('/parent-notifications.php');$notices=$r['json']['data']['notifications']??null;
+        gate($r['status']===200&&is_array($notices),'Actual parent inbox HTTP is available for synthetic role '.($parent===$parentId?'original':'late'));
+        $financial=array_values(array_filter($notices,fn($n)=>($n['event_type']??null)==='financial.control'));
+        gate(count($financial)===($parent===$parentId?2:0),$parent===$parentId?'Original recipient reads its actual frozen financial observation':'New parent link does not inherit historical financial recipients');
+        if($parent===$parentId){
+            $pdo->exec('DELETE FROM students_join_users WHERE student_id='.$next.' AND staff_id='.$parent);
+            $r=requestNative('/parent-notifications.php');$after=$r['json']['data']['notifications']??[];
+            gate(!array_filter($after,fn($n)=>($n['student_id']??null)===(string)$next),'Existing parent session loses private messages after live link revocation');
+        }
+    }
+    $cookie=$operatorCookie;
     $pdo->exec("INSERT INTO schoolsafe_account_state(person_key,school_id,state) VALUES(".$q($person).','.$school.",'readonly')");
     $r=requestNative('/card-bridge-issue.php',array_replace($body,['student_id'=>(string)($next+1)]));gate(($r['json']['result']??null)!=='ISSUED'&&$count($next+1)===0,'Readonly account cannot mint another child card');
 }catch(Throwable$e){$failure=$e->getMessage();}
 finally{
     if($students){$ids=implode(',',array_map('intval',$students));
-        foreach(['schoolsafe_notify_events','schoolsafe_entry_requests','schoolsafe_fee_consults','schoolsafe_pickup_proofs','schoolsafe_pickup_authorizations','schoolsafe_pickup_guardians','entry_exit_student_records','food_service_student_accounts','billing_fees','billing_payments','schoolsafe_student_cards','student_enrollment','students']as$table)$pdo->exec('DELETE FROM '.$table.' WHERE student_id IN('.$ids.')');
+        foreach(['schoolsafe_notify_events','schoolsafe_entry_requests','schoolsafe_fee_consults','schoolsafe_pickup_proofs','schoolsafe_pickup_authorizations','schoolsafe_pickup_guardians','entry_exit_student_records','food_service_student_accounts','billing_fees','billing_payments','schoolsafe_student_cards','students_join_users','student_enrollment','students']as$table)$pdo->exec('DELETE FROM '.$table.' WHERE student_id IN('.$ids.')');
     }
     if($checkpoint!==null)$pdo->exec('DELETE FROM entry_exit_checkpoints WHERE id='.$checkpoint);
     if($foodAccount!==null)$pdo->exec('DELETE FROM food_service_accounts WHERE account_id='.$foodAccount);
@@ -128,6 +173,7 @@ finally{
         foreach($policyRows as$row){$columns=array_keys($row);$restore=$pdo->prepare('INSERT INTO program_config('.implode(',',$columns).') VALUES('.implode(',',array_fill(0,count($columns),'?')).')');$restore->execute(array_values($row));}
     }
     $pdo->exec('DELETE FROM schoolsafe_account_state WHERE person_key='.$q($person));
+    foreach($parents as$parent=>$name)$pdo->exec('DELETE FROM staff_exceptions WHERE user_id='.$parent.';DELETE FROM program_user_config WHERE user_id='.$parent.';DELETE FROM staff WHERE staff_id='.$parent.' AND username='.$q($name));
     if($uid!==null){$pdo->exec('DELETE FROM staff_exceptions WHERE user_id='.$uid);$pdo->exec('DELETE FROM program_user_config WHERE user_id='.$uid);$pdo->exec('DELETE FROM staff WHERE staff_id='.$uid.' AND username='.$q($prefix));}
     if($moduleRow){
         // Native UPDATE changes updated_at. Restore the exact fixture-owned row,
@@ -136,7 +182,7 @@ finally{
         $restore=$pdo->prepare('INSERT INTO config(school_id,title,config_value,created_at,updated_at) VALUES(?,?,?,?,?)');
         $restore->execute(array_values($moduleRow));$pdo->commit();
     }
-    if(is_file($cookie))unlink($cookie);
+    foreach($cookies as$path)if(is_file($path))unlink($path);
 }
 echo json_encode(['status'=>$failure?'FAIL':'PASS','checks'=>count($results),'results'=>$results,'error'=>$failure,'scope'=>'authenticated HTTP in nonce-owned exact image; only synthetic fixture identities; no provider or physical camera'])."\n";
 exit($failure?1:0);

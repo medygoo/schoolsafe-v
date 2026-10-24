@@ -60,7 +60,8 @@ $preview->setAttribute('type', 'button');
 $preview->setAttribute('disabled', 'disabled');
 $xpath->query('//*[@id="native-lookup"]')->item(0)->appendChild($preview);
 foreach (['studio-original-adapter.js', 'studio-native-client.js', 'restored-studio-data.js', 'restored-studio-qr-guard.js', 'studio-official-print-render.js', 'restored-studio-native.js'] as $file) {
-    $script = $doc->createElement('script'); $script->setAttribute('src', '/schoolsafe-card-bridge/' . $file);
+    $version = substr(hash_file('sha256', __DIR__ . '/schoolsafe-card-bridge/' . $file), 0, 16);
+    $script = $doc->createElement('script'); $script->setAttribute('src', '/schoolsafe-card-bridge/' . $file . '?v=' . $version);
     $doc->getElementsByTagName('body')->item(0)->appendChild($script);
 }
 $presentation = $doc->createElement('link');
