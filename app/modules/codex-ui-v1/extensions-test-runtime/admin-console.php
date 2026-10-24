@@ -27,6 +27,7 @@
 
 require_once __DIR__ . '/Warehouse.php';
 require_once __DIR__ . '/ProgramFunctions/SchoolSafeWorkspace.fnc.php';
+require_once __DIR__ . '/ProgramFunctions/SchoolSafeSchoolAccessView.fnc.php';
 
 header( 'Content-Type: text/html; charset=utf-8' );
 header( 'X-Content-Type-Options: nosniff' );
@@ -173,6 +174,17 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 		{
 			$error = 'Préparez les accès initiaux dans « Administrateurs et accès ». Ce parcours remet une fiche confidentielle et oblige l’administrateur scolaire à choisir son mot de passe personnel. Aucun mot de passe modifié ici.';
 		}
+        elseif ( $action === 'school_access_save' )
+        {
+            if ( ! $schoolsafe_global_admin || ! is_string( $_POST['access_school'] ?? null )
+                || ! preg_match( '/^[1-9][0-9]*$/D', $_POST['access_school'] ) )
+                $error = 'Administration des responsabilités réservée à ProDéli.';
+            else
+            {
+                $access_result = SchoolSafeAccessSubmit( (int) $_POST['access_school'], true, 'console_token' );
+                if ( $access_result['status'] === 'refused' ) $error = $access_result['error'];
+            }
+        }
 		elseif ( $action === 'create' && ! $schoolsafe_global_admin )
 		{
 			$error = "Seul le proprietaire de la plateforme peut creer un administrateur de plateforme. Creez vos comptes dans l'ecran Utilisateurs.";
@@ -783,11 +795,30 @@ table.schools-list button{padding:6px 12px;font-size:14px}
 <?php endif; ?>
 		<a href="/plateforme/prodeli">PRODELI</a>
 <?php if ( $schoolsafe_global_admin ) : ?>
+<?php foreach ( (array) $schools as $school_row ) : ?>
+        <a href="/admin-console.php?access_school=<?php echo (int) $school_row['ID']; ?>#school-native-access">Accès — <?php echo htmlspecialchars( (string) $school_row['TITLE'], ENT_QUOTES, 'UTF-8' ); ?></a>
+<?php endforeach; ?>
 		<a href="/plateforme/prodeli/sms" style="margin-right:12px">Communications — Gestion des SMS</a>
 		<a href="/plateforme/prodeli/whatsapp" style="margin-right:12px">Communications — Gestion WhatsApp</a>
 <?php endif; ?>
 	</nav>
 
+    <?php
+    if ( $schoolsafe_global_admin )
+    {
+        $access_school_raw = $_POST['access_school'] ?? $_GET['access_school'] ?? '';
+        $access_school = is_string( $access_school_raw ) && preg_match( '/^[1-9][0-9]*$/D', $access_school_raw ) ? (int) $access_school_raw : 0;
+        $access_school_known = false;
+        foreach ( (array) $schools as $school_row ) if ( (int) $school_row['ID'] === $access_school ) $access_school_known = true;
+        if ( $access_school_known )
+        {
+            if ( isset( $access_result ) && $access_result['status'] !== 'refused' )
+                echo '<p role="status">' . ( $access_result['status'] === 'saved' ? 'Accès scolaires enregistrés ; aucun compte créé, autres titulaires inchangés.' : 'Accès déjà identiques ; aucune modification.' ) . '</p>';
+            SchoolSafeAccessRender( $access_school, $syear, (int) ( $_POST['access_staff'] ?? $_GET['access_staff'] ?? 0 ),
+                true, '/admin-console.php?access_school=' . $access_school, 'console_token' );
+        }
+    }
+    ?>
 	<?php
 	if ( $flash && $flash['type'] === 'created' )
 	{

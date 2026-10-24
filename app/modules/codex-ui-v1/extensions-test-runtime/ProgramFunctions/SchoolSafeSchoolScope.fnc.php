@@ -196,12 +196,12 @@ function SchoolSafeScopeDeny()
  *
  * @return bool
  */
-function SchoolSafeProfileStrictlyWithin( $target, $reference )
+function SchoolSafeProfileStrictlyWithin( $target, $reference, $allow_equal = false )
 {
     $target = (int) $target;
     $reference = (int) $reference;
 
-    if ( $target < 1 || $reference < 1 || $target === $reference ) return false;
+    if ( $target < 1 || $reference < 1 || ( $target === $reference && ! $allow_equal ) ) return false;
 
     $rows = DBGet( "SELECT PROFILE_ID,MODNAME,COALESCE(CAN_USE,'') AS CAN_USE,COALESCE(CAN_EDIT,'') AS CAN_EDIT
         FROM profile_exceptions
@@ -213,10 +213,13 @@ function SchoolSafeProfileStrictlyWithin( $target, $reference )
 
     foreach ( (array) $rows as $row )
     {
-        $right = $row['MODNAME'] . '|' . $row['CAN_USE'] . '|' . $row['CAN_EDIT'];
-
-        if ( (int) $row['PROFILE_ID'] === $target ) $target_rights[$right] = true;
-        else $reference_rights[$right] = true;
+        foreach ( [ 'CAN_USE', 'CAN_EDIT' ] as $flag )
+        {
+            if ( $row[$flag] !== 'Y' ) continue;
+            $right = $row['MODNAME'] . '|' . $flag;
+            if ( (int) $row['PROFILE_ID'] === $target ) $target_rights[$right] = true;
+            if ( (int) $row['PROFILE_ID'] === $reference ) $reference_rights[$right] = true;
+        }
     }
 
     // Un profil sans aucun droit n'est pas une delegation : rien a contenir.
@@ -227,8 +230,8 @@ function SchoolSafeProfileStrictlyWithin( $target, $reference )
         if ( ! isset( $reference_rights[$right] ) ) return false;
     }
 
-    // Strictement : l'acteur doit posseder au moins un droit de plus.
-    return (bool) array_diff_key( $reference_rights, $target_rights );
+    // Equality is permitted only by a caller which has established school ownership.
+    return $allow_equal || (bool) array_diff_key( $reference_rights, $target_rights );
 }
 
 /**
@@ -278,13 +281,13 @@ function SchoolSafeProfileDelegable( $profile_id, $profile = null )
 
     $kind = (string) $target_kind[1]['PROFILE'];
 
-    // Administrator profiles (platform admin, director, accountant...) manage
-    // schools and permissions. A global administrator hands out any of them; a
-    // scoped administrator only one whose rights are STRICTLY narrower than
-    // theirs: a director may name an accountant, never a peer director and
-    // never a platform administrator (identical or wider rights are refused).
-    if ( $kind === 'admin'
-        && ! SchoolSafeProfileStrictlyWithin( (int) $profile_id, (int) User( 'PROFILE_ID' ) ) )
+    // A school-owned profile may contain the complete delegated school envelope.
+    // Global templates retain their old strict ceiling; equality never creates
+    // a platform administrator or relaxes SchoolSafeProfileSchoolAssignable().
+    $owner = SchoolSafeProfileSchoolId( (string) $profile_id );
+    $school_owned = is_int( $owner ) && SchoolSafeSchoolAllowed( $owner );
+    if ( ( $kind === 'admin' || $school_owned )
+        && ! SchoolSafeProfileStrictlyWithin( (int) $profile_id, (int) User( 'PROFILE_ID' ), $school_owned ) )
     {
         return false;
     }

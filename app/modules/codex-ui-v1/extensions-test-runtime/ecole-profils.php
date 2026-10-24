@@ -20,6 +20,7 @@ header( 'X-Content-Type-Options: nosniff' );
 chdir( __DIR__ );
 
 require_once __DIR__ . '/Warehouse.php';
+require_once __DIR__ . '/ProgramFunctions/SchoolSafeSchoolAccessView.fnc.php';
 
 $school_id = (int) ( $_GET['school_id'] ?? 0 );
 
@@ -56,13 +57,23 @@ if ( ! SchoolSafeGlobalAdmin() && ! SchoolSafeSchoolAllowed( $school_id ) )
 }
 
 $school_title = DBGetOne( "SELECT TITLE FROM schools WHERE ID='" . $school_id . "'" );
-$profiles = DBGet( "SELECT ID,TITLE,PROFILE FROM user_profiles ORDER BY PROFILE,ID" );
+$profiles = DBGet( "SELECT ID,TITLE,PROFILE FROM user_profiles"
+    . ( SchoolSafeSchoolProfileColumnExists() ? " WHERE SCHOOL_ID IS NULL OR SCHOOL_ID='" . $school_id . "'" : '' )
+    . " ORDER BY PROFILE,ID" );
 
 // --- L3.1 : profils propres à l'école (user_profiles.school_id, 034) --------
 // Réutilise le moteur natif (DBInsert + profile_exceptions), jamais de logique
 // parallèle : chaque droit demandé doit exister à l'identique chez l'acteur.
 $hub_message = '';
 $hub_error = '';
+$profile_context = null;
+if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST' && ( $_POST['access_action'] ?? '' ) === 'save' )
+{
+    $result = SchoolSafeAccessSubmit( $school_id, false, 'token' );
+    $hub_error = $result['status'] === 'refused' ? $result['error'] : '';
+    $hub_message = $result['status'] === 'saved' ? 'Accès personnels enregistrés ; autres comptes inchangés.'
+        : ( $result['status'] === 'unchanged' ? 'Accès déjà identiques ; aucune modification.' : '' );
+}
 
 // Droits effectifs de l'acteur : profil nommé, sinon exceptions individuelles.
 // Table MODNAME => [ use, edit ] : un droit demandé est couvert dès que
@@ -71,9 +82,9 @@ $hub_error = '';
 function SchoolSafeHubActorRights()
 {
 	$rights = [];
-	$pid = (int) User( 'PROFILE_ID' );
+	$pid = User( 'PROFILE_ID' );
 
-	if ( $pid > 0 )
+	if ( $pid !== null && $pid !== false && (string) $pid !== '' )
 	{
 		$rows = DBGet( "SELECT MODNAME,CAN_USE,CAN_EDIT FROM profile_exceptions WHERE PROFILE_ID='" . $pid . "'" );
 	}
@@ -107,17 +118,11 @@ function SchoolSafeHubRightsCovered( $actor_rights, $wanted )
 	return true;
 }
 
-// Reste-t-il à l'acteur au moins un droit non demandé (jamais un pair) ?
+// Compatibilité du contrôleur natif : un profil propre à l'école peut
+// contenir tous les droits délégables, sans retrait artificiel d'un droit.
 function SchoolSafeHubRightsNarrower( $actor_rights, $wanted )
 {
-	foreach ( $actor_rights as $mod => $flags )
-	{
-		if ( empty( $wanted[$mod] ) ) return true;
-		if ( $flags[0] && empty( $wanted[$mod][0] ) ) return true;
-		if ( $flags[1] && empty( $wanted[$mod][1] ) ) return true;
-	}
-
-	return false;
+	return SchoolSafeHubRightsCovered( $actor_rights, $wanted );
 }
 
 if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST'
@@ -130,7 +135,8 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST'
 			throw new RuntimeException( 'Profils d’école indisponibles : migration 034 non appliquée sur cette base.' );
 		}
 
-		if ( ! is_string( $_POST['token'] ?? null )
+		if ( empty( $_SESSION['token'] ) || ( $_POST['profile_confirm'] ?? '' ) !== 'Y'
+            || ! is_string( $_POST['token'] ?? null )
 			|| ! hash_equals( (string) ( $_SESSION['token'] ?? '' ), $_POST['token'] ) )
 		{
 			throw new RuntimeException( 'Requête expirée. Rechargez la page.' );
@@ -146,6 +152,9 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST'
 		}
 
 		$action = (string) $_POST['ecole_profil_action'];
+        $profile_context = SchoolSafeAccessProfileBegin( $school_id,
+            $action === 'creer' ? 0 : (int) ( $_POST['profil_id'] ?? 0 ),
+            is_string( $_POST['profile_version'] ?? null ) ? $_POST['profile_version'] : '' );
 		$reserved_mods = [ 'Users/Profiles.php', 'Users/Exceptions.php',
 			'Users/User.php&category_id=1&schools', 'Users/User.php&category_id=1&user_profile' ];
 
@@ -196,14 +205,15 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST'
 				}
 			}
 
-			// Jamais un pair : le clone reste strictement plus étroit que l'acteur.
+			// L'ensemble scolaire complet est autorisé, sans dépasser l'acteur.
 			if ( ! SchoolSafeHubRightsNarrower( $actor_rights, $wanted ) )
 			{
-				throw new RuntimeException( 'Un profil identique au vôtre ne peut pas être créé.' );
+				throw new RuntimeException( 'Le profil dépasse vos droits délégables.' );
 			}
 
 			$new_id = DBInsert( 'user_profiles',
 				[ 'TITLE' => $title, 'PROFILE' => $base, 'SCHOOL_ID' => $school_id ], 'id' );
+            if ( (int) $new_id < 1 ) throw new RuntimeException( 'Profil natif non enregistré.' );
 
 			foreach ( $wanted as $mod => $flags )
 			{
@@ -230,7 +240,8 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST'
 
 			if ( $action === 'supprimer' )
 			{
-				// Sémantique native (Profiles.php) : suppression + matérialisation.
+                if ( $profile_context['holders'] ) throw new RuntimeException( 'Profil encore attribué : réattribuez les comptes avant suppression.' );
+				// Aucun détenteur : ne jamais convertir silencieusement un compte en Custom.
 				DBQuery( "DELETE FROM user_profiles WHERE ID='" . $pid . "';" );
 				DBQuery( "DELETE FROM staff_exceptions WHERE USER_ID IN (SELECT STAFF_ID FROM staff WHERE PROFILE_ID='" . $pid . "');" );
 				DBQuery( "DELETE FROM profile_exceptions WHERE PROFILE_ID='" . $pid . "';" );
@@ -273,7 +284,7 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST'
 
 				if ( $wanted && ! SchoolSafeHubRightsNarrower( $actor_rights, $wanted ) )
 				{
-					throw new RuntimeException( 'Un profil identique au vôtre est refusé.' );
+					throw new RuntimeException( 'Le profil dépasse vos droits délégables.' );
 				}
 
 				DBQuery( "DELETE FROM profile_exceptions WHERE PROFILE_ID='" . $pid . "';" );
@@ -297,9 +308,13 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST'
 		{
 			throw new RuntimeException( 'Action inconnue.' );
 		}
+        SchoolSafeAccessProfileFinish( $profile_context, (int) ( $action === 'creer' ? $new_id : $pid ), $action );
+        $profile_context = null;
 	}
 	catch ( Throwable $e )
 	{
+        if ( $profile_context !== null ) { global $db_connection; @pg_query( $db_connection, 'ROLLBACK' ); }
+        $hub_message = '';
 		$hub_error = $e->getMessage();
 	}
 }
@@ -343,7 +358,7 @@ small{color:#456}
 <?php endif; ?>
 <p><small>Compte = connexion (staff) · Profil = famille native (admin/teacher/parent) · Fonction = titre nommé
 (Directeur, Comptable, Gardien…) · Permissions = profile_exceptions (+ staff_exceptions si personnalisées) ·
-Délégation = attribution d’un profil STRICTEMENT plus étroit · École = périmètre SCHOOLS.
+Délégation = ensemble scolaire autorisé, complet ou partiel · École = périmètre SCHOOLS.
 L’attribution reste native ; cette page contrôle et oriente.</small></p>
 
 <section class="card" aria-labelledby="t-matrix">
@@ -377,20 +392,22 @@ if ( $delegable )
 <td><?php echo htmlspecialchars( $p['PROFILE'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><span class="badge <?php echo $delegable && ! $reserved_hit ? 'ok' : 'no'; ?>">
 <?php echo $delegable && ! $reserved_hit ? 'Oui' : 'Non — élévation refusée'; ?></span></td>
-<td><a href="Modules.php?modname=Users/Profiles.php">Profiles natif</a>
-· <a href="Modules.php?modname=Users/Exceptions.php">Permissions natives</a></td>
+<td>Profils propres à l’école : gestion ci-dessous. Les profils globaux restent protégés.</td>
 </tr>
 <?php endforeach; ?>
 </tbody>
 </table>
 <p><small>Un administrateur scolaire ne peut s’accorder que des permissions qu’il possède déjà :
-tout profil identique, plus large ou touchant un écran réservé global est refusé côté serveur
+un profil propre à l’école peut porter le même ensemble autorisé ; tout droit plus large ou réservé global reste refusé côté serveur
 (SchoolSafeProfileDelegable + AllowEdit + SchoolSafeScopeDelegates). Le changement de contexte
 d’école ne change jamais les permissions effectives : vos droits sont l’intersection de votre
 profil et de votre périmètre.</small></p>
 </section>
 
 <?php
+if ( SchoolSafeNativeCommandPermission( 'SchoolSafe/DelegationRead.php' ) )
+    SchoolSafeAccessRender( $school_id, (int) UserSyear(), (int) ( $_POST['access_staff'] ?? $_GET['access_staff'] ?? 0 ),
+        false, '/ecoles/' . $school_id . '/profils', 'token' );
 $ecole_profiles = SchoolSafeSchoolProfileColumnExists()
 	? DBGet( "SELECT ID,TITLE,PROFILE FROM user_profiles WHERE SCHOOL_ID='" . $school_id . "' ORDER BY ID" )
 	: [];
@@ -411,6 +428,8 @@ sort( $actor_mods );
 <form method="post" action="/ecoles/<?php echo $school_id; ?>/profils">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( (string) ( $_SESSION['token'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="ecole_profil_action" value="droits">
+<input type="hidden" name="profile_version" value="<?php echo SchoolSafeAccessProfileVersion( (int) $ep['ID'] ); ?>">
+<p><label><input type="checkbox" name="profile_confirm" value="Y" required> Je confirme la modification pour tous les détenteurs listés.</label></p>
 <input type="hidden" name="profil_id" value="<?php echo (int) $ep['ID']; ?>">
 <table>
 <thead><tr><th>Écran</th><th>Use</th><th>Edit</th></tr></thead>
@@ -427,6 +446,8 @@ sort( $actor_mods );
 <form method="post" action="/ecoles/<?php echo $school_id; ?>/profils" onsubmit="return confirm('Supprimer ce profil ? Ses détenteurs perdront ces droits.');">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( (string) ( $_SESSION['token'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="ecole_profil_action" value="supprimer">
+<input type="hidden" name="profile_version" value="<?php echo SchoolSafeAccessProfileVersion( (int) $ep['ID'] ); ?>">
+<p><label><input type="checkbox" name="profile_confirm" value="Y" required> Je confirme la suppression de ce profil sans détenteur.</label></p>
 <input type="hidden" name="profil_id" value="<?php echo (int) $ep['ID']; ?>">
 <p><input type="submit" value="Supprimer le profil"></p>
 </form>
@@ -435,6 +456,7 @@ sort( $actor_mods );
 <form method="post" action="/ecoles/<?php echo $school_id; ?>/profils">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( (string) ( $_SESSION['token'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="ecole_profil_action" value="creer">
+<p><label><input type="checkbox" name="profile_confirm" value="Y" required> Je confirme la création de ce profil pour cette école.</label></p>
 <p><label>Nom du profil (max 100) <input type="text" name="titre" maxlength="100" required></label>
 <label>Base Rosario <select name="base"><option value="teacher">Enseignant</option><option value="admin">Administrateur</option></select></label></p>
 <table>
@@ -447,7 +469,7 @@ sort( $actor_mods );
 <?php endforeach; ?>
 </tbody>
 </table>
-<p><input type="submit" class="button-primary" value="Créer le profil d’école"> <small>Strictement plus étroit que vos droits ; famille parent refusée.</small></p>
+<p><input type="submit" class="button-primary" value="Créer le profil d’école"> <small>Tout ou partie de vos droits scolaires délégables ; famille parent refusée.</small></p>
 </form>
 </section>
 
@@ -471,7 +493,7 @@ $exc = DBGet( "SELECT e.USER_ID,e.MODNAME,e.CAN_USE,e.CAN_EDIT,s.USERNAME
 <?php endforeach; ?>
 </tbody>
 </table>
-<p><a href="Modules.php?modname=Users/Exceptions.php">Ouvrir les permissions natives</a></p>
+<p>Pour modifier un compte de cette école, utilisez les accès personnels ci-dessus ; aucune exception ignorée par un profil nommé n’est ajoutée.</p>
 </section>
 </main>
 </body>
