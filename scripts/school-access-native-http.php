@@ -23,10 +23,15 @@ try{
  $pdo->exec('UPDATE config SET config_value='.$q(serialize($modules))." WHERE school_id=0 AND title='MODULES'");
  $baseProfile=(int)$pdo->query("INSERT INTO user_profiles(title,profile) VALUES(".$q($prefix.'.base').",'admin') RETURNING id")->fetchColumn();
  $teacherProfile=(int)$pdo->query("INSERT INTO user_profiles(title,profile) VALUES(".$q($prefix.'.teacher').",'teacher') RETURNING id")->fetchColumn();
+ // The central account needs the real reader prerequisite for ProDéli pages.
+ // Keep its profile separate: never enlarge the school base profile to make QA pass.
+ $centralProfile=(int)$pdo->query("INSERT INTO user_profiles(title,profile) VALUES(".$q($prefix.'.central').",'admin') RETURNING id")->fetchColumn();
+ $pdo->exec('INSERT INTO profile_exceptions(profile_id,modname,can_use,can_edit) VALUES('.$centralProfile.", 'Users/User.php','Y','')");
+ gate((int)$pdo->query('SELECT count(*) FROM profile_exceptions WHERE profile_id='.$centralProfile." AND modname='Users/User.php' AND can_use='Y'")->fetchColumn()===1,'synthetic central actor explicitly has the native ProDéli reader prerequisite');
  foreach([$baseProfile,$teacherProfile]as$pid)foreach(['misc/Portal.php','Students/Student.php']as$key)$pdo->exec('INSERT INTO profile_exceptions(profile_id,modname,can_use,can_edit) VALUES('.$pid.','.$q($key).",'Y','Y')");
  $first=(int)$pdo->query('SELECT coalesce(max(staff_id),0)+100 FROM staff')->fetchColumn();
  for($i=0;$i<6;$i++){$id=$first+$i;$ids[]=$id;$role=$i<2?'admin':'teacher';$scope=$i===0?'NULL':$q(','.$school.',');
-  $pdo->exec('INSERT INTO staff(staff_id,syear,username,password,first_name,last_name,profile,profile_id,schools,current_school_id,last_login) VALUES('.$id.',2026,'.$q($prefix.'.'.$i).','.$q(encrypt_password($password)).",'Synthetic','Native access',".$q($role).','.($i<2?$baseProfile:$teacherProfile).','.$scope.','.$school.',CURRENT_TIMESTAMP)');}
+  $pdo->exec('INSERT INTO staff(staff_id,syear,username,password,first_name,last_name,profile,profile_id,schools,current_school_id,last_login) VALUES('.$id.',2026,'.$q($prefix.'.'.$i).','.$q(encrypt_password($password)).",'Synthetic','Native access',".$q($role).','.($i===0?$centralProfile:($i===1?$baseProfile:$teacherProfile)).','.$scope.','.$school.',CURRENT_TIMESTAMP)');}
  $globalCookie=loginAs($prefix.'.0');
  $r=req('/schoolsafe-administrators.php?home=1');$homeLink='/admin-console.php?access_school='.$school.'#school-native-access';
  gate($r['status']===200&&document($r['body'])->query('//a[@href="'.$homeLink.'"]')->length===1,'authenticated ProDéli home exposes the school access button');
