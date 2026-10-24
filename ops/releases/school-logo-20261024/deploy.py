@@ -61,7 +61,9 @@ def qualification(release):
  for f,digest in release['files'].items():
   assert hashlib.sha256(git(SOURCE,PREFIX+f)).hexdigest()==digest and hashlib.sha256(git(release['commit'],PREFIX+f)).hexdigest()==digest
   if f not in NEW:assert hashlib.sha256(git(BASE_COMMIT,PREFIX+f)).hexdigest()==release['base_files'][f]
- http=load('logo-http.private.json');assert http['exit']==0 and http['stderr']=='' and http['test_sha256']==hashlib.sha256(git(TEST_SOURCE,'scripts/school-access-native-http.php')).hexdigest()
+ http=load('logo-http.private.json');test_bytes=(ROOT/'logo-http-test.private.php').read_bytes()
+ assert http['exit']==0 and http['stderr']=='' and http['test_sha256']==hashlib.sha256(test_bytes).hexdigest()
+ assert test_bytes.replace(b'\r\n',b'\n')==git(TEST_SOURCE,'scripts/school-access-native-http.php').replace(b'\r\n',b'\n')
  result=json.loads(http['stdout']);assert result['status']=='PASS' and result['checks']==61 and len(result['results'])==61 and result['error'] is None
  browser=load('logo-browser.json');assert browser['status']=='PASS' and browser['checks']==12
  mount=load('logo-mount-qa-proof.json');assert mount['status']=='PASS' and mount['read_write_as_www_data'] and mount['persisted_across_disposable_containers'] and mount['synthetic_file_removed'] and mount['production_untouched']
