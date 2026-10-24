@@ -24,4 +24,10 @@ The inherited recovery engine labels its container patch scope `prodeli-recovery
 
 No automatic rollback and never restore a dump over current business writes. Before cutover, any precondition failure aborts with current production untouched. After cutover failure retain old/new containers, proofs and session archives, report actual service state and diagnose. A deliberate app-image rollback must preserve current database writes/audit, signing environment, current sessions/cache and neighbors; do not rerun a historical backup restore. Do not choose people or change live permissions as a deployment workaround.
 
-Status before execution: recipe prepared; backup and deployment not yet claimed. Closure belongs in `docs/qualification/SCHOOL_NATIVE_ACCESS_20261024.md` and the commissioning report with actual proofs.
+## Executed closure
+
+Recipe/production checkout `44e246fdd037318c647ee25e8447bb83e3b88337`, branch `deployed/school-native-access-20261024`; qualified image/runtime above deployed.22offline guards and read-only native schema/service privilege preflight PASS. Fresh0600 PG backup685809bytes, archive valid, SHA256 `d1a6bf4e8de2c52b0147e14532a468460072e3b16fe87aa97819e1dd3fd71532`, never restored. Cutover8.68seconds,83session files transferred, configuration/environment/signing key/cache/five neighbors unchanged; stopped old container retained.
+
+Independent PASS:71sources+3protected dashboard hashes, healthy exact image and clean Git, complete HostConfig/environment/config unchanged, no missing unexpired sessions,9cache entries preserved, HTTPS login/recovery200 and anonymous scanner/family401, dispatch/recover workers absent. No production account mutations or external message tests. One final SSH schema-proof download timed out after the independent PASS; status was rechecked, only that proof was fetched, no redeployment.
+
+Private evidence `school-scan-20261023/access-deployment-r1/production-{deployment,backup,schema}-proof.json` and `production-independent-verification-proof.json`. [Full closure](../../../docs/qualification/SCHOOL_NATIVE_ACCESS_20261024.md). Software is deployed; actual school/operator/task choices and physical/provider/printing commissioning remain separate human gates.

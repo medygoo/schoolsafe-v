@@ -1,8 +1,8 @@
-# Administration native des accès — étapes 1 et 2 validées, NON DÉPLOYÉ
+# Administration native des accès — étapes 1, 2 et 3 terminées, logiciel DÉPLOYÉ
 
 ## Porte propriétaire la plus récente
 
-Traiter les étapes une par une, informer après chaque étape finie puis attendre un GO. **Étape 1 terminée ; après GO explicite, étape 2 terminée également. Attendre un nouveau GO avant l'étape 3 / tout déploiement.** Cette instruction remplace la poursuite automatique du mandat précédent.
+Traiter les étapes une par une, informer après chaque étape finie puis attendre un GO. **Étapes 1 et 2 validées puis GO explicite reçu pour l'étape 3. Déploiement et contrôle indépendant terminés.** Aucun GO ne sélectionne implicitement de vrais bénéficiaires ou n'active un provider. Cette instruction remplace la poursuite automatique du mandat précédent.
 
 ## Périmètre
 
@@ -60,12 +60,28 @@ L'extension de test HTTP vient du commit **`80739b7b21c7940057ef3e849354aec38814
 
 Nonces nettoyés :34ad532a86d7 (premier candidat),7c84919d7564 (candidat corrigé et suites complètes),4f744d7270c0 (extension HTTP partagé). Réseaux internes, web readonly, aucun port publié, aucun provider externe. Le premier candidat avait aussi passé ses suites ; elles ont toutes été rejouées sur le candidat corrigé. Le runner privé reprend le harnais qualifié et normalise seulement le refus Docker `no such object/container` sans casse lors du second nettoyage.
 
-**Limites :** pas de pourcentage de couverture instrumenté revendiqué ; pas de caméra physique, WhatsApp connecté, impression officielle ou droits réels. Pas de nouvelle recette de déploiement exécutée, pas de sauvegarde récente présentée comme déjà acquise.
+**Limites à la clôture de l'étape 2 :** pas de pourcentage de couverture instrumenté revendiqué ; pas de caméra physique, WhatsApp connecté, impression officielle ou droits réels. La recette et la sauvegarde n'étaient alors pas exécutées ; leurs résultats réels figurent désormais à l'étape 3.
 
-## Étape 3 — EN ATTENTE DU NOUVEAU GO
+## Étape 3 — déploiement ciblé et contrôle indépendant : PASS
 
-Préparer et contrôler la recette ciblée sur les cinq runtime qualifiés, vérifier les préconditions actuelles et une sauvegarde privée récente, puis bascule contrôlée et vérification indépendante. Ne pas changer le HMAC, les sessions, les services voisins ni octroyer des droits à une personne réelle implicitement. Les bénéficiaires réels restent un choix humain explicite.
+Recette publiée et déployée **`44e246fdd037318c647ee25e8447bb83e3b88337`**, branche VPS `deployed/school-native-access-20261024`, [recette](../../ops/releases/school-native-access-20261024/README.md). Runtime final5cf4c9c et image1b3843de/digestc1ed8014 ci-dessus inchangés. **Cinq fichiers runtime seulement**, sans migrations ni attribution réelle.22contrats de release offline PASS ; scripts et deux moteurs de préservation comparés à Git. Préflight schéma, tables et séquences natifs/autorité/privilèges du service en lecture seule PASS ; aucun GRANT SQL ou propriétaire modifié.
+
+Sauvegarde PG fraîche privée0600,685809octets, archive custom validée par `pg_restore --list`, SHA256 **`d1a6bf4e8de2c52b0147e14532a468460072e3b16fe87aa97819e1dd3fd71532`**. Jamais restaurée. Release privée0700 `/opt/schoolsafe-releases/school-native-access-20261024/`.
+
+Bascule **8,68secondes**,83fichiers de session transférés, cache Chromium préservé ; configuration complète et environnement incluant le HMAC durable inchangés. Ancien conteneur `schoolsafe-rosario-pre-school-native-access-20261024` arrêté/conservé ; cinq services voisins inchangés. Aucun worker/provider lancé, aucun message externe ni mutation de compte réel testé.
+
+Contrôle indépendant **PASS** :71hashes source+3dashboard, identité source/digest de l'image, checkout et branche VPS propres/conformes, HostConfig complet et environnement identiques, hash de configuration identique, voisins ID/start inchangés,0session non expirée manquante et0collectée expirée,9entrées de cache Chromium préservées. HTTPS login/récupération200, famille/scanner anonymes401, JS famille public au hash attendu. Aucun worker dispatch/recover ; caméra physique/provider toujours non qualifiés.
+
+Preuves privées `access-deployment-r1/production-{deployment,backup,schema}-proof.json` et `production-independent-verification-proof.json`. Dernier téléchargement SSH du seul schema-proof expiré à30secondes APRÈS vérification indépendante réussie ; fichiers locaux inspectés (autres preuves déjà reçues), statut live recontrôlé PASS, seul fichier manquant rapatrié par appel borné. Aucun redéploiement. Cause transport exacte non établie ; `proof-fetch-recovery.json` documente ce défaut de collecte, pas une panne produit.
+
+### Utilisation disponible, sans attribution implicite
+
+ProDéli : console existante `/admin-console.php`, lien **« Accès — [école] »**, choisir un administrateur existant et confirmer explicitement les droits. Cet écran n'ouvre pas le workspace scolaire à ProDéli. Administrateur scolaire autorisé : `/ecoles/{id}/profils`, section **« Accès personnels de l’école »** ; choisir un compte puis tous les droits proposés ou un sous-ensemble. Les montants détaillés, la configuration et l'administration restent des droits séparés. Plusieurs personnes peuvent porter le même ensemble autorisé ; elles ne deviennent pas automatiquement principales de direction.
+
+### Limite de clôture
+
+Le mécanisme logiciel d'administration des accès est livré. Aucun vrai bénéficiaire, école/configurateur/tâche/point ou réglage financier/familial n'a été choisi par l'agent. La mise en service réelle du Scan reste soumise à ces choix, à la caméra HTTPS physique, à la connexion WhatsApp/activation contrôlée et à l'impression officielle séparées. Arrêter après notification de fin d'étape ; ne pas déduire une autorisation d'attribution réelle.
 
 Outils : `scripts/school-access-native-{qa.py,pg.php,http.php}`, `school-access-policy-contracts.php`, `school-access-image-qa.py`, option `--access` du lanceur HTTP existant, `app/qa-school-native-access.cjs`. Le script HTTP a été exécuté avec succès uniquement dans la fixture synthétique isolée.
 
-Production relue en SSH, sans mutation : checkout propre `e17357bbcf59068d8276c260314d3ffa8a1733a2`, image `sha256:7bedfc1e37289136d9a54ac87f82603784053a47bd45c90c1b1d3c159dc7c628` running/healthy. Aucun droit réel attribué. Caméra physique, connexion WhatsApp, worker et impression officielle gardent leurs conditions distinctes. Ne pas annoncer toute la mise en service Scan terminée.
+État de départ historique relu en SSH avant bascule : checkout propre `e17357bbcf59068d8276c260314d3ffa8a1733a2`, image `sha256:7bedfc1e37289136d9a54ac87f82603784053a47bd45c90c1b1d3c159dc7c628` running/healthy. État désormais remplacé par l'étape 3 ci-dessus. Aucun droit réel attribué. Caméra physique, connexion WhatsApp, worker et impression officielle gardent leurs conditions distinctes. Ne pas annoncer toute la mise en service Scan terminée.
