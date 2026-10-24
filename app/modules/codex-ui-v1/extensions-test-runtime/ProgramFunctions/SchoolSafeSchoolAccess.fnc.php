@@ -86,6 +86,7 @@ function SchoolSafeAccessProfileBegin(int $school, int $pid, string $version): a
     global $db_connection;
     $started=false;
     try {
+        if (!SchoolSafeAccountReady() || !SchoolSafeSchoolStateReady()) throw new RuntimeException('Schéma d’autorité indisponible.');
         if (pg_transaction_status($db_connection)!==PGSQL_TRANSACTION_IDLE) throw new RuntimeException('Transaction déjà ouverte.');
         SchoolSafeAccessQuery('BEGIN'); $started=true;
         SchoolSafeAccessQuery("SET LOCAL lock_timeout='5s'");
@@ -154,6 +155,7 @@ function SchoolSafeAccessAssign(int $school, int $targetId, array $selection, st
     global $db_connection;
     $started = false;
     try {
+        if (!SchoolSafeAccountReady() || !SchoolSafeSchoolStateReady()) throw new RuntimeException('Schéma d’autorité indisponible.');
         if ($school < 1 || $targetId < 1 || !preg_match('/^[a-f0-9]{64}$/D', $version)
             || pg_transaction_status($db_connection) !== PGSQL_TRANSACTION_IDLE) throw new RuntimeException('Requête invalide.');
         SchoolSafeAccessQuery('BEGIN'); $started = true;
@@ -181,7 +183,7 @@ function SchoolSafeAccessAssign(int $school, int $targetId, array $selection, st
             throw new RuntimeException('Périmètre non autorisé.');
         if (SchoolSafeSchoolBlocked($school) || SchoolSafeAccountBlocksWrite()
             || SchoolSafeAccountStateForSchool($actor['USERNAME'], $school) !== 'active'
-            || in_array(SchoolSafeAccountStateForSchool($target['USERNAME'], $school), ['suspended','expired'], true))
+            || !in_array(SchoolSafeAccountStateForSchool($target['USERNAME'], $school), ['active','readonly'], true))
             throw new RuntimeException('Compte ou établissement restreint.');
         if ($global && $target['PROFILE'] !== 'admin') throw new RuntimeException('Responsable scolaire administrateur requis.');
         // Profile rows and their exception rows remain protected until commit.

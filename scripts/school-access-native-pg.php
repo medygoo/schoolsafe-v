@@ -10,6 +10,8 @@ function UserSyear(){return 2026;}
 function SchoolSafeSchoolBlocked($school){return !empty($GLOBALS['blocked']);}
 function SchoolSafeAccountBlocksWrite(){return !empty($GLOBALS['readonly']);}
 function SchoolSafeAccountPerson($name){return mb_strtolower(trim($name));}
+function SchoolSafeAccountReady(){return $GLOBALS['account_schema_ready']??true;}
+function SchoolSafeSchoolStateReady(){return $GLOBALS['school_schema_ready']??true;}
 function SchoolSafeAccountStateForSchool($username,$school){return $GLOBALS['states'][$username]??'active';}
 require $root.'/ProgramFunctions/SchoolSafeSchoolScope.fnc.php';
 require $root.'/modules/SchoolSafe/Permissions.php';
@@ -67,6 +69,12 @@ check(one("SELECT count(*) FROM staff s JOIN profile_exceptions e ON e.profile_i
 check(assign(7,$scans)['status']==='refused','foreign school target refused');
 check(assign(2,$all)['status']==='refused','self modification refused');
 $GLOBALS['RosarioModules']['SchoolSafe']=false;check(assign(4,$scans)['status']==='refused','inactive module never creates school management authority');$GLOBALS['RosarioModules']['SchoolSafe']=true;
+$p4=(int)one('SELECT profile_id FROM staff WHERE staff_id=4');$p4v=SchoolSafeAccessProfileVersion($p4);
+$GLOBALS['account_schema_ready']=false;check(assign(4,$scans)['status']==='refused','missing native account-state schema cannot authorize a grant or replay');
+try{SchoolSafeAccessProfileBegin(1,$p4,$p4v);q('ROLLBACK');$ok=false;}catch(Throwable $e){$ok=true;}check($ok,'shared editor refuses missing account-state schema');unset($GLOBALS['account_schema_ready']);
+$GLOBALS['school_schema_ready']=false;check(assign(4,$scans)['status']==='refused','missing native school-state schema cannot authorize a grant or replay');
+try{SchoolSafeAccessProfileBegin(1,$p4,$p4v);q('ROLLBACK');$ok=false;}catch(Throwable $e){$ok=true;}check($ok,'shared editor refuses missing school-state schema');unset($GLOBALS['school_schema_ready']);
+$GLOBALS['states']['b']='unknown';check(assign(4,$scans)['status']==='refused','unknown target state cannot accept an assignment');unset($GLOBALS['states']['b']);
 $GLOBALS['states']['director']='unknown';check(assign(4,$scans)['status']==='refused','unknown current actor state fails closed');unset($GLOBALS['states']['director']);
 $oldScope=$GLOBALS['actor']['SCHOOLS'];$GLOBALS['actor']['SCHOOLS']=',1,2,';check(assign(4,$scans)['status']==='refused','stale session scope cannot override live staff ownership');$GLOBALS['actor']['SCHOOLS']=$oldScope;
 q("INSERT INTO staff VALUES(9,2026,'zero','teacher',0,',1,'),(10,2026,'custom','teacher',NULL,',1,');INSERT INTO profile_exceptions VALUES(0,'Students/Student.php','Y','');INSERT INTO staff_exceptions VALUES(9,'Users/Profiles.php','Y','Y'),(10,'Students/Student.php','Y','');");
