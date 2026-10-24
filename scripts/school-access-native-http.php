@@ -14,6 +14,7 @@ function req($url,$fields=null){global$cookie;
 }
 function document($body){$d=new DOMDocument();@$d->loadHTML($body);return new DOMXPath($d);}
 function fields($body){$xp=document($body);$out=[];foreach($xp->query('//form[@data-native-access-form]//input[@type="hidden"]')as$node)$out[$node->getAttribute('name')]=$node->getAttribute('value');return$out;}
+function profileFields($body,$pid){$xp=document($body);$form=$xp->query('//form[input[@name="profil_id" and @value="'.$pid.'"]]')->item(0);$out=[];if($form)foreach($xp->query('.//input[@type="hidden"]',$form)as$n)$out[$n->getAttribute('name')]=$n->getAttribute('value');return$out;}
 function loginAs($name){global$cookie,$cookies,$password;$cookie=tempnam('/tmp','access-qa-');$cookies[]=$cookie;$r=req('/index.php');$form=['USERNAME'=>$name,'PASSWORD'=>$password];foreach(document($r['body'])->query('//form[@id="loginform"]//input[@name]')as$n){$k=$n->getAttribute('name');if(!isset($form[$k]))$form[$k]=$n->getAttribute('value');}req('/index.php',$form);return$cookie;}
 function caps(){return req('/scanner-relay.php?operation=capabilities');}
 try{
@@ -55,6 +56,29 @@ try{
  $cookie=$operatorCookies[3];gate(caps()['status']===200,'other recipient keeps access after individual revocation');
  $cookie=$directorCookie;req($hub,$stale+['access_confirm'=>'Y','access_rights'=>$scans]);
  gate((int)$pdo->query('SELECT count(*) FROM profile_exceptions e JOIN staff s ON s.profile_id=e.profile_id WHERE s.staff_id='.$ids[2]." AND e.modname LIKE 'SchoolSafe/Scan%'")->fetchColumn()===0,'stale HTTP form cannot restore revoked rights');
+ // Exercise the actual existing shared-profile controller, not just its GET or helpers.
+ $cookie=$directorCookie;$r=req($hub.'?access_staff='.$ids[5]);$csrf=fields($r['body'])['token']??'';
+ $create=['token'=>$csrf,'ecole_profil_action'=>'creer','titre'=>$prefix.'.shared','base'=>'teacher','droit'=>['SchoolSafe/ScanVerify.php'=>'Y'],'edit'=>['SchoolSafe/ScanVerify.php'=>'Y']];
+ req($hub,$create);gate((int)$pdo->query('SELECT count(*) FROM user_profiles WHERE title='.$q($prefix.'.shared'))->fetchColumn()===0,'shared native creation also requires human impact confirmation');
+ req($hub,$create+['profile_confirm'=>'Y']);$shared=(int)$pdo->query('SELECT id FROM user_profiles WHERE title='.$q($prefix.'.shared'))->fetchColumn();
+ gate($shared>0,'actual shared profile controller creates school-owned native profile');
+ gate((int)$pdo->query('SELECT school_id FROM user_profiles WHERE id='.$shared)->fetchColumn()===$school,'shared profile remains owned by selected school');
+ $r=req($hub);$pf=profileFields($r['body'],$shared);gate(count($pf)>0,'shared editor renders current fingerprint and confirmation fields');
+ req($hub,$pf+['profile_confirm'=>'Y','droit'=>['SchoolSafe/ScanVerify.php'=>'Y']]);
+ gate((int)$pdo->query('SELECT count(*) FROM profile_exceptions WHERE profile_id='.$shared." AND modname='SchoolSafe/ScanVerify.php' AND can_use='Y' AND coalesce(can_edit,'')=''")->fetchColumn()===1,'actual shared rights POST can reduce edit to use-only');
+ req($hub,$pf+['profile_confirm'=>'Y','droit'=>['SchoolSafe/ScanVerify.php'=>'Y'],'edit'=>['SchoolSafe/ScanVerify.php'=>'Y']]);
+ gate((int)$pdo->query('SELECT count(*) FROM profile_exceptions WHERE profile_id='.$shared." AND can_edit='Y'")->fetchColumn()===0,'stale shared editor cannot restore edit');
+ // Synthetic fixture preparation only: two existing fixture accounts hold this native profile.
+ $pdo->exec('UPDATE staff SET profile_id='.$shared.' WHERE staff_id IN('.$ids[4].','.$ids[5].')');
+ $r=req($hub);$pf=profileFields($r['body'],$shared);$del=$pf;$del['ecole_profil_action']='supprimer';$del['profile_confirm']='Y';req($hub,$del);
+ gate((int)$pdo->query('SELECT count(*) FROM staff WHERE profile_id='.$shared)->fetchColumn()===2&&(int)$pdo->query('SELECT count(*) FROM user_profiles WHERE id='.$shared)->fetchColumn()===1,'shared deletion refuses assigned profile without converting holders to Custom');
+ $r=req($hub);$pf=profileFields($r['body'],$shared);req($hub,$pf+['profile_confirm'=>'Y']);
+ gate((int)$pdo->query('SELECT count(*) FROM profile_exceptions WHERE profile_id='.$shared)->fetchColumn()===0,'actual shared rights revocation affects both explicitly named holders');
+ $cookie=$operatorCookies[4];gate(caps()['status']===403,'already open shared holder session loses revoked Scan rights');$cookie=$directorCookie;
+ $pdo->exec('UPDATE staff SET profile_id='.$teacherProfile.' WHERE staff_id IN('.$ids[4].','.$ids[5].')');
+ $r=req($hub);$del=profileFields($r['body'],$shared);$del['ecole_profil_action']='supprimer';$del['profile_confirm']='Y';req($hub,$del);
+ gate((int)$pdo->query('SELECT count(*) FROM user_profiles WHERE id='.$shared)->fetchColumn()===0,'actual native deletion succeeds only after no fixture holder remains');
+ gate((int)$pdo->query('SELECT count(*) FROM schoolsafe_account_audit WHERE person_key='.$q($prefix.'.1')." AND action IN ('profile_creer','profile_droits','profile_supprimer')")->fetchColumn()===4,'shared create edits and delete each commit mandatory native audit, refusals do not');
  gate((int)$pdo->query('SELECT count(*) FROM profile_exceptions WHERE profile_id='.$baseProfile)->fetchColumn()===2,'shared native base profile unchanged');
  gate((int)$pdo->query('SELECT count(*) FROM schoolsafe_account_audit WHERE person_key LIKE '.$q($prefix.'%')." AND action IN ('access_bootstrap','access_assign')")->fetchColumn()===5,'native mutations have one atomic audit each, preparations and refusals do not');
 }catch(Throwable$e){$failure=$e->getMessage();}
