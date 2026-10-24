@@ -38,8 +38,14 @@ Lecture seule déjà effectuée : LE SAGE est identifié sans ambiguïté, écol
 
 Le premier essai de recherche LE SAGE a échoué sur connexion SSH avant exécution ; sortie privée conservée. Reprise bornée30s : lecture seule réussie, checkout et image de production inchangés. La tentative de préambule navigateur gstack a expiré avant de fournir un contexte utilisable ; aucun parcours de connexion réel n'est revendiqué. Les contrôles Chromium ci-dessus sont la qualification synthétique du correctif UI seulement.
 
+## Qualification image / HTTP — en cours après CONTINUE
+
+Source candidate initiale `cc6c4d3a4bb27a63777f683b5f8dc2ced2b516bc`. Wrapper de construction limité aux deux sources sur base production1b3843de ; moteur nonce/fixture/nettoyage réutilisé. Test HTTP natif existant étendu de49 à54attentes, non encore exécuté à ce point.
+
+Premier essai `prodeli-discovery-image-r1` : échec de harnais avant création des conteneurs/réseau de test. BuildKit interprète `FROM sha256:<id>` comme dépôt de registre ; ce n'est pas une panne produit. Diagnostic conservé dans remote-error.private.log. Le tag local `schoolsafe-rosario:recovery-qa-c1ed80141175` a été vérifié pour l'image1b3843de, puis le wrapper a été corrigé pour le réutiliser (l'assertion d'égalité exacte tag/image est conservée). Ne pas contourner la protection de l'image de base ou inclure d'autres sources.
+
 ## Prochaine étape / arrêt
 
-Informer puis attendre le GO suivant. Avant livraison : qualification du parcours complet authentifié sur une fixture de l'image candidate, impact des deux sources, conservation de la production et recette ciblée. Ne pas déployer les brouillons voisins. Le présent correctif n'est pas visible sur le site avant sa livraison autorisée et qualifiée.
+Après qualification, informer puis attendre le GO suivant. Avant livraison : qualification du parcours complet authentifié sur une fixture de l'image candidate, impact des deux sources, conservation de la production et recette ciblée. Ne pas déployer les brouillons voisins. Le présent correctif n'est pas visible sur le site avant sa livraison autorisée et qualifiée.
 
 L'attribution réelle des droits Scan de LE SAGE, les étapes de création/activation/consultation du profil, la réutilisation des données d'inscription, le portrait, l'habillage du lecteur Scan et les classements restent des étapes distinctes à terminer une après l'autre. Le QR reste sur la carte ; le bouton ouvre un lecteur, pas un générateur de QR.

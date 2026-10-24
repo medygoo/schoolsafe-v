@@ -7,7 +7,8 @@ spec = importlib.util.spec_from_file_location('discovery_workspace_qa', ROOT/'sc
 qa = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(qa)
 qa.BASE = 'sha256:1b3843de24caa121243f231b147ddf0a9597b155deca7271ed699994f306fb86'
-qa.BASE_TAG = qa.BASE
+# BuildKit treats FROM sha256:<id> as a registry repository; use the verified local tag.
+qa.BASE_TAG = 'schoolsafe-rosario:recovery-qa-c1ed80141175'
 qa.BASE_COMMIT = '752f5910a09de30306a131cab26ed7630d81bd82'
 qa.FILES = ['plugins/SchoolSafe_Keycloak/Wizard.php', 'plugins/SchoolSafe_Keycloak/manage.php']
 qa.NEW_FILES = set()
