@@ -1,0 +1,60 @@
+# Mise en service du Scan — état et décisions nécessaires
+
+## Contrôle de reprise
+
+Agent pi, seul rédacteur ; branche `feat/presence-scan-qr-20261023`, départ `77ce060ef7f0472bc96eb724ab3399b3390c5ecc` (distant relu identique). Lot documentaire uniquement. Brouillons dashboard/palmarès/DECISIONS conservés hors lot.
+
+Contrôle SSH de lecture seule effectué : checkout `/opt/app-src` propre, recette `ec59446f4eeb5738256a72ea506cbfee652443f1`, conteneur `schoolsafe-rosario` running/healthy, image `sha256:d4359b7b3b174f70ea02aef6202c98e41381814960dedcf2df576994dac10b9d`. Aucun compte, droit, passage, réglage ou fournisseur modifié. Ce contrôle ne requalifie pas les parcours authentifiés et ne mesure pas la disponibilité caméra/WhatsApp.
+
+## Blocage précis des habilitations
+
+Le constat de zéro attribution SchoolSafe est celui du contrôle postdéploiement précédent ; il n'a pas été relu en base pendant cette reprise. Le code explique le chemin d'administration :
+
+- `modules/Users/Profiles.php` et `modules/Users/Exceptions.php` exigent `SchoolSafeGlobalAdmin()` dès leur entrée. Ce sont les éditeurs centraux, pas une console scolaire accessible automatiquement au directeur.
+- `modules/SchoolSafe/RightsCatalog.php::SchoolSafeRightsEditorMenu()` publie les clés SchoolSafe dans ces éditeurs sans activation ni attribution automatique.
+- `modules/SchoolSafe/Permissions.php::SchoolSafeNativePermission()` lit `profile_exceptions` pour un profil nommé (y compris ID0). `staff_exceptions` est lu seulement en l'absence de profil nommé. Une exception individuelle ajoutée à un compte ayant un profil nommé ne serait donc pas un moyen valide de lui donner accès.
+- Une modification de profil partagé touche ses autres titulaires. Identifier le profil et ses utilisateurs avant toute attribution ; ne pas modifier un profil global partagé pour débloquer une seule école.
+- Les actions `management/grants` et `management/delegate` existent dans Catalog/Gateway et le formulaire `schoolsafe-card-bridge/family-management.js`. **Elles ne sont pas traitées dans la branche sans bridge de `scanner-relay.php`** : elles aboutissent à `CONFIG_REQUIRED` (réponse générique503), une fois les contrôles d'accès franchis. La voie bridge est explicitement réservée au laboratoire local. Leur présence n'est pas une délégation native de production opérationnelle.
+
+Conséquence : ne pas annoncer que le directeur peut déjà tout attribuer depuis Gestion des familles. L'initialisation explicite par les éditeurs natifs centraux peut donner les tâches sélectionnées ; elle ne répare pas le raccordement des deux actions de délégation. Leur correction devra réutiliser les propriétaires de droits existants, protéger les profils partagés et être qualifiée séparément avant livraison. Aucun octroi SQL de contournement, compte personnalisé forcé ou moteur d'autorisations parallèle.
+
+## Choix humain ciblé avant toute attribution réelle
+
+Obtenir seulement les références non secrètes :
+
+1. École concernée et compte scolaire qui doit assurer la configuration.
+2. Comptes opérateurs et tâches explicitement autorisées pour chacun : arrivée, remise, contrôle des frais, cantine, vérification. Aucune tâche n'entraîne les autres.
+3. Nom réel de chaque point de passage, sens entrée/sortie/les deux et état actif. Ne pas créer un portail fictif pour terminer la recette.
+
+Ne demander ni mot de passe, ni cookie, ni QR d'enfant. Vérifier ensuite profil actuel, portée scolaire et impact sur les autres titulaires avant de soumettre une modification native confirmée. L'autorisation générale de poursuivre le développement ne choisit pas ces bénéficiaires.
+
+## Droits à considérer selon la responsabilité choisie
+
+Cette liste décrit les prérequis du code, PAS une attribution recommandée en bloc :
+
+| Responsabilité | Clés et gardes existantes |
+| --- | --- |
+| Configurer les points | ScanLocationsRead/ScanLocationsManage ; profil admin ; édition native School_Setup/Configuration.php |
+| Arrivée | ScanArrival ; point actif, bonne école/année/sens ; contrôle financier courant quand activé |
+| Remise | ScanPickup ; point adapté, personne/photo autorisées, preuve et confirmation humaine |
+| Contrôler les frais | ScanFees ; détail monétaire séparé par Student_Billing/StudentFees.php |
+| Modèles financiers | FeeModelsRead/FeeModelsManage ; profil admin et édition Student_Billing/StudentFees.php ; save n'active pas |
+| Cantine | ScanCanteen ; module Food_Service ; détail séparé Food_Service/Accounts.php ; lecture seule |
+| Vérification | ScanVerify ; aucun droit d'arrivée/remise induit |
+| Préparer/émettre un QR | Studio/IssueCard ; identité et inscription natives ; impression officielle distincte |
+| Gestion familiale | FamilyRead/Register/Approve/Replace selon tâches ; parent principal explicite, consentement/photo, aucun compte créé implicitement |
+
+Les clés abrégées ci-dessus portent toutes le préfixe `SchoolSafe/` et le suffixe `.php`. Pour un administrateur, une commande mutante exige CAN_USE et CAN_EDIT ; suspension/lecture seule reste prioritaire. Les gardes métier et la portée scolaire subsistent même après attribution.
+
+## Validations matérielles et fournisseur
+
+- Téléphone : connexion personnelle dans l'école autorisée, HTTPS `https://app.shoolsafe.tech/scanner-native.php`, ouverture puis fermeture de la caméra **sans QR dans le champ**. Relever téléphone/navigateur et résultat de prévisualisation. Ne pas soumettre un scan réel pour tester l'affichage. BarcodeDetector est la dépendance actuelle ; les tests de médias interceptés ne garantissent pas son support sur chaque téléphone.
+- WhatsApp : le propriétaire habilité connecte son expéditeur réel dans le Hub ProDéli et effectue la vérification de session/identité prévue. Aucun secret dans le compte rendu, aucun message externe d'essai implicite. Le worker reste arrêté/non planifié tant que connexion, consentements, autorité et activation contrôlée ne sont pas prouvés.
+- Aucun claim incertain n'est relâché ; aucun renvoi, fallback ou délai automatique pour une acceptation inconnue.
+- Impression officielle : contrôler ses prérequis Control et données manquantes séparément ; un QR natif émis ne prouve pas une carte imprimée qualifiée.
+
+## Niveau de preuve et suite
+
+Reprise : lecture du code, égalité Git distante et métadonnées de santé production uniquement ; `git diff --check` sans erreur (avertissements de fins de ligne sur brouillons préexistants). Aucun nouveau test produit, navigateur connecté ou PostgreSQL exécuté pour ce document. Les qualifications exactes antérieures restent détaillées dans `SCHOOL_PRESENCE_SCAN_QR_20261023.md`.
+
+Statut maintenu : **logiciel déployé, mise en service incomplète**. Prochaine action humaine : désigner école/compte configurateur/tâches et points réels ; prochaine tâche technique : qualifier le raccordement natif manquant de consultation/attribution des délégations sans élargissement de droits. Top10/classes actives/notation restent des lots séparés ; ne pas les embarquer dans ce correctif.

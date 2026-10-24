@@ -1,3 +1,7 @@
+## Mise en service Scan — contrôle de reprise et limite des délégations
+
+Lecture seule : production ec59446 propre, image d4359b7 running/healthy ; local/distant77ce060 identiques au départ. Aucun octroi ni réglage réel effectué. [Runbook de mise en service](../../qualification/SCHOOL_SCAN_COMMISSIONING.md) : éditeurs Profiles/Exceptions réservés GlobalAdmin ; un profil nommé lit profile_exceptions, pas staff_exceptions. **Écart confirmé dans le code : actions grants/delegate publiées mais non traitées dans scanner-relay sans bridge ; consultation/attribution scolaire native reste à raccorder/qualifier.** Les62contrats d'accès ne prouvent pas l'exécution de ces actions. Ne pas activer le bridge de laboratoire ni inventer un moteur/droit. Avant toute attribution réelle, obtenir école/compte configurateur et comptes+tâches, vérifier impact des profils partagés ; points réels désignés par école, caméra/WhatsApp humains distincts. Lot documentaire seulement, pas nouveaux tests produit/PG/browser ; contrôle Git et santé ne vaut pas commissioning terminé.
+
 ## Mission courante — terminer Scan puis palmarès, classes actives et notation ; dashboard livré protégé
 
 ### Périmètre étendu explicitement validé par le propriétaire
