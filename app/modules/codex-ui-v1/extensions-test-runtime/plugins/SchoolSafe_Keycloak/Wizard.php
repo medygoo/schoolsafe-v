@@ -365,8 +365,11 @@ function sskcWizardAfterStaff(): void
     $_SESSION['sskc_school_draft']['request']=(int)$request;
     if(!empty($d['data']['portrait']) && AllowEdit('Users/User.php')) {
         require_once 'ProgramFunctions/FileUpload.fnc.php';
-        $saved=ImageUpload($d['data']['portrait'],['width'=>150,'height'=>150],$UserPicturesPath.UserSyear().'/',[],'.jpg',$id.'.'.bin2hex(random_bytes(16)));
-        if(!$saved)echo '<p role="alert">La photo n’a pas pu être enregistrée. Reprenez-la dans la fiche du responsable.</p>';
+        $portraitName=$id.'.'.bin2hex(random_bytes(16));
+        $portraitDirectory=$UserPicturesPath.UserSyear().'/';
+        $saved=ImageUpload($d['data']['portrait'],['width'=>150,'height'=>150],$portraitDirectory,[],'.jpg',$portraitName);
+        if($saved!==$portraitDirectory.$portraitName.'.jpg' || !is_file($saved) || !@getimagesize($saved))
+            echo '<p role="alert">La photo n’a pas pu être enregistrée. Reprenez-la dans la fiche du responsable.</p>';
     }
     unset($_SESSION['sskc_school_draft']['data']['logo'],$_SESSION['sskc_school_draft']['data']['portrait']);
     echo '<p><a class="button-primary" target="_self" href="/schoolsafe-administrators.php?credential='.$id.'">Télécharger la fiche confidentielle et terminer</a></p>';
