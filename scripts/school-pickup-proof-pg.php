@@ -48,7 +48,39 @@ if ($action==='setup') {
     $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup','wa-setup','wa-send'],true)) exit(2);
+if($action==='wa-setup'){
+    for($i=0;$i<2;$i++)$pdo->exec(file_get_contents($root.'/schoolsafe-remediation/037-whatsapp.sql'));
+    $pdo->exec("CREATE TABLE qa_wa_http_calls(id serial PRIMARY KEY,engine text NOT NULL,dedup_key text NOT NULL);
+        UPDATE schoolsafe_wa_sessions SET status='active',conn_state='online',conn_checked_at=CURRENT_TIMESTAMP;
+        INSERT INTO schoolsafe_wa_consents(school_id,staff_id,phone_e164,consented) VALUES(1,27,'+243000000000','Y')");
+    echo json_encode(['status'=>'SYNTHETIC_WA_READY'])."\n";exit;
+}
+if($action==='wa-send'){
+    require_once $root.'/ProgramFunctions/SchoolSafeWhatsapp.fnc.php';
+    function DBQuery($sql){global $pdo;return $pdo->query($sql);}
+    function DBGet($query){global $pdo;$stmt=is_string($query)?$pdo->query($query):$query;$rows=[];foreach($stmt->fetchAll(PDO::FETCH_ASSOC)as$i=>$row)$rows[$i+1]=array_change_key_case($row,CASE_UPPER);return $rows;}
+    function DBEscapeString($value){global $pdo;return substr($pdo->quote((string)$value),1,-1);}
+    function Config($key){return 'N';}
+    putenv('WAHA_BASE=https://waha.invalid');putenv('WAHA_KEY=fixture-not-a-real-key');
+    putenv('EVOLUTION_BASE=https://evolution.invalid');putenv('EVOLUTION_KEY=fixture-not-a-real-key');
+    $input=json_decode($argv[2]??'{}',true,32,JSON_THROW_ON_ERROR);$key=$input['key'];
+    $http=function($engine)use($input,$key,$pdo,$connect){
+        if(getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1'&&$engine==='waha'){
+            $watch=$connect();$watch->exec('UPDATE qa_barrier SET arrived=true');$deadline=microtime(true)+15;
+            while($watch->query('SELECT hold FROM qa_barrier')->fetchColumn()){
+                if(microtime(true)>$deadline)throw new RuntimeException('QA_BARRIER_TIMEOUT');usleep(20000);
+            }
+        }
+        $stmt=$pdo->prepare('INSERT INTO qa_wa_http_calls(engine,dedup_key) VALUES(?,?)');$stmt->execute([$engine,$key]);
+        return $input[$engine]??['http_code'=>202,'body'=>'{"id":"synthetic-provider-id"}'];
+    };
+    try{$result=SchoolSafeWaSend('+243000000000',$input['text']??"Contrôle synthétique de l'enfant — pas un reçu",[
+        'school_id'=>1,'staff_id'=>27,'actor'=>'synthetic-fixture','dedup_key'=>$key,
+        'http_waha'=>fn()=>$http('waha'),'http_evo'=>fn()=>$http('evolution')]);}
+    catch(Throwable $error){$result=['error'=>$error->getMessage()];}
+    echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
 require_once $root.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
 require_once $root.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
 $barrier=getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1';$barrierUsed=false;
