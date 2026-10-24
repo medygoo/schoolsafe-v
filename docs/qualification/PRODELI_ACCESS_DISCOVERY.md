@@ -2,7 +2,7 @@
 
 ## Statut
 
-Premier correctif UX qualifié localement ET sur image exacte avec HTTP authentifié synthétique, pas déployé. Le propriétaire demande une interface ProDéli cohérente, des étapes visibles, des boutons faciles à retrouver et une distinction claire entre consulter, préparer et activer. Cette livraison étroite améliore la découverte du gestionnaire des droits ; elle ne prétend pas qualifier toute l'interface ni garantir l'absence de tout bug.
+Premier correctif UX qualifié localement et sur image exacte avec HTTP authentifié synthétique, puis **déployé après GO production explicite** et vérifié indépendamment. Cette clôture concerne les deux accès visibles, pas toute l'interface ProDéli ni la mise en service Scan. Le propriétaire demande une interface ProDéli cohérente, des étapes visibles, des boutons faciles à retrouver et une distinction claire entre consulter, préparer et activer. Cette livraison étroite améliore la découverte du gestionnaire des droits ; elle ne prétend pas qualifier toute l'interface ni garantir l'absence de tout bug.
 
 Base : `752f5910a09de30306a131cab26ed7630d81bd82`, branche `feat/presence-scan-qr-20261023`, Pi seul écrivain. Les brouillons dashboard/palmarès/DECISIONS préexistants restent exclus.
 
@@ -53,8 +53,18 @@ Les48contrôles Chromium sont ceux des fragments synthétiques locaux ; l'image 
 
 Premier essai `prodeli-discovery-image-r1` : échec de harnais avant création des conteneurs/réseau de test. BuildKit interprète `FROM sha256:<id>` comme dépôt de registre ; ce n'est pas une panne produit. Diagnostic conservé dans remote-error.private.log. Le tag local `schoolsafe-rosario:recovery-qa-c1ed80141175` a été vérifié pour l'image1b3843de, puis le wrapper a été corrigé pour le réutiliser (l'assertion d'égalité exacte tag/image est conservée). Ne pas contourner la protection de l'image de base ou inclure d'autres sources.
 
+## Déploiement production — terminé après GO explicite
+
+- Recette et checkout production : **`3ecdf9e5dc0558d5fb5c374a12cfd8df00309ad6`**, branche **`deployed/prodeli-access-discovery-20261024`** propre. Image qualifiée1df5f857 et sourceb6f588d/digeste41c8515 inchangés.
+- `ops/releases/prodeli-access-discovery-20261024/` réutilise byte pour byte les moteurs native-access / recovery / preservation existants. **27 gardes offline PASS**, préflight des schémas/privilèges natifs en lecture seule PASS ; aucun GRANT ni migration.
+- Sauvegarde privée récente **686003octets**, mode0600, archive validée par `pg_restore --list`, SHA256 **`f40436658355e6b96662152f77bb3b5b0dbdea9dece29f11fb72d09b33e820c3`**, jamais restaurée. Répertoire release0700.
+- Bascule **9,04secondes**, **119 fichiers de session transférés**, cache Chromium conservé ; ancien conteneur `schoolsafe-rosario-pre-prodeli-access-discovery-20261024` arrêté et conservé.
+- Contrôle indépendant PASS : **73sources+3dashboard** conformes, labels OCI source/digest exacts, environnement complet dont HMAC/configuration/HostConfig inchangés, cinq voisins identiques ; **0session non expirée manquante**,0expirée collectée, **9entrées cache** avec métadonnées conservées.
+- HTTPS public : login/récupération200, scanner/famille401, console anonyme403 et accueil ProDéli anonyme302 ; JS famille public conforme. Workers dispatch/recover toujours détenus. Aucun login réel, octroi, reset, fournisseur, caméra physique ou impression de test.
+- Preuves privées `prodeli-discovery-deployment-r1/production-{deployment,backup,schema,independent}-proof.json`, `stage-release.py`, `verify-production.py`, `offline-guard-proof.json`. Le contrôle indépendant est exécuté séparément de la recette de bascule.
+
 ## Prochaine étape / arrêt
 
-Qualification image / HTTP terminée : informer puis attendre le GO suivant. Avant livraison : préparer une recette ciblée aux deux sources, vérifier les conditions de conservation/sauvegarde et effectuer un contrôle indépendant après bascule autorisée. Ne pas déployer les brouillons voisins. Le présent correctif n'est pas visible sur le site avant sa livraison autorisée et qualifiée.
+Informer le propriétaire que les boutons sont en production puis STOP. Il peut actualiser ProDéli et retrouver « Gérer les droits — Scan et accès » dans « Vos établissements » et sur la ligne de l'administrateur. Le clic du compte réel en production n'a pas été automatisé ; les preuves authentifiées concernent la fixture et les sources servies sont vérifiées en production. Ne pas déplacer le checkout VPS pour les commits documentaires de clôture. Aucun brouillon voisin déployé.
 
 L'attribution réelle des droits Scan de LE SAGE, les étapes de création/activation/consultation du profil, la réutilisation des données d'inscription, le portrait, l'habillage du lecteur Scan et les classements restent des étapes distinctes à terminer une après l'autre. Le QR reste sur la carte ; le bouton ouvre un lecteur, pas un générateur de QR.

@@ -1,6 +1,6 @@
 # Production — découverte des droits scolaires dans ProDéli
 
-GO production explicite du propriétaire. Périmètre : deux liens visibles dans les propriétaires existants, **aucune attribution réelle**, aucun autre lot.
+**DÉPLOYÉ après GO production explicite**, recette3ecdf9e/branchedeployed/prodeli-access-discovery-20261024, image1df5f857 ; contrôle indépendantPASS73sources+3dashboard. Périmètre : deux liens visibles dans les propriétaires existants, **aucune attribution réelle**, aucun autre lot. Bascule9,04s,119sessions et9entrées cache préservées ; sauvegarde privée686003octets validée, jamais restaurée. Voir `docs/qualification/PRODELI_ACCESS_DISCOVERY.md` pour les preuves et limites.
 
 - Base production : checkout `44e246fdd037318c647ee25e8447bb83e3b88337`, branche `deployed/school-native-access-20261024`, image `sha256:1b3843de24caa121243f231b147ddf0a9597b155deca7271ed699994f306fb86`.
 - Source candidate : `b6f588da5f4c79875f9abaca0e1ec0e15f02fc2e`.
