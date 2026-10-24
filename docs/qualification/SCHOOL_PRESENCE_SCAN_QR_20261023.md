@@ -1,6 +1,16 @@
 # Présence & Scan QR — en cours, moteur natif récupéré, NON DÉPLOYÉ
 
-## Candidat logiciel final qualifié — bascule non encore exécutée
+## Production — logiciel déployé, mise en service incomplète
+
+**Bascule logicielle exécutée**, recette **ec59446f4eeb5738256a72ea506cbfee652443f1**, source runtime6e99663/image d4359b7 détaillées ci-dessous. Statut **SOFTWARE_DEPLOYED_PROVIDER_HELD**,9.27s, **221sessions et cache Chromium conservés** ; configuration bind et variables existantes conservées, seul ajout HMAC durable privé, activation du seul module global sans attribuer de droits. Les14SQL020–026/031/037/039–043 ont passé après drain0worker/0planification ; aucun claim libéré ni scope/destinataire historique réaffecté. Propriétaires de tables inchangés ; droits DML du rôle technique limités aux17tables/séquences connues de ce lot, aucune permission d'utilisateur/profil modifiée.
+
+Vérification HTTPS postbascule PASS : login/recovery200 ; scanner/famille/notifications401 etStudio403 sans session ; JS v4 public hash identiqueimage. Trois hashes dashboard protégés inchangés, cinq services voisins et source65hashes vérifiés. Preuves privées native-exact-image-r5/production-*.json. Backup frais651805bytes0600SHA256c03f7ca9b1491712f046863fe28b9769986a534d3537287c8f11768ebecf68cd ; backup initial649306 conservé dans attempt-1-app-role, jamais restauré. Ancien conteneur arrêté/conservé. Pas de soumission d'enfant réel, de message externe ou reset de compte de qualification.
+
+**Ne pas annoncer « tout opérationnel »** : agrégats de droits natifs production n'ont AUCUNE ligne de profil/individuelle SchoolSafe ; aucun opérateur n'est habilité automatiquement. L'administrateur scolaire doit choisir les tâches, vrais lieux/barèmes/habilitations/consentements/photos. Caméra physique HTTPS non encore validée humainement ; providers WAHA/Evolution déconnectés, worker non activé, impression officielle distincte non qualifiée. Ce sont des limites de mise en service, pas des preuves remplacées par les tests.
+
+Incidents de recette conservés : premier prepare arrêté sur forme d'enveloppe HTTP, corrigé exit/stdout/stderr strictement ; premier migrate039 sous rôleapp refusé car tables natives détenuespostgres, transaction039 rollback et020–037 expansifs préservés. Recette corrigée : adminDB existant vérifiéSUPER, pas changement de propriétaire ni restauration ; préparation fraîche et18contrats purs PASS avant reprise. Pas de retour automatique à un dispatcher ignorant043.
+
+## Candidat logiciel final qualifié — historique avant bascule
 
 Source **6e996637d3397fbc174e8bde01685c1f05a0ac09**, image **sha256:d4359b7b3b174f70ea02aef6202c98e41381814960dedcf2df576994dac10b9d**, digest08b4cc08ed85b84cbb1d7821ebf1b0e1d6fa0462df0d016b4700ccd460648581, native-exact-image-r5 : **353contrats image+37recovery PG+50HTTP authentifiés PASS**, y compris les trois assertions de cache. Les suites **native/recovery/concurrency navigateur authentifiées sur cette image exacte PASS** (runner/test/runtime6e99663), puis verify PASS après toutes les suites, puis cleanup REMOVED des seuls conteneurs/réseaux possédés r3/r4/r5. Production et services inchangés à ce point. Les drafts dashboard/palmarès ne sont ni exécutés ni embarqués (tests navigateur pris dans Git, pas dans les fichiers sales).
 
