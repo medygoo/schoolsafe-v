@@ -1,6 +1,6 @@
 # ProDéli — étape 1, diagnostic de l'état des établissements
 
-**Statut : deux écarts reproduits ; correction et production NON effectuées.** Demande propriétaire de stabiliser/sécuriser ProDéli, progression séquentielle. Cette première étape examine une action sensible précise, pas tous les écrans ni tous les droits de la plateforme.
+**Statut étape 1 : deux écarts reproduits. Étape 2 après GO : correction locale ciblée validée sur PostgreSQL jetable, NON déployée.** Demande propriétaire de stabiliser/sécuriser ProDéli, progression séquentielle. Cette première étape examine une action sensible précise, pas tous les écrans ni tous les droits de la plateforme.
 
 ## Cadre et provenance
 
@@ -16,8 +16,14 @@ Pi seul rédacteur, branche `feat/presence-scan-qr-20261023`, départ `37767b275
 
 Preuves privées : `C:/Users/PC/SchoolSafeProductionUpdate-20261021-evidence/school-scan-20261023/prodeli-stability-step1/r4/result.json`, `audit-failure-observed.json` et journaux des trois suites. Le premier essai r1 était **INCOMPLETE** : le harnais attendait à tort active après la date invalide ; diagnostic conservé dans `r1/diagnosis.md`. r2/r3 ont mis en évidence des prérequis et clés JSON différents des contrats existants, corrigés **dans le harnais seul**, résultats INCOMPLETE conservés. r4 est le seul passage complet ; aucune tentative interrompue n'est renommée PASS.
 
+## Étape 2 — correctif local après GO
+
+Seul `SchoolSafeSchoolStateSet()` a changé côté produit : refus calendaire strict `checkdate()` avant écriture ; transaction possédée (refuse transaction appelante), lecture de l'état sous verrou, état et audit dans la même transaction ; erreurs SQL retournent false et annulent la transaction. Le contrôleur conserve ses gardes POST/CSRF/GlobalAdmin et sa réponse d'erreur. Aucun changement du comportement historique d'absence de migration ni du traitement des états comptes. Le harnais de l'étape1 accepte maintenant `--expect-fixed` ; les adaptations du harnais corrigent uniquement le `$DatabaseType` synthétique, pas la configuration réelle.
+
+Preuve `prodeli-stability-step2/green-r2/result.json` : **FIX_VERIFIED** avec vrai PostgreSQL17.11 local jetable + code PHP natif. Panne d'audit : active/0 → active/0, helper false et requête non terminée. Date2026-99-99 : helper false et ligne active/UNTIL NULL inchangée ; témoin suspension valide true/effective suspended. **162régressions PASS**, PHP lint et syntaxe Python PASS, nettoyage des objets étiquetés PASS. Green-r1 était INCOMPLETE : le nouveau chemin `db_query(...,false)` n'émet plus le texte de l'erreur SQL que l'ancien harnais attendait ; correction de l'assertion sans changer le produit, puis replay complet. Aucun HTTP authentifié/image exacte/production/compte réel. Les tests prouvent uniquement ces deux écarts, pas toute la stabilité ProDéli.
+
 ## Risque et suite proposée, pas encore autorisée comme livraison
 
 Une panne d'audit doit faire échouer et **annuler** le changement d'état ; le contrôleur doit refuser une date civile invalide avant toute écriture et l'API de mutation doit conserver cette même garantie. Distinguer explicitement l'absence historique de migration016 (fonction inerte et active par défaut, décision produit existante) d'une table présente mais illisible ; ne pas modifier l'accès réel sans contrat de compatibilité/tests. Vérifier ensuite `SchoolSafeAccountSet/Revoke` et les autres mutations sensibles par le même critère avant de conclure que **tout** ProDéli est stable.
 
-Étape suivante si GO : tests RED de refus calendaire et rollback audit sur PostgreSQL jetable + tests console, patch au niveau propriétaire natif en réutilisant transaction/verrous Rosario/PostgreSQL, relecture des états/sessions et régressions. Qualification HTTP/image exacte et éventuel déploiement restent des portes séparées. **Pas de permission réelle, compte, session, fournisseur, migration production, restauration, rollback automatique ni déploiement dans cette étape.**
+Suite après rapport et nouveau GO : qualification HTTP du vrai contrôleur (CSRF/autorité/date/rollback) et image exacte, puis revue des autres mutations sensibles (`SchoolSafeAccountSet/Revoke`) avant toute revendication de stabilité complète. Un éventuel déploiement reste une porte séparée, avec recette/sauvegarde/préservation/vérification indépendante. Ne pas livrer depuis un checkout sale. **Pas de permission réelle, compte, session, fournisseur, migration production, restauration, rollback automatique ni déploiement dans cette étape.**

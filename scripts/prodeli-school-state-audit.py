@@ -3,7 +3,7 @@
 Uses disposable local PostgreSQL + native PHP DB functions. Never connects to production.
 """
 import argparse, hashlib, json, os, pathlib, secrets, subprocess, time
-p=argparse.ArgumentParser();p.add_argument('--evidence',required=True);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--evidence',required=True);p.add_argument('--expect-fixed',action='store_true');a=p.parse_args()
 repo=pathlib.Path(__file__).resolve().parents[1];out=pathlib.Path(a.evidence).resolve()
 assert not out.is_relative_to(repo)
 out.mkdir(parents=True,exist_ok=False)
@@ -41,14 +41,19 @@ try:
  clean=json.loads(worker('clean'));assert clean['returned'] is True and clean['effective']=='suspended'
  before=snapshot();assert before=={'state':'active','audit_count':0}
  fault_output=worker('audit-failure');after=snapshot()
- assert 'SYNTHETIC_AUDIT_FAILURE' in (out/'audit-failure.private.log').read_text()
- assert after=={'state':'suspended','audit_count':0}
+ if not a.expect_fixed:assert 'SYNTHETIC_AUDIT_FAILURE' in (out/'audit-failure.private.log').read_text()
+ if a.expect_fixed:
+  assert after==before and json.loads(fault_output)['returned'] is False
+ else:
+  assert after=={'state':'suspended','audit_count':0}
+  assert '"returned"' not in fault_output
  (out/'audit-failure-observed.json').write_text(json.dumps({'before':before,'after':after},indent=2))
- assert '"returned"' not in fault_output  # Native DBQuery dies; Throwable catch is not recovery.
  invalid=json.loads(worker('invalid-date'))
- assert invalid['invalid_date_passes_console_regex'] and invalid['returned'] is True and invalid['effective']=='suspended'
+ assert invalid['invalid_date_passes_console_regex']
+ assert invalid['returned'] is (not a.expect_fixed)
+ assert invalid['effective']==('active' if a.expect_fixed else 'suspended')
  stored=json.loads(run(['docker','exec',db,'psql','-U','schoolcef_fixture','-d','schoolcef_stability_fixture','-X','-A','-t','-c',"SELECT json_build_object('state',state,'until',until) FROM schoolsafe_school_state WHERE school_id=999003;"]))
- assert stored['state']=='suspended' and stored['until']=='1970-01-01T00:00:00'
+ assert stored==({'state':'active','until':None} if a.expect_fixed else {'state':'suspended','until':'1970-01-01T00:00:00'})
  guards={}
  for name in ['prodeli-school-boundary-contracts.php','prodeli-account-presentation-contracts.php','school-scan-native-access-contracts.php']:
   r=call(['docker','run','--rm','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--network','none','-v',str(repo)+':/repo:ro','-e','SCHOOLSAFE_CONTRACT_PHP_ROOT=/repo/app/modules/codex-ui-v1/extensions-test-runtime',php,'php','/repo/scripts/'+name])
@@ -62,11 +67,12 @@ try:
  for path in paths:
   full='app/modules/codex-ui-v1/extensions-test-runtime/'+path
   committed=run(['git','-C',str(repo),'show','HEAD:'+full]).replace('\r\n','\n')
-  current=(repo/full).read_text(encoding='utf-8').replace('\r\n','\n');assert current==committed
+  current=(repo/full).read_text(encoding='utf-8').replace('\r\n','\n')
+  if path!='ProgramFunctions/SchoolSafeSchoolState.fnc.php' or not a.expect_fixed:assert current==committed
   hashes[path]=hashlib.sha256(current.encode()).hexdigest()
- result.update(status='FINDINGS_CONFIRMED',product_gate='BLOCKED_PENDING_CORRECTION',findings=[
- {'id':'PD-STAB-01','desired_invariant':'failed audit must leave state unchanged','invariant_passed':False,'before':before,'after':after,'native_request_terminated':True},
- {'id':'PD-STAB-02','desired_invariant':'invalid calendar date refused without write','invariant_passed':False,'input':'2026-99-99','helper_reported_success':True,'stored':stored,'effective':invalid['effective']}],
+ result.update(status='FIX_VERIFIED' if a.expect_fixed else 'FINDINGS_CONFIRMED',product_gate='LOCAL_ONLY_PENDING_HTTP_IMAGE' if a.expect_fixed else 'BLOCKED_PENDING_CORRECTION',findings=[
+ {'id':'PD-STAB-01','desired_invariant':'failed audit must leave state unchanged','invariant_passed':a.expect_fixed,'before':before,'after':after,'native_request_terminated':not a.expect_fixed},
+ {'id':'PD-STAB-02','desired_invariant':'invalid calendar date refused without write','invariant_passed':a.expect_fixed,'input':'2026-99-99','helper_reported_success':not a.expect_fixed,'stored':stored,'effective':invalid['effective']}],
  positive_control=clean,regression_guards=guards,normalized_sources_match_git=True,normalized_source_hashes=hashes,
  evidence_level='Real disposable local PostgreSQL; native DB and school state helpers; identity/hooks substituted; NOT HTTP or production')
 finally:

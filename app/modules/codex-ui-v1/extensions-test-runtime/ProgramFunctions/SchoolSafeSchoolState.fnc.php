@@ -162,24 +162,46 @@ function SchoolSafeSchoolStateSet( $school_id, $state, $reason = null, $until = 
 		return false;
 	}
 
-	// La date de fin n'a de sens que pour une suspension temporaire.
-	$until = ( $state === 'suspended' && $until )
-		? date( 'Y-m-d H:i:s', strtotime( (string) $until ) )
-		: null;
+	// Une date civile invalide ne doit jamais se transformer en 1970 avec succès.
+	if ( $state === 'suspended' && $until !== null && $until !== '' )
+	{
+		if ( ! is_string( $until ) || ! preg_match( '/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/D', $until, $parts )
+			|| ! checkdate( (int) $parts[2], (int) $parts[3], (int) $parts[1] ) )
+		{
+			return false;
+		}
+		$until .= ' 00:00:00';
+	}
+	else
+	{
+		$until = null;
+	}
 
 	$reason = $reason ? mb_substr( trim( (string) $reason ), 0, 500 ) : null;
 
 	$actor = function_exists( 'User' ) ? (string) User( 'USERNAME' ) : '';
 
-	$rows = SchoolSafeSchoolStateRows();
-
-	$from = isset( $rows[$school_id] ) ? (string) $rows[$school_id]['STATE'] : null;
-
+	// Le setter possède la transaction : ne jamais committer celle d'un appelant.
+	global $db_connection, $DatabaseType;
+	if ( $DatabaseType !== 'postgresql' || ! isset( $db_connection )
+		|| pg_transaction_status( $db_connection ) !== PGSQL_TRANSACTION_IDLE ) return false;
+	$query = static function ( $sql ) {
+		$result = @db_query( $sql, false );
+		if ( $result === false ) throw new RuntimeException( 'SCHOOL_STATE_WRITE_FAILED' );
+		return $result;
+	};
+	$started = false;
 	try
 	{
-		if ( isset( $rows[$school_id] ) )
+		$query( 'BEGIN' );
+		$started = true;
+		$query( "SET LOCAL lock_timeout='5s'" );
+		$query( 'SELECT pg_advisory_xact_lock(493016,' . $school_id . ')' );
+		$row = pg_fetch_assoc( $query( 'SELECT STATE FROM schoolsafe_school_state WHERE SCHOOL_ID=' . $school_id . ' FOR UPDATE' ) );
+		$from = $row === false ? null : (string) $row['state'];
+		if ( $row !== false )
 		{
-			DBQuery( "UPDATE schoolsafe_school_state
+			$query( "UPDATE schoolsafe_school_state
 				SET STATE='" . DBEscapeString( $state ) . "',
 				REASON=" . ( $reason === null ? 'NULL' : "'" . DBEscapeString( $reason ) . "'" ) . ",
 				UNTIL=" . ( $until === null ? 'NULL' : "'" . DBEscapeString( $until ) . "'" ) . ",
@@ -189,7 +211,7 @@ function SchoolSafeSchoolStateSet( $school_id, $state, $reason = null, $until = 
 		}
 		else
 		{
-			DBQuery( "INSERT INTO schoolsafe_school_state
+			$query( "INSERT INTO schoolsafe_school_state
 				(SCHOOL_ID,STATE,REASON,UNTIL,CHANGED_BY,CHANGED_AT)
 				VALUES ('" . $school_id . "',
 				'" . DBEscapeString( $state ) . "',
@@ -198,16 +220,19 @@ function SchoolSafeSchoolStateSet( $school_id, $state, $reason = null, $until = 
 				'" . DBEscapeString( $actor ) . "',CURRENT_TIMESTAMP)" );
 		}
 
-		DBQuery( "INSERT INTO schoolsafe_school_audit
+		$query( "INSERT INTO schoolsafe_school_audit
 			(SCHOOL_ID,ACTION,FROM_STATE,TO_STATE,REASON,ACTOR)
 			VALUES ('" . $school_id . "','state',
 			" . ( $from === null ? 'NULL' : "'" . DBEscapeString( $from ) . "'" ) . ",
 			'" . DBEscapeString( $state ) . "',
 			" . ( $reason === null ? 'NULL' : "'" . DBEscapeString( $reason ) . "'" ) . ",
 			'" . DBEscapeString( $actor ) . "')" );
+		$query( 'COMMIT' );
+		$started = false;
 	}
 	catch ( Throwable $error )
 	{
+		if ( $started ) @db_query( 'ROLLBACK', false );
 		return false;
 	}
 

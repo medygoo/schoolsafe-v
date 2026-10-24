@@ -9,7 +9,7 @@ $mode = $argv[1] ?? '';
 if (!in_array($mode, ['setup', 'clean', 'audit-failure', 'invalid-date'], true)) exit(2);
 $root = __DIR__ . '/../app/modules/codex-ui-v1/extensions-test-runtime';
 date_default_timezone_set('UTC'); // Fixture determinism, not a production setting.
-$DatabaseType = 'postgres';
+$DatabaseType = 'postgresql';
 $db_connection = pg_connect('host=' . getenv('SCHOOLSAFE_DB_HOST')
     . ' dbname=schoolcef_stability_fixture user=schoolcef_fixture password=' . getenv('POSTGRES_PASSWORD'));
 if (!$db_connection) exit(3);

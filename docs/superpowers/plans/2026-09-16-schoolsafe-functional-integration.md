@@ -1,4 +1,8 @@
-## Porte courante — ProDéli, étape 1 diagnostic état établissement ; rapport puis STOP
+## Porte courante — ProDéli, étape 2 correctif état école LOCAL, rapport puis STOP
+
+Après GO : setter natif `SchoolSafeSchoolStateSet()` valide la date civile et rend état+audit atomiques dans sa propre transaction avec verrou/rollback, sans élargir la console ou les droits. PostgreSQL17.11 jetable **FIX_VERIFIED** : panne audit ne suspend plus sans audit, date invalide refusée sans écriture, contrôle positif et162régressions PASS, PHP lint/Python syntaxe/cleanup PASS. [Preuves et limites](../../qualification/PRODELI_STABILITY_STEP1.md). **Pas de qualification HTTP/image exacte ni de déploiement ; autres mutations non auditées.** Informer puis STOP pour GO de l'étape suivante.
+
+## Porte précédente — ProDéli, étape 1 diagnostic état établissement ; rapport puis STOP
 
 Après nouvelle demande de stabilisation/sécurisation, première étape en lecture/cas synthétiques uniquement : [rapport](../../qualification/PRODELI_STABILITY_STEP1.md). PostgreSQL17.11 local jetable + PHP natif : panne d'audit après changement d'état laisse école fictive suspendue/0audit ; date `2026-99-99` passe la forme, retourne succès et enregistre `1970-01-01`, sans levée immédiate de la suspension. Gardes existantes162PASS, conteneurs/réseau jetables nettoyés. **Produit non corrigé, production non modifiée ; ne pas prétendre tout ProDéli sûr.** Prochaine étape après GO distinct : correction ciblée et preuve de rollback/refus calendaire, puis audit des autres mutations ; aucun déploiement implicite.
 
