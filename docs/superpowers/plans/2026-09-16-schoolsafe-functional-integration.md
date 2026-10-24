@@ -1,4 +1,8 @@
-## Porte courante — boutons des droits ProDéli EN PRODUCTION, informer et arrêter
+## Porte courante — ProDéli, étape 1 diagnostic état établissement ; rapport puis STOP
+
+Après nouvelle demande de stabilisation/sécurisation, première étape en lecture/cas synthétiques uniquement : [rapport](../../qualification/PRODELI_STABILITY_STEP1.md). PostgreSQL17.11 local jetable + PHP natif : panne d'audit après changement d'état laisse école fictive suspendue/0audit ; date `2026-99-99` passe la forme, retourne succès et enregistre `1970-01-01`, sans levée immédiate de la suspension. Gardes existantes162PASS, conteneurs/réseau jetables nettoyés. **Produit non corrigé, production non modifiée ; ne pas prétendre tout ProDéli sûr.** Prochaine étape après GO distinct : correction ciblée et preuve de rollback/refus calendaire, puis audit des autres mutations ; aucun déploiement implicite.
+
+## Porte précédente — boutons des droits ProDéli EN PRODUCTION, informer et arrêter
 
 Après GO production explicite : recette/checkoutexact **3ecdf9e5dc0558d5fb5c374a12cfd8df00309ad6**, branchedeployed/prodeli-access-discovery-20261024, image1df5f857/sourceb6f588d/digeste41c8515. Deuxruntime seulement,27guards+préflight schema/privilègesread-onlyPASS, aucune migration/GRANT. Sauvegarde privée0600 fraîche686003octets/archivevalide jamais restaurée. Bascule9,04s ;119sessions/cache/env/config/HMAC/cinqvoisinspréservés. ContrôleindépendantPASS73sources+3dashboard/checkoutpropre/0sessionnonexpiréemanquante/9cache/HTTPS200-401-403-302/JSfamille conforme/workers détenus. Ancien conteneur arrêté et conservé. [Rapport et limites](../../qualification/PRODELI_ACCESS_DISCOVERY.md). **Informer puis STOP : aucune attribution réelleScanLE SAGE, profil/photo/cartes/classements ou autre fonctionnalité implicitement terminée.** Ne pas redéployer pour les documents de clôture.
 
