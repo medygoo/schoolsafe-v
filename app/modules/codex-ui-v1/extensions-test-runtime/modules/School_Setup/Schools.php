@@ -1,6 +1,7 @@
 <?php
 
 require_once 'ProgramFunctions/FileUpload.fnc.php';
+require_once 'ProgramFunctions/SchoolSafeSchoolLogo.fnc.php';
 require_once 'ProgramFunctions/Fields.fnc.php';
 require_once 'ProgramFunctions/StudentsUsersInfo.fnc.php';
 require_once 'modules/School_Setup/includes/Schools.fnc.php';
@@ -46,8 +47,8 @@ if ( $_REQUEST['modfunc'] === 'update'
 			SchoolSafeSaveSchoolSlogan( UserSchool(), $school_slogan );
 			if ( ! empty( $_FILES['LOGO_FILE']['tmp_name'] ) )
 			{
-				ImageUpload( 'LOGO_FILE', [], 'assets/', [], '.jpg', 'school_logo_' . UserSchool() );
-				SchoolSafeUpdateReceiptBrand( UserSchool() );
+				$saved = ImageUpload( 'LOGO_FILE', [], SchoolSafeSchoolLogoUploadDirectory(), [], '.jpg', 'school_logo_' . UserSchool() );
+				if ( $saved && is_file( $saved ) ) SchoolSafeUpdateReceiptBrand( UserSchool() );
 			}
 			$fields_RET = DBGet( "SELECT ID,TYPE
 				FROM school_fields
@@ -221,8 +222,8 @@ if ( ! $_REQUEST['modfunc'] )
 
 	PopTable( 'header', $school_name );
 
-	echo '<table><tr><td colspan="3">' . ( file_exists( 'assets/school_logo_' . UserSchool() . '.jpg' ) ?
-		'<img src="assets/school_logo_' . UserSchool() . '.jpg" style="max-width:225px; max-height:225px;" /><br />
+	echo '<table><tr><td colspan="3">' . ( SchoolSafeSchoolLogoPath( (int) UserSchool() ) !== '' ?
+		'<img src="' . SchoolSafeSchoolLogoUrl( (int) UserSchool() ) . '" style="max-width:225px; max-height:225px;" /><br />
 		<span class="legend-gray">' . _( 'School logo' ) . '</span>' :
 		'' ) . '</td></tr>';
 

@@ -69,6 +69,7 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     require_once __DIR__.'/SchoolSafeSchoolLife.fnc.php';
     require_once __DIR__.'/SchoolSafeDashboardDirectory.fnc.php';
     require_once __DIR__.'/SchoolSafePersonnelStats.fnc.php';
+    require_once __DIR__.'/SchoolSafeSchoolLogo.fnc.php';
     $school=(int)UserSchool();$year=(int)UserSyear();
     if($school<1||$year<1)return;
     $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
@@ -135,13 +136,15 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     }
     $now=new DateTimeImmutable('now',new DateTimeZone('Africa/Kinshasa'));
     $schoolName=ParseMLField(SchoolInfo('TITLE'));
+    $logoUrl=SchoolSafeSchoolLogoUrl($school);
+    $logoCampus='/assets/dashboard-reference/campus-day-logo.webp';
     [$birthdays,$schoolLife]=SchoolSafePhotoSplitSchoolLife(SchoolSafeDashboardNativeWidget(false));
     echo '<link rel="stylesheet" href="assets/css/schoolsafe-photo-dashboard.css?v=school-composition-20261022"><link rel="stylesheet" href="assets/css/schoolsafe-dashboard-matrices.css?v=1"><script defer src="assets/js/schoolsafe-matrix-primary.js?v=2"></script>';
     echo '<main id="ss-photo-dashboard" class="ss-photo-dashboard ss-connected-dashboard" data-dashboard-profile="admin" data-dashboard-tab="overview">';
     echo '<div class="ss-photo-toolbar"><a class="ss-photo-mobile-brand" href="Modules.php?modname=misc/Portal.php"><img src="/schoolsafe-card-bridge/studio-validated-20261008/logo-schoolsafe.png" alt="" width="38" height="38"><strong>School<span>Safe</span></strong></a><div data-photo-search></div><div data-photo-school></div><div data-photo-year></div></div>';
     echo '<section id="ss-photo-home" class="ss-photo-hero"><p class="ss-photo-greeting">Bonjour, <strong>Administrateur</strong></p><div class="ss-photo-introduction"><h1>Pilotez votre établissement<br>avec <span>clarté et confiance.</span></h1><p>'.$e($schoolName).' · Une vue claire de votre établissement.</p><div class="ss-photo-hero-actions"><a class="ss-photo-primary" href="#ss-photo-rubriques">'.SchoolSafePhotoIcon('ChartNoAxesCombined').'Modules de l’école</a>';
     if(AllowUse('School_Setup/Configuration.php'))echo '<a href="/Modules.php?modname=School_Setup/Configuration.php">'.SchoolSafePhotoIcon('FolderCog').'Configurer mon école</a>';
-    echo '</div></div><img class="ss-photo-campus" src="assets/dashboard-reference/campus-day-logo.webp" data-campus-day="assets/dashboard-reference/campus-day-logo.webp" data-campus-night="assets/dashboard-reference/campus-night-logo.webp" alt="Illustration du campus avec le logo SchoolSafe debout sur le terrain de basket" loading="lazy" width="1760" height="880"><time class="ss-photo-date" datetime="'.$now->format('c').'">'.$e($now->format('d/m/Y')).'<strong>'.$e($now->format('H:i')).'</strong></time><button class="ss-photo-theme" type="button" aria-label="Activer le mode sombre" aria-pressed="false">'.SchoolSafePhotoIcon('Palette').'<span>Mode sombre</span><i aria-hidden="true"></i></button></section>';
+    echo '</div></div><figure class="ss-photo-school-logo" data-school-logo data-logo-stage="'.($logoUrl!==''?'school':'campus').'"><span class="ss-photo-logo-orbit" aria-hidden="true"></span><img src="'.$e($logoUrl!==''?$logoUrl:$logoCampus).'" data-logo-campus="'.$e($logoCampus).'" data-logo-brand="/schoolsafe-logo.png" alt="'.($logoUrl!==''?'Logo de l’école '.$e($schoolName):'Image par défaut de l’école '.$e($schoolName)).'" loading="lazy" width="440" height="280"><figcaption>'.$e($schoolName).'</figcaption></figure><time class="ss-photo-date" datetime="'.$now->format('c').'">'.$e($now->format('d/m/Y')).'<strong>'.$e($now->format('H:i')).'</strong></time><button class="ss-photo-theme" type="button" aria-label="Activer le mode sombre" aria-pressed="false">'.SchoolSafePhotoIcon('Palette').'<span>Mode sombre</span><i aria-hidden="true"></i></button></section>';
     $genderDetail='Inscriptions actives';
     foreach((array)($data['gender']??[]) as $gender){
         if((int)($gender['IS_TOTAL']??0)!==1)continue;
@@ -189,5 +192,5 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     echo '</section></aside></div>'.$financeSummary.SchoolSafeDashboardDetails($data,$feed).'<footer class="ss-photo-footer"><span>SchoolSafe · Votre allié serein et fort, près de vous.</span><span>&copy; '.$now->format('Y').' SchoolSafe.</span></footer>';
     echo '<div id="ss-photo-create" hidden><h3>Actions rapides</h3>';
     foreach(['Students/Student.php&student_id=new'=>'Ajouter un élève','Users/User.php&staff_id=new'=>'Ajouter un utilisateur','Student_Billing/StudentPayments.php'=>'Enregistrer un paiement'] as $route=>$label){$permission=explode('&',$route)[0];if(AllowEdit($permission))echo '<a href="Modules.php?modname='.$e($route).'">'.$e($label).'</a>';}
-    echo '</div></main><script src="assets/js/schoolsafe-photo-dashboard.js?v=school-composition-20261022"></script>';
+    echo '</div></main><script src="assets/js/schoolsafe-photo-dashboard.js?v=school-composition-20261022"></script><script defer src="assets/js/schoolsafe-school-logo.js?v=1"></script>';
 }

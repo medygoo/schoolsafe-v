@@ -894,7 +894,8 @@ if ( ! function_exists( 'ReportCardsGenerate' ) )
 				echo '<table class="width-100p"><tr>';
 
 				// FJ add school logo.
-				$logo_pic = 'assets/school_logo_' . UserSchool() . '.jpg';
+				require_once 'ProgramFunctions/SchoolSafeSchoolLogo.fnc.php';
+				$logo_pic = SchoolSafeSchoolLogoPath( (int) UserSchool() );
 
 				if ( file_exists( $logo_pic ) )
 				{

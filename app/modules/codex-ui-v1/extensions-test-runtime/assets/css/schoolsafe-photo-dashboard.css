@@ -55,6 +55,18 @@ body:has(#ss-photo-dashboard) #body>.ss-dashboard-login-info{margin:0 0 8px;font
 .ss-photo-hero-actions a img{width:16px;height:16px}
 .ss-photo-hero-actions .ss-photo-primary{background:#ffd25e;border-color:#ffd25e;color:#3d330d}
 .ss-photo-campus{position:absolute;z-index:0;right:12px;bottom:0;width:60%;height:220px;object-fit:contain;object-position:center bottom}
+/* One motion system for every uploaded school identity and both native fallbacks. */
+.ss-photo-school-logo{position:absolute;right:20px;top:14px;width:min(37%,330px);height:205px;z-index:1;margin:0;display:grid;place-items:center;align-content:center;gap:7px;isolation:isolate;overflow:hidden;border:1px solid var(--photo-line);border-radius:20px;background:var(--photo-panel);box-shadow:0 12px 35px #10253f16}
+.ss-photo-school-logo:before{content:"";position:absolute;inset:12px;border:1px solid var(--photo-line);border-radius:14px;pointer-events:none}
+.ss-photo-logo-orbit{position:absolute;inset:20px;border-radius:50%;border:1px dashed var(--photo-gold);opacity:.6;animation:ss-logo-orbit 22s linear infinite;pointer-events:none}
+.ss-photo-school-logo img{position:relative;z-index:1;display:block;width:75%;height:135px;object-fit:contain;filter:drop-shadow(0 7px 12px #10253f30);animation:ss-logo-float 6s ease-in-out infinite}
+.ss-photo-school-logo img[hidden]{display:none}
+.ss-photo-school-logo figcaption{z-index:1;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700;color:var(--photo-ink)}
+@keyframes ss-logo-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.025)}}
+@keyframes ss-logo-orbit{to{transform:rotate(360deg)}}
+@media(max-width:700px){.ss-photo-hero:has(.ss-photo-school-logo){min-height:205px;padding-top:8px}.ss-photo-hero:has(.ss-photo-school-logo) .ss-photo-greeting,.ss-photo-hero:has(.ss-photo-school-logo) .ss-photo-introduction{max-width:51%}.ss-photo-hero:has(.ss-photo-school-logo) .ss-photo-introduction>p{padding-right:0}.ss-photo-school-logo{right:0;top:4px;width:44%;height:175px}.ss-photo-school-logo img{height:112px}.ss-photo-hero:has(.ss-photo-school-logo) .ss-photo-theme{top:178px;right:0}}
+@media(max-width:360px){.ss-photo-school-logo{width:41%;height:155px}.ss-photo-school-logo img{height:100px}.ss-photo-hero:has(.ss-photo-school-logo) .ss-photo-theme{top:158px}}
+@media(prefers-reduced-motion:reduce){.ss-photo-school-logo img,.ss-photo-logo-orbit{animation:none}}
 .ss-photo-date{position:absolute;right:4px;top:18px;font-size:11px;color:var(--photo-muted);text-align:right;z-index:3}
 .ss-photo-date strong{display:block;font-size:16px;color:var(--photo-ink);font-weight:600}
 .ss-photo-theme{position:absolute;right:4px;top:70px;z-index:3;display:flex;align-items:center;gap:6px;background:var(--photo-panel);border:1px solid var(--photo-line);border-radius:6px;padding:5px 7px;font-size:10px}

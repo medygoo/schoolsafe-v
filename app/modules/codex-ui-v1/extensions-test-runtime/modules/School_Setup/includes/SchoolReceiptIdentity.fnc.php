@@ -66,7 +66,8 @@ function SchoolSafeSaveSchoolIdentitySetting( $school_id, $key, $value )
 
 function SchoolSafeUpdateReceiptBrand( $school_id )
 {
-    $path = 'assets/school_logo_' . (int) $school_id . '.jpg';
+    require_once 'ProgramFunctions/SchoolSafeSchoolLogo.fnc.php';
+    $path = SchoolSafeSchoolLogoPath( (int) $school_id );
     if ( ! is_file( $path ) || ! function_exists( 'imagecreatefromjpeg' ) ) { return; }
     $source = @imagecreatefromjpeg( $path );
     if ( ! $source ) { return; }

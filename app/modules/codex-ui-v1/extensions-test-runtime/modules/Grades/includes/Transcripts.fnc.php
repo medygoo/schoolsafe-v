@@ -616,7 +616,8 @@ if ( ! function_exists( 'TranscriptPDFHeader' ) )
 		echo '<td class="center">' . $student['GRADE_LEVEL'] . '</td></tr></table></td>';
 
 		// School logo.
-		$logo_pic = 'assets/school_logo_' . UserSchool() . '.jpg';
+		require_once 'ProgramFunctions/SchoolSafeSchoolLogo.fnc.php';
+		$logo_pic = SchoolSafeSchoolLogoPath( (int) UserSchool() );
 		$picwidth = 120;
 
 		echo '<td style="width:' . $picwidth . 'px;">';

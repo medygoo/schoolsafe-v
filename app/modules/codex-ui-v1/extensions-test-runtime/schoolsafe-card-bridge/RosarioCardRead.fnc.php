@@ -97,7 +97,8 @@ function SchoolSafeReadNativeCardInput( $student_id )
         $candidate = $files ? end( $files ) : '';
         $photo = SchoolSafeCardLocalAsset( $candidate );
     }
-    $logo = SchoolSafeCardLocalAsset( 'assets/school_logo_' . $context['SCHOOL_ID'] . '.jpg' );
+    require_once __DIR__ . '/../ProgramFunctions/SchoolSafeSchoolLogo.fnc.php';
+    $logo = SchoolSafeCardLocalAsset( SchoolSafeSchoolLogoPath( (int) $context['SCHOOL_ID'] ) );
     $year_label = '';
     if ( function_exists( 'FormatSyear' ) && function_exists( 'Config' ) )
     {

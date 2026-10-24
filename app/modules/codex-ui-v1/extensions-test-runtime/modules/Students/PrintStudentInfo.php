@@ -76,7 +76,8 @@ if ( $_REQUEST['modfunc'] === 'save'
 				unset( $_ROSARIO['DrawHeader'] );
 
 				//School logo
-				$logo_pic = 'assets/school_logo_' . UserSchool() . '.jpg';
+				require_once 'ProgramFunctions/SchoolSafeSchoolLogo.fnc.php';
+				$logo_pic = SchoolSafeSchoolLogoPath( (int) UserSchool() );
 
 				$picwidth = 120;
 

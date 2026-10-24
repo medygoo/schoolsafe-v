@@ -344,8 +344,9 @@ function sskcWizardAfterSchool(): void
     DBUpdate('schools',$values,['ID'=>$school,'SYEAR'=>(int)UserSyear()]);
     if(!empty($a['logo'])){
         require_once 'ProgramFunctions/FileUpload.fnc.php';
-        $saved=ImageUpload($a['logo'],['width'=>1024,'height'=>1024],'assets/',[],'.jpg','school_logo_'.$school);
-        if($saved)SchoolSafeUpdateReceiptBrand($school);
+        require_once 'ProgramFunctions/SchoolSafeSchoolLogo.fnc.php';
+        $saved=ImageUpload($a['logo'],['width'=>1024,'height'=>1024],SchoolSafeSchoolLogoUploadDirectory(),[],'.jpg','school_logo_'.$school);
+        if($saved===SchoolSafeSchoolLogoUploadDirectory().'school_logo_'.$school.'.jpg'&&is_file($saved))SchoolSafeUpdateReceiptBrand($school);
         else echo '<p role="alert">Le logo n’a pas pu être enregistré. Reprenez-le dans la fiche de l’école.</p>';
     }
     UpdateSchoolArray($school);

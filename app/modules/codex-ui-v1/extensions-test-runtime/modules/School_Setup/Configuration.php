@@ -1,6 +1,7 @@
 <?php
 require_once 'ProgramFunctions/Theme.fnc.php';
 require_once 'ProgramFunctions/FileUpload.fnc.php';
+require_once 'ProgramFunctions/SchoolSafeSchoolLogo.fnc.php';
 require_once 'modules/School_Setup/includes/SchoolReceiptIdentity.fnc.php';
 require_once 'ProgramFunctions/SchoolSafeWorkspace.fnc.php';
 
@@ -79,15 +80,15 @@ else
 			&& AllowEdit() )
 		{
 			// Upload school logo.
-			ImageUpload(
+			$saved = ImageUpload(
 				'LOGO_FILE',
 				[],
-				'assets/',
+				SchoolSafeSchoolLogoUploadDirectory(),
 				[],
 				'.jpg',
 				'school_logo_' . UserSchool()
 			);
-			SchoolSafeUpdateReceiptBrand( UserSchool() );
+			if ( $saved && is_file( $saved ) ) SchoolSafeUpdateReceiptBrand( UserSchool() );
 		}
 
 		if ( ! empty( $_REQUEST['values'] )
@@ -549,8 +550,8 @@ else
 			) . '</td></tr>';
 
 			// Upload school logo.
-			echo '<tr><td>' . ( file_exists( 'assets/school_logo_' . UserSchool() . '.jpg' ) ?
-				'<br /><img src="assets/school_logo_' . UserSchool() . '.jpg?cache_killer=' . rand() .
+			echo '<tr><td>' . ( SchoolSafeSchoolLogoPath( (int) UserSchool() ) !== '' ?
+				'<br /><img src="' . SchoolSafeSchoolLogoUrl( (int) UserSchool() ) .
 				'" style="max-width:225px; max-height:225px;" /><br />' : '' ) .
 			FileInput(
 				'LOGO_FILE',
