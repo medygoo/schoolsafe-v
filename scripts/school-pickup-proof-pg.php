@@ -48,7 +48,7 @@ if ($action==='setup') {
     $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup','wa-setup','wa-send','wa-status','dispatch-feed','fixture-notify'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup','wa-setup','wa-send','wa-status','dispatch-feed','fixture-notify','canteen'],true)) exit(2);
 if($action==='fixture-notify'){
     require_once $root.'/ProgramFunctions/SchoolSafeNotify.fnc.php';
     $input=json_decode($argv[2]??'{}',true,16,JSON_THROW_ON_ERROR);
@@ -184,6 +184,21 @@ if ($action==='fee-policy-manage') {
     catch(RuntimeException $error){$result=['error'=>$error->getMessage()];}
     if($pdo->inTransaction())throw new RuntimeException('TRANSACTION_LEFT_OPEN');
     echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
+if($action==='canteen'){
+    require_once $root.'/ProgramFunctions/SchoolSafeCanteenScan.fnc.php';
+    $input=json_decode($argv[2]??'{}',true,16,JSON_THROW_ON_ERROR);
+    $RosarioModules=['Food_Service'=>($input['module']??true)===true];
+    $GLOBALS['qa_canteen_permission']=($input['permission']??true)===true;
+    function SchoolSafeNativeCommandPermission($program){return $program==='SchoolSafe/ScanCanteen.php'&&$GLOBALS['qa_canteen_permission']===true;}
+    $secret=str_repeat('0',64);$number='QA-ENTRY';
+    $signature=substr(strtr(base64_encode(hash_hmac('sha256',$number,hex2bin($secret),true)),'+/','-_'),0,32);
+    $qr=$input['qr']??('schoolsafe://card/'.$number.'/'.$signature);
+    $ctx=array_replace(['user'=>9,'school'=>1,'year'=>2026,'detail'=>false],$input['context']??[]);
+    $pdo->beginTransaction();$pdo->exec('SET TRANSACTION READ ONLY');
+    try{$value=SchoolSafeCanteenScan($qr,$secret,$ctx,$db);}catch(RuntimeException $error){$value=['error'=>$error->getMessage()];}
+    $readOnly=$pdo->query('SHOW transaction_read_only')->fetchColumn()==='on';$pdo->rollBack();
+    echo json_encode(['data'=>$value,'read_only_transaction'=>$readOnly],JSON_THROW_ON_ERROR)."\n";exit;
 }
 if ($action==='fee-scan') {
     require_once $root.'/ProgramFunctions/SchoolSafeFeeScan.fnc.php';

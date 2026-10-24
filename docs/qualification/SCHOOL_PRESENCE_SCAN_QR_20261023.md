@@ -1,6 +1,12 @@
 # Présence & Scan QR — en cours, moteur natif récupéré, NON DÉPLOYÉ
 
-## Dernier sous-lot qualifié — consommation Notify native (non déployé)
+## Dernier sous-lot qualifié — vérification cantine native (non déployé)
+
+La commande existante signifie **vérification des frais de cantine**, pas service automatique d’un repas (Catalog et propriétaire Food_Service conservés). Le secret/carte/enrôlement natifs résolvent maintenant cette commande sans bridge isolé. Lecture du compte Food_Service existant, parfois familial/partagé : aucune ventilation scolaire inventée, nouveau ledger, paiement, repas, passage, reçu ou notification. Droit de scan distinct du droit natif Food_Service/Accounts.php de voir les montants. RED pur : le lecteur exposait le solde au gardien malgré absence de détail ; maintenant aucun champ/label monétaire sans ce droit. Centimes signés exacts ; compte absent, données absentes, solde nul, négatif et devise inconnue restent distincts, aucun USD par défaut. Statut NULL/blank actif conservé selon le propriétaire Food_Service natif.
+
+**240PG PASS** canteen-native-pg-r3/result.json (228précédents+12cantine), exécution sous transaction PostgreSQL READ ONLY, ressources éphémères nettoyées. **12contrats purs/3lint PASS**, canteen-contracts-final.log ; **60Chromium interceptés PASS** canteen-scanner-browser-final.log,390/1280 dont10cantine (QR seul/CSRF, aucun repas fictif, texte échappé, devise inconnue sans ancien crédit/couleur, aucun débordement). Pas HTTPauth/image/caméra/provider/production. Première fixture2025 était réellement inscrite par le test de récupération : cas négatif corrigé vers2024 sans changement produit. Un lancement a dépassé300s et ne vaut ni RED métier ni PASS ; artefact execution-interrupted conservé, nettoyage limité au labelnonce possédé. Nettoyage du launcher optimisé par inventaire unique des survivants, contrôles nom+label inchangés, puis replay240complet réussi.
+
+## Sous-lot précédent qualifié — consommation Notify native (non déployé)
 
 Sur8802161, le dispatcher natif utilise désormais SchoolSafeWaSend, sans deuxième route WAHA/Evolution. Relecture à consommation de l’identité/profil/année/école/compte natifs, du parent/SJU/enrôlement et du consentement ; une suspension ou une relation retirée après la mise en file interdit l’envoi. Après les probes fournisseur potentiellement lents, une autorisation serveur native et le consentement sont de nouveau contrôlés avant chaque vraie requête de message. Les finances sans enfant réel ou destinataire parent ne sont jamais diffusées à toute l’école.
 

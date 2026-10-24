@@ -121,6 +121,30 @@ const markup=file=>{const source=fs.readFileSync(path.join(root,file),'utf8');re
    if(!denied)check('historical arrival does not reuse blue or yellow authorization',await page.locator('#scan-result').getAttribute('data-fee-color')==='');
    await page.close();
   }
+  for(const width of [390,1280]){
+   const page=await browser.newPage({viewport:{width,height:844}}),posts=[],errors=[];page.on('pageerror',error=>errors.push(error.message));
+   let unavailable=false;
+   await page.route('**/*',async route=>{
+    const request=route.request(),url=new URL(request.url());
+    if(url.pathname==='/scanner-native.php')return route.fulfill({contentType:'text/html',body:markup('scanner-native.php')});
+    if(url.pathname==='/scanner-relay.php'){
+     if(url.searchParams.get('operation')==='capabilities')return route.fulfill({json:{csrfToken:'synthetic-only',data:{capabilities:['SCAN_CANTEEN'],fee_policy_active:false}}});
+     posts.push({body:request.postDataJSON(),csrf:request.headers()['x-schoolsafe-csrf']});
+     return route.fulfill({json:{data:{result:'CANTEEN_STATUS',student_name:'Synthetic <script>window.fakeExecution=true</script>',read_only:true,status:unavailable?'currency_unavailable':'credit_available',label:unavailable?'Devise du compte cantine indisponible. Vérification requise ; aucun repas débité.':'Crédit cantine disponible. Vérification seulement ; aucun repas débité.'}}});
+    }return assets(route,url);
+   });
+   await page.goto('http://finance.fixture.invalid/scanner-native.php');await page.locator('#scan-form').waitFor({state:'visible'});
+   await page.locator('#scan-qr').fill('Synthetic canteen QR');await page.locator('#scan-form button[type=submit]').click();
+   await page.waitForFunction(()=>document.querySelector('#scan-result').textContent.includes('Crédit cantine'));
+   check('canteen '+width+' posts only permitted read-only native mode and QR',posts.length===1&&posts[0].csrf==='synthetic-only'&&JSON.stringify(Object.keys(posts[0].body).sort())===JSON.stringify(['mode','qr_payload'])&&posts[0].body.mode==='canteen');
+   check('canteen '+width+' never invents meal debit payment or guard money',await page.locator('#scan-result').textContent().then(text=>text.includes('aucun repas débité')&&!/USD|12\.50|Payé|repas enregistré/.test(text)));
+   check('canteen '+width+' child label remains safe text',await page.evaluate(()=>window.fakeExecution!==true&&document.querySelectorAll('#scan-result script').length===0));
+   unavailable=true;await page.locator('#scan-form button[type=submit]').click();
+   await page.waitForFunction(()=>document.querySelector('#scan-result').textContent.includes('Devise'));
+   check('canteen '+width+' unavailable data has no stale credit or admission color',await page.locator('#scan-result').textContent().then(text=>!text.includes('Crédit cantine'))&&await page.locator('#scan-result').getAttribute('data-fee-color')==='');
+   check('canteen '+width+' responsive page has no horizontal overflow or JS exception',errors.length===0&&await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+   await page.close();
+  }
  }finally{await browser.close();}
  console.log(JSON.stringify({status:failed?'FAIL':'PASS',checks:results.length,failed,scope:'Actual markup/JS; fully intercepted transport, not authenticated HTTP/camera',results},null,2));if(failed)process.exitCode=1;
 })().catch(error=>{console.error(error.stack);process.exitCode=1;});

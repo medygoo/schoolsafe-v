@@ -129,6 +129,15 @@ try {
      while(ob_get_level()>$level)ob_end_clean();
      SchoolSafeScanReply(200,['data'=>['locations'=>$list]]);
    }
+   if($operation==='scan'&&($input->mode??'')==='canteen') {
+     if(array_diff(array_keys((array)$input),['mode','qr_payload'])||!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000)throw new RuntimeException('INVALID_INPUT');
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeCanteenScan.fnc.php';
+     $data=SchoolSafeCanteenScan($input->qr_payload,getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'',
+       ['user'=>$user,'school'=>$school,'year'=>$year,'detail'=>AllowUse('Food_Service/Accounts.php')===true],
+       ['get'=>function($sql){return DBGet(DBQuery($sql));}]);
+     if(!is_array($data))throw new RuntimeException('NATIVE_CANTEEN_UNAVAILABLE');
+     while(ob_get_level()>$level)ob_end_clean();SchoolSafeScanReply(200,['data'=>$enrichPortrait($data)]);
+   }
    if($operation==='scan'&&($input->mode??'')==='pickup') {
      $allowedPickupKeys=['mode','qr_payload','location_id','authorized_person_id','proof_token','human_confirmed'];
      if(!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000
@@ -276,7 +285,7 @@ try {
    if($status===200&&($result['data']['result']??'')==='CANTEEN_IDENTITY'){
      $student=filter_var($result['data']['nativeStudentId']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
      if($student===false)throw new RuntimeException('NATIVE_STUDENT_NOT_ACCESSIBLE');
-     $result=['data'=>SchoolSafeCanteenScanRead($student,$school,$year)];
+     $result=['data'=>SchoolSafeCanteenScanRead($student,$school,$year,[],AllowUse('Food_Service/Accounts.php')===true)];
      $result['data']['nativeStudentId']=$student;
    }
  }elseif($operation==='scan'&&($input->mode??'')==='fees'){

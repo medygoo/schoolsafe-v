@@ -653,13 +653,40 @@ def main():
   email_calls=sql("SELECT count(*) FROM qa_wa_http_calls WHERE engine='dispatch-email'")
   dispatch({'channel':'email','mock_transports':True})
   check('financial notification without actual child scope never becomes schoolwide parental disclosure',delivery_state(unbound)=='failed' and email_calls==sql("SELECT count(*) FROM qa_wa_http_calls WHERE engine='dispatch-email'"))
+  sql("CREATE TABLE food_service_accounts(account_id integer PRIMARY KEY,balance numeric(9,2) NOT NULL); CREATE TABLE food_service_student_accounts(student_id integer PRIMARY KEY REFERENCES students(student_id),account_id integer NOT NULL,status varchar(25)); INSERT INTO food_service_accounts VALUES(101,12.50); INSERT INTO food_service_student_accounts VALUES(11,101,NULL),(12,101,NULL)")
+  def canteen(options=None):return json.loads(run(php_cmd('canteen',json.dumps(options or {}))))
+  c=canteen();(out/'canteen-native-observed.json').write_text(json.dumps(c,indent=2))
+  check('native signed canteen card works without bridge and guard receives no monetary payload',c['data'].get('result')=='CANTEEN_STATUS' and c['data'].get('status')=='credit_available' and 'balance' not in c['data'] and '12.50' not in c['data'].get('label',''))
+  check('canteen operation is enforced PostgreSQL read-only not a meal debit',c['read_only_transaction'] is True and c['data'].get('read_only') is True)
+  c=canteen({'context':{'detail':True}})['data']
+  check('canteen authorized detail retains native pooled account balance without invented school allocation',c.get('balance')=='12.50' and c.get('currency')=='SYN' and c.get('balance_scope')=='native_food_service_account')
+  c=canteen({'qr':'schoolsafe://card/QA-ENTRY/00000000000000000000000000000000'})['data']
+  check('forged canteen card never resolves a financial account',c.get('result')=='INVALID' and 'balance' not in c)
+  c=canteen({'context':{'school':2}})['data']
+  check('canteen card from another school never reads shared account balance',c.get('result')!='CANTEEN_STATUS' and 'balance' not in c)
+  c=canteen({'context':{'year':2024}})['data'] # 2025 is deliberately enrolled by the earlier recovery fixture.
+  check('canteen card cannot borrow enrollment or identity from another year',c.get('result')!='CANTEEN_STATUS' and 'balance' not in c)
+  check('canteen delegation does not exist when native command right is absent',canteen({'permission':False})['data'].get('error')=='NATIVE_PERMISSION_REQUIRED')
+  check('inactive native food service never creates canteen capability by execution',canteen({'module':False})['data'].get('error')=='NATIVE_PERMISSION_REQUIRED')
+  sql('UPDATE food_service_accounts SET balance=0')
+  check('known zero canteen credit remains zero not paid or free meal',canteen()['data'].get('status')=='zero_balance')
+  sql('UPDATE food_service_accounts SET balance=-0.01')
+  check('signed negative native canteen balance is not clamped to zero',canteen({'context':{'detail':True}})['data'].get('balance')=='-0.01')
+  sql("DELETE FROM config WHERE title='CURRENCY'")
+  c=canteen({'context':{'detail':True}})['data']
+  check('unknown canteen currency never defaults to USD or grants available credit',c.get('status')=='currency_unavailable' and 'balance' not in c and 'USD' not in c.get('label',''))
+  sql('DELETE FROM food_service_student_accounts WHERE student_id=11')
+  check('missing native canteen account is distinct from a zero account',canteen()['data'].get('status')=='no_account')
  except Exception as error:fail=str(error)
  finally:
-  for name in owned+[db]:
-   found=subprocess.run(['docker','inspect','--format','{{index .Config.Labels "schoolcef.qualification"}}',name],env=env,capture_output=True)
-   if found.returncode==0:
-    assert found.stdout.decode().strip()==label,'Refuse touching an unowned container'
-    run(['docker','rm','-f',name])
+  # --rm already removed completed workers. Discover actual survivors once,
+  # rather than hundreds of slow inspect calls for nonexistent containers.
+  survivors=run(['docker','ps','-a','--filter','label=schoolcef.qualification='+label,'--format','{{.Names}}']).splitlines()
+  for name in survivors:
+   assert name in set(owned+[db]),'Refuse touching an unowned container'
+   found=run(['docker','inspect','--format','{{index .Config.Labels "schoolcef.qualification"}}',name])
+   assert found==label,'Refuse touching an unowned container'
+   run(['docker','rm','-f',name])
   if started:
    assert json.loads(run(['docker','network','inspect',net]))[0]['Labels']['schoolcef.qualification']==label
    run(['docker','network','rm',net])
