@@ -455,3 +455,19 @@ body.ss-school-shell:has(#ss-photo-dashboard) #body{position:relative!important;
  #ss-photo-dashboard{max-width:none}
  #ss-photo-dashboard .ss-photo-chart{break-inside:avoid}
 }
+/* The school's identity shares the toolbar row with a deliberately shorter search. */
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo{position:relative;inset:auto;flex:0 0 102px;width:102px;height:88px;margin:0;gap:2px;border-radius:13px;box-shadow:none}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo:before{inset:7px;border-radius:9px}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-logo-orbit{inset:10px}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo img{width:72%;height:57px;max-height:57px;object-fit:contain}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo figcaption{font-size:9px;line-height:1.2}
+body.ss-school-shell:has(#ss-photo-dashboard) #ss-photo-dashboard .ss-photo-toolbar [data-photo-search]{flex:0 1 270px!important;max-width:270px!important;min-width:0!important}
+@media(max-width:700px){
+ body.ss-school-shell:has(#ss-photo-dashboard) #ss-photo-dashboard .ss-photo-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px}
+ #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo{grid-column:1;grid-row:1;width:82px;height:72px;flex-basis:82px}
+ #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo img{height:44px;max-height:44px}
+ #ss-photo-dashboard .ss-photo-toolbar [data-photo-search]{grid-column:2;grid-row:1;width:100%;align-self:center;max-width:100%!important}
+ #ss-photo-dashboard .ss-photo-toolbar [data-photo-school]{grid-column:1;grid-row:2;min-width:0}
+ #ss-photo-dashboard .ss-photo-toolbar [data-photo-year]{grid-column:2;grid-row:2;min-width:0}
+}
+@media(prefers-reduced-motion:reduce){#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo img,#ss-photo-dashboard .ss-photo-toolbar .ss-photo-logo-orbit{animation:none}}
