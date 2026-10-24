@@ -1,13 +1,13 @@
 # Lot tableau de bord / Scan — remarques ouvertes du propriétaire
 
-Statut : lot global NON terminé. Diagnostic Scan effectué et premier correctif UX préparé/testé localement : [accès visibles ProDéli](PRODELI_ACCESS_DISCOVERY.md). Aucun déploiement ni octroi réel de droits pour ces remarques.
+Statut : lot global NON terminé. Diagnostic Scan effectué et premier correctif UX qualifié sur image exacte avec HTTP authentifié synthétique : [accès visibles ProDéli](PRODELI_ACCESS_DISCOVERY.md). Aucun déploiement ni octroi réel de droits pour ces remarques.
 Base de constat : branche `feat/presence-scan-qr-20261023`, HEAD `752f5910a09de30306a131cab26ed7630d81bd82`, origin vérifié identique. Pi seul écrivain de cette note ; brouillons existants conservés.
 
 ## Ordre de traitement
 
 Traiter une étape à la fois, rendre compte puis attendre le GO suivant. La livraison du logiciel de délégation native ne clôt pas ce lot fonctionnel.
 
-Ajout propriétaire : l'interface ProDéli doit présenter des étapes visibles, stables et cohérentes ; boutons d'activation, consultation des profils et gestion des accès faciles à retrouver, sans liens cachés ni confusion entre accès initial, droits et suspension. Le premier sous-lot UX ajoute « Gérer les droits — Scan et accès » dans l'accueil par école et sur la ligne de l'administrateur mono-école ; 16 contrôles PHP +48 contrôles Chromium synthétiques et162 régressions PASS, sans attribution ni livraison production. Les étapes restantes ne sont pas déclarées terminées et l'absence de tout bug n'est pas revendiquée.
+Ajout propriétaire : l'interface ProDéli doit présenter des étapes visibles, stables et cohérentes ; boutons d'activation, consultation des profils et gestion des accès faciles à retrouver, sans liens cachés ni confusion entre accès initial, droits et suspension. Le premier sous-lot UX ajoute « Gérer les droits — Scan et accès » dans l'accueil par école et sur la ligne de l'administrateur mono-école ; 16 contrôles PHP +48 contrôles Chromium synthétiques et162 régressions PASS, puis178contrats+37recoveryPG et55HTTPauth sur image exacte, vérification/nettoyage/provenancePASS. Aucune attribution ni livraison production. Les étapes restantes ne sont pas déclarées terminées et l'absence de tout bug n'est pas revendiquée.
 
 ### 1. Bouton Scan existant : diagnostic terminé, attribution réelle en attente
 
@@ -53,4 +53,4 @@ Remarque explicitement ajoutée par le propriétaire à ce lot : toutes les info
 
 ## Limites de cette mise à jour
 
-Diagnostic production en lecture seule et correctif UI local uniquement ; détails et preuves séparés dans PRODELI_ACCESS_DISCOVERY.md. Aucun droit réel accordé, compte modifié, test caméra physique ou déploiement réalisé pour ces remarques. Le diagnostic et le sous-lot de découverte des boutons ne rétablissent pas à eux seuls l'accès Scan réel. Informer et attendre le GO de l'étape suivante ; ne pas annoncer toute l'interface ProDéli validée.
+Diagnostic production en lecture seule et correctif UI qualifié sur fixture/image exacte uniquement ; détails et preuves séparés dans PRODELI_ACCESS_DISCOVERY.md. Aucun droit réel accordé, compte modifié, test caméra physique ou déploiement réalisé pour ces remarques. Le diagnostic et le sous-lot de découverte des boutons ne rétablissent pas à eux seuls l'accès Scan réel. Informer et attendre le GO de l'étape suivante ; ne pas annoncer toute l'interface ProDéli validée.
