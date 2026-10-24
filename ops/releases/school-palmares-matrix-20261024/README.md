@@ -1,0 +1,5 @@
+# Palmarès Top 10 école — livraison séparée
+
+Quatre fichiers applicatifs : matrice « rouleaux » de rangs réels à côté des anniversaires, détail au clavier/clic par classe et rang école pour la même période, cache CSS/JS et pause d'animation hors onglet. Les noms, scores et rangs proviennent uniquement des moyennes natives du palmarès activé, pour l'administrateur disposant du droit natif Grades/GPARankList. Pas de visibilité parent nouvellement ouverte ; le palmarès détaillé scolaire préexistant reste inchangé. Les rangs de classe ne sont affichés que pour les cours/sections appartenant à la même école/année et aux inscriptions actives ; sinon « indisponible ».
+
+Image exacte sur la précédente image anniversaire ; pas de migration ni mutation métier. La recette sauvegarde et conserve les trois montages média/configuration, les sessions et les services voisins. Tests contractuels sur noms factices, HTTP authentifié dans l'isolat, navigateur synthétique à 390/768/1280 px et mouvements réduits. La vraie école sans moyenne native affiche honnêtement l'état vide.
