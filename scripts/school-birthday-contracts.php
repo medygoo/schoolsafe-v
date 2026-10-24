@@ -1,6 +1,6 @@
 <?php
 // Synthetic two-school fixture; no production data or real names.
-$root=dirname(__DIR__).'/app/modules/codex-ui-v1/extensions-test-runtime/ProgramFunctions';
+$root=getenv('SCHOOLSAFE_RUNTIME_ROOT') ?: dirname(__DIR__).'/app/modules/codex-ui-v1/extensions-test-runtime/ProgramFunctions';
 $queries=[];$permissions=['Students/Student.php'=>true,'Users/User.php'=>true];$profile='admin';$db=[];$checks=0;
 function User($key){global $profile;return $key==='PROFILE'?$profile:($key==='STAFF_ID'?1:null);}
 function UserSchool(){return 3;}function UserSyear(){return 2026;}function AllowUse($key){global $permissions;return $permissions[$key]??false;}
