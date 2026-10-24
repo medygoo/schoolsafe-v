@@ -1,4 +1,8 @@
-# Administration native des accès — candidat en qualification, NON DÉPLOYÉ
+# Administration native des accès — étape 1 HTTP validée, NON DÉPLOYÉ
+
+## Porte propriétaire la plus récente
+
+Traiter les étapes une par une, informer après chaque étape finie puis attendre un GO. **Étape 1 terminée ; étape 2 et déploiement interdits sans nouveau GO.** Cette instruction remplace la poursuite automatique du mandat précédent.
 
 ## Périmètre
 
@@ -23,10 +27,19 @@ Cinq runtime ciblés : `admin-console.php`, `ecole-profils.php`, `SchoolSafeScho
 - **62 contrats d'accès Scan et84 de frontière ProDéli/école PASS**, six lints ciblés PASS, diff-check PASS.
 - Les bases/réseaux PG jetables possédés ont été supprimés après chaque passage. Premiers essais r1/r2 ont échoué sur le harnais (multi-statements via pg_query_params, interpolation PHP des dollars PL/pgSQL) ; aucune de ces tentatives n'est présentée comme preuve produit réussie.
 
-## Restant obligatoire avant livraison
+## Étape 1 — HTTP authentifié : 38 contrôles PASS
 
-HTTP authentifié synthétique ProDéli → administrateur scolaire → au moins trois opérateurs complets → révocation dans une session déjà ouverte ; contrôles d'audit, refus et restitution exacte des fixtures. Puis image Git immuable (71fichiers Scan cumulés, dont5 du présent delta), refus/régressions exactes, sauvegarde privée récente, bascule ciblée et contrôle indépendant.
+Candidat Git `56e16c8`, image de fixture `sha256:d6dc20fa7bc79c649e2ccd986afbeb542b22d03eceff4663bf7f07c19b6ad588`, digest `c47d63f8263e9117ab119757f8a11cdf5102c54c074ce210b220a55701817083`. Réseau interne, web readonly, aucun port publié ; aucun déploiement. Préparation de la fixture :387contrats et37recovery PASS,71sources attendues et2731inchangées. Cette préparation technique ne constitue pas la qualification complète de l'étape 2.
 
-Outils : `scripts/school-access-native-{qa.py,pg.php,http.php}`, `school-access-policy-contracts.php`, `school-access-image-qa.py`, option `--access` du lanceur HTTP existant, `app/qa-school-native-access.cjs`. Le script HTTP est écrit/linté mais NON ENCORE EXÉCUTÉ à ce point.
+Preuve privée `access-http-image-r1/access-authenticated-http-r1.private.json` : **38 contrôles HTTP réellement exécutés PASS**, logins natifs/mots de passe synthétiques, sessions cookie et contrôleurs réels. Console centrale → attribution confirmée à un administrateur scolaire existant → hub scolaire → trois opérateurs, chacun avec les cinq tâches Scan indépendantes. Sessions ouvertes AVANT attribution ; capacités reconnues après attribution. Révocation ciblée par POST natif ; la même session perd l'accès immédiatement, une autre le garde. CSRF central invalide, confirmation manquante et formulaire ancien ne modifient pas les droits. Audits natifs : cinq écritures attendues, pas d'audit de refus/préparation. Profil partagé d'origine conservé. ProDéli ne peut ouvrir le hub scolaire ni le scanner, avant OU après initialisation. Aucun compte réel créé/modifié, aucun passage d'enfant ni envoi externe.
+
+`image-verify-proof.json` PASS : empreintes des tables de fixture identiques à l'état initial après retrait des seules lignes synthétiques ; conteneurs de production inchangés. `image-cleanup-proof.json` REMOVED : ressources éphémères possédées supprimées et production toujours inchangée. Nonce110d3a93c386. Première commande avec SHA court refusée avant création de ressources, relancée avec SHA complet ; pas un échec produit.
+
+## Étapes suivantes — EN ATTENTE DU GO
+
+2. Qualification complète de l'image Git/régressions exactes, notamment parcours navigateur natifs/récupération/concurrence et contrôles de livraison. L'image utilisée comme fixture existe, mais cette étape n'est pas déclarée terminée.
+3. Après un GO distinct et uniquement si qualifié : sauvegarde privée récente, bascule ciblée et contrôle indépendant. Choix des vrais bénéficiaires toujours humain et explicite.
+
+Outils : `scripts/school-access-native-{qa.py,pg.php,http.php}`, `school-access-policy-contracts.php`, `school-access-image-qa.py`, option `--access` du lanceur HTTP existant, `app/qa-school-native-access.cjs`. Le script HTTP a été exécuté avec succès uniquement dans la fixture synthétique isolée.
 
 Production relue en SSH, sans mutation : checkout propre `e17357bbcf59068d8276c260314d3ffa8a1733a2`, image `sha256:7bedfc1e37289136d9a54ac87f82603784053a47bd45c90c1b1d3c159dc7c628` running/healthy. Aucun droit réel attribué. Caméra physique, connexion WhatsApp, worker et impression officielle gardent leurs conditions distinctes. Ne pas annoncer toute la mise en service Scan terminée.

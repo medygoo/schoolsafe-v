@@ -1,4 +1,8 @@
-## Validation courante — administration native des accès, ensemble complet sans quota
+## Porte courante propriétaire — une étape, informer, attendre GO
+
+**La consigne la plus récente remplace la poursuite automatique des sections historiques : traiter une étape à la fois, informer après validation et attendre le GO suivant.** Étape1 des accès natifs terminée : candidat56e16c8,38HTTP authentifiés natifs PASS (ProDéli → admin scolaire → trois opérateurs avec cinq droits Scan ; retrait effectif dans session ouverte, autres bénéficiaires conservés, CSRF/confirmation/version/audits/frontière). Fixture interne readonly issue de Git, tables restituées exactement, ressources temporaires supprimées, production inchangée e17357b/image7bed. [Preuves et limites](../../qualification/SCHOOL_NATIVE_ACCESS_20261024.md). **STOP : attendre le GO pour étape2 (qualification complète image/régressions). Aucun déploiement, droit réel, caméra physique ou provider autorisé implicitement.**
+
+## Validation antérieure — administration native des accès, ensemble complet sans quota
 
 Le propriétaire valide ProDéli pour l'administration des responsabilités d'accès, jamais comme opérateur scolaire. L'administrateur peut donner tous les accès scolaires délégables à une ou plusieurs personnes, sans quota ni exclusivité par tâche, ou choisir les droits séparément. Réutiliser uniquement les comptes/profils/permissions/périmètres/audit natifs ; aucun octroi réel implicite. [Contrat et critères de qualification](../specs/2026-10-24-native-access-administration.md).
 
