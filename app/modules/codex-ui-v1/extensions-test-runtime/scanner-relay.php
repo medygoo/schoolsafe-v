@@ -161,6 +161,15 @@ try {
      while(ob_get_level()>$level)ob_end_clean();
      SchoolSafeScanReply(200,['data'=>$data]);
    }
+   if($operation==='management'&&in_array($input->action??'',['grants','delegate'],true)) {
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeScanDelegation.fnc.php';
+     $data=SchoolSafeScanDelegation((array)$input,
+       ['school'=>$school,'profile'=>User('PROFILE'),
+        'can_read'=>SchoolSafeNativeCommandPermission('SchoolSafe/DelegationRead.php'),
+        'can_manage'=>SchoolSafeNativeCommandPermission('SchoolSafe/DelegationManage.php')],
+       ['get'=>function($sql){return DBGet(DBQuery($sql));}]);
+     while(ob_get_level()>$level)ob_end_clean();SchoolSafeScanReply(200,['data'=>$data]);
+   }
    if($operation==='management'&&in_array($input->action??'',
      ['school-list','parent-list','register-family','register-external','school-family-approve',
       'photo-set','photo-review','validate-authorization','school-retire','parent-suspend','parent-activate'],true)) {

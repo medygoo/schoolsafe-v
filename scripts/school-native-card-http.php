@@ -7,6 +7,7 @@ require '/var/www/html/functions/Password.php';
 require '/var/www/html/ProgramFunctions/SchoolSafeAccountState.fnc.php';
 $prefix='qa.scan.'.bin2hex(random_bytes(8));$password=bin2hex(random_bytes(20));$cookie=tempnam('/tmp','scan-http-');
 $uid=null;$students=[];$parents=[];$cookies=[$cookie];$operatorCookie=$cookie;$results=[];$failure=null;$person=SchoolSafeAccountPerson($prefix);$moduleOriginal=null;$moduleRow=null;$checkpoint=null;$foodAccount=null;$policyRows=null;
+$delegationQa=getenv('SCHOOLSAFE_NATIVE_DELEGATION_QA')==='1';$delegationProfiles=[];
 $q=fn($s)=>$pdo->quote($s);
 function gate($ok,$name){global$results;if(!$ok)throw new RuntimeException($name);$results[]=$name;}
 function requestNative($path,$fields=null,$headers=[]){global$cookie;
@@ -27,6 +28,7 @@ try{
     $uid=(int)$pdo->query('SELECT COALESCE(max(staff_id),0)+100 FROM staff')->fetchColumn();
     $pdo->exec("INSERT INTO staff(staff_id,syear,first_name,last_name,username,password,profile,profile_id,schools,current_school_id,last_login) VALUES(".$uid.",2026,'Synthetic','HTTP',".$q($prefix).','.$q(encrypt_password($password)).",'admin',NULL,".$q(','.$school.',').','.$school.',CURRENT_TIMESTAMP)');
     foreach(['misc/Portal.php','Students/Student.php','Student_ID_Card/StudentIDCard.php','SchoolSafe/Studio.php','SchoolSafe/IssueCard.php','SchoolSafe/ScanVerify.php','SchoolSafe/ScanArrival.php','SchoolSafe/ScanFees.php','SchoolSafe/ScanCanteen.php','SchoolSafe/ScanPickup.php','SchoolSafe/FamilyRead.php','SchoolSafe/FamilyRegister.php','SchoolSafe/FeeModelsRead.php','SchoolSafe/FeeModelsManage.php']as$key)$pdo->exec("INSERT INTO staff_exceptions(user_id,modname,can_use,can_edit) VALUES(".$uid.','.$q($key).",'Y','Y')");
+    if($delegationQa)foreach(['SchoolSafe/DelegationRead.php','SchoolSafe/DelegationManage.php']as$key)$pdo->exec("INSERT INTO staff_exceptions(user_id,modname,can_use,can_edit) VALUES(".$uid.','.$q($key).",'Y','Y')");
     $grade=(int)$pdo->query('SELECT id FROM school_gradelevels WHERE school_id='.$school.' ORDER BY id LIMIT 1')->fetchColumn();
     $next=(int)$pdo->query('SELECT COALESCE(max(student_id),0)+100 FROM students')->fetchColumn();
     foreach([$next,$next+1]as$id){$pdo->exec("INSERT INTO students(student_id,first_name,last_name) VALUES(".$id.",'Synthetic','HTTP fixture')");$students[]=$id;
@@ -64,6 +66,33 @@ try{
     $r=requestNative('/scanner-relay.php?operation=capabilities');$scanToken=$r['json']['csrfToken']??'';gate($scanToken!=='','Native scanner supplies its separate CSRF token');
     $r=requestNative('/scanner-relay.php?operation=scan',json_encode(['mode'=>'verify','qr_payload'=>$qr]),['Content-Type: application/json','X-SchoolSafe-CSRF: '.$scanToken]);
     gate($r['status']===200&&($r['json']['data']['result']??null)==='VALID','Actual authenticated scanner accepts the actual HTTP-issued QR');
+    if($delegationQa){
+        $profileBase=(int)$pdo->query('SELECT COALESCE(max(id),0)+100 FROM user_profiles')->fetchColumn();
+        foreach([$school,$school+100,null]as$offset=>$owner){$pid=$profileBase+$offset;$delegationProfiles[]=$pid;
+            $pdo->exec("INSERT INTO user_profiles(id,title,profile,school_id) VALUES(".$pid.','.$q($prefix.'.profile.'.$offset).",'teacher',".($owner??'NULL').')');
+            $pdo->exec("INSERT INTO profile_exceptions(profile_id,modname,can_use,can_edit) VALUES(".$pid.",'SchoolSafe/ScanArrival.php','Y','')");
+        }
+        $rightsBefore=$pdo->query('SELECT md5(json_agg(e ORDER BY profile_id,modname)::text) FROM profile_exceptions e')->fetchColumn();
+        $headers=['Content-Type: application/json','X-SchoolSafe-CSRF: '.$scanToken];
+        $r=requestNative('/scanner-relay.php?operation=management',json_encode(['action'=>'grants']),$headers);
+        $rows=$r['json']['data']['profiles']??[];$ours=array_values(array_filter($rows,fn($row)=>in_array((int)($row['profile_id']??0),$delegationProfiles,true)));
+        gate($r['status']===200&&count($ours)===1&&$ours[0]['profile_id']===(string)$profileBase,'Native delegation HTTP reads only own school profile not foreign or global');
+        $r=requestNative('/scanner-relay.php?operation=management',json_encode(['action'=>'delegate']),$headers);
+        $editor=$r['json']['data']['editor_url']??'';
+        gate($r['status']===200&&($r['json']['data']['status']??'')==='native_editor_required'&&$editor==='/ecoles/'.$school.'/profils','Native delegation HTTP prepares existing owner, not a permission write');
+        $r=requestNative($editor);
+        gate($r['status']===200&&str_contains($r['body'],'Profils propres à l’école'),'Existing school profile owner is reachable by authenticated school administrator');
+        $r=requestNative('/scanner-relay.php?operation=management',json_encode(['action'=>'delegate']),['Content-Type: application/json','X-SchoolSafe-CSRF: synthetic-invalid']);
+        gate($r['status']===403,'Delegation preparation retains real HTTP CSRF protection');
+        $r=requestNative('/scanner-relay.php?operation=management',json_encode(['action'=>'delegate','profileId'=>(string)$profileBase,'decision'=>'assign']),$headers);
+        gate($r['status']===400,'Old assignment payload cannot silently change native profile rights');
+        $pdo->exec("UPDATE staff_exceptions SET can_edit='N' WHERE user_id=".$uid." AND modname='SchoolSafe/DelegationManage.php'");
+        $r=requestNative('/scanner-relay.php?operation=management',json_encode(['action'=>'delegate']),$headers);
+        gate($r['status']===403,'Live management edit revocation blocks native owner preparation');
+        $r=requestNative('/scanner-relay.php?operation=management',json_encode(['action'=>'grants']),$headers);
+        gate($r['status']===200,'Delegation read remains independent after management edit revocation');
+        gate($pdo->query('SELECT md5(json_agg(e ORDER BY profile_id,modname)::text) FROM profile_exceptions e')->fetchColumn()===$rightsBefore,'Native HTTP handoff leaves every profile permission unchanged');
+    }
     // Native business HTTP modes: only new synthetic rows, no teacher attendance,
     // meal debit, receipt or external send. Preserve the original policy exactly.
     $policyWhere="syear=2026 AND school_id=".$school." AND program='schoolsafe_scan' AND title='FEE_MODELS'";
@@ -163,6 +192,7 @@ try{
     $r=requestNative('/card-bridge-issue.php',array_replace($body,['student_id'=>(string)($next+1)]));gate(($r['json']['result']??null)!=='ISSUED'&&$count($next+1)===0,'Readonly account cannot mint another child card');
 }catch(Throwable$e){$failure=$e->getMessage();}
 finally{
+    foreach($delegationProfiles as$pid){$pdo->exec('DELETE FROM profile_exceptions WHERE profile_id='.$pid);$pdo->exec('DELETE FROM user_profiles WHERE id='.$pid);}
     if($students){$ids=implode(',',array_map('intval',$students));
         foreach(['schoolsafe_notify_events','schoolsafe_entry_requests','schoolsafe_fee_consults','schoolsafe_pickup_proofs','schoolsafe_pickup_authorizations','schoolsafe_pickup_guardians','entry_exit_student_records','food_service_student_accounts','billing_fees','billing_payments','schoolsafe_student_cards','students_join_users','student_enrollment','students']as$table)$pdo->exec('DELETE FROM '.$table.' WHERE student_id IN('.$ids.')');
     }

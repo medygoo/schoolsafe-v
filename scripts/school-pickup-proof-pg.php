@@ -18,10 +18,13 @@ if ($action==='setup') {
     foreach (['020-school-cards.sql','021-entry-records.sql','022-pickup-guardians.sql','023-fee-consults.sql'] as $file) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
     $pdo->exec('CREATE TABLE schools(id integer,syear numeric(4,0),title varchar(100) NOT NULL DEFAULT $$Synthetic school$$,PRIMARY KEY(id,syear)); INSERT INTO schools(id,syear) VALUES(1,2026),(1,2025),(2,2026)');
     $nativeDdl=file_get_contents($root.'/rosariosis.sql');
-    foreach(['billing_fees','billing_payments','program_config','config'] as $table) {
+    foreach(['billing_fees','billing_payments','program_config','config','user_profiles','profile_exceptions'] as $table) {
         if(preg_match('/CREATE TABLE '.$table.' \\([\\s\\S]*?\\n\\);/',$nativeDdl,$match)!==1)throw new RuntimeException('NATIVE_BILLING_DDL_MISSING');
         $pdo->exec($match[0]);
     }
+    $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/034-profile-school-scope.sql'));
+    $pdo->exec("INSERT INTO user_profiles(id,title,profile,school_id) VALUES(8,'Synthetic owned profile','teacher',1),(9,'Synthetic foreign profile','teacher',2),(10,'Synthetic global profile','admin',NULL),(11,'Synthetic parent profile','parent',1);
+        INSERT INTO profile_exceptions(profile_id,modname,can_use,can_edit) VALUES(8,'SchoolSafe/ScanArrival.php','Y',''),(9,'SchoolSafe/ScanArrival.php','Y','Y'),(10,'SchoolSafe/ScanArrival.php','Y','Y'),(11,'SchoolSafe/ScanArrival.php','Y','Y'),(8,'Users/Profiles.php','Y','Y'),(8,'SchoolSafe/ScanFees.php','','Y')");
     $pdo->exec("CREATE TABLE qa_barrier(hold boolean NOT NULL, arrived boolean NOT NULL DEFAULT false); INSERT INTO qa_barrier(hold) VALUES(true);
         INSERT INTO students(student_id) VALUES(11),(12); INSERT INTO staff VALUES(9),(18); INSERT INTO student_enrollment(student_id,school_id,syear) VALUES(11,1,2026),(12,2,2026); INSERT INTO school_gradelevels VALUES(1,'Synthetic class');
         INSERT INTO entry_exit_checkpoints(id,title) VALUES(7,'Fixture checkpoint');
@@ -48,7 +51,15 @@ if ($action==='setup') {
     $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup','wa-setup','wa-send','wa-status','dispatch-feed','fixture-notify','canteen','card-issue'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup','wa-setup','wa-send','wa-status','dispatch-feed','fixture-notify','canteen','card-issue','delegation'],true)) exit(2);
+if($action==='delegation'){
+    require_once $root.'/ProgramFunctions/SchoolSafeScanDelegation.fnc.php';
+    $input=json_decode($argv[2]??'{}',true,16,JSON_THROW_ON_ERROR);
+    $ctx=array_replace(['school'=>1,'profile'=>'admin','can_read'=>true,'can_manage'=>true],json_decode($argv[3]??'{}',true,16,JSON_THROW_ON_ERROR));
+    try{$result=SchoolSafeScanDelegation($input,$ctx,['get'=>function($sql)use($pdo){$rows=[];foreach($pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC)as$i=>$row)$rows[$i+1]=array_change_key_case($row,CASE_UPPER);return $rows;}]);}
+    catch(Throwable $e){$result=['error'=>$e->getMessage()];}
+    echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
 if($action==='fixture-notify'){
     require_once $root.'/ProgramFunctions/SchoolSafeNotify.fnc.php';
     $input=json_decode($argv[2]??'{}',true,16,JSON_THROW_ON_ERROR);

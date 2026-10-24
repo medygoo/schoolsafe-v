@@ -26,6 +26,8 @@
  // The existing native PHP consumes authorization IDs for reactivation and
  // requires a reason for an external request. Do not offer fields it discards.
  if(native) {
+  actions.grants=['Consulter les tâches des profils de mon école',[]];
+  actions.delegate=['Gérer les tâches dans les profils de mon école',[]];
   actions['parent-activate'][1]=['nativeStudentId','authorizationId','reason'];
   actions['register-external'][1]=['nativeStudentId','fullName','phone','reason','consent'];
   actions['register-family'][1]=['nativeStudentId','guardianType','fullName','phone','isPrimary'];
@@ -57,6 +59,17 @@
  }
  function paragraph(text){const p=document.createElement('p');p.textContent=text;output.append(p);}
  function show(data){output.replaceChildren();
+  if(native&&['grants','delegate'].includes(action.value)){
+   if(!data||data.status!=='native_editor_required'||data.scope!=='school_profiles'
+    ||typeof data.editor_url!=='string'||!/^\/ecoles\/[1-9][0-9]*\/profils$/.test(data.editor_url)
+    ||(action.value==='grants'&&!Array.isArray(data.profiles)))throw new Error('INVALID_NATIVE_EDITOR');
+   paragraph('Droits des profils propres à cette école, pas une habilitation individuelle. Modifier un profil affecte ses détenteurs. Aucune permission n’a été modifiée ici.');
+   if(action.value==='grants'){
+    for(const row of data.profiles)paragraph(row.profile_title+' — profil '+row.profile_id+' : '+row.capability+' — utilisation'+(row.can_edit?' et modification':''));
+    if(!data.profiles.length)paragraph('Aucun droit de scan enregistré sur les profils propres à cette école. Les profils globaux et permissions personnalisées ne sont pas recensés ici.');
+   }
+   const link=document.createElement('a');link.href=data.editor_url;link.textContent='Ouvrir la gestion native des profils de mon école';output.append(link);return;
+  }
   if(Array.isArray(data)){for(const row of data)paragraph((row.operator_name||'Profil')+' : '+row.capability+' — '+row.profile_id);if(!data.length)paragraph('Aucune tâche attribuée.');return;}
   if(Array.isArray(data.family)||Array.isArray(data.accredited)){
    for(const [group,rows] of [['Famille',data.family||[]],['Personnes accréditées',data.accredited||[]]]){
