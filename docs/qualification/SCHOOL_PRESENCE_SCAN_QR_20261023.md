@@ -1,4 +1,8 @@
-# Présence & Scan QR — en cours, moteur natif récupéré, NON DÉPLOYÉ
+# Présence & Scan QR — logiciel déployé, mise en service incomplète
+
+## Dernier correctif logiciel livré — navigation des profils scolaires
+
+Recette/VPS `e17357bbcf59068d8276c260314d3ffa8a1733a2`, runtime127d6cd/image7bedfc1e37289136d9a54ac87f82603784053a47bd45c90c1b1d3c159dc7c628 : delta4runtime sans migration ni attribution. Consultation des flags des profils propres à l'école et lien explicite vers `ecole-profils.php` existant ; aucun nouveau moteur/writer de droits, aucune attribution individuelle prétendue.372contrats+37PG recovery/58HTTP auth/suites native-recovery-concurrency exactes PASS puis restitution/cleanup.257PG locaux/41Chrome ciblés+42régressions/13gardes recette PASS. Livraison8,8s,144sessions/cache/env/HMAC/config/services et dashboard protégés ; backup685797octets0600 validé, non restauré ; contrôle indépendant66sources/3dashboard/9cache/HTTPS et aucune session non expirée manquante PASS. **Bootstrap ProDéli des premiers droits encore non résolu ; bénéficiaires/points réels et validations caméra/WhatsApp/impression restent requis.** [État précis, preuves et limites](SCHOOL_SCAN_COMMISSIONING.md). La section suivante conserve la première livraison Scan surd4359b7.
 
 ## Production — logiciel déployé, mise en service incomplète
 
