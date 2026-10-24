@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/SchoolSafeWaSession.fnc.php';
 /**
  * SchoolSafe — WhatsApp central (WAHA principal, Evolution secours).
  *
@@ -147,17 +148,19 @@ function SchoolSafeWaCredentials( $engine )
 }
 
 /**
- * Session operationnelle d'un moteur (active + non declaree hors ligne).
- * Faux si aucune.
+ * Candidate is active + previously verified online; ALWAYS probe the actual
+ * provider and sender identity again before using it. Metadata is not proof.
  */
-function SchoolSafeWaActiveSession( $engine )
+function SchoolSafeWaActiveSession( $engine, ?callable $http = null )
 {
     $rows = DBGet( "SELECT * FROM schoolsafe_wa_sessions"
         . " WHERE engine='" . DBEscapeString( $engine ) . "'"
-        . " AND status='active' AND conn_state <> 'offline'"
+        . " AND status='active' AND conn_state='online' AND conn_checked_at IS NOT NULL"
         . " ORDER BY id LIMIT 1" );
-
-    return $rows ? $rows[1] : false;
+    if(!$rows)return false;
+    $probe=SchoolSafeWaSessionProbe($rows[1],$http);
+    SchoolSafeWaSessionStamp($rows[1],$probe['state']);
+    return $probe['verified']?$rows[1]:false;
 }
 
 /**
@@ -351,7 +354,7 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
             'status' => 'blocked', 'error' => 'CONSENT_REQUIRED' ];
     }
 
-    $waha_session = SchoolSafeWaActiveSession( 'waha' );
+    $waha_session = SchoolSafeWaActiveSession( 'waha', $opts['http_status'] ?? null );
 
     if ( $waha_session === false )
     {
@@ -367,7 +370,7 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
     }
 
     // Garde anti-partage : les deux moteurs ne partagent jamais un nom.
-    $evo_session = SchoolSafeWaActiveSession( 'evolution' );
+    $evo_session = SchoolSafeWaActiveSession( 'evolution', $opts['http_status'] ?? null );
 
     if ( is_array( $evo_session )
         && (string) $evo_session['SESSION_NAME'] !== ''
@@ -459,7 +462,7 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
     }
 
     // Echec confirme : secours Evolution, UNE fois (jamais de parallele).
-    $evo_session = SchoolSafeWaActiveSession( 'evolution' );
+    $evo_session = SchoolSafeWaActiveSession( 'evolution', $opts['http_status'] ?? null );
 
     if ( $evo_session === false )
     {

@@ -107,6 +107,7 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST' )
                         DBQuery( "UPDATE schoolsafe_wa_sessions SET session_name='"
                             . DBEscapeString( $name ) . "',phone_e164='"
                             . DBEscapeString( $phone ) . "',"
+                            . "status='disabled',conn_state='unknown',conn_checked_at=NULL,"
                             . "updated_at=CURRENT_TIMESTAMP WHERE id='" . $id . "'" );
 
                         SchoolSafeWaAudit( $actor, 'session_save', $id,
@@ -139,14 +140,19 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST' )
             }
             else
             {
-                DBQuery( "UPDATE schoolsafe_wa_sessions SET status='"
-                    . DBEscapeString( $status ) . "',updated_at=CURRENT_TIMESTAMP"
-                    . " WHERE id='" . $id . "'" );
-
-                SchoolSafeWaAudit( $actor, 'session_status', $id, 'statut=' . $status );
-
-                $message = 'Session ' . htmlspecialchars( (string) $row['ENGINE'] )
-                    . ' : ' . htmlspecialchars( $status ) . '.';
+                try {
+                    $probe=SchoolSafeWaSessionSetStatus($id,$status);
+                    SchoolSafeWaAudit($actor,'session_status',$id,'demande='.$status.' connexion='.$probe['state']
+                        .' verification='.(($probe['verified']??false)?'provider':'non_verifie'));
+                    if($status==='active'&&!$probe['verified']){
+                        $error='Activation refusée : connexion et compte expéditeur non vérifiés par le fournisseur. Session désactivée.';
+                    }else{
+                        $message='Session '.htmlspecialchars((string)$row['ENGINE']).' : '.htmlspecialchars($status)
+                            .($status==='active'?' — compte expéditeur et connexion vérifiés par le fournisseur.':'.');
+                    }
+                }catch(Throwable $failure){
+                    $error='Vérification indisponible ou configuration modifiée entretemps. Aucune activation confirmée ; rechargez la page.';
+                }
             }
         }
         elseif ( $action === 'consent_set' )
@@ -336,7 +342,7 @@ Envoyer un test WhatsApp vers <?php echo htmlspecialchars( $preview['to'], ENT_Q
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( $token, ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="wa_action" value="session_status">
 <input type="hidden" name="session_id" value="<?php echo (int) $s['ID']; ?>">
-<select name="status"><option value="active">Activer</option><option value="suspended">Suspendre</option><option value="disabled">Desactiver</option></select>
+<select name="status"><option value="active">Vérifier et activer</option><option value="suspended">Suspendre</option><option value="disabled">Desactiver</option></select>
 <button type="submit">OK</button>
 </form>
 </td>

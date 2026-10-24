@@ -8,7 +8,8 @@ function DBGet($sql){
     if(strpos($sql,'INSERT INTO schoolsafe_wa_outbox')!==false)return empty($GLOBALS['reject_insert'])?[1=>['ID'=>1]]:[];
     if(strpos($sql,'FROM schoolsafe_wa_outbox')!==false)return $GLOBALS['known']??[];
     if(strpos($sql,'FROM schoolsafe_wa_consents')!==false)return [1=>['ID'=>1]];
-    if(strpos($sql,'FROM schoolsafe_wa_sessions')!==false)return [1=>['ID'=>1,'SESSION_NAME'=>strpos($sql,"'evolution'")!==false?'fixture-evo':'fixture-waha']];
+    if(strpos($sql,'UPDATE schoolsafe_wa_sessions')!==false)return [1=>['ID'=>1]];
+    if(strpos($sql,'FROM schoolsafe_wa_sessions')!==false){$evo=strpos($sql,"'evolution'")!==false;return [1=>['ID'=>1,'ENGINE'=>$evo?'evolution':'waha','SESSION_NAME'=>$evo?'fixture-evo':'fixture-waha','PHONE_E164'=>'+243000000000','STATUS'=>'active','UPDATED_AT'=>'2026-10-23 00:00:00']];}
     throw new RuntimeException('UNEXPECTED_SQL');
 }
 function DBInsert($table,$row,$key){$GLOBALS['writes'][]=$row;return empty($GLOBALS['reject_insert'])?1:0;}
@@ -17,10 +18,16 @@ putenv('WAHA_BASE=https://waha.invalid');putenv('WAHA_KEY=fixture-not-a-real-key
 putenv('EVOLUTION_BASE=https://evolution.invalid');putenv('EVOLUTION_KEY=fixture-not-a-real-key');
 $checks=0;$errors=0;
 function check($label,$ok){global $checks,$errors;$checks++;if(!$ok)$errors++;echo ($ok?'PASS ':'FAIL ').$label."\n";}
+function fixture_status($method,$url){
+    if($method!=='GET')throw new RuntimeException('STATUS_MUTATION_FORBIDDEN');
+    $body=strpos($url,'waha.invalid')!==false?['name'=>'fixture-waha','status'=>'WORKING','me'=>['id'=>'243000000000@c.us']]
+        :(strpos($url,'connectionState')!==false?['instance'=>['instanceName'=>'fixture-evo','state'=>'open']]:[['name'=>'fixture-evo','connectionStatus'=>'open','ownerJid'=>'243000000000@s.whatsapp.net']]);
+    return ['http_code'=>200,'body'=>json_encode($body)];
+}
 function attempt(array $primary,array $secondary=['http_code'=>202,'body'=>'{"key":{"id":"fixture-evo-id"}}']){
     $GLOBALS['known']=[];$GLOBALS['sql']=[];$GLOBALS['writes']=[];$GLOBALS['calls']=['waha'=>0,'evolution'=>0];
     return SchoolSafeWaSend('+243000000000','Observation synthétique — pas un reçu',[
-        'school_id'=>1,'staff_id'=>27,'actor'=>'isolated-fixture','dedup_key'=>'fixture-acceptance',
+        'school_id'=>1,'staff_id'=>27,'actor'=>'isolated-fixture','dedup_key'=>'fixture-acceptance','http_status'=>'fixture_status',
         'http_waha'=>function()use($primary){$GLOBALS['calls']['waha']++;return $primary;},
         'http_evo'=>function()use($secondary){$GLOBALS['calls']['evolution']++;return $secondary;},
     ]);
