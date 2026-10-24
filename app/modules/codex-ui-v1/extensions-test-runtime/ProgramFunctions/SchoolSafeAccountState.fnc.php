@@ -475,30 +475,39 @@ function SchoolSafeAccountSet( $username, $school_id, $state, $reason = null, $u
 		return false;
 	}
 
-	$until = $until ? date( 'Y-m-d H:i:s', strtotime( (string) $until ) ) : null;
-
-	$rows = SchoolSafeAccountRows( $username );
-
-	$current = $rows[$school_id]['STATE'] ?? null;
-
-	$epoch = (int) ( $rows[$school_id]['SESSION_EPOCH'] ?? 0 );
-
-	// Seuls la suspension, l'expiration et la révocation coupent les sessions
-	// ouvertes : passer en lecture seule prend effet à la requête suivante.
-	if ( $revoke || in_array( $state, [ 'suspended', 'expired' ], true ) )
+	if ( $until !== null && $until !== '' )
 	{
-		$epoch++;
+		if ( ! is_string( $until ) || ! preg_match( '/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/D', $until, $parts )
+			|| ! checkdate( (int) $parts[2], (int) $parts[3], (int) $parts[1] ) ) return false;
+		$until .= ' 00:00:00';
 	}
+	else $until = null;
 
 	$reason = $reason ? mb_substr( trim( (string) $reason ), 0, 500 ) : null;
-
 	$actor = function_exists( 'User' ) ? (string) User( 'USERNAME' ) : '';
-
+	global $db_connection, $DatabaseType;
+	if ( $DatabaseType !== 'postgresql' || ! isset( $db_connection )
+		|| pg_transaction_status( $db_connection ) !== PGSQL_TRANSACTION_IDLE ) return false;
+	$query = static function ( $sql ) {
+		$result = @db_query( $sql, false );
+		if ( $result === false ) throw new RuntimeException( 'ACCOUNT_STATE_WRITE_FAILED' );
+		return $result;
+	};
+	$started = false;
 	try
 	{
-		if ( isset( $rows[$school_id] ) )
+		$query( 'BEGIN' ); $started = true;
+		$query( "SET LOCAL lock_timeout='5s'" );
+		$query( "SELECT pg_advisory_xact_lock(hashtext('schoolsafe-account:' || '" . DBEscapeString( $person ) . "')," . $school_id . ')' );
+		$row = pg_fetch_assoc( $query( "SELECT STATE,SESSION_EPOCH FROM schoolsafe_account_state WHERE PERSON_KEY='"
+			. DBEscapeString( $person ) . "' AND SCHOOL_ID='" . $school_id . "' FOR UPDATE" ) );
+		$current = $row === false ? null : (string) $row['state'];
+		$epoch = (int) ( $row['session_epoch'] ?? 0 );
+		// Read under lock: two revocations must each advance the epoch.
+		if ( $revoke || in_array( $state, [ 'suspended', 'expired' ], true ) ) $epoch++;
+		if ( $row !== false )
 		{
-			DBQuery( "UPDATE schoolsafe_account_state
+			$query( "UPDATE schoolsafe_account_state
 				SET STATE='" . DBEscapeString( $state ) . "',
 				REASON=" . ( $reason === null ? 'NULL' : "'" . DBEscapeString( $reason ) . "'" ) . ",
 				UNTIL=" . ( $until === null ? 'NULL' : "'" . DBEscapeString( $until ) . "'" ) . ",
@@ -510,7 +519,7 @@ function SchoolSafeAccountSet( $username, $school_id, $state, $reason = null, $u
 		}
 		else
 		{
-			DBQuery( "INSERT INTO schoolsafe_account_state
+			$query( "INSERT INTO schoolsafe_account_state
 				(PERSON_KEY,SCHOOL_ID,STATE,REASON,UNTIL,SESSION_EPOCH,CHANGED_BY,CHANGED_AT)
 				VALUES ('" . DBEscapeString( $person ) . "','" . $school_id . "',
 				'" . DBEscapeString( $state ) . "',
@@ -520,7 +529,7 @@ function SchoolSafeAccountSet( $username, $school_id, $state, $reason = null, $u
 				'" . DBEscapeString( $actor ) . "',CURRENT_TIMESTAMP)" );
 		}
 
-		DBQuery( "INSERT INTO schoolsafe_account_audit
+		$query( "INSERT INTO schoolsafe_account_audit
 			(PERSON_KEY,SCHOOL_ID,ACTION,FROM_STATE,TO_STATE,REASON,ACTOR)
 			VALUES ('" . DBEscapeString( $person ) . "','" . $school_id . "',
 			'" . ( $revoke && $current === $state ? 'revoke' : 'state' ) . "',
@@ -528,9 +537,11 @@ function SchoolSafeAccountSet( $username, $school_id, $state, $reason = null, $u
 			'" . DBEscapeString( $state ) . "',
 			" . ( $reason === null ? 'NULL' : "'" . DBEscapeString( $reason ) . "'" ) . ",
 			'" . DBEscapeString( $actor ) . "')" );
+		$query( 'COMMIT' ); $started = false;
 	}
 	catch ( Throwable $error )
 	{
+		if ( $started ) @db_query( 'ROLLBACK', false );
 		return false;
 	}
 
@@ -554,19 +565,28 @@ function SchoolSafeAccountRevoke( $username, $school_id = 0 )
 
 	$school_id = max( 0, (int) $school_id );
 
-	$rows = SchoolSafeAccountRows( $username );
-
-	$current = $rows[$school_id]['STATE'] ?? 'active';
-
-	$epoch = (int) ( $rows[$school_id]['SESSION_EPOCH'] ?? 0 ) + 1;
-
 	$actor = function_exists( 'User' ) ? (string) User( 'USERNAME' ) : '';
-
+	global $db_connection, $DatabaseType;
+	if ( $DatabaseType !== 'postgresql' || ! isset( $db_connection )
+		|| pg_transaction_status( $db_connection ) !== PGSQL_TRANSACTION_IDLE ) return false;
+	$query = static function ( $sql ) {
+		$result = @db_query( $sql, false );
+		if ( $result === false ) throw new RuntimeException( 'ACCOUNT_REVOKE_FAILED' );
+		return $result;
+	};
+	$started = false;
 	try
 	{
-		if ( isset( $rows[$school_id] ) )
+		$query( 'BEGIN' ); $started = true;
+		$query( "SET LOCAL lock_timeout='5s'" );
+		$query( "SELECT pg_advisory_xact_lock(hashtext('schoolsafe-account:' || '" . DBEscapeString( $person ) . "')," . $school_id . ')' );
+		$row = pg_fetch_assoc( $query( "SELECT STATE,SESSION_EPOCH FROM schoolsafe_account_state WHERE PERSON_KEY='"
+			. DBEscapeString( $person ) . "' AND SCHOOL_ID='" . $school_id . "' FOR UPDATE" ) );
+		$current = $row === false ? 'active' : (string) $row['state'];
+		$epoch = (int) ( $row['session_epoch'] ?? 0 ) + 1;
+		if ( $row !== false )
 		{
-			DBQuery( "UPDATE schoolsafe_account_state
+			$query( "UPDATE schoolsafe_account_state
 				SET SESSION_EPOCH='" . $epoch . "',
 				CHANGED_BY='" . DBEscapeString( $actor ) . "',CHANGED_AT=CURRENT_TIMESTAMP
 				WHERE PERSON_KEY='" . DBEscapeString( $person ) . "'
@@ -574,20 +594,22 @@ function SchoolSafeAccountRevoke( $username, $school_id = 0 )
 		}
 		else
 		{
-			DBQuery( "INSERT INTO schoolsafe_account_state
+			$query( "INSERT INTO schoolsafe_account_state
 				(PERSON_KEY,SCHOOL_ID,STATE,SESSION_EPOCH,CHANGED_BY,CHANGED_AT)
 				VALUES ('" . DBEscapeString( $person ) . "','" . $school_id . "','active','" . $epoch . "',
 				'" . DBEscapeString( $actor ) . "',CURRENT_TIMESTAMP)" );
 		}
 
-		DBQuery( "INSERT INTO schoolsafe_account_audit
+		$query( "INSERT INTO schoolsafe_account_audit
 			(PERSON_KEY,SCHOOL_ID,ACTION,FROM_STATE,TO_STATE,ACTOR)
 			VALUES ('" . DBEscapeString( $person ) . "','" . $school_id . "','revoke',
 			'" . DBEscapeString( $current ) . "','" . DBEscapeString( $current ) . "',
 			'" . DBEscapeString( $actor ) . "')" );
+		$query( 'COMMIT' ); $started = false;
 	}
 	catch ( Throwable $error )
 	{
+		if ( $started ) @db_query( 'ROLLBACK', false );
 		return false;
 	}
 

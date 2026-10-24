@@ -1,4 +1,8 @@
-## Porte courante — ProDéli, étape 4 diagnostic compte/révocation terminé ; STOP
+## Porte courante — ProDéli, étape 5 état compte/révocation corrigé LOCAL, STOP
+
+Après GO : `SchoolSafeAccountState.fnc.php` : date civile stricte, transactions état/epoch+audit, verrou personne/école et relecture sous `FOR UPDATE`. PostgreSQL17.11 jetable **4 scénarios FIX_VERIFIED** : audit en panne annule Set et Revoke, date invalide refuse, révocation valide avance epoch et journalise ; **162 régressions PASS**. [Rapport](../../qualification/PRODELI_ACCOUNT_STATE_DIAGNOSIS.md). Aucun HTTP/image qualifié pour ce nouveau candidat combiné, aucun déploiement. Informer/STOP avant prochaine porte.
+
+## Porte précédente — ProDéli, étape 4 diagnostic compte/révocation terminé ; STOP
 
 Après CONTINUE : [diagnostic](../../qualification/PRODELI_ACCOUNT_STATE_DIAGNOSIS.md) sur trois bases PostgreSQL17.11 jetables : suspension et révocation enregistrent état/époque sans audit si l'INSERT audit échoue ; `2026-99-99` devient UNTIL1970 malgré entrée invalide. Code natif PHP/DBQuery, acteur substitué ; pas HTTP/prod et aucun correctif de compte encore. État école reste qualifié sur image0edd4889 mais NON déployé. Informer et attendre GO pour correction ciblée état de compte, ne pas prétendre ProDéli entièrement sécurisé ni déployer implicitement.
 
