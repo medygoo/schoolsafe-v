@@ -139,7 +139,7 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     $logoUrl=SchoolSafeSchoolLogoUrl($school);
     $logoCampus='/assets/dashboard-reference/campus-day-logo.webp';
     [$birthdays,$schoolLife]=SchoolSafePhotoSplitSchoolLife(SchoolSafeDashboardNativeWidget(false));
-    echo '<link rel="stylesheet" href="assets/css/schoolsafe-photo-dashboard.css?v=school-logo-toolbar-20261024"><link rel="stylesheet" href="assets/css/schoolsafe-dashboard-matrices.css?v=1"><script defer src="assets/js/schoolsafe-matrix-primary.js?v=2"></script>';
+    echo '<link rel="stylesheet" href="assets/css/schoolsafe-photo-dashboard.css?v=school-palmares-matrix-20261024"><link rel="stylesheet" href="assets/css/schoolsafe-dashboard-matrices.css?v=1"><script defer src="assets/js/schoolsafe-matrix-primary.js?v=2"></script>';
     echo '<main id="ss-photo-dashboard" class="ss-photo-dashboard ss-connected-dashboard" data-dashboard-profile="admin" data-dashboard-tab="overview">';
     echo '<div class="ss-photo-toolbar"><a class="ss-photo-mobile-brand" href="Modules.php?modname=misc/Portal.php"><img src="/schoolsafe-card-bridge/studio-validated-20261008/logo-schoolsafe.png" alt="" width="38" height="38"><strong>School<span>Safe</span></strong></a>';
     echo '<figure class="ss-photo-school-logo" data-school-logo data-logo-stage="'.($logoUrl!==''?'school':'campus').'"><span class="ss-photo-logo-orbit" aria-hidden="true"></span><img src="'.$e($logoUrl!==''?$logoUrl:$logoCampus).'" data-logo-campus="'.$e($logoCampus).'" data-logo-brand="/schoolsafe-logo.png" alt="'.($logoUrl!==''?'Logo de l’école '.$e($schoolName):'Image par défaut de l’école '.$e($schoolName)).'" loading="lazy" width="120" height="120"><figcaption>'.$e($schoolName).'</figcaption></figure>';
@@ -170,7 +170,8 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
         echo '<a class="ss-photo-metric" data-photo-metric="'.$kind.'" href="'.$e($url).'"><span class="ss-photo-icon">'.SchoolSafePhotoIcon($icon).'</span><span class="ss-photo-metric-copy"><small>'.$e($label).'</small><strong>'.($value===null?'&mdash;':$e($value)).'</strong><span>'.$e($detail).'</span></span></a>';
     }
     echo '<article class="ss-photo-metric ss-photo-mobile-presence" data-photo-metric="presence"><span class="ss-photo-icon">'.SchoolSafePhotoIcon('ChartNoAxesCombined').'</span><span class="ss-photo-metric-copy"><small>Taux de présence</small><strong>'.($rate===null?'&mdash;':$e($rate).'%').'</strong><span>'.($rate===null?'Relevés non renseignés':'Relevés du jour').'</span></span></article></section>';
-    echo $birthdays;
+    $topTen=SchoolSafePalmaresMatrixVisual($school,$year);
+    if($birthdays!==''||$topTen!=='')echo '<div class="ss-photo-top-row">'.$birthdays.$topTen.'</div>';
     $financeSummary='<section class="ss-closing-finance" aria-label="Encaissements et depenses">';
     foreach([['Encaissements du jour',$dailyReceipts,'Aujourd\'hui'],['Encaissements du mois',$receipts,'Mois en cours'],['Depenses',$annualExpenses,'Annee scolaire, a ce jour'],['Recettes',$annualReceipts,'Annee scolaire, a ce jour']] as [$label,$amount,$period])if($amount!==null)$financeSummary.='<article><span>'.$e($label).'</span><strong>'.$e($money($amount)).'</strong><small>'.$e($period).'</small></article>';
     $financeSummary.='</section>';
@@ -194,5 +195,5 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     echo '</section></aside></div>'.$financeSummary.SchoolSafeDashboardDetails($data,$feed).'<footer class="ss-photo-footer"><span>SchoolSafe · Votre allié serein et fort, près de vous.</span><span>&copy; '.$now->format('Y').' SchoolSafe.</span></footer>';
     echo '<div id="ss-photo-create" hidden><h3>Actions rapides</h3>';
     foreach(['Students/Student.php&student_id=new'=>'Ajouter un élève','Users/User.php&staff_id=new'=>'Ajouter un utilisateur','Student_Billing/StudentPayments.php'=>'Enregistrer un paiement'] as $route=>$label){$permission=explode('&',$route)[0];if(AllowEdit($permission))echo '<a href="Modules.php?modname='.$e($route).'">'.$e($label).'</a>';}
-    echo '</div></main><script src="assets/js/schoolsafe-photo-dashboard.js?v=school-composition-20261022"></script><script defer src="assets/js/schoolsafe-school-logo.js?v=1"></script>';
+    echo '</div></main><script src="assets/js/schoolsafe-photo-dashboard.js?v=school-palmares-matrix-20261024"></script><script defer src="assets/js/schoolsafe-school-logo.js?v=1"></script>';
 }

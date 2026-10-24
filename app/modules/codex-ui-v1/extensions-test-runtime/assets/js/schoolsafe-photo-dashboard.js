@@ -13,6 +13,9 @@
         function on(target, type, listener, capture) {
             target.addEventListener(type, listener, {signal: events.signal, capture: Boolean(capture)});
         }
+        function syncMatrixMotion() { root.classList.toggle('ss-photo-paused', document.hidden); }
+        on(document, 'visibilitychange', syncMatrixMotion);
+        syncMatrixMotion();
         // Keep the server-rendered composition intact: no hidden parking area,
         // cloned cards or fixed/paginated viewport. Native chrome owns navigation.
         var original = document.querySelector('#body > .ss-dashboard-context');

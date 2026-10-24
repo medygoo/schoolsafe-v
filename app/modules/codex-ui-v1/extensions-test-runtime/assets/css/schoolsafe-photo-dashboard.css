@@ -471,3 +471,25 @@ body.ss-school-shell:has(#ss-photo-dashboard) #ss-photo-dashboard .ss-photo-tool
  #ss-photo-dashboard .ss-photo-toolbar [data-photo-year]{grid-column:2;grid-row:2;min-width:0}
 }
 @media(prefers-reduced-motion:reduce){#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo img,#ss-photo-dashboard .ss-photo-toolbar .ss-photo-logo-orbit{animation:none}}
+/* Real native school ranks beside the birthday list; digits reveal once, never reshuffle. */
+#ss-photo-dashboard .ss-photo-top-row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;margin:0 0 18px;align-items:start}
+#ss-photo-dashboard .ss-photo-top-row #ss-photo-birthdays{min-width:0;margin:0}
+#ss-photo-dashboard .ss-photo-top-ten{min-width:0;border:1px solid var(--photo-line);border-radius:10px;padding:12px;background:var(--photo-panel);color:var(--photo-ink)}
+#ss-photo-dashboard .ss-photo-top-ten header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+#ss-photo-dashboard .ss-photo-top-ten h2{font-size:15px;line-height:1.3;margin:0}
+#ss-photo-dashboard .ss-photo-top-ten header small,#ss-photo-dashboard .ss-photo-top-ten p{color:var(--photo-muted);font-size:11px}
+#ss-photo-dashboard .ss-photo-top-ten-list{margin:8px 0 0;padding:0;list-style:none;max-height:350px;overflow-y:auto}
+#ss-photo-dashboard .ss-photo-top-ten-list>li{border-top:1px solid var(--photo-line)}
+#ss-photo-dashboard .ss-photo-top-ten-list summary{display:flex;gap:8px;align-items:center;cursor:pointer;min-height:38px;list-style:none;font-size:12px}
+#ss-photo-dashboard .ss-photo-top-ten-list summary::-webkit-details-marker{display:none}
+#ss-photo-dashboard .ss-photo-top-ten-list summary strong{flex:1;min-width:0;overflow-wrap:anywhere}
+#ss-photo-dashboard .ss-photo-score{white-space:nowrap;font-variant-numeric:tabular-nums}
+#ss-photo-dashboard .ss-photo-reel{flex:0 0 29px;height:29px;display:grid;place-items:center;border-radius:5px;background:var(--photo-soft);font-variant-numeric:tabular-nums;font-weight:800;animation:ss-photo-rank-reveal 620ms ease-out both}
+#ss-photo-dashboard .ss-photo-top-ten-list>li:nth-child(2) .ss-photo-reel{animation-delay:80ms}
+#ss-photo-dashboard .ss-photo-top-ten-list>li:nth-child(3) .ss-photo-reel{animation-delay:160ms}
+@keyframes ss-photo-rank-reveal{from{opacity:.35;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+#ss-photo-dashboard.ss-photo-paused .ss-photo-reel{animation-play-state:paused}
+#ss-photo-dashboard .ss-photo-top-ten-details{padding:0 0 10px 37px;font-size:11px}
+#ss-photo-dashboard .ss-photo-top-ten-details ul{list-style:none;margin:4px 0;padding:0;display:grid;gap:3px}
+@media(max-width:700px){#ss-photo-dashboard .ss-photo-top-row{grid-template-columns:minmax(0,1fr)}#ss-photo-dashboard .ss-photo-top-ten-list{max-height:310px}}
+@media(prefers-reduced-motion:reduce){#ss-photo-dashboard .ss-photo-reel{animation:none!important}}

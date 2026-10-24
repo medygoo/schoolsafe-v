@@ -45,6 +45,44 @@ function SchoolSafePalmaresVisual(int $school, int $year): string
     return $html.'</div></details></section>';
 }
 
+function SchoolSafePalmaresMatrixVisual(int $school, int $year): string
+{
+    if ($school < 1 || $year < 1 || User('PROFILE') !== 'admin'
+        || Config('SCHOOLSAFE_PALMARES') !== 'Y' || !AllowUse('Grades/GPARankList.php')) return '';
+    $e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');
+    $period=(int)UserMP();
+    $rows=SchoolSafeAcademicTopTen($school,$year,null,$period);
+    $html='<section id="ss-photo-top-ten" class="ss-photo-top-ten" aria-label="Top 10 des élèves de l’école"><header><h2>Top 10 · École</h2><small>Moyennes natives · période sélectionnée</small></header>';
+    if (!$rows) return $html.'<p>Aucune moyenne native exploitable pour cette période.</p></section>';
+    $ids=array_values(array_unique(array_map(static fn($row)=>(int)$row['STUDENT_ID'],$rows)));
+    $date=(new DateTimeImmutable('today',new DateTimeZone('Africa/Kinshasa')))->format('Y-m-d');
+    $classes=DBGet('SELECT DISTINCT sc.student_id,cp.course_period_id,cp.title FROM schedule sc
+        JOIN course_periods cp ON cp.course_period_id=sc.course_period_id
+        WHERE sc.student_id IN ('.implode(',',$ids).") AND sc.school_id=$school AND sc.syear=$year
+        AND sc.start_date<='$date' AND (sc.end_date IS NULL OR sc.end_date>='$date')
+        AND cp.school_id=$school AND cp.syear=$year ORDER BY cp.course_period_id,sc.student_id");
+    $classRanks=[];$byStudent=[];
+    foreach ($classes as $class) $byStudent[(int)$class['STUDENT_ID']][]=$class;
+    foreach (array_unique(array_map(static fn($class)=>(int)$class['COURSE_PERIOD_ID'],$classes)) as $classId) {
+        foreach (SchoolSafeAcademicTopTen($school,$year,$classId,$period) as $ranked) {
+            $classRanks[$classId][(int)$ranked['STUDENT_ID']]=(int)$ranked['POSITION'];
+        }
+    }
+    $html.='<ol class="ss-photo-top-ten-list">';
+    foreach ($rows as $row) {
+        $id=(int)$row['STUDENT_ID'];$position=(int)$row['POSITION'];
+        $html.='<li><details><summary><span class="ss-photo-reel" aria-label="Rang école '.$position.'">'.$position.'</span><strong>'.$e(SchoolSafePalmaresFullName($row)).'</strong><span class="ss-photo-score">'.$e(number_format((float)$row['SCORE'],2,',',' ')).' / '.$e($row['SCALE']).'</span></summary>';
+        $html.='<div class="ss-photo-top-ten-details"><p>Rang école : '.$position.' · '.$e(ParseMLField($row['PERIOD_TITLE'])).'</p><ul>';
+        foreach ($byStudent[$id]??[] as $class) {
+            $rank=$classRanks[(int)$class['COURSE_PERIOD_ID']][$id]??null;
+            $html.='<li>'.$e(ParseMLField($class['TITLE'])).' · Rang en classe : '.($rank===null?'indisponible':$rank).'</li>';
+        }
+        if (empty($byStudent[$id])) $html.='<li>Classe et rang en classe indisponibles.</li>';
+        $html.='</ul></div></details></li>';
+    }
+    return $html.'</ol></section>';
+}
+
 function SchoolSafeRemediationVisual(): string
 {
     $profile=User('PROFILE');$school=(int)UserSchool();$year=(int)UserSyear();$user=(int)User('STAFF_ID');
