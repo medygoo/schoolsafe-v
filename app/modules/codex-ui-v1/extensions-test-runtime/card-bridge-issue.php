@@ -8,7 +8,7 @@ function SchoolSafeIssueReply($status, $data) {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Allow: POST'); SchoolSafeIssueReply(405, ['error'=>'METHOD_NOT_ALLOWED']);
 }
-if (!empty($_GET) || array_diff(array_keys($_POST), ['student_id','csrf'])) {
+if (!empty($_GET) || array_diff(array_keys($_POST), ['student_id','csrf','expected_school','expected_year'])) {
     SchoolSafeIssueReply(400, ['error'=>'INVALID_REQUEST']);
 }
 chdir(__DIR__);
@@ -26,35 +26,28 @@ try {
     }
     $id = filter_var($_POST['student_id']??null, FILTER_VALIDATE_INT, ['options'=>['min_range'=>1]]);
     if ($id===false) SchoolSafeIssueReply(400, ['error'=>'INVALID_STUDENT_ID']);
+    if (!is_string($_POST['expected_school']??null)||!is_string($_POST['expected_year']??null)
+        ||$_POST['expected_school']!==(string)UserSchool()||$_POST['expected_year']!==(string)UserSyear()) {
+        SchoolSafeIssueReply(409,['error'=>'NATIVE_CONTEXT_CHANGED','operationPerformed'=>false]);
+    }
     require_once __DIR__.'/modules/SchoolSafe/Gateway.php';
     if (SchoolSafeEndpointGateway('card-bridge-issue.php', 'POST', '', $_POST) === 'deny') {
         SchoolSafeIssueReply(403, ['error'=>'NATIVE_ACCESS_DENIED']);
     }
     require_once __DIR__.'/schoolsafe-card-bridge/RosarioCardRead.fnc.php';
-    require_once __DIR__.'/schoolsafe-card-bridge/NativeCardEnvelope.fnc.php';
-    $config = json_decode(file_get_contents('/var/lib/schoolsafe-card-bridge/relay-config.json'), true, 16, JSON_THROW_ON_ERROR);
-    if (($config['environment']??'')!=='local-isolated-test-only'
-        || ($config['sourceInstance']??'')!=='codex-addons-local'
-        || !preg_match('/^[a-f0-9]{64}$/D', $config['secretHex']??'')) throw new RuntimeException('CONFIG_REQUIRED');
-    $secret = hex2bin($config['secretHex']);
-    $envelope = SchoolSafeNativeCardEnvelope($id, 'codex-addons-local', $secret);
-    $claim = json_decode($envelope['body'], true, 32, JSON_THROW_ON_ERROR);
-    $claim['operation'] = 'issue-card';
-    $envelope['body'] = json_encode($claim, JSON_THROW_ON_ERROR);
-    $envelope['signature'] = hash_hmac('sha256', $envelope['body'], $secret);
-    $curl = curl_init('http://codex-card-bridge-http:8080/bridge/cards/issue');
-    curl_setopt_array($curl, [CURLOPT_POST=>true, CURLOPT_RETURNTRANSFER=>true,
-        CURLOPT_FOLLOWLOCATION=>false, CURLOPT_CONNECTTIMEOUT=>3, CURLOPT_TIMEOUT=>10,
-        CURLOPT_HTTPHEADER=>['Content-Type: application/json'], CURLOPT_PROTOCOLS=>CURLPROTO_HTTP,
-        CURLOPT_POSTFIELDS=>json_encode($envelope, JSON_THROW_ON_ERROR)]);
-    try {
-        $body = curl_exec($curl); $status = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-        if ($body===false || strlen($body)>300000) throw new RuntimeException('ISSUER_UNAVAILABLE');
-        $result = json_decode($body, true, 32, JSON_THROW_ON_ERROR);
-        if (!in_array($status, [200,400,401,403,409,503], true)) throw new RuntimeException('ISSUER_UNAVAILABLE');
-        SchoolSafeIssueReply($status, $result);
-    } finally { curl_close($curl); }
+    require_once __DIR__.'/ProgramFunctions/SchoolSafeCardIssue.fnc.php';
+    // Existing native visibility and command authority, not a laboratory relay.
+    SchoolSafeReadNativeCardStudent($id);
+    $db=['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}];
+    $result=SchoolSafeNativeCardRegister($id,
+        ['user'=>(int)User('STAFF_ID'),'school'=>(int)UserSchool(),'year'=>(int)UserSyear()],
+        getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'',$db,
+        function()use($db){return SchoolSafeNativeCardMayIssue($db);});
+    SchoolSafeIssueReply(200,$result);
 } catch (Throwable $error) {
     while (ob_get_level()>$level) ob_end_clean();
-    SchoolSafeIssueReply(503, ['error'=>'CARD_ISSUER_UNAVAILABLE','operationPerformed'=>false]);
+    $code=$error->getMessage();
+    $known=['NATIVE_ACCESS_DENIED'=>403,'NATIVE_STUDENT_NOT_ACCESSIBLE'=>403,
+        'CARD_NOT_ACTIVE'=>409,'CARD_REGISTRY_AMBIGUOUS'=>409,'CARD_KEY_MISMATCH'=>409];
+    SchoolSafeIssueReply($known[$code]??503, ['error'=>isset($known[$code])?$code:'CARD_ISSUER_UNAVAILABLE','operationPerformed'=>isset($known[$code])?false:null]);
 }

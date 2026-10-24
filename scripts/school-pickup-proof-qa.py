@@ -677,6 +677,23 @@ def main():
   check('unknown canteen currency never defaults to USD or grants available credit',c.get('status')=='currency_unavailable' and 'balance' not in c and 'USD' not in c.get('label',''))
   sql('DELETE FROM food_service_student_accounts WHERE student_id=11')
   check('missing native canteen account is distinct from a zero account',canteen()['data'].get('status')=='no_account')
+  sql('INSERT INTO students(student_id) VALUES(1001),(1002),(1003); INSERT INTO student_enrollment(student_id,school_id,syear) VALUES(1001,1,2026),(1002,1,2026),(1003,1,2026)')
+  def issue(options=None):return json.loads(run(php_cmd('card-issue',json.dumps(options or {}))))
+  issued=compete('card-issue','{}','{}')
+  (out/'card-native-concurrent-observed.json').write_text(json.dumps(issued,indent=2))
+  check('two native issuers serialize on the existing child and perform exactly one issuance',sorted(x.get('operationPerformed') for x in issued)==[False,True])
+  check('both callers reread the same existing registry credential',issued[0]['data']['credential']==issued[1]['data']['credential'] and sql('SELECT count(*) FROM schoolsafe_student_cards WHERE student_id=1001')=='1')
+  check('new native issuer and actual scanner query/verifier interoperate without bridge',all(x.get('verified',{}).get('result')=='VALID' for x in issued))
+  check('native issuance replay is not another issuance',issue().get('result')=='ALREADY_ISSUED')
+  check('native issuance rejects foreign-school enrollment',issue({'context':{'school':2}}).get('error')=='NATIVE_STUDENT_NOT_ACCESSIBLE')
+  check('native issuance rejects borrowed academic year',issue({'context':{'year':2025}}).get('error')=='NATIVE_STUDENT_NOT_ACCESSIBLE')
+  for state in ['lost','revoked','replaced']:
+   sql("UPDATE schoolsafe_student_cards SET status='"+state+"' WHERE student_id=1001")
+   check('native issuance does not silently revive '+state,issue().get('error')=='CARD_NOT_ACTIVE' and sql('SELECT count(*) FROM schoolsafe_student_cards WHERE student_id=1001')=='1')
+  check('authority revocation before persistence creates no native card',issue({'student':1002,'revoke_after_first':True}).get('error')=='NATIVE_ACCESS_DENIED' and sql('SELECT count(*) FROM schoolsafe_student_cards WHERE student_id=1002')=='0')
+  sql("CREATE FUNCTION qa_card_reject() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.student_id=1003 THEN RAISE EXCEPTION 'Synthetic registry persistence failure'; END IF; RETURN NEW; END $$; CREATE TRIGGER qa_card_reject BEFORE INSERT ON schoolsafe_student_cards FOR EACH ROW EXECUTE FUNCTION qa_card_reject()")
+  rejected=issue({'student':1003})
+  check('native registry persistence failure leaves no card or issuance acknowledgment','error' in rejected and 'operationPerformed' not in rejected and sql('SELECT count(*) FROM schoolsafe_student_cards WHERE student_id=1003')=='0')
  except Exception as error:fail=str(error)
  finally:
   # --rm already removed completed workers. Discover actual survivors once,

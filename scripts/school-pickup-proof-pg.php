@@ -48,7 +48,7 @@ if ($action==='setup') {
     $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup','wa-setup','wa-send','wa-status','dispatch-feed','fixture-notify','canteen'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup','wa-setup','wa-send','wa-status','dispatch-feed','fixture-notify','canteen','card-issue'],true)) exit(2);
 if($action==='fixture-notify'){
     require_once $root.'/ProgramFunctions/SchoolSafeNotify.fnc.php';
     $input=json_decode($argv[2]??'{}',true,16,JSON_THROW_ON_ERROR);
@@ -146,10 +146,11 @@ if(in_array($action,['wa-send','wa-status'],true)){
 require_once $root.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
 require_once $root.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
 $barrier=getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1';$barrierUsed=false;
-$db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
+$db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed,$action) {
     $result=[];
     foreach ($pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) as $i=>$row) $result[$i+1]=array_change_key_case($row,CASE_UPPER);
     if ($barrier&&!$barrierUsed&&((strpos($sql,'FROM schoolsafe_pickup_proofs')!==false&&strpos($sql,'FOR UPDATE')!==false&&$result)
+        ||($action==='card-issue'&&strpos($sql,'FROM students s')!==false&&strpos($sql,'FOR UPDATE')!==false&&$result)
         ||(strpos($sql,'FROM program_config')!==false&&strpos($sql,'FOR SHARE')!==false)
         ||(strpos($sql,'FROM students_join_users')!==false&&strpos($sql,'FOR SHARE')!==false)
         ||strpos($sql,'SELECT SLOT_NO FROM schoolsafe_pickup_authorizations')!==false
@@ -184,6 +185,19 @@ if ($action==='fee-policy-manage') {
     catch(RuntimeException $error){$result=['error'=>$error->getMessage()];}
     if($pdo->inTransaction())throw new RuntimeException('TRANSACTION_LEFT_OPEN');
     echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
+if($action==='card-issue'){
+    require_once $root.'/ProgramFunctions/SchoolSafeCardIssue.fnc.php';
+    require_once $root.'/ProgramFunctions/SchoolSafeCardVerify.fnc.php';
+    $input=json_decode($argv[2]??'{}',true,16,JSON_THROW_ON_ERROR);$calls=0;
+    $ctx=array_replace(['user'=>9,'school'=>1,'year'=>2026],$input['context']??[]);$secret=str_repeat('0',64);
+    try{
+        $value=SchoolSafeNativeCardRegister((int)($input['student']??1001),$ctx,$secret,$db,function()use(&$calls,$input){++$calls;return ($input['authorized']??true)===true&&(!($input['revoke_after_first']??false)||$calls===1);});
+        $qr=$value['data']['credential']['qr_payload'];
+        $value['verified']=SchoolSafeCardVerifyQr($qr,$secret,$ctx['school'],$ctx['year'],function($number,$school)use($ctx,$db){return SchoolSafeCardVerifyQuery($number,$school,$ctx['year'],$db['get']);});
+    }catch(Throwable$error){$value=['error'=>$error->getMessage()];}
+    if($pdo->inTransaction())throw new RuntimeException('TRANSACTION_LEFT_OPEN');
+    echo json_encode($value,JSON_THROW_ON_ERROR)."\n";exit;
 }
 if($action==='canteen'){
     require_once $root.'/ProgramFunctions/SchoolSafeCanteenScan.fnc.php';

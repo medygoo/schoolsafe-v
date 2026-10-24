@@ -38,7 +38,7 @@ foreach ($xpath->query('//script[@src]') as $script) {
     if ($src === 'host-adapter.js') {
         $init = $doc->createElement('script');
         $scope = json_encode('codex-addons-local:' . UserSchool() . ':' . UserSyear() . ':' . User('STAFF_ID'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-        $init->appendChild($doc->createTextNode("window.SchoolSafeNativeSchool=" . json_encode((string) UserSchool()) . ";window.DB={settings:{school:{},year:''},students:[],classes:[],users:[],aps:[]};window.SchoolSafeStudioStorage={getItem:k=>localStorage.getItem($scope+':'+k),setItem:(k,v)=>localStorage.setItem($scope+':'+k,v),removeItem:k=>localStorage.removeItem($scope+':'+k)};"));
+        $init->appendChild($doc->createTextNode("window.SchoolSafeNativeSchool=" . json_encode((string) UserSchool()) . ";window.SchoolSafeNativeYear=" . json_encode((string) UserSyear()) . ";window.DB={settings:{school:{},year:''},students:[],classes:[],users:[],aps:[]};window.SchoolSafeStudioStorage={getItem:k=>localStorage.getItem($scope+':'+k),setItem:(k,v)=>localStorage.setItem($scope+':'+k,v),removeItem:k=>localStorage.removeItem($scope+':'+k)};"));
         $script->parentNode->insertBefore($init, $script->nextSibling);
     }
 }

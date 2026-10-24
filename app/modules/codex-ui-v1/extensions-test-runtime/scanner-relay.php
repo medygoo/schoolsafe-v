@@ -47,7 +47,7 @@ try {
  $enrichPortrait=function(array $data) {
    if(isset($data['nativeStudentId'])&&AllowUse('Student_ID_Card/StudentIDCard.php')){
      require_once __DIR__.'/schoolsafe-card-bridge/RosarioCardRead.fnc.php';
-     try{$portrait=SchoolSafeReadNativeCardStudent($data['nativeStudentId']);
+     try{$portrait=SchoolSafeReadNativeCardInput($data['nativeStudentId']);
        $data['photo_url']=$portrait['verified']['photoUrl']??'';
      }catch(RuntimeException $ignored){$data['photo_url']='';}
    }

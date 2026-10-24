@@ -21,6 +21,25 @@ const form = document.getElementById('native-lookup');
 const issueButton = document.getElementById('native-issue');
 const printButton = document.getElementById('native-print');
 const previewButton = document.getElementById('native-print-preview');
+const credentialStatus = document.createElement('p');
+credentialStatus.id = 'native-credential-status';
+credentialStatus.setAttribute('aria-live', 'polite');
+document.getElementById('native-lookup').appendChild(credentialStatus);
+function showNativeCredential(result) {
+  credentialStatus.replaceChildren();
+  if (result.backend !== 'native-registry') return;
+  const qr = result.input?.credential?.status === 'active' ? result.view?.student?.qr : '';
+  if (!/^schoolsafe:\/\/card\/[^/\s]+\/[^/\s]+$/.test(qr || '')) return;
+  const code = document.createElement('code');
+  code.textContent = qr;
+  credentialStatus.append('QR scolaire enregistre — verification possible. Ce QR ne vaut pas autorisation d’impression. ', code);
+  if (typeof window.ssGenQR === 'function') {
+    const preview = document.createElement('span');
+    preview.id = 'native-credential-qr';
+    credentialStatus.appendChild(preview);
+    window.ssGenQR(preview.id, qr);
+  }
+}
 let loadedQr = '';
 function rememberOfficialCard(result) {
   const credential = result.input?.credential;
@@ -41,6 +60,7 @@ function invalidateSelection() {
   pendingController?.abort();
   pendingController = null;
   loadedStudentId = ''; issueButton.disabled = true;
+  credentialStatus.replaceChildren();
   loadedQr = '';
   if (printButton) printButton.disabled = true;
   if (previewButton) previewButton.disabled = true;
@@ -67,17 +87,22 @@ form.addEventListener('submit', async event => {
   try {
     const result = await window.SchoolSafeStudioNativeBridge.loadNativeStudioCard(studentId, { signal: controller.signal });
     if (!isCurrent(version, studentId)) return;
-    if (result.nativeReference.schoolId !== window.SchoolSafeNativeSchool) throw new Error('NATIVE_SCOPE_CHANGED');
-    if (result.missing.includes('class.mapping') || result.missing.includes('class.cycle')) {
+    if (result.nativeReference.schoolId !== window.SchoolSafeNativeSchool
+        || result.nativeReference.year !== window.SchoolSafeNativeYear) throw new Error('NATIVE_SCOPE_CHANGED');
+    const nativeRegistry = result.backend === 'native-registry';
+    const unmapped = result.missing.includes('class.mapping') || result.missing.includes('class.cycle');
+    if (unmapped && !nativeRegistry) {
       window.toast('Dossier Rosario lu. Classe ou cycle non raccorde : ' + result.missing.join(', ')
         + '. Emission et impression bloquees.');
       return;
     }
-    window.SchoolSafeStudio.setData(window.toRestoredStudioData(result));
+    if (!unmapped) window.SchoolSafeStudio.setData(window.toRestoredStudioData(result));
     loadedStudentId = result.nativeReference.studentId;
     rememberOfficialCard(result);
-    issueButton.disabled = result.missing.some(key => key !== 'card.official_qr')
-      || Boolean(result.input.credential?.qr_payload);
+    showNativeCredential(result);
+    issueButton.textContent = nativeRegistry ? 'Enregistrer le QR officiel' : 'Emettre la carte officielle';
+    issueButton.disabled = (nativeRegistry ? result.nativeCredentialIssuanceAllowed !== true
+      : result.missing.some(key => key !== 'card.official_qr')) || Boolean(result.input.credential?.qr_payload);
     window.toast('Donnees Rosario chargees. ' + (result.missing.length ? 'Informations manquantes : ' + result.missing.join(', ') : 'Consultation disponible.') + ' Aucune carte emise.');
   } catch {
     if (!isCurrent(version, studentId)) return;
@@ -105,18 +130,25 @@ issueButton.addEventListener('click', async () => {
     const response = await fetch('/card-bridge-issue.php', { method: 'POST', credentials: 'same-origin',
       cache: 'no-store', headers: { 'Content-Type':'application/x-www-form-urlencoded', Accept:'application/json' },
       signal: controller.signal,
-      body: new URLSearchParams({ student_id: studentId,
-        csrf: document.getElementById('native-issue-csrf').value }) });
+      body: new URLSearchParams({ student_id: studentId, expected_school: window.SchoolSafeNativeSchool,
+        expected_year: window.SchoolSafeNativeYear, csrf: document.getElementById('native-issue-csrf').value }) });
     const result = await response.json();
     if (!isCurrent(version, studentId)) return;
-    if (!response.ok || result.operationPerformed !== true) throw new Error('ISSUE_REJECTED');
+    if (!response.ok || (result.operationPerformed !== true
+        && !(result.operationPerformed === false && result.result === 'ALREADY_ISSUED'))) throw new Error('ISSUE_REJECTED');
     const fresh = await window.SchoolSafeStudioNativeBridge.loadNativeStudioCard(studentId, { signal: controller.signal });
     if (!isCurrent(version, studentId)) return;
     if (fresh.nativeReference.schoolId !== window.SchoolSafeNativeSchool
-        || !fresh.input.credential?.qr_payload) throw new Error('ISSUE_RELOAD_REQUIRED');
-    window.SchoolSafeStudio.setData(window.toRestoredStudioData(fresh));
+        || fresh.nativeReference.year !== window.SchoolSafeNativeYear || !fresh.input.credential?.qr_payload) throw new Error('ISSUE_RELOAD_REQUIRED');
+    if (!(fresh.backend === 'native-registry'
+        && (fresh.missing.includes('class.mapping') || fresh.missing.includes('class.cycle')))) {
+      window.SchoolSafeStudio.setData(window.toRestoredStudioData(fresh));
+    }
     rememberOfficialCard(fresh);
-    window.toast('Carte officielle relue depuis le moteur.');
+    showNativeCredential(fresh);
+    window.toast(fresh.backend === 'native-registry'
+      ? 'QR officiel relu depuis le registre scolaire. Impression distincte soumise aux controles serveur.'
+      : 'Carte officielle relue depuis le moteur.');
   } catch {
     if (!isCurrent(version, studentId)) return;
     window.toast('Emission non confirmee. Relisez le dossier avant toute nouvelle tentative.');

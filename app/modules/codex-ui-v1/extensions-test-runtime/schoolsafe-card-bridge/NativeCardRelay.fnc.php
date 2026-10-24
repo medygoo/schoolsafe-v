@@ -7,6 +7,11 @@ function SchoolSafePrepareNativeCard( $student_id, $resource = 'prepare' )
     {
         throw new RuntimeException( 'INVALID_CARD_RESOURCE' );
     }
+    require_once __DIR__.'/NativeCardRegistryRead.fnc.php';
+    $db=['get'=>function($sql){return DBGet(DBQuery($sql));}];
+    if(SchoolSafeNativeCardRegistryPresent($db))return SchoolSafePrepareRegistryCard((int)$student_id,$resource,$db);
+    // Preserve the existing isolated laboratory reader only when the native
+    // registry is provably absent; never hide a failed schema/authority probe.
     $config = json_decode( file_get_contents( '/var/lib/schoolsafe-card-bridge/relay-config.json' ), true, 16, JSON_THROW_ON_ERROR );
     if ( ( $config['environment'] ?? '' ) !== 'local-isolated-test-only'
         || ( $config['sourceInstance'] ?? '' ) !== 'codex-addons-local'

@@ -14,8 +14,12 @@
         || result.data.nativeReference?.studentId !== id
         || !/^[1-9][0-9]{0,18}$/.test(result.data.nativeReference?.schoolId || '')
         || typeof result.data.nativeReference?.year !== 'string' || !result.data.nativeReference.year.trim()
-        || !uuid.test(result.data.targetReference?.studentId || '')
-        || !uuid.test(result.data.targetReference?.schoolId || '')
+        || (result.data.backend === 'native-registry'
+          ? result.data.targetReference?.studentId !== id
+            || result.data.targetReference?.schoolId !== result.data.nativeReference.schoolId
+            || result.data.targetReference?.year !== result.data.nativeReference.year
+          : !uuid.test(result.data.targetReference?.studentId || '')
+            || !uuid.test(result.data.targetReference?.schoolId || ''))
         || result.data.input?.record?.school_id !== result.data.targetReference?.schoolId
         || result.data.input?.record?.id !== result.data.targetReference?.studentId) {
       throw new Error('STUDIO_BRIDGE_RESULT_INVALID');
