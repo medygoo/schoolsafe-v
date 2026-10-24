@@ -130,8 +130,11 @@ function SchoolSafeSchoolBirthdayTopTen(int $school, int $year): array
                 AND (current_school_id=$school OR position(',$school,' IN schools)>0)")));
         }
     }
-    foreach ($rows as &$row) {
-        $birth = new DateTimeImmutable($row['BIRTHDATE']);
+    $valid = [];
+    foreach ($rows as $row) {
+        $value = (string)$row['BIRTHDATE'];
+        $birth = DateTimeImmutable::createFromFormat('!Y-m-d', $value, $today->getTimezone());
+        if (!$birth || $birth->format('Y-m-d') !== $value || $birth > $today) continue;
         // February 29 is celebrated on February 28 in non-leap years.
         for ($offset = 0; $offset <= 1; $offset++) {
             $targetYear = (int)$today->format('Y') + $offset;
@@ -141,8 +144,9 @@ function SchoolSafeSchoolBirthdayTopTen(int $school, int $year): array
             if ($next >= $today) break;
         }
         $row['BIRTHDAY'] = ['date' => $next->format('Y-m-d')];
+        $valid[] = $row;
     }
-    unset($row);
+    $rows = $valid;
     usort($rows, static function ($a, $b) {
         return [$a['BIRTHDAY']['date'],$a['LAST_NAME'],$a['FIRST_NAME'],$a['KIND'],$a['PERSON_ID']]
             <=> [$b['BIRTHDAY']['date'],$b['LAST_NAME'],$b['FIRST_NAME'],$b['KIND'],$b['PERSON_ID']];
@@ -165,7 +169,7 @@ function SchoolSafeDashboardNativeWidget(bool $includeRemediation = true): strin
         $rows = $ids ? SchoolSafeBirthdayRows($school, $year, $ids) : [];
         $html .= SchoolSafeBirthdayVisual('Anniversaires de mes enfants',$rows);
     }
-    if (User('PROFILE') === 'admin' && AllowUse('Students/Student.php')) {
+    if (User('PROFILE') === 'admin' && (AllowUse('Students/Student.php') || AllowUse('Users/User.php'))) {
         $html .= SchoolSafeBirthdayVisual('Anniversaires de l\'ecole',SchoolSafeSchoolBirthdayTopTen($school,$year),true);
     }
     if (Config('SCHOOLSAFE_PALMARES') === 'Y') {
