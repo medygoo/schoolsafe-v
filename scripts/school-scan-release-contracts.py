@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Pure release guards, no Docker/SSH/database/provider operations."""
-import copy,importlib.util,pathlib
+import copy,importlib.util,pathlib,json
 root=pathlib.Path(__file__).resolve().parents[1]
 s=importlib.util.spec_from_file_location('scan_release',root/'ops/releases/school-presence-scan-20261024/deploy.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
 passed=0
@@ -29,4 +29,10 @@ source=(root/'ops/releases/school-presence-scan-20261024/deploy.py').read_text()
 check("no_legacy_dispatchers();cli=tools.db_cli()" in source,'Migration requires a checked legacy drain')
 check("'new_worker_started':False" in source and "'provider_activated':False" in source,'Code deployment cannot masquerade as live provider activation')
 check('pg_restore\',\'--list' in source and '--clean' not in source,'Backup archive is validated, never restored over production')
+envelope={'exit':0,'stderr':'','stdout':json.dumps({'status':'PASS','checks':50,'results':['synthetic']*50,'error':None})}
+check(m.http_qualification(envelope)['checks']==50,'Parse actual process-envelope HTTP evidence schema')
+for bad in [dict(envelope,exit=1),dict(envelope,stderr='failure'),dict(envelope,stdout=json.dumps({'status':'PASS','checks':50,'results':[],'error':None}))]:
+ try:m.http_qualification(bad)
+ except AssertionError:check(True,'Reject invalid HTTP process evidence')
+ else:raise AssertionError('Unqualified HTTP evidence accepted')
 print({'status':'PASS','contracts':passed,'scope':'pure release guards only; not deployment'})

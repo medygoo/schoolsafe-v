@@ -59,6 +59,12 @@ def no_legacy_dispatchers():
  assert result['status']=='PASS','Drain the explicitly identified legacy jobs before migration043; never blind-kill or release claims'
  return result
 
+def http_qualification(envelope):
+ assert envelope['exit']==0 and envelope['stderr']=='','HTTP fixture process failed'
+ result=json.loads(envelope['stdout'])
+ assert result['status']=='PASS' and result['checks']==50 and len(result['results'])==50 and result['error'] is None
+ return result
+
 def qualification(release):
  assert release['source_commit']==SOURCE and release['image']==IMAGE and release['source_digest']==DIGEST
  assert re.fullmatch('[a-f0-9]{40}',release['commit'])
@@ -74,7 +80,7 @@ def qualification(release):
  integration=load('exact-integration-result.json')
  assert integration['status']=='PASS' and integration['image']==IMAGE and integration['source_commit']==SOURCE
  assert {s['suite'] for s in integration['suites']}=={'native','recovery','concurrency'} and all(s['exit']==0 for s in integration['suites'])
- http=load('card-authenticated-http-final.private.json');assert http['status']=='PASS' and http['checks']==50 and http['error'] is None
+ http_qualification(load('card-authenticated-http-final.private.json'))
  for name in ['image-verify-proof.json','image-cleanup-proof.json']:
   result=load(name)
   if name.startswith('image-verify'):assert result['status']=='PASS' and result['image']==IMAGE and result['fixture_snapshot_unchanged'] and result['production_containers_unchanged']

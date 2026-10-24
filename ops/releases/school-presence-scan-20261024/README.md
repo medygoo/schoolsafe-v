@@ -5,6 +5,7 @@ Runtime source `6e996637d3397fbc174e8bde01685c1f05a0ac09`, image `sha256:d4359b7
 ## Preuves et portée
 
 -353contrats image+37recovery PostgreSQL,50HTTP natifs authentifiés, native/recovery/concurrency navigateur réels sur l’image exacte : PASS. Fixture restaurée puis seuls conteneurs/réseaux nonce possédés supprimés.
+-16contrats purs de recette contrôlent les paramètres, la clé et l’enveloppe réelle des preuves HTTP (exit/stdout/stderr). Le premier prepare a arrêté avant toute sauvegarde/migration/bascule sur une confusion de forme de cette enveloppe ; correction stricte, pas un assouplissement des50contrôles.
 -251tests PostgreSQL du moteur natif,4tests du véritable filtre SQL Rosario pour téléphone facultatif,4tests caméra interceptés et10Studio+60scanner régressions : PASS. Les preuves de photographie et confirmation pickup des fixtures sont synthétiques, pas des contrôles physiques.
 -La bascule **logicielle** ne connecte pas WhatsApp, n’active aucun worker et ne prouve ni une caméra physique ni l’impression officielle. Ne jamais annoncer ces fonctions opérationnelles sans leurs preuves humaines. Aucun message externe ni scan d’enfant réel pour tester cette livraison.
 
