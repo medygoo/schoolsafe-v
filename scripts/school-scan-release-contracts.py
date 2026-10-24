@@ -26,9 +26,11 @@ for kind in ['existing-env','bind','ports','command','duplicate-key','wrong-key'
  else:raise AssertionError('Unsafe release allowed '+kind)
 check(m.MIGRATIONS[-1]=='043-notify-dispatch-claims.sql' and len(m.MIGRATIONS)==14,'Native claims migration occurs after required expansions')
 source=(root/'ops/releases/school-presence-scan-20261024/deploy.py').read_text()
-check("no_legacy_dispatchers();cli=tools.db_cli()" in source,'Migration requires a checked legacy drain')
+check("no_legacy_dispatchers();cli,app_role=migration_cli()" in source,'Migration requires a checked legacy drain')
 check("'new_worker_started':False" in source and "'provider_activated':False" in source,'Code deployment cannot masquerade as live provider activation')
 check('pg_restore\',\'--list' in source and '--clean' not in source,'Backup archive is validated, never restored over production')
+check('SELECT rolsuper FROM pg_roles WHERE rolname=current_user' in source and 'ALTER TABLE' not in source,'DDL verifies the existing administrator without changing native table ownership')
+check("'end_user_permissions_changed':False" in source and 'schoolsafe_notification_push_subscriptions' in source,'Service grants are explicit known feature schema, not user permissions')
 envelope={'exit':0,'stderr':'','stdout':json.dumps({'status':'PASS','checks':50,'results':['synthetic']*50,'error':None})}
 check(m.http_qualification(envelope)['checks']==50,'Parse actual process-envelope HTTP evidence schema')
 for bad in [dict(envelope,exit=1),dict(envelope,stderr='failure'),dict(envelope,stdout=json.dumps({'status':'PASS','checks':50,'results':[],'error':None}))]:

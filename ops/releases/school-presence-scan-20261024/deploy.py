@@ -136,12 +136,36 @@ def prepare(release):
  result={'status':'PASS','commit':release['commit'],'image':IMAGE,'backup_bytes':len(dump),'backup_sha256':hashlib.sha256(dump).hexdigest(),'backup_mode':'0o600','archive_list_valid':True,'prepared_at':time.time(),'signing_key_existing_env':value is not None,'signing_key_values_output':False,'production_database_restored':False}
  write('backup-proof.json',result);print(json.dumps(result))
 
+def migration_cli():
+ cli=tools.db_cli();cfg=load('db-cli.private.json')
+ env=dict(e.split('=',1) for e in inspect('schoolsafe-rosario-db')['Config']['Env'] if '=' in e)
+ admin=env.get('POSTGRES_USER','postgres');assert re.fullmatch('[A-Za-z_][A-Za-z0-9_]*',admin)
+ cli[cli.index('-U')+1]=admin
+ assert run(cli,b'BEGIN READ ONLY; SELECT rolsuper FROM pg_roles WHERE rolname=current_user; COMMIT;').decode().strip()=='t','DDL needs the existing database administrator, not the application role'
+ return cli,cfg['user']
+
+def service_grants(cli,role):
+ # Only this feature's known tables/sequences. No ownership or end-user role change.
+ assert re.fullmatch('[A-Za-z_][A-Za-z0-9_]*',role)
+ tables=['schoolsafe_student_cards','entry_exit_checkpoints','entry_exit_student_records','schoolsafe_pickup_guardians','schoolsafe_pickup_authorizations','schoolsafe_pickup_proofs','schoolsafe_fee_consults','schoolsafe_notify_migrations','schoolsafe_notify_events','schoolsafe_notify_templates','schoolsafe_notify_deliveries','schoolsafe_notification_push_subscriptions','schoolsafe_wa_sessions','schoolsafe_wa_outbox','schoolsafe_wa_consents','schoolsafe_wa_audit','schoolsafe_entry_requests']
+ for table in tables:
+  assert run(cli,("SELECT to_regclass('public."+table+"') IS NOT NULL;").encode()).decode().strip()=='t','Required feature schema missing'
+  run(cli,('GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE public.'+table+' TO "'+role+'";').encode())
+  query="SELECT DISTINCT pg_get_serial_sequence('public."+table+"',attname) FROM pg_attribute WHERE attrelid='public."+table+"'::regclass AND attnum>0 AND NOT attisdropped;"
+  for seq in run(cli,query.encode()).decode().splitlines():
+   if seq:
+    assert re.fullmatch('[A-Za-z_][A-Za-z0-9_.]*',seq)
+    quoted='.'.join('"'+part+'"' for part in seq.split('.'))
+    run(cli,('GRANT USAGE,SELECT ON SEQUENCE '+quoted+' TO "'+role+'";').encode())
+ write('service-schema-access-proof.json',{'status':'PASS','application_role':role,'scoped_schema_grants_only':True,'ownership_changed':False,'end_user_permissions_changed':False})
+
 def migrate(release):
  qualification(release);backup=load('backup-proof.json');assert backup['status']=='PASS' and time.time()-backup['prepared_at']<900
  assert not (ROOT/'schema-proof.json').exists(),'Schema expansion already recorded'
- assert inspect(tools.NAME)['Image']==BASE;no_legacy_dispatchers();cli=tools.db_cli()
+ assert inspect(tools.NAME)['Image']==BASE;no_legacy_dispatchers();cli,app_role=migration_cli()
  for name in MIGRATIONS:
   sql=run(['git','-C','/opt/app-src','show',SOURCE+':'+PREFIX+'schoolsafe-remediation/'+name]);run(cli,sql)
+ service_grants(cli,app_role)
  result={'status':'PASS','migrations':MIGRATIONS,'legacy_dispatchers_drained':True,'new_worker_started':False,'uncertain_claims_released':False,'data_reassigned':False}
  write('schema-proof.json',result);print(json.dumps(result))
 
