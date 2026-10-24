@@ -104,6 +104,10 @@ Décision du propriétaire : Control pré-enregistre l'administrateur principal 
 
 # Décisions validées SchoolSafe
 
+## 24 octobre 2026 — Top 5 des classes en travaux pratiques
+
+**VALIDÉE par le propriétaire après demande ciblée :** compter uniquement les affectations du carnet natif dont le type est explicitement « TP » ou « Travaux pratiques », pendant la période de notation sélectionnée. Si une école ne configure aucun type TP, afficher un état vide plutôt que compter tous les devoirs. Compter chaque travail une fois par classe/section concernée, jamais par élève ou note, et garder les ex aequo. Ne pas élargir les permissions natives.
+
 Ce journal conserve les décisions durables. Il ne doit contenir ni secrets ni transcriptions brutes de conversations.
 
 | Date | Décision | Statut |

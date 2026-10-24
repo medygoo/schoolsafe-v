@@ -1,0 +1,21 @@
+# Tableau de bord scolaire — étapes 3 à 5 livrées séparément (24/10/2026)
+
+| Étape | Checkout VPS | Image exacte | Preuve |
+|---|---|---|---|
+| 3 · Anniversaires élèves/personnel | `1deda155d7877435fe8bc383a05e49f1ccf476db` | `sha256:f2d23fdc61df4ed28516ec00e4fc70bdbd1efdbd9e2cd16379c497cce6d3488e` | 1 runtime modifié ; 10 contrats dates/droits, 178 contrats image, 37 récupération, 62 HTTP authentifiés synthétiques ; sauvegarde base privée 0600 ; postbascule PASS. |
+| 4 · Top 10 élèves à côté des anniversaires | `62411aab6ce98ba9ab13c8184588b800388f5adf` | `sha256:8f2366bc38e684ce20c07a480e180c68fc7ae0a60fd031c34074b6f9c7b6f918` | 4 runtime modifiés ; 10 contrats rangs/droits, 6 scénarios navigateur 390/768/1280 px + mouvement réduit, 178 contrats image, 37 récupération, 62 HTTP synthétiques ; sauvegarde 0600 ; postbascule PASS. |
+| 5 · Top 5 des classes selon les TP | `51f46342c2a41149cb63a10cbef026a93fda8898` | `sha256:c2ca7bd72cf44bdd029d095f3580fa9d48d8111e35a8de550c59dff06f882bf0` | 3 runtime (dont 1 nouveau) ; 13 contrats types/droits, 6 PostgreSQL réel jetable avec cours partagés/plusieurs enseignants/école voisine/année/futur, 6 scénarios navigateur, 178 contrats image, 37 récupération, 62 HTTP synthétiques ; sauvegarde 0600 ; postbascule PASS. |
+
+**Finition visuelle postérieure :** le propriétaire a précisé la zone rouge de sa photo ; le premier petit logo mobile n'était pas conforme. Une correction distincte à deux fichiers a placé le grand logo dans la colonne droite, la recherche à gauche (checkout `243fe43576a3aaa70c2972a67699405df1935dd6`, image de production finale `sha256:2ad1a6fcac1675be4c7fef301831892c464a55f493f98988ad316aabd1c758d1`). Qualification image/HTTP/navigateur, sauvegarde et vérification séparée de la CSS publique PASS. Voir le rectificatif dans `SCHOOL_LOGO_TOOLBAR_RELEASE_20261024.md`.
+
+Le vrai logo et le portrait déjà déposés ont gardé les mêmes empreintes à chaque bascule. Configuration, **trois montages**, sessions (78, 115, puis 155 fichiers transférés), cache et services voisins inchangés ; chaque ancien conteneur est conservé à l'arrêt. Pas de migration, nouveau droit, type TP, note, élève, image, restauration de dump ou rollback automatique. La vérification indépendante de l'image exacte, des trois montages et des empreintes média a donné PASS après chacune des trois livraisons. La correction visuelle logo/recherche précédemment livrée est détaillée dans `SCHOOL_LOGO_TOOLBAR_RELEASE_20261024.md`.
+
+## Règle TP validée et portée
+
+Décision reçue en cours de ce lot : **type natif explicitement « TP » ou « Travaux pratiques » et période de notation sélectionnée** ; sans ce type, afficher « Aucun TP configuré ». Une affectation de cours commune peut concerner plusieurs sections ; elle est comptée une fois dans chaque classe effectivement concernée, jamais par note ou par enfant. Seuls les classes avec inscription actuelle et les enseignants des affectations natives sont affichés. Les autres types, dates futures, écoles/années étrangères sont exclus. Ex aequo à la cinquième position conservés. Lecture uniquement pour l'administrateur bénéficiant du droit natif `Grades/Assignments.php` ; rien n'est activé pour augmenter ses permissions.
+
+## Données et limites non contournées
+
+Lecture seule de l'école autorisée auditée (année 2026, sans publier les noms) : **0** élève inscrit avec date de naissance renseignée, **0** champ natif « Date de naissance SchoolSafe » du personnel, **0** moyenne pondérée exploitable, **0** type TP natif et **1** période de notation courante. Les panneaux autorisés peuvent donc afficher un état vide : les tests sur personnes/classes fictives ne représentent pas des données réelles. Rien n'a été inventé pour remplir ces classements.
+
+**Ouvert :** contrôle visuel par le titulaire dans sa vraie session, sur ordinateur et téléphone ; prochain cycle quotidien des archives logos/portraits et copie **hors site** avec essai de restauration isolé. Les archives aujourd'hui vérifiées restent sur le VPS. Aucun mot de passe ni photo n'est requis dans la conversation ; un emplacement hors site et ses modalités d'accès doivent être fournis par l'exploitant avant de configurer cette copie. Les parcours synthétiques n'attestent pas une session réelle ni un classement réel dans une école sans notes/TP.
