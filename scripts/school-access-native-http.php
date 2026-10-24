@@ -27,7 +27,16 @@ try{
  $first=(int)$pdo->query('SELECT coalesce(max(staff_id),0)+100 FROM staff')->fetchColumn();
  for($i=0;$i<6;$i++){$id=$first+$i;$ids[]=$id;$role=$i<2?'admin':'teacher';$scope=$i===0?'NULL':$q(','.$school.',');
   $pdo->exec('INSERT INTO staff(staff_id,syear,username,password,first_name,last_name,profile,profile_id,schools,current_school_id,last_login) VALUES('.$id.',2026,'.$q($prefix.'.'.$i).','.$q(encrypt_password($password)).",'Synthetic','Native access',".$q($role).','.($i<2?$baseProfile:$teacherProfile).','.$scope.','.$school.',CURRENT_TIMESTAMP)');}
- $globalCookie=loginAs($prefix.'.0');$r=req('/admin-console.php?access_school='.$school.'&access_staff='.$ids[1]);
+ $globalCookie=loginAs($prefix.'.0');
+ $r=req('/schoolsafe-administrators.php?home=1');$homeLink='/admin-console.php?access_school='.$school.'#school-native-access';
+ gate($r['status']===200&&document($r['body'])->query('//a[@href="'.$homeLink.'"]')->length===1,'authenticated ProDéli home exposes the school access button');
+ $r=req('/schoolsafe-administrators.php');$accountLink='/admin-console.php?access_school='.$school.'&access_staff='.$ids[1].'#school-native-access';
+ $accountLinks=document($r['body'])->query('//tr[@id="sskc-account-'.$ids[1].'"]//a[@href="'.$accountLink.'"]');
+ gate($r['status']===200&&$accountLinks->length===1,'authenticated account row exposes the exact school and account access button');
+ $r=req($accountLinks->item(0)->getAttribute('href'));$discoveredFields=fields($r['body']);
+ gate($r['status']===200&&($discoveredFields['access_staff']??'')===(string)$ids[1]&&($discoveredFields['access_school']??'')===(string)$school,'visible account button opens the native form with the correct school and recipient');
+ loginAs($prefix.'.1');gate(req('/scanner-native.php')['status']===403,'school administrator without native grant is refused before the fixture bootstrap');$cookie=$globalCookie;
+ $r=req('/admin-console.php?access_school='.$school.'&access_staff='.$ids[1]);
  gate($r['status']===200&&count(fields($r['body']))>0,'global native console exposes school access metadata without entering school');$globalFields=fields($r['body']);
  gate(req('/ecoles/'.$school.'/profils')['status']===403&&req('/scanner-native.php')['status']===403,'ProDéli cannot open school hub or scanner before bootstrap');
  $all=[];$catalog=require'/var/www/html/modules/SchoolSafe/Catalog.php';foreach($catalog as$key=>$def)if(in_array('admin',$def['profiles'],true))$all[$key]=['use'=>'Y','edit'=>'Y'];
@@ -38,6 +47,7 @@ try{
  gate((int)$pdo->query('SELECT count(*) FROM staff WHERE staff_id IN('.implode(',',$ids).')')->fetchColumn()===6,'bootstrap creates no account');
  gate(req('/scanner-native.php')['status']===403&&req('/ecoles/'.$school.'/profils')['status']===403,'ProDéli still has no school membership after bootstrap');
  $directorCookie=loginAs($prefix.'.1');$hub='/ecoles/'.$school.'/profils';
+ gate(req('/scanner-native.php')['status']===200,'confirmed fixture bootstrap opens the school administrator scanner page');
  $scans=[];foreach(['ScanArrival','ScanPickup','ScanFees','ScanCanteen','ScanVerify']as$key)$scans['SchoolSafe/'.$key.'.php']=['use'=>'Y','edit'=>'Y'];
  $operatorCookies=[];
  for($i=2;$i<=4;$i++){

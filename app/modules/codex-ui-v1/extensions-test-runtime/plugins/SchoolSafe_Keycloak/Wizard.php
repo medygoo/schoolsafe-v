@@ -62,7 +62,9 @@ function sskcHomePage(): void
         echo '<label for="sskc-school-search">Rechercher un établissement<input type="search" id="sskc-school-search" autocomplete="off" placeholder="Nom de l’école" aria-controls="sskc-school-directory"></label><p id="sskc-school-search-status" class="sskc-muted" role="status">'.count($schools).' établissement(s) dans votre périmètre.</p><ul id="sskc-school-directory" class="sskc-school-directory">';
         foreach($schools as $id=>$title){
             echo '<li data-school-entry><div><strong data-school-title>'.sskcEscape((string)$title).'</strong><span>'.(SchoolSafeGlobalAdmin()?'Espace réservé à son administrateur scolaire':($id===$current?'École sélectionnée':'Dans votre périmètre autorisé')).'</span></div>';
-            if(!SchoolSafeGlobalAdmin()) {
+            if(SchoolSafeGlobalAdmin()) {
+                echo '<a class="sskc-action button-primary" target="_self" href="/admin-console.php?access_school='.(int)$id.'#school-native-access" aria-label="Gérer les droits — Scan et accès : '.sskcEscape((string)$title).'">Gérer les droits — Scan et accès</a>';
+            } else {
                 echo '<form target="_self" method="post" action="/schoolsafe-administrators.php?home=1">';
                 foreach(['token'=>(string)($_SESSION['token']??''),'action'=>'dashboard_school','school'=>(string)$id] as $key=>$value)sskcWizardHidden($key,$value);
                 echo '<button type="submit" aria-label="Ouvrir l’espace scolaire : '.sskcEscape((string)$title).'">Ouvrir l’école</button></form>';
