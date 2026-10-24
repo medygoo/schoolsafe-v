@@ -5,6 +5,7 @@ if(PHP_SAPI!=='cli'||getenv('SCHOOLSAFE_SCAN_HTTP_FIXTURE')!=='schoolcef-synthet
 $pdo=new PDO('pgsql:host=schoolcef-harmonization-pg;dbname=schoolcef_fixture',getenv('POSTGRES_USER'),getenv('POSTGRES_PASSWORD'),[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 require '/var/www/html/functions/Password.php';
 $prefix='qa.state.'.bin2hex(random_bytes(8));$password=bin2hex(random_bytes(24));$cookie=tempnam('/tmp','state-qa-');$checks=[];$error=null;$staff=null;$profile=null;$trigger=false;
+$targetStaff=null;$accountTrigger=false;
 $q=fn($v)=>$pdo->quote((string)$v);
 function gate($ok,$message){global$checks;if(!$ok)throw new RuntimeException($message);$checks[]=$message;}
 function request($path,$fields=null){global$cookie;if(!str_starts_with($path,'/')||str_starts_with($path,'//'))throw new RuntimeException('loopback only');
@@ -37,10 +38,33 @@ try{
  $stable=snapshot($pdo,$school);$post['school_state']='inactive';$post['school_reason']=$prefix.'.fail';
  [$status,$body]=request('/admin-console.php',$post);gate($status===200&&snapshot($pdo,$school)===$stable,'audit failure rolls back central POST state and audit');
  $state=$pdo->query('SELECT state FROM schoolsafe_school_state WHERE school_id='.$school)->fetchColumn();gate($state==='suspended','audit failure preserves previous effective suspension');
+ // A second synthetic admin is the target of native central account state/revoke actions.
+ $targetStaff=$staff+1;
+ $pdo->exec('INSERT INTO staff(staff_id,syear,username,password,first_name,last_name,profile,profile_id,schools,current_school_id,last_login) VALUES('.$targetStaff.',2026,'.$q($prefix.'.target').','.$q(encrypt_password($password)).",'Synthetic','Account target','admin',".$profile.','.$q(','.$school.',').','.$school.',CURRENT_TIMESTAMP)');
+ $accountBefore=(int)$pdo->query('SELECT count(*) FROM schoolsafe_account_state WHERE person_key='.$q($prefix.'.target'))->fetchColumn();
+ gate($accountBefore===0,'synthetic account target starts without state row');
+ $accountPost=['console_token'=>$csrf,'console_action'=>'state','staff_id'=>(string)$targetStaff,'state_school_id'=>'0','state'=>'suspended','reason'=>$prefix,'until'=>'2026-99-99'];
+ [$status,$body]=request('/admin-console.php',$accountPost);
+ gate($status===200&&(int)$pdo->query('SELECT count(*) FROM schoolsafe_account_state WHERE person_key='.$q($prefix.'.target'))->fetchColumn()===0,'actual central account POST rejects invalid calendar date');
+ $accountPost['until']='';$accountPost['console_token']='bad';request('/admin-console.php',$accountPost);
+ gate((int)$pdo->query('SELECT count(*) FROM schoolsafe_account_state WHERE person_key='.$q($prefix.'.target'))->fetchColumn()===0,'actual central account POST rejects invalid CSRF');
+ $accountPost['console_token']=$csrf;$accountPost['state']='readonly';[$status,$body]=request('/admin-console.php',$accountPost);
+ $accountState=fn()=>json_decode($pdo->query('SELECT row_to_json(t) FROM (SELECT state,session_epoch FROM schoolsafe_account_state WHERE person_key='.$q($prefix.'.target')." AND school_id=0) t")->fetchColumn()?:'null',true);
+ $auditCount=fn()=>(int)$pdo->query('SELECT count(*) FROM schoolsafe_account_audit WHERE person_key='.$q($prefix.'.target'))->fetchColumn();
+ gate(in_array($status,[302,303],true)&&$accountState()['state']==='readonly'&&$auditCount()===1,'valid central account POST commits state and audit');
+ // Trigger affects only the synthetic target. No production identities, real sessions or provider.
+ $pdo->exec('CREATE FUNCTION fixture_account_audit_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.person_key='.$q($prefix.'.target')." THEN RAISE EXCEPTION 'SYNTHETIC_ACCOUNT_AUDIT_FAILURE'; END IF; RETURN NEW; END $$");
+ $pdo->exec('CREATE TRIGGER fixture_account_audit_fail BEFORE INSERT ON schoolsafe_account_audit FOR EACH ROW EXECUTE FUNCTION fixture_account_audit_fail()');$accountTrigger=true;
+ $stable=$accountState();$audits=$auditCount();$accountPost['state']='suspended';[$status,$body]=request('/admin-console.php',$accountPost);
+ gate($status===200&&$accountState()===$stable&&$auditCount()===$audits,'account state audit failure rolls back central POST');
+ [$status,$body]=request('/admin-console.php',['console_token'=>$csrf,'console_action'=>'revoke','staff_id'=>(string)$targetStaff]);
+ gate(in_array($status,[302,303],true)&&$accountState()===$stable&&$auditCount()===$audits,'account revoke audit failure does not advance epoch');
 }catch(Throwable$e){$error=$e->getMessage();}
 finally{
  try{
+  if($accountTrigger)$pdo->exec('DROP TRIGGER fixture_account_audit_fail ON schoolsafe_account_audit; DROP FUNCTION fixture_account_audit_fail()');
   if($trigger)$pdo->exec('DROP TRIGGER fixture_state_audit_fail ON schoolsafe_school_audit; DROP FUNCTION fixture_state_audit_fail()');
+  if($targetStaff!==null){$pdo->exec('DELETE FROM schoolsafe_account_audit WHERE person_key='.$q($prefix.'.target'));$pdo->exec('DELETE FROM schoolsafe_account_state WHERE person_key='.$q($prefix.'.target'));$pdo->exec('DELETE FROM staff WHERE staff_id='.$targetStaff.' AND username='.$q($prefix.'.target'));}
   if(isset($school)&&$school>0&&isset($beforeSnapshot)){
    $pdo->exec('DELETE FROM schoolsafe_school_audit WHERE school_id='.$school.' AND actor='.$q($prefix));
    $pdo->exec('DELETE FROM schoolsafe_school_state WHERE school_id='.$school);
