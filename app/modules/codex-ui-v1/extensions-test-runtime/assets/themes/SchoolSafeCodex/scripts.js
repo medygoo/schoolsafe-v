@@ -19,6 +19,7 @@
 	// Shared SchoolSafe presentation is loaded by Warehouse for every theme (2026-10-14).
 	var centralProfile = null;
 	var headerNotificationUrl = null;
+	var headerScanUrl = null;
 	var branchDefinitions = [
 		['users', 'Utilisateurs', 'Users'],
 		['pilotage', 'Tableau de bord', 'School_Setup'], ['school', '\u00c9cole', 'School_Setup'],
@@ -912,6 +913,19 @@
 				action.append(image, tip); tools.appendChild(action); return action;
 			}
 			var notifications = headerAction('Notifications', 'MessagesSquare', headerNotificationUrl);
+			if (headerScanUrl) {
+				var scanLabel = label('Présence & Scan QR', 'Presence & QR scan');
+				var scanLink = headerAction(scanLabel, 'WalletCards', headerScanUrl);
+				scanLink.id = 'ss-header-scan';
+				// Mobile dashboard Actions moves the existing header tools, not copies.
+				// Desktop Actions uses its existing popup; neither entry grants execution.
+				var quickActions = document.getElementById('ss-photo-create');
+				if (quickActions && !quickActions.querySelector('[data-scan-action]')) {
+					var quickScan = document.createElement('a'); quickScan.href = headerScanUrl;
+					quickScan.textContent = scanLabel; quickScan.dataset.scanAction = 'true';
+					quickActions.appendChild(quickScan);
+				}
+			}
 			var headerJaspe = headerAction('JASPE', 'MessagesSquare', null);
 			headerJaspe.id = 'ss-header-jaspe'; headerJaspe.classList.add('ss-desktop-companion');
 			headerJaspe.querySelector('img').src = 'modules/SchoolSafe_Jaspe/presenter.png';
@@ -1016,6 +1030,7 @@
 			var response = await fetch('/central-navigation.php', {credentials:'same-origin', cache:'no-store', signal:AbortSignal.timeout(4000)});
 			if (response.ok) {
 				var manifest = await response.json();
+				headerScanUrl = manifest.scanAction === 'scanner-native.php' ? 'scanner-native.php' : null;
 				headerNotificationUrl = Array.isArray(manifest.links) && manifest.links.some(function (entry) {
 					return entry.url === 'Modules.php?modname=SchoolSafe/Notifications.php';
 				}) ? 'Modules.php?modname=SchoolSafe/Notifications.php' : null;

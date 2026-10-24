@@ -1,6 +1,12 @@
 # Présence & Scan QR — en cours, moteur natif récupéré, NON DÉPLOYÉ
 
-## Dernier sous-lot qualifié — vérification cantine native (non déployé)
+## Actions — navigation commune sans droit d’exécution implicite
+
+RED Chromium : aucune entrée Scan dans les Actions/header pour parent/teacher/admin malgré la métadonnée demandée. Le manifeste natif expose maintenant seulement l’URL fixe scanner-native.php aux sessions scolaires authentifiées avec école sélectionnée, jamais au contexte GlobalAdmin ProDéli. Le thème natif ajoute ce lien au header et au popup Actions existants ; les Actions mobiles réutilisent ces mêmes contrôles. Aucun changement du dashboard différé ni des droits. URL inattendue, manifeste indisponible ou contexte global : aucun lien. Les endpoints conservent leur propre refus/CSRF/habilitations, la visibilité ne valide aucune opération.
+
+**21Chromium interceptés PASS** scan-actions-browser-final.log ; **62contrats délégations+84frontières et1lint PASS** scan-actions-boundaries-final.log. Source réelle du header, réponses scolaires/globales/refus simulées ; ce n’est pas une preuve HTTP authentifiée. Reprendre maintenant qualification HTTP/image/protections avec source Git propre, puis bascule contrôlée ; caméra physique et fournisseur réels ne sont pas déclarés testés.
+
+## Dernier sous-lot cantine qualifié — vérification native (non déployé)
 
 La commande existante signifie **vérification des frais de cantine**, pas service automatique d’un repas (Catalog et propriétaire Food_Service conservés). Le secret/carte/enrôlement natifs résolvent maintenant cette commande sans bridge isolé. Lecture du compte Food_Service existant, parfois familial/partagé : aucune ventilation scolaire inventée, nouveau ledger, paiement, repas, passage, reçu ou notification. Droit de scan distinct du droit natif Food_Service/Accounts.php de voir les montants. RED pur : le lecteur exposait le solde au gardien malgré absence de détail ; maintenant aucun champ/label monétaire sans ce droit. Centimes signés exacts ; compte absent, données absentes, solde nul, négatif et devise inconnue restent distincts, aucun USD par défaut. Statut NULL/blank actif conservé selon le propriétaire Food_Service natif.
 

@@ -59,4 +59,8 @@ $profile = [
     'photo' => $photo,
     'url' => 'Modules.php?modname=Users/User.php&category_id=1&staff_id=' . (int) User('STAFF_ID'),
 ];
-echo json_encode(['links' => $links, 'profile' => $profile], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+// Visible school navigation for every authenticated profile, NOT a capability.
+// ProDéli keeps its separate workspace; execution still uses the native gateway.
+$scanAction = function_exists('SchoolSafeGlobalAdmin') && !SchoolSafeGlobalAdmin()
+    && (int) UserSchool() > 0 ? 'scanner-native.php' : null;
+echo json_encode(['links' => $links, 'profile' => $profile, 'scanAction' => $scanAction], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
