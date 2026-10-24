@@ -1,4 +1,8 @@
-## Porte courante — ProDéli, étape 3 image+HTTP état école qualifiés, non déployés
+## Porte courante — ProDéli, étape 4 diagnostic compte/révocation terminé ; STOP
+
+Après CONTINUE : [diagnostic](../../qualification/PRODELI_ACCOUNT_STATE_DIAGNOSIS.md) sur trois bases PostgreSQL17.11 jetables : suspension et révocation enregistrent état/époque sans audit si l'INSERT audit échoue ; `2026-99-99` devient UNTIL1970 malgré entrée invalide. Code natif PHP/DBQuery, acteur substitué ; pas HTTP/prod et aucun correctif de compte encore. État école reste qualifié sur image0edd4889 mais NON déployé. Informer et attendre GO pour correction ciblée état de compte, ne pas prétendre ProDéli entièrement sécurisé ni déployer implicitement.
+
+## Porte précédente — ProDéli, étape 3 image+HTTP état école qualifiés, non déployés
 
 Après GO : base production image1df5f857/checkout3ecdf9e ; candidat Gitb8c997e image **0edd4889bd802f61cf0582e6fa066703a134590591ba441e83c129d5747f8569** / digest edddd39a, **un runtime/2801inchangés**,178contrats+37récupPG et **10HTTP natifs authentifiés synthétiques PASS** (CSRF/date invalide/état+audit/rollback). Verify snapshot/production inchangés et cleanup noncePASS. [Rapport](../../qualification/PRODELI_STABILITY_STEP1.md). **Pas déployé**, pas compte réel/caméra/provider. CONTINUE propriétaire reçu ensuite : prochain examen borné des autres mutations sensibles ProDéli (état compte/révocation) avant prétendre tout stable ; aucun déploiement implicite.
 
