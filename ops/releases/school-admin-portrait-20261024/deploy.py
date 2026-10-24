@@ -20,6 +20,19 @@ FILE='plugins/SchoolSafe_Keycloak/Wizard.php';FILES={FILE}
 WORK_BRANCH='feat/school-admin-portrait-20261024';BRANCH='deployed/school-admin-portrait-20261024';BASE_BRANCH='deployed/school-logo-20261024'
 LOGO_BIND='/opt/schoolsafe-media/school-logos:/var/www/html/assets/school-logos:rw'
 def git(commit,path):return run(['git','-C','/opt/app-src','show',commit+':'+path])
+def check_layer_with_mounts(name):
+ """Keep the old writable-layer gate, admitting only verified bind mount points."""
+ current=inspect(name)
+ mounts={m['Destination']:m for m in current['Mounts']}
+ logo=mounts.get('/var/www/html/assets/school-logos')
+ assert logo and logo['Type']=='bind' and logo['Source']=='/opt/schoolsafe-media/school-logos' and logo['RW']
+ photos=mounts.get('/var/www/html/assets/UserPhotos')
+ if photos:assert photos['Type']=='bind' and photos['Source']==str(MEDIA) and photos['RW']
+ allowed={'/run','/run/apache2','/run/apache2/apache2.pid','/tmp','/tmp/.config','/tmp/.config/chromium','/var','/var/www','/var/www/html','/var/www/html/config.inc.php','/var/www/html/assets','/var/www/html/assets/school-logos'}
+ if photos:allowed.add('/var/www/html/assets/UserPhotos')
+ for line in run(['docker','diff',name]).decode().splitlines():
+  path=line[2:]
+  assert path in allowed or path.startswith(('/tmp/sess_','/tmp/.config/chromium/')),'Unpreserved writable data: stop and inspect privately'
 def expected_binds(pre):
  binds=pre['HostConfig']['Binds'];assert len(binds)==2 and LOGO_BIND in binds and BIND not in binds
  return binds+[BIND]
@@ -98,6 +111,7 @@ def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['prepare','deploy','status']);a=p.parse_args().action
  release=load('release.json')
  logo.ROOT=access.ROOT=tools.ROOT=preserve.ROOT=ROOT
+ preserve.check_layer=check_layer_with_mounts
  logo.MEDIA=MEDIA;logo.BIND=BIND;logo.BASE=access.BASE=tools.BASE=BASE
  logo.BASE_COMMIT=access.BASE_COMMIT=tools.BASE_COMMIT=BASE_COMMIT
  logo.SOURCE=SOURCE;logo.IMAGE=access.IMAGE=tools.IMAGE=IMAGE
