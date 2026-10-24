@@ -1,4 +1,8 @@
-## Porte courante — ProDéli, étape 5 état compte/révocation corrigé LOCAL, STOP
+## Porte courante — cinq étapes dashboard demandées, étape 1 logo automatique
+
+Le propriétaire a fixé un nouvel ordre explicite : **(1) logo scolaire automatique animé avec repli campus puis SchoolSafe, (2) portrait de l'administrateur inscrit dans ProDéli visible dans son profil, (3) anniversaires réels élèves/personnel, (4) Top 10 élèves en matrice animée près des anniversaires avec rang classe/école, (5) cinq CLASSES les plus actives en travaux pratiques avec enseignants et comptes réels dans la zone haute de la seconde capture.** Le 5 n'est PAS un Top 5 d'élèves. [Critères, sources natives, limites et statuts](../../qualification/SCHOOL_DASHBOARD_FIVE_STEPS_20261024.md). Une étape à la fois ; **prochaine étape 1**, puis compte rendu et GO avant la 2. Recherche mobile/« Informations de connexion » restent des remarques de disposition sans écraser les brouillons dashboard/palmarès/DECISIONS. Ceci enregistre la demande seulement : zéro des cinq étapes implémentées ou déployées par cette note. Production conserve le lecteur Scan thémé livré et la correction de sécurité ProDéli ; pas d'octroi réel de droits Scan ni de caméra physique qualifiée.
+
+## Porte historique — ProDéli, étape 5 état compte/révocation corrigé LOCAL, STOP
 
 Après GO : `SchoolSafeAccountState.fnc.php` : date civile stricte, transactions état/epoch+audit, verrou personne/école et relecture sous `FOR UPDATE`. PostgreSQL17.11 jetable **4 scénarios FIX_VERIFIED** : audit en panne annule Set et Revoke, date invalide refuse, révocation valide avance epoch et journalise ; **162 régressions PASS**. [Rapport](../../qualification/PRODELI_ACCOUNT_STATE_DIAGNOSIS.md). Aucun HTTP/image qualifié pour ce nouveau candidat combiné, aucun déploiement. Informer/STOP avant prochaine porte.
 
