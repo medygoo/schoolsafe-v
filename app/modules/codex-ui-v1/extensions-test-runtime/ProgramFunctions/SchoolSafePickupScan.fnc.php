@@ -256,6 +256,10 @@ function SchoolSafePickupConfirmLocked($token, $school, $studentId, $locationId,
         $recordId = (int) $inserted[1]['ID'];
         $exec('UPDATE schoolsafe_pickup_proofs SET USED_AT=CURRENT_TIMESTAMP, RECORD_ID=' . $recordId
             . " WHERE ID=" . (int) $proof['ID'] . ' AND USED_AT IS NULL');
+        if(array_key_exists('event',$db)){
+            if(!is_callable($db['event']))throw new RuntimeException('NOTIFY_UNAVAILABLE');
+            $db['event']('student.pickup',$recordId,array_replace($verify,['person_name'=>$picked['name'],'person_role'=>$picked['role']]));
+        }
         return ['result' => 'CONFIRMED', 'decision' => 'allowed', 'idempotent' => false,
             'record_id' => $recordId, 'occurred_at' => $inserted[1]['RECORDED_AT'],
             'person' => $picked, 'checkpoint' => $checkpoint] + $verify;

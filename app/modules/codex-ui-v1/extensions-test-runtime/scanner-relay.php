@@ -139,7 +139,9 @@ try {
      if(isset($input->human_confirmed)&&!is_bool($input->human_confirmed)) throw new RuntimeException('INVALID_INPUT');
      require_once __DIR__.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
      $pickupSecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
-     $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }];
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeScanNotify.fnc.php';
+     $db=SchoolSafeScanNotifyAdapter(['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }],
+       ['user'=>$user,'school'=>$school,'year'=>$year]);
      $done=SchoolSafePickupScan($input->qr_payload,$input->location_id,$pickupSecret,
        ['user'=>$user,'school'=>$school,'year'=>$year],$db,
        ['authorized_person_id'=>$input->authorized_person_id??null,
@@ -214,7 +216,9 @@ try {
        ||array_diff(array_keys((array)$input),['mode','qr_payload','request_key'])) throw new RuntimeException('INVALID_INPUT');
      require_once __DIR__.'/ProgramFunctions/SchoolSafeFeeScan.fnc.php';
      $feeSecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
-     $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }];
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeScanNotify.fnc.php';
+     $db=SchoolSafeScanNotifyAdapter(['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }],
+       ['user'=>$user,'school'=>$school,'year'=>$year]);
      $detail=AllowUse('Student_Billing/StudentFees.php');
      $done=SchoolSafeFeeScan($input->qr_payload,$feeSecret,
        ['user'=>$user,'school'=>$school,'year'=>$year,'detail'=>$detail,'request_key'=>$input->request_key],$db);
@@ -230,7 +234,9 @@ try {
      require_once __DIR__.'/ProgramFunctions/SchoolSafeEntryScan.fnc.php';
      $entrySecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
      // DBGet() n'exécute que les SELECT : passer par DBQuery pour INSERT...RETURNING.
-     $db=['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }];
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeScanNotify.fnc.php';
+     $db=SchoolSafeScanNotifyAdapter(['get'=>function($sql){ return DBGet(DBQuery($sql)); },'exec'=>function($sql){ DBQuery($sql); }],
+       ['user'=>$user,'school'=>$school,'year'=>$year]);
      $done=SchoolSafeEntryScan($input->qr_payload,$input->location_id,$entrySecret,
        ['user'=>$user,'school'=>$school,'year'=>$year,'request_key'=>$input->request_key],$db);
      if($done===null) throw new RuntimeException('CONFIG_REQUIRED');

@@ -2,6 +2,7 @@
   'use strict';
   const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
   const native=/^[1-9][0-9]{0,8}$/;
+  const nativeScan=/^[1-9][0-9]{0,9}$/;
   const kinds=['detected','approved','refused','session_scheduled','session_held','session_postponed','session_cancelled','reassessment_passed','reassessment_repeat','reassessment_closed','billing_configured','payment_recorded','payment_confirmed','payment_review_required'];
   const text=(v,n)=>typeof v==='string'&&v.length<=n;
   const date=v=>text(v,64)&&/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}(?::?\d{2})?)?$/.test(v)&&Number.isFinite(Date.parse(v));
@@ -19,6 +20,15 @@
           ||row.id!=='receipt:'+p.receipt_id||!text(p.message,500)
           ||!['valid','cancelled','refunded'].includes(p.status)) throw new Error('INVALID_NOTIFICATIONS');
         payload={message:p.message,receipt_id:p.receipt_id,status:p.status};
+      } else if(row.event_type==='financial.control') {
+        if(!/^financial-control:[1-9][0-9]{0,18}$/.test(row.id)||!nativeScan.test(row.student_id)
+          ||!Number.isSafeInteger(p.consult_id)||p.consult_id<1||!text(p.message,8000)||!p.message.trim()) throw new Error('INVALID_NOTIFICATIONS');
+        payload={message:p.message,consult_id:p.consult_id};
+      } else if(row.event_type==='security.entry'||(row.event_type==='student.pickup'&&row.id.startsWith('departure:'))) {
+        const prefix=row.event_type==='security.entry'?'arrival:':'departure:';
+        if(!nativeScan.test(row.student_id)||!Number.isSafeInteger(p.record_id)||p.record_id<1||row.id!==prefix+p.record_id
+          ||!text(p.message,4000)||!p.message.trim()) throw new Error('INVALID_NOTIFICATIONS');
+        payload={message:p.message,record_id:p.record_id};
       } else if(birthday) {
         if(!/^birthday:[1-9][0-9]{0,8}:\d{4}-\d{2}-\d{2}$/.test(row.id)||!native.test(row.student_id)
           ||row.id!=='birthday:'+row.student_id+':'+p.birthday_date

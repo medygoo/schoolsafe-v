@@ -16,10 +16,10 @@ if (!$allowed) { http_response_code(403); exit('Connexion avec un compte parent 
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Notifications | SchoolSafe</title>
 <link rel="stylesheet" href="schoolsafe-card-bridge/parent-notifications.css">
-<script defer src="schoolsafe-card-bridge/parent-notification-data.js"></script>
+<script defer src="schoolsafe-card-bridge/parent-notification-data.js?v=native-scan-notices-1"></script>
 <script defer src="schoolsafe-card-bridge/notification-push-subscribe.js"></script>
 <script defer src="/pwa-outbox.js"></script>
-<script defer src="schoolsafe-card-bridge/parent-notifications-view.js"></script></head>
+<script defer src="schoolsafe-card-bridge/parent-notifications-view.js?v=native-scan-notices-1"></script></head>
 <body><header><strong>SchoolSafe</strong><a href="Modules.php?modname=misc/Portal.php">Tableau de bord</a></header>
 <main><h1>Notifications</h1><button id="enable-background-notifications" type="button">Activer les notifications en arriere-plan</button><nav aria-label="Categories de notifications">
 <button type="button" data-filter="all" aria-pressed="true">Toutes</button>

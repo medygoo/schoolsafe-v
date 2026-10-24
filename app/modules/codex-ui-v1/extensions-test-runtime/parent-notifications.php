@@ -37,6 +37,8 @@ try {
     if (count($ids)>500) { throw new RuntimeException('NATIVE_SCOPE_TOO_LARGE'); }
     $result=['data'=>['notifications'=>[], 'principalStudentIds'=>[]]];
     $degraded=[];
+    require_once __DIR__.'/ProgramFunctions/SchoolSafeScanBackend.fnc.php';
+    if(SchoolSafeScanBridgeAvailable()) {
     try {
     $config = json_decode(file_get_contents('/var/lib/schoolsafe-card-bridge/relay-config.json'), true, 16, JSON_THROW_ON_ERROR);
     if (($config['environment']??'') !== 'local-isolated-test-only'
@@ -71,6 +73,7 @@ try {
     } catch (Throwable $relayError) {
         $result=['data'=>['notifications'=>[], 'principalStudentIds'=>[]]];
         $degraded[]='scans';
+    }
     }
     require_once __DIR__ . '/ProgramFunctions/SchoolSafeNotificationFeed.fnc.php';
     $result['data']['notifications']=SchoolSafeNotificationFeed($result['data']['notifications'],

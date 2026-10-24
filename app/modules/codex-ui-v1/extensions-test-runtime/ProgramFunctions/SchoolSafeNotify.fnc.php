@@ -13,10 +13,11 @@ function SchoolSafeNotifyEventTypes()
     // (migration 027, CHECK DB elargi a l'identique). Les 5 types U0 restent.
     // U2 : 'case.updated' (migration 028, meme motif).
     // U4 : 'security.p1' (migration 030, alertes immediates individuelles).
+    // Scan : 'financial.control' (042), observation distincte d'un paiement.
     return ['security.entry', 'student.pickup', 'payment.receipt',
         'school.announcement', 'remediation.update',
         'attendance.closure', 'absence.detected', 'case.updated',
-        'security.p1'];
+        'security.p1', 'financial.control'];
 }
 
 function SchoolSafeNotifyValidateEvent(array $event)
@@ -52,9 +53,10 @@ function SchoolSafeNotifyResolveRecipients($eventType, $school, $year, $studentI
     $get = $db['get'];
     $enrolled = $get('SELECT 1 AS OK FROM student_enrollment WHERE STUDENT_ID=' . $studentId
         . ' AND SCHOOL_ID=' . $school . ' AND SYEAR=' . $year . ' LIMIT 1');
-    if (!is_array($enrolled) || !isset($enrolled[1])) throw new RuntimeException('SCHOOL_ISOLATION');
-    $rows = $get('SELECT su.STAFF_ID FROM students_join_users su JOIN staff st ON st.STAFF_ID=su.STAFF_ID'
-        . ' WHERE su.STUDENT_ID=' . $studentId . " AND st.PROFILE='parent'");
+    if (!is_array($enrolled)) throw new RuntimeException('NOTIFY_RECIPIENT_UNAVAILABLE');
+    if (!isset($enrolled[1])) throw new RuntimeException('SCHOOL_ISOLATION');
+    require_once __DIR__.'/SchoolSafeNotifyRecipient.fnc.php';
+    $rows = SchoolSafeNotifyParentRows($school, $year, $studentId, $db);
     $recipients = [];
     if (is_array($rows)) foreach ($rows as $row) {
         if (!isset($row['STAFF_ID'])) continue;
@@ -87,7 +89,9 @@ function SchoolSafeNotifyEscapeJson(array $payload)
 // Retourne null quand le socle est indisponible (table absente) : l'appelant
 // applique son repli sans bloquer le scanner. Rejeu idempotent : meme
 // (school_id, dedup_key) => created=false, aucun doublon.
-function SchoolSafeNotifyEmit(array $event, array $recipients, array $db)
+// ownTransaction=false: caller MUST own the native business transaction;
+// never BEGIN/COMMIT/ROLLBACK here, and unavailable outbox is an explicit error.
+function SchoolSafeNotifyEmit(array $event, array $recipients, array $db, bool $ownTransaction = true)
 {
     $e = SchoolSafeNotifyValidateEvent($event);
     $get = $db['get'];
@@ -95,7 +99,10 @@ function SchoolSafeNotifyEmit(array $event, array $recipients, array $db)
     $reg = $get("SELECT to_regclass('public.schoolsafe_notify_events') AS t");
     $found = '';
     if (is_array($reg)) foreach ($reg as $rr) { $found = (string) ($rr['T'] ?? ''); break; }
-    if ($found === '') return null;
+    if ($found === '') {
+        if (!$ownTransaction) throw new RuntimeException('NOTIFY_UNAVAILABLE');
+        return null;
+    }
     foreach ($recipients as $r) {
         if (!isset($r['audience'], $r['staff_id'], $r['channel'])) throw new RuntimeException('INVALID_RECIPIENT');
         if (!in_array($r['audience'], ['parent', 'teacher', 'direction', 'staff'], true)) throw new RuntimeException('INVALID_RECIPIENT');
@@ -108,39 +115,52 @@ function SchoolSafeNotifyEmit(array $event, array $recipients, array $db)
     $payloadSql = SchoolSafeNotifyEscapeJson($e['payload']);
     $dedupSql = "'" . str_replace("'", "''", $e['dedup_key']) . "'";
     $typeSql = "'" . str_replace("'", "''", $e['event_type']) . "'";
-    $exec('BEGIN');
+    if ($ownTransaction) $exec('BEGIN');
     try {
         $inserted = $get('INSERT INTO schoolsafe_notify_events(school_id, syear, event_type, dedup_key, student_id, actor_staff_id, payload)'
             . ' VALUES(' . $e['school_id'] . ',' . $e['syear'] . ',' . $typeSql . ',' . $dedupSql . ','
             . $studentSql . ',' . $actorSql . ',' . $payloadSql . ')'
             . ' ON CONFLICT (school_id, dedup_key) DO NOTHING RETURNING ID');
-        $created = is_array($inserted) && isset($inserted[1]);
+        if (!is_array($inserted)) throw new RuntimeException('NOTIFY_WRITE_FAILED');
+        $created = isset($inserted[1]['ID']);
         $eventId = $created ? (int) $inserted[1]['ID'] : 0;
         if (!$created) {
             $existing = $get('SELECT ID FROM schoolsafe_notify_events WHERE SCHOOL_ID=' . $e['school_id']
                 . ' AND DEDUP_KEY=' . $dedupSql . ' LIMIT 1');
             if (!is_array($existing) || !isset($existing[1])) throw new RuntimeException('NOTIFY_WRITE_FAILED');
             $eventId = (int) $existing[1]['ID'];
-            // Rejeu idempotent : rien d'autre a ecrire, mais on compte l'existant.
-            $exec('COMMIT');
-            $count = $get('SELECT COUNT(*) AS C FROM schoolsafe_notify_deliveries WHERE EVENT_ID=' . $eventId);
-            $n = (is_array($count) && isset($count[1])) ? (int) $count[1]['C'] : 0;
+            // Rejeu idempotent : pas de nouveaux destinataires apres changement de lien.
+            $n = SchoolSafeNotifyDeliveryCount($eventId, $db);
+            if ($ownTransaction) $exec('COMMIT');
             return ['event_id' => $eventId, 'created' => false, 'deliveries' => $n];
         }
         foreach ($recipients as $r) {
-            $get('INSERT INTO schoolsafe_notify_deliveries(event_id, school_id, syear, audience, recipient_staff_id, channel)'
+            $delivery = $get('INSERT INTO schoolsafe_notify_deliveries(event_id, school_id, syear, audience, recipient_staff_id, channel)'
                 . ' VALUES(' . $eventId . ',' . $e['school_id'] . ',' . $e['syear'] . ",'"
                 . $r['audience'] . "'," . ((int) $r['staff_id']) . ",'" . $r['channel'] . "')"
-                . ' ON CONFLICT (event_id, audience, recipient_staff_id, channel) DO NOTHING');
+                . ' ON CONFLICT (event_id, audience, recipient_staff_id, channel) DO NOTHING RETURNING ID');
+            if (!is_array($delivery)) throw new RuntimeException('NOTIFY_WRITE_FAILED');
+            if (!isset($delivery[1]['ID'])) {
+                $existingDelivery = $get('SELECT ID FROM schoolsafe_notify_deliveries WHERE EVENT_ID=' . $eventId
+                    . " AND AUDIENCE='" . $r['audience'] . "' AND RECIPIENT_STAFF_ID=" . (int)$r['staff_id']
+                    . " AND CHANNEL='" . $r['channel'] . "'");
+                if (!is_array($existingDelivery) || !isset($existingDelivery[1]['ID'])) throw new RuntimeException('NOTIFY_WRITE_FAILED');
+            }
         }
-        $exec('COMMIT');
-        $count = $get('SELECT COUNT(*) AS C FROM schoolsafe_notify_deliveries WHERE EVENT_ID=' . $eventId);
-        $n = (is_array($count) && isset($count[1])) ? (int) $count[1]['C'] : 0;
+        $n = SchoolSafeNotifyDeliveryCount($eventId, $db);
+        if ($ownTransaction) $exec('COMMIT');
         return ['event_id' => $eventId, 'created' => true, 'deliveries' => $n];
     } catch (Throwable $error) {
-        try { $exec('ROLLBACK'); } catch (Throwable $ignored) { }
+        if ($ownTransaction) { try { $exec('ROLLBACK'); } catch (Throwable $ignored) { } }
         throw $error;
     }
+}
+
+function SchoolSafeNotifyDeliveryCount(int $eventId, array $db): int
+{
+    $count = $db['get']('SELECT COUNT(*) AS C FROM schoolsafe_notify_deliveries WHERE EVENT_ID=' . $eventId);
+    if (!is_array($count) || !isset($count[1]['C']) || preg_match('/^[0-9]+$/D', (string)$count[1]['C']) !== 1) throw new RuntimeException('NOTIFY_WRITE_FAILED');
+    return (int)$count[1]['C'];
 }
 
 // Fil de TEST : jamais le fil parent occupe. Isolation ecole imposee.

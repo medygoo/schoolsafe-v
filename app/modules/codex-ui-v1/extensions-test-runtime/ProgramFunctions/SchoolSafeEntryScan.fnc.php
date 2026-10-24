@@ -88,6 +88,10 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
             . ' RETURNING ID, RECORDED_AT');
         if (!is_array($inserted) || !isset($inserted[1])) throw new RuntimeException('ENTRY_WRITE_FAILED');
         if($consultId!==null)SchoolSafeFeeConsultEntry($consultId,(int)$inserted[1]['ID'],(int)$verify['student_id'],['school'=>$school,'year'=>$year,'user'=>$user],$db);
+        if(array_key_exists('event',$db)){
+            if(!is_callable($db['event']))throw new RuntimeException('NOTIFY_UNAVAILABLE');
+            $db['event']('security.entry',(int)$inserted[1]['ID'],$verify);
+        }
         return ['result' => 'PRESENT', 'decision' => 'allowed', 'late' => $late,
             'record_id' => (int) $inserted[1]['ID'], 'occurred_at' => $inserted[1]['RECORDED_AT'],
             'checkpoint' => $checkpoint,'financial'=>$financial,'financial_consult_id'=>$consultId] + $verify;

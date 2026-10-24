@@ -9,10 +9,12 @@ $connect = static function() use ($dsn) {
     return new PDO($dsn, 'schoolcef_fixture', getenv('POSTGRES_PASSWORD'), [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 };
 $pdo=$connect();$pdo->exec("SET TIME ZONE 'UTC'; SET statement_timeout='20s'");
-$action=$argv[1]??'';
+$action=$argv[1]??'';$notify=str_starts_with($action,'notify-');
+if($notify)$action=substr($action,7);
+if($notify&&!in_array($action,['entry','pickup','fee-scan'],true))exit(2);
 if ($action==='setup') {
     if ((int)$pdo->query("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")->fetchColumn()!==0) throw new RuntimeException('EMPTY_DISPOSABLE_DATABASE_REQUIRED');
-    $pdo->exec('CREATE TABLE students(student_id integer PRIMARY KEY,first_name text DEFAULT $$Synthetic$$,last_name text DEFAULT $$Fixture$$); CREATE TABLE staff(staff_id integer PRIMARY KEY,profile text DEFAULT $$admin$$); CREATE TABLE students_join_users(student_id integer,staff_id integer); CREATE TABLE student_enrollment(id serial PRIMARY KEY,student_id integer,school_id integer,syear integer,grade_id integer DEFAULT 1,start_date date DEFAULT $$2020-01-01$$,end_date date); CREATE TABLE school_gradelevels(id integer,title text); CREATE TABLE school_periods(school_id integer,syear integer,start_time text,sort_order integer);');
+    $pdo->exec('CREATE TABLE students(student_id integer PRIMARY KEY,first_name text DEFAULT $$Synthetic$$,last_name text DEFAULT $$Fixture$$); CREATE TABLE staff(staff_id integer PRIMARY KEY,profile text DEFAULT $$admin$$,syear numeric(4,0) DEFAULT 2026,username varchar(100)); CREATE TABLE students_join_users(student_id integer,staff_id integer); CREATE TABLE student_enrollment(id serial PRIMARY KEY,student_id integer,school_id integer,syear integer,grade_id integer DEFAULT 1,start_date date DEFAULT $$2020-01-01$$,end_date date); CREATE TABLE school_gradelevels(id integer,title text); CREATE TABLE school_periods(school_id integer,syear integer,start_time text,sort_order integer);');
     foreach (['020-school-cards.sql','021-entry-records.sql','022-pickup-guardians.sql','023-fee-consults.sql'] as $file) $pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
     $pdo->exec('CREATE TABLE schools(id integer,syear numeric(4,0),title varchar(100) NOT NULL DEFAULT $$Synthetic school$$,PRIMARY KEY(id,syear)); INSERT INTO schools(id,syear) VALUES(1,2026),(1,2025),(2,2026)');
     $nativeDdl=file_get_contents($root.'/rosariosis.sql');
@@ -28,7 +30,7 @@ if ($action==='setup') {
     $pdo->exec("INSERT INTO config(school_id,title,config_value) VALUES(0,'CURRENCY','SYN');
         INSERT INTO schoolsafe_fee_consults(school_id,student_id,consulted_by,balance_status,fee_total,paid_total,balance) VALUES(1,11,9,'due',91,0,91)");
     $legacyConsult=$pdo->query('SELECT * FROM schoolsafe_fee_consults')->fetch(PDO::FETCH_ASSOC);
-    for($i=0;$i<2;$i++)foreach(['040-fee-control-context.sql','041-entry-request-receipts.sql']as$file)$pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
+    for($i=0;$i<2;$i++)foreach(['040-fee-control-context.sql','041-entry-request-receipts.sql','024-notify-events.sql','025-notify-distributions.sql','026-notify-push.sql','031-delivery-status.sql','042-scan-financial-notification.sql']as$file)$pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
     $expandedConsult=$pdo->query('SELECT * FROM schoolsafe_fee_consults')->fetch(PDO::FETCH_ASSOC);
     if(array_intersect_key($expandedConsult,$legacyConsult)!==$legacyConsult||$expandedConsult['syear']!==null||$expandedConsult['context_snapshot']!==null)throw new RuntimeException('LEGACY_FINANCIAL_RECORD_CHANGED');
     $pdo->exec("INSERT INTO entry_exit_student_records(student_id,checkpoint_id,type,comments,recorded_at) VALUES(11,7,'in','Synthetic legacy fixture',CURRENT_TIMESTAMP)");
@@ -46,7 +48,7 @@ if ($action==='setup') {
     $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup'],true)) exit(2);
 require_once $root.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
 require_once $root.'/ProgramFunctions/SchoolSafePickupManage.fnc.php';
 $barrier=getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1';$barrierUsed=false;
@@ -66,6 +68,20 @@ $db=['get'=>static function($sql) use ($pdo,$connect,$barrier,&$barrierUsed) {
     }
     return $result;
 }, 'exec'=>static function($sql) use ($pdo) {$pdo->exec($sql);},'quote'=>static function($value)use($pdo){return $pdo->quote($value);}];
+if($action==='recipient-state-setup'){
+    for($i=0;$i<2;$i++)foreach(['014-account-state.sql','016-school-state.sql']as$file)$pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
+    echo json_encode(['status'=>'RECIPIENT_STATE_READY'])."\n";exit;
+}
+if($action==='recipients'){
+    require_once $root.'/ProgramFunctions/SchoolSafeNotify.fnc.php';
+    try{$result=SchoolSafeNotifyResolveRecipients('financial.control',(int)($argv[2]??1),(int)($argv[3]??2026),11,$db);}
+    catch(RuntimeException $error){$result=['error'=>$error->getMessage()];}
+    echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
+if($action==='recover-scan'){
+    $argv=['schoolsafe-notify-recover.php','--source='.($argv[2]??'entry')];
+    require $root.'/schoolsafe-notify-recover.php';exit;
+}
 if ($action==='fee-policy-manage') {
     require_once $root.'/ProgramFunctions/SchoolSafeFeePolicy.fnc.php';
     $db['quote']=static function($value) use($pdo){return $pdo->quote($value);};
@@ -81,6 +97,7 @@ if ($action==='fee-scan') {
     if(preg_match('/^QA-[A-Z0-9-]+$/D',$number)!==1)exit(2);
     $signature=substr(strtr(base64_encode(hash_hmac('sha256',$number,hex2bin($secret),true)),'+/','-_'),0,32);
     $ctx=array_replace(['user'=>9,'school'=>1,'year'=>2026,'detail'=>($argv[2]??'1')==='1'],json_decode($argv[3]??'{}',true,16,JSON_THROW_ON_ERROR));
+    if($notify){require_once $root.'/ProgramFunctions/SchoolSafeScanNotify.fnc.php';$db=SchoolSafeScanNotifyAdapter($db,$ctx);}
     try{$result=SchoolSafeFeeScan('schoolsafe://card/'.$number.'/'.$signature,$secret,$ctx,$db,'2026-10-23');}
     catch(RuntimeException $error){$result=['error'=>$error->getMessage()];}
     if($pdo->inTransaction())throw new RuntimeException('TRANSACTION_LEFT_OPEN');
@@ -116,7 +133,7 @@ if ($action==='feed') {
     function Config($key) {return 'N';} // unrelated optional sources disabled in this fixture
     require_once $root.'/ProgramFunctions/SchoolSafeNotificationFeed.fnc.php';
     $degraded=[];
-    $items=SchoolSafeNotificationFeed([],[],explode(',',$argv[2]??'11'),(int)($argv[3]??27),1,2026,$degraded);
+    $items=SchoolSafeNotificationFeed([],[],explode(',',$argv[2]??'11'),(int)($argv[3]??27),(int)($argv[4]??1),(int)($argv[5]??2026),$degraded);
     echo json_encode(['items'=>$items,'degraded'=>$degraded],JSON_THROW_ON_ERROR)."\n";exit;
 }
 if ($action==='location-manage') {
@@ -148,6 +165,7 @@ if (in_array($action,['entry','pickup'],true)) {
     $secret=str_repeat('0',64);$signature=substr(strtr(base64_encode(hash_hmac('sha256','QA-ENTRY',hex2bin($secret),true)),'+/','-_'),0,32);
     $qr='schoolsafe://card/QA-ENTRY/'.$signature;$context=['user'=>9,'school'=>1,'year'=>2026];
     if($action==='entry')$context=array_replace($context,json_decode($argv[2]??'{}',true,16,JSON_THROW_ON_ERROR));
+    if($notify){require_once $root.'/ProgramFunctions/SchoolSafeScanNotify.fnc.php';$db=SchoolSafeScanNotifyAdapter($db,$context);}
     $now=strtotime('2026-10-23 16:30:00 UTC');
     try{$result=$action==='entry' ? SchoolSafeEntryScan($qr,$argv[3]??'7',$secret,$context,$db,$now)
         : SchoolSafePickupScan($qr,'7',$secret,$context,$db,($argv[2]??'prepare')==='prepare'

@@ -10,20 +10,21 @@
 //   cases   : schoolsafe_case_events decision/justification/arrivee sans
 //             evenement 'case.updated' -> case.updated (reconciliation U2)
 // Le relay existant n'est ni modifie ni appele.
-// Usage : php schoolsafe-notify-recover.php [--source=entry|absence|cases|all]
+// Usage : php schoolsafe-notify-recover.php [--source=entry|pickup|fees|scan|absence|cases|all]
 if (PHP_SAPI !== 'cli') { fwrite(STDERR, "CLI uniquement.\n"); exit(2); }
 $source = 'all';
 foreach ($argv as $arg) {
     if (str_starts_with($arg, '--source=')) $source = substr($arg, 9);
 }
-if (!in_array($source, ['entry', 'absence', 'cases', 'all'], true)) {
-    fwrite(STDERR, "Usage: php schoolsafe-notify-recover.php [--source=entry|absence|cases|all]\n");
+if (!in_array($source, ['entry', 'pickup', 'fees', 'scan', 'absence', 'cases', 'all'], true)) {
+    fwrite(STDERR, "Usage: php schoolsafe-notify-recover.php [--source=entry|pickup|fees|scan|absence|cases|all]\n");
     exit(2);
 }
 chdir(__DIR__);
 require_once __DIR__ . '/ProgramFunctions/SchoolSafeNotify.fnc.php';
 require_once __DIR__ . '/ProgramFunctions/SchoolSafeAttendance.fnc.php';
 require_once __DIR__ . '/ProgramFunctions/SchoolSafeCases.fnc.php';
+require_once __DIR__ . '/ProgramFunctions/SchoolSafeScanNotify.fnc.php';
 
 $host = getenv('SCHOOLSAFE_DB_HOST') ?: 'db';
 $port = getenv('SCHOOLSAFE_DB_PORT') ?: '5432';
@@ -48,7 +49,6 @@ $db = [
     },
 ];
 
-$year = (int) (getenv('SCHOOLSAFE_DEFAULT_SYEAR') ?: 2026);
 $recoveredAbsence = 0; $skippedAbsence = 0; $recoveredCases = 0; $skippedCases = 0;
 
 if ($source === 'absence' || $source === 'all') {
@@ -119,33 +119,12 @@ if ($source === 'cases' || $source === 'all') {
         if (is_array($out) && !empty($out['created'])) $recoveredCases++; else $skippedCases++;
     }
 }
-// Source officielle : arrivees 'in' non annulees, 7 derniers jours.
-$records = $db['get']("SELECT r.ID, r.STUDENT_ID, r.RECORDED_AT FROM entry_exit_student_records r"
-    . " WHERE r.TYPE='in' AND r.UNAUTHORIZED IS NULL"
-    . " AND r.RECORDED_AT>=CURRENT_TIMESTAMP - INTERVAL '7 days' ORDER BY r.ID LIMIT 200");
-$recovered = 0; $skipped = 0;
-if (is_array($records)) foreach ($records as $rec) {
-    if (!isset($rec['ID'], $rec['STUDENT_ID'])) continue;
-    $recordId = (int) $rec['ID'];
-    $studentId = (int) $rec['STUDENT_ID'];
-    // Ecole officielle via l'inscription (meme regle que l'emetteur).
-    $enr = $db['get']('SELECT SCHOOL_ID, SYEAR FROM student_enrollment WHERE STUDENT_ID=' . $studentId
-        . ' AND SYEAR=' . $year . ' ORDER BY END_DATE NULLS LAST LIMIT 1');
-    if (!is_array($enr) || !isset($enr[1])) { $skipped++; continue; }
-    $school = (int) $enr[1]['SCHOOL_ID'];
-    $dedup = 'entry:record:' . $recordId;
-    try {
-        $recipients = SchoolSafeNotifyResolveRecipients('security.entry', $school, $year, $studentId, $db);
-    } catch (Throwable $ignored) { $skipped++; continue; }
-    $event = ['school_id' => $school, 'syear' => $year, 'event_type' => 'security.entry',
-        'dedup_key' => $dedup, 'student_id' => $studentId,
-        'payload' => ['record_id' => $recordId, 'recovered' => true,
-            'recorded_at' => (string) ($rec['RECORDED_AT'] ?? '')]];
-    $out = SchoolSafeNotifyEmit($event, $recipients, $db);
-    if (is_array($out) && ($out['created'] ?? false)) $recovered++;
-    else $skipped++;
-}
+// Native persisted scope is authoritative, never current enrollment/default year.
+// Source filtering applies to scan recovery too; unrelated sources do not run it.
+$scan = SchoolSafeScanNotifyRecover($source, $db);
+$recovered = $scan['entry']; $skipped = $scan['skipped'];
 echo "RECOVER recovered=$recovered skipped=$skipped"
     . " absence_recovered=$recoveredAbsence absence_skipped=$skippedAbsence"
-    . " cases_recovered=$recoveredCases cases_skipped=$skippedCases source=$source\n";
+    . " cases_recovered=$recoveredCases cases_skipped=$skippedCases"
+    . ' pickup_recovered=' . $scan['pickup'] . ' fees_recovered=' . $scan['fees'] . " source=$source\n";
 exit(0);

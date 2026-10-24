@@ -2,7 +2,9 @@
 (() => {
   const list=document.getElementById('notifications'),state=document.getElementById('state'),retry=document.getElementById('retry');
   const labels={'student.arrival':"Arrivée à l'école",'student.pickup':"Récupération confirmée",'student.fee_control':'Contrôle des frais','student.birthday':'Anniversaire a venir','student.top10.ecole':"Top 10 de l'ecole",'student.top10.classe':'Top 10 de sa classe'};
-  const balances={paid:'Payé',partial:'Partiellement payé',due:'Impayé',exempt:'Exonéré',no_data:'Données absentes'};
+  labels['security.entry']="Arrivée physique enregistrée";
+  labels['financial.control']='Contrôle financier — état observé';
+  const balances={paid:'À jour',partial:'Partiellement payé',due:'Impayé',exempt:'Exonéré',no_data:'Données absentes'};
   labels['payment.receipt']='Recu de paiement';
   let items=[],filter='all',busy=false,loaded=false;
   const syncState=document.getElementById('pwa-sync-state');
@@ -17,7 +19,7 @@
   }
   function render() {
     list.replaceChildren();
-    const visible=items.filter(item=>filter==='all'||item.event_type===filter||(filter==='remediation'&&item.event_type.startsWith('remediation.'))||(filter==='palmares'&&item.event_type.startsWith('student.top10.')));
+    const visible=items.filter(item=>filter==='all'||item.event_type===filter||(filter==='remediation'&&item.event_type.startsWith('remediation.'))||(filter==='palmares'&&item.event_type.startsWith('student.top10.'))||(filter==='student.arrival'&&item.event_type==='security.entry')||(filter==='student.fee_control'&&item.event_type==='financial.control'));
     for(const item of visible) {
       const remediation=item.event_type.startsWith('remediation.');
       if(!labels[item.event_type]&&!remediation&&item.event_type!=='payment.receipt') continue;
@@ -33,6 +35,9 @@
           try{await SchoolSafeOutbox.markRead(item.payload.receipt_id);await updateReadButtons();}
           catch{syncState.textContent='Enregistrement local indisponible. Aucune confirmation.';await updateReadButtons();}
         });row.append(read);
+      }
+      if(item.event_type==='financial.control'||item.event_type==='security.entry'||(item.event_type==='student.pickup'&&item.payload?.record_id)) {
+        const details=document.createElement('p');details.textContent=item.payload.message;details.style.whiteSpace='pre-wrap';row.append(details);
       }
       if(remediation) {const p=document.createElement('p');p.textContent=item.payload?.course||'';row.append(p);}
       if(item.event_type.startsWith('student.top10.')) {const p=document.createElement('p');p.textContent=item.payload.message+' '+item.payload.period;row.append(p);}

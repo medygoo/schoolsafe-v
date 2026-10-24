@@ -110,7 +110,12 @@ function SchoolSafeFeeConsultRecord(int $student,array $ctx,array $ledger,array 
         .SchoolSafeFeeFormatCents($ledger['paid_cents']).','.SchoolSafeFeeFormatCents($ledger['balance_cents']).','.(int)$ctx['year'].','.$quote($snapshot['operation']).','.($key===null?'NULL':$quote($key)).','
         .'('.$quote($json)."::jsonb || jsonb_build_object('recorded_at',clock_timestamp()))) RETURNING ID");
     if(!is_array($row)||!isset($row[1]['ID']))throw new RuntimeException('FEE_WRITE_FAILED');
-    return (int)$row[1]['ID'];
+    $id=(int)$row[1]['ID'];
+    if(array_key_exists('event',$db)){
+        if(!is_callable($db['event']))throw new RuntimeException('NOTIFY_UNAVAILABLE');
+        $db['event']('financial.control',$id);
+    }
+    return $id;
 }
 
 function SchoolSafeFeeCents($value): int
