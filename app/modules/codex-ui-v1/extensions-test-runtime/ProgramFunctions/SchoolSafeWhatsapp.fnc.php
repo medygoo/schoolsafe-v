@@ -263,6 +263,19 @@ function SchoolSafeWaOutboxInsert(array $row): int
     return (int)$rows[1]['ID'];
 }
 
+// Recheck AFTER potentially slow session probes, immediately before each
+// actual message request. The callback uses the native event/recipient owner.
+function SchoolSafeWaBeforeSend(array $opts,int $id,string $to): bool
+{
+    $test=($opts['purpose']??'notify')==='test'&&(int)($opts['staff_id']??0)===0;
+    try{
+        $allowed=$test||(is_callable($opts['authorize']??null)&&$opts['authorize']()===true
+            &&SchoolSafeWaConsented((int)$opts['school_id'],(int)$opts['staff_id'],$to));
+    }catch(Throwable $error){$allowed=false;}
+    if(!$allowed)DBQuery("UPDATE schoolsafe_wa_outbox SET status='blocked',error_code='AUTHORITY_CHANGED',updated_at=CURRENT_TIMESTAMP WHERE id='".$id."'");
+    return $allowed;
+}
+
 /**
  * Envoi central : consentement + confidentialite + idempotence + WAHA puis
  * secours Evolution sur echec confirme uniquement.
@@ -305,6 +318,8 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
         $purpose = 'notify';
     }
 
+    if(!($purpose==='test'&&$staff_id===0)&&!is_callable($opts['authorize']??null))
+        return ['outbox_id'=>0,'status'=>'blocked','error'=>'AUTHORITY_REQUIRED'];
     $dedup = (string) ( $opts['dedup_key'] ?? '' );
 
     if ( $dedup === '' )
@@ -314,13 +329,21 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
     }
 
     // Idempotence d'abord : le rejeu rend le statut existant, sans re-emettre.
-    $existing = DBGet( "SELECT ID,STATUS FROM schoolsafe_wa_outbox"
+    $retry_id=0;
+    $existing = DBGet( "SELECT ID,STATUS,ERROR_CODE,SCHOOL_ID,RECIPIENT_E164,MESSAGE_TEXT FROM schoolsafe_wa_outbox"
         . " WHERE idempotency_key='" . DBEscapeString( $dedup ) . "'" );
 
     if ( $existing )
     {
-        return [ 'outbox_id' => (int) $existing[1]['ID'],
-            'status' => (string) $existing[1]['STATUS'], 'via' => 'dedup' ];
+        $previous=$existing[1];
+        // Server-only repair of a proven NO-SEND block; never reopen
+        // uncertain/failed/accepted requests or change the recipient.
+        if(($opts['retry_blocked']??false)===true&&($previous['STATUS']??null)==='blocked'
+            &&in_array($previous['ERROR_CODE']??null,['CONSENT_REQUIRED','NO_WA_SESSION','AUTHORITY_CHANGED'],true)
+            &&(int)($previous['SCHOOL_ID']??0)===$school_id&&($previous['RECIPIENT_E164']??null)===$to
+            &&($previous['MESSAGE_TEXT']??null)===$text){$retry_id=(int)$previous['ID'];}
+        else return [ 'outbox_id' => (int) $previous['ID'],
+            'status' => (string) $previous['STATUS'], 'via' => 'dedup' ];
     }
 
     // Simulation (recette isolee) : tracee en outbox, SANS session reelle,
@@ -343,7 +366,7 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
     if ( ! ( $purpose === 'test' && $staff_id === 0 )
         && ! SchoolSafeWaConsented( $school_id, $staff_id, $to ) )
     {
-        $blocked_id = SchoolSafeWaOutboxInsert([
+        $blocked_id = $retry_id ?: SchoolSafeWaOutboxInsert([
             'idempotency_key' => $dedup, 'school_id' => $school_id,
             'recipient_e164' => $to, 'message_text' => $text,
             'engine' => 'waha', 'status' => 'blocked',
@@ -358,7 +381,7 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
 
     if ( $waha_session === false )
     {
-        $blocked_id = SchoolSafeWaOutboxInsert([
+        $blocked_id = $retry_id ?: SchoolSafeWaOutboxInsert([
             'idempotency_key' => $dedup, 'school_id' => $school_id,
             'recipient_e164' => $to, 'message_text' => $text,
             'engine' => 'waha', 'status' => 'blocked',
@@ -379,11 +402,19 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
         return [ 'outbox_id' => 0, 'status' => 'failed', 'error' => 'SESSION_SHARED' ];
     }
 
-    $outbox_id = SchoolSafeWaOutboxInsert([
-        'idempotency_key' => $dedup, 'school_id' => $school_id,
-        'recipient_e164' => $to, 'message_text' => $text,
-        'engine' => 'waha', 'status' => 'queued', 'created_by' => $actor,
-    ]);
+    if($retry_id>0){
+        $claimed=DBGet(DBQuery("UPDATE schoolsafe_wa_outbox SET status='queued',engine='waha',error_code='',updated_at=CURRENT_TIMESTAMP"
+            ." WHERE id=".$retry_id." AND status='blocked' AND school_id=".$school_id
+            ." AND recipient_e164='".DBEscapeString($to)."' AND message_text='".DBEscapeString($text)."'"
+            ." AND error_code IN ('CONSENT_REQUIRED','NO_WA_SESSION','AUTHORITY_CHANGED') RETURNING ID"));
+        $outbox_id=is_array($claimed)&&isset($claimed[1]['ID'])?(int)$claimed[1]['ID']:0;
+    }else{
+        $outbox_id = SchoolSafeWaOutboxInsert([
+            'idempotency_key' => $dedup, 'school_id' => $school_id,
+            'recipient_e164' => $to, 'message_text' => $text,
+            'engine' => 'waha', 'status' => 'queued', 'created_by' => $actor,
+        ]);
+    }
     if(!$outbox_id)return ['outbox_id'=>0,'status'=>'failed','error'=>'WA_OUTBOX_WRITE_FAILED'];
 
     SchoolSafeWaAudit( $actor, 'send', (int) $waha_session['ID'],
@@ -411,6 +442,7 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 
     $http_waha = $opts['http_waha'] ?? null;
+    if(!SchoolSafeWaBeforeSend($opts,$outbox_id,$to))return ['outbox_id'=>$outbox_id,'status'=>'blocked','error'=>'AUTHORITY_CHANGED'];
 
     try
     {
@@ -495,6 +527,7 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 
     $http_evo = $opts['http_evo'] ?? null;
+    if(!SchoolSafeWaBeforeSend($opts,$outbox_id,$to))return ['outbox_id'=>$outbox_id,'status'=>'blocked','error'=>'AUTHORITY_CHANGED'];
 
     try
     {

@@ -78,7 +78,7 @@ function SchoolSafeSmsNetworkOf( $national )
  */
 function SchoolSafeSmsNormalize( $phone )
 {
-    require_once 'ProgramFunctions/SchoolSafeIdentity.fnc.php';
+    require_once __DIR__ . '/SchoolSafeIdentity.fnc.php';
 
     if ( function_exists( 'SchoolSafeIdentityNormalizePhoneCD' ) )
     {

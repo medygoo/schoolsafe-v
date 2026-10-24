@@ -1,5 +1,15 @@
 # Présence & Scan QR — en cours, moteur natif récupéré, NON DÉPLOYÉ
 
+## Dernier sous-lot qualifié — consommation Notify native (non déployé)
+
+Sur8802161, le dispatcher natif utilise désormais SchoolSafeWaSend, sans deuxième route WAHA/Evolution. Relecture à consommation de l’identité/profil/année/école/compte natifs, du parent/SJU/enrôlement et du consentement ; une suspension ou une relation retirée après la mise en file interdit l’envoi. Après les probes fournisseur potentiellement lents, une autorisation serveur native et le consentement sont de nouveau contrôlés avant chaque vraie requête de message. Les finances sans enfant réel ou destinataire parent ne sont jamais diffusées à toute l’école.
+
+043 ajoute deux colonnes de protocole aux deliveries EXISTANTES, pas de queue/ledger alternatif. Claim individuel SKIP LOCKED/autocommit avant réseau ; deux consommateurs ne s’approprient pas la même livraison. Mort du worker ou acceptation incertaine : pending/claim conservé, jamais de TTL, libération automatique ou renvoi via retry-failed. Seul PRE_SEND connu peut être réessayé. Un blocage WA prouvé sans envoi peut être repris par CAS après réautorisation, même destinataire/texte/périmètre ; aucun queued/failed/accepted incertain n’est rouvert. Le miroir ne copie que les destinataires originaux, jamais la SJU actuelle.
+
+RED réels : le dispatcher marquait7livraisons feed envoyées malgré suspension ; un messageId Brevo objet devenait la chaîne « Array » et un faux accepted. Corrigés aux propriétaires respectifs. Défaut CLI reproduit séparément : dépendance Identity du normaliseur SMS relative au cwd ; chemin fixé à __DIR__, algorithme inchangé. Preuves privées dispatch-recipient-pg-red et dispatch-claim-email-pg-red ; PGfinal **228PASS** dans dispatch-claim-central-pg-final/result.json, ressources éphémères nettoyées. **460contrats/unités PHP et7lints PASS** dans dispatch-regression-final.log. Les fournisseurs email/WhatsApp sont injectés, aucune session humaine ni aucun message réel. Les22/50Chrome précédents ne sont pas une nouvelle preuve HTTP/provider.
+
+**Déploiement : suspendre/drainer tous les anciens dispatchers AVANT adoption de043 et du nouveau worker**, pour empêcher leur ancien chemin sans claim de courir en parallèle. Migrations expansives seulement ; aucune réinitialisation de claim, aucune activation fournisseur ou envoi parent implicite. Hub HTTP/image, caméra et fournisseur réels restent à qualifier ; poursuivre maintenant gestion/commandes/cantine/Actions/photo puis HTTP/image et livraison contrôlée, sans nouvelle demande de GO général.
+
 ## Mandat et protection de la livraison précédente
 
 Après livraison vérifiée du dashboard, le propriétaire donne GO pour Scan. Seul écrivain : agent pi ; branche dédiée `feat/presence-scan-qr-20261023`, départ `9d5cfad163c1427d367e80a0a5cab25f896e5d2d`. Production reste image8770153a / recette4065f94 / runtimeb10d8d3, dashboard/menu acceptés protégés. Pas d'installation ou migration de production autorisée par la récupération locale ci-dessous.

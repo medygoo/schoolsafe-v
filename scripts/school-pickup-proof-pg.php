@@ -30,7 +30,7 @@ if ($action==='setup') {
     $pdo->exec("INSERT INTO config(school_id,title,config_value) VALUES(0,'CURRENCY','SYN');
         INSERT INTO schoolsafe_fee_consults(school_id,student_id,consulted_by,balance_status,fee_total,paid_total,balance) VALUES(1,11,9,'due',91,0,91)");
     $legacyConsult=$pdo->query('SELECT * FROM schoolsafe_fee_consults')->fetch(PDO::FETCH_ASSOC);
-    for($i=0;$i<2;$i++)foreach(['040-fee-control-context.sql','041-entry-request-receipts.sql','024-notify-events.sql','025-notify-distributions.sql','026-notify-push.sql','031-delivery-status.sql','042-scan-financial-notification.sql']as$file)$pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
+    for($i=0;$i<2;$i++)foreach(['040-fee-control-context.sql','041-entry-request-receipts.sql','024-notify-events.sql','025-notify-distributions.sql','026-notify-push.sql','031-delivery-status.sql','042-scan-financial-notification.sql','043-notify-dispatch-claims.sql']as$file)$pdo->exec(file_get_contents($root.'/schoolsafe-remediation/'.$file));
     $expandedConsult=$pdo->query('SELECT * FROM schoolsafe_fee_consults')->fetch(PDO::FETCH_ASSOC);
     if(array_intersect_key($expandedConsult,$legacyConsult)!==$legacyConsult||$expandedConsult['syear']!==null||$expandedConsult['context_snapshot']!==null)throw new RuntimeException('LEGACY_FINANCIAL_RECORD_CHANGED');
     $pdo->exec("INSERT INTO entry_exit_student_records(student_id,checkpoint_id,type,comments,recorded_at) VALUES(11,7,'in','Synthetic legacy fixture',CURRENT_TIMESTAMP)");
@@ -48,7 +48,54 @@ if ($action==='setup') {
     $pdo->query("SELECT setval(pg_get_serial_sequence('entry_exit_checkpoints','id'),(SELECT max(id) FROM entry_exit_checkpoints))");
     echo json_encode(['status'=>'SETUP','synthetic_only'=>true,'legacy_unchanged'=>true])."\n";exit;
 }
-if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup','wa-setup','wa-send','wa-status'],true)) exit(2);
+if (!in_array($action,['worker','activate','family','entry','pickup','locations','location-manage','arrival-read','feed','parent-management','unlink-parent','fee-scan','fee-policy-manage','recover-scan','recipients','recipient-state-setup','wa-setup','wa-send','wa-status','dispatch-feed','fixture-notify'],true)) exit(2);
+if($action==='fixture-notify'){
+    require_once $root.'/ProgramFunctions/SchoolSafeNotify.fnc.php';
+    $input=json_decode($argv[2]??'{}',true,16,JSON_THROW_ON_ERROR);
+    $get=static function($sql)use($pdo){$rows=[];foreach($pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC)as$i=>$row)$rows[$i+1]=array_change_key_case($row,CASE_UPPER);return $rows;};
+    $eventType=$input['event_type']??'school.announcement';
+    if(!in_array($eventType,['school.announcement','payment.receipt'],true))exit(2);
+    $result=SchoolSafeNotifyEmit(['school_id'=>1,'syear'=>2026,'student_id'=>!empty($input['no_student'])?null:11,'actor_staff_id'=>9,
+        'event_type'=>$eventType,'dedup_key'=>$input['key'],'payload'=>['message'=>'Synthetic private dispatcher fixture']],
+        [['audience'=>'parent','staff_id'=>(int)($input['parent']??28),'channel'=>$input['channel']??'feed']],
+        ['get'=>$get,'exec'=>static fn($sql)=>$pdo->exec($sql)]);
+    echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
+}
+if($action==='dispatch-feed'){
+    $input=json_decode($argv[2]??'{}',true,16,JSON_THROW_ON_ERROR);$channel=$input['channel']??'feed';
+    if(!in_array($channel,['feed','email','push','whatsapp'],true)||($channel!=='feed'&&empty($input['mock_transports'])))exit(2);
+    if(getenv('SCHOOLSAFE_QA_PROOF_BARRIER')==='1'||!empty($input['crash_after_claim'])){
+        $GLOBALS['schoolsafe_notify_after_claim']=function($row)use($connect,$input){
+            if(!empty($input['crash_after_claim']))exit(73);
+            $watch=$connect();$watch->exec('UPDATE qa_barrier SET arrived=true');$deadline=microtime(true)+15;
+            while($watch->query('SELECT hold FROM qa_barrier')->fetchColumn()){
+                if(microtime(true)>$deadline)throw new RuntimeException('QA_BARRIER_TIMEOUT');usleep(20000);
+            }
+        };
+    }
+    if(!empty($input['mock_transports'])){
+        putenv('BREVO_API_KEY=fixture-not-a-real-key');putenv('BREVO_API_URL=https://brevo.invalid');
+        putenv('WAHA_BASE=https://waha.invalid');putenv('WAHA_KEY=fixture-not-a-real-key');
+        putenv('EVOLUTION_BASE=https://evolution.invalid');putenv('EVOLUTION_KEY=fixture-not-a-real-key');
+        $record=function($engine)use($pdo){$stmt=$pdo->prepare('INSERT INTO qa_wa_http_calls(engine,dedup_key) VALUES(?,?)');$stmt->execute([$engine,'dispatch-fixture']);};
+        $GLOBALS['schoolsafe_notify_transports']=[
+            'email'=>function()use($record,$input){$record('dispatch-email');return $input['email_response']??['http_code'=>201,'body'=>'{"messageId":"fixture-brevo-id"}'];},
+            'waha'=>function()use($record,$input){$record('dispatch-waha');return $input['waha_response']??['http_code'=>202,'body'=>'{"id":"fixture-waha-id"}'];},
+            'evolution'=>function()use($record){$record('dispatch-evolution');return ['http_code'=>202,'body'=>'{"key":{"id":"fixture-evolution-id"}}'];},
+            'push'=>function()use($record){$record('dispatch-push');return ['http_code'=>201,'body'=>''];},
+            'status'=>function($method,$url)use($input,$pdo){
+                if($method!=='GET')throw new RuntimeException('STATUS_MUTATION_FORBIDDEN');
+                if(!empty($input['revoke_during_probe']))$pdo->exec('DELETE FROM students_join_users WHERE student_id=11 AND staff_id=28');
+                $body=strpos($url,'waha.invalid')!==false?['name'=>'schoolsafe-waha-1','status'=>'WORKING','me'=>['id'=>'243000000000@c.us']]
+                    :(strpos($url,'connectionState')!==false?['instance'=>['instanceName'=>'schoolsafe-evolution-1','state'=>'open']]:[['name'=>'schoolsafe-evolution-1','connectionStatus'=>'open','ownerJid'=>'243000000000@s.whatsapp.net']]);
+                return ['http_code'=>200,'body'=>json_encode($body)];
+            },
+        ];
+    }
+    $argv=['schoolsafe-notify-dispatch.php','--once','--channel='.$channel,'--limit='.(int)($input['limit']??500)];
+    if(!empty($input['retry']))$argv[]='--retry-failed';
+    require $root.'/schoolsafe-notify-dispatch.php';exit;
+}
 if($action==='wa-setup'){
     for($i=0;$i<2;$i++)$pdo->exec(file_get_contents($root.'/schoolsafe-remediation/037-whatsapp.sql'));
     $pdo->exec("CREATE TABLE qa_wa_http_calls(id serial PRIMARY KEY,engine text NOT NULL,dedup_key text NOT NULL);
@@ -92,7 +139,7 @@ if(in_array($action,['wa-send','wa-status'],true)){
     }
     try{$result=SchoolSafeWaSend('+243000000000',$input['text']??"Contrôle synthétique de l'enfant — pas un reçu",[
         'school_id'=>1,'staff_id'=>27,'actor'=>'synthetic-fixture','dedup_key'=>$key,
-        'http_waha'=>fn()=>$http('waha'),'http_evo'=>fn()=>$http('evolution'),'http_status'=>$statusHttp]);}
+        'http_waha'=>fn()=>$http('waha'),'http_evo'=>fn()=>$http('evolution'),'http_status'=>$statusHttp,'authorize'=>static fn()=>($input['authorized']??true)===true]);}
     catch(Throwable $error){$result=['error'=>$error->getMessage()];}
     echo json_encode($result,JSON_THROW_ON_ERROR)."\n";exit;
 }

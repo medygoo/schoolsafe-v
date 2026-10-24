@@ -1,214 +1,126 @@
 <?php
-// SchoolSafe — Lot U0 : dispatcher independant des requetes de scan (CLI uniquement).
-//
-// Usage (conteneur L1) : php schoolsafe-notify-dispatch.php --once [--limit=50] [--channel=all|feed|email|push|whatsapp]
-// WhatsApp (037) : WAHA principal + Evolution secours ; miroir automatique des
-// evenements push/email eligibles (lignes whatsapp ajoutees, regles push/email
-// inchangees) ; copies expurgees (jamais de mot de passe/lien secret/code).
-// - Ne bloque jamais le scanner : l'emetteur ecrit l'outbox en transaction,
-//   ce script traite les 'pending' en arriere-plan.
-// - Panne conservee : un echec passe en 'failed' avec attempts+1 et last_error,
-//   la ligne est conservee (reprise possible) ; --retry-failed les repasse en
-//   'pending' pour rejouer apres reparation.
-// - Redemarrage sur : les 'pending' restent en base, rien n'est perdu.
-// - Zero reseau scanner : le scan n'appelle jamais ce script ; ici, feed = local
-//   immediat, email = Brevo API (cle serveur BREVO_API_KEY) avec gabarits
-//   SchoolSafe FR/EN, push = signal VAPID (cles serveur) vers l'abonnement.
-// - Honnetete des etats : feed local => 'sent' (relu par TestFeed) ; email/push
-//   acceptes par le fournisseur => 'accepted' (+ provider_msg_id) ; sans
-//   fournisseur ou echec => 'failed' conserve (reprise --retry-failed).
-//   Jamais de 'sent'/'accepted' sans preuve d'envoi.
-require_once __DIR__ . '/ProgramFunctions/SchoolSafeMailTemplate.fnc.php';
-require_once __DIR__ . '/ProgramFunctions/SchoolSafeBrevo.fnc.php';
-require_once __DIR__ . '/ProgramFunctions/SchoolSafeWebPush.fnc.php';
-require_once __DIR__ . '/ProgramFunctions/SchoolSafeSms.fnc.php';
-require_once __DIR__ . '/ProgramFunctions/SchoolSafeWhatsapp.fnc.php';
-if (PHP_SAPI !== 'cli') { fwrite(STDERR, "CLI uniquement.\n"); exit(2); }
-
-$once = in_array('--once', $argv, true);
-$limit = 50;
-$channel = 'all';
-$retryFailed = in_array('--retry-failed', $argv, true);
-foreach ($argv as $arg) {
-    if (str_starts_with($arg, '--limit=')) $limit = max(1, min(500, (int) substr($arg, 8)));
-    if (str_starts_with($arg, '--channel=')) $channel = substr($arg, 10);
+// Native Notify CLI only. Claims are durable BEFORE provider work. Never
+// expire claims or retry uncertain acceptance: a crashed worker may have sent.
+if(PHP_SAPI!=='cli'){http_response_code(403);exit;}
+require_once __DIR__.'/ProgramFunctions/SchoolSafeMailTemplate.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeBrevo.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeWebPush.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeSms.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeWhatsapp.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeNotifyDispatch.fnc.php';
+require_once __DIR__.'/schoolsafe-notify-cli.php';
+$once=in_array('--once',$argv,true);$limit=50;$channel='all';$retryFailed=in_array('--retry-failed',$argv,true);
+foreach($argv as$arg){
+    if(str_starts_with($arg,'--limit='))$limit=max(1,min(500,(int)substr($arg,8)));
+    if(str_starts_with($arg,'--channel='))$channel=substr($arg,10);
 }
-if (!$once || !in_array($channel, ['all', 'feed', 'email', 'push', 'whatsapp'], true)) {
-    fwrite(STDERR, "Usage: php schoolsafe-notify-dispatch.php --once [--limit=50] [--channel=all|feed|email|push|whatsapp] [--retry-failed]\n");
-    exit(2);
+if(!$once||!in_array($channel,['all','feed','email','push','whatsapp'],true)){
+    fwrite(STDERR,"Usage: php schoolsafe-notify-dispatch.php --once [--limit=50] [--channel=all|feed|email|push|whatsapp] [--retry-failed]\n");exit(2);
 }
-
-$host = getenv('SCHOOLSAFE_DB_HOST') ?: 'db';
-$port = getenv('SCHOOLSAFE_DB_PORT') ?: '5432';
-$user = getenv('POSTGRES_USER') ?: 'schoolsafe';
-$pass = getenv('POSTGRES_PASSWORD') ?: '';
-$dbname = getenv('POSTGRES_DB') ?: 'schoolsafe';
-$conn = @pg_connect("host=$host port=$port dbname=$dbname user=$user password=$pass connect_timeout=5");
-if ($conn === false) { fwrite(STDERR, "DB_UNAVAILABLE\n"); exit(1); }
-
-if ($retryFailed) {
-    pg_query_params($conn, "UPDATE schoolsafe_notify_deliveries SET status='pending', updated_at=now()"
-        . " WHERE status='failed' AND ($1='all' OR channel=$1)", [$channel]);
+$host=getenv('SCHOOLSAFE_DB_HOST')?:'db';$port=getenv('SCHOOLSAFE_DB_PORT')?:'5432';
+$user=getenv('POSTGRES_USER')?:'schoolsafe';$pass=getenv('POSTGRES_PASSWORD')?:'';$dbname=getenv('POSTGRES_DB')?:'schoolsafe';
+$conn=@pg_connect("host=$host port=$port dbname=$dbname user=$user password=$pass connect_timeout=5");
+if($conn===false){fwrite(STDERR,"DB_UNAVAILABLE\n");exit(1);}
+SchoolSafeNotifyCliInit($conn);
+// Missing migration is unavailable, never permission to run the old unclaimed path.
+$ready=pg_query($conn,"SELECT dispatch_claim_token,dispatch_claimed_at FROM schoolsafe_notify_deliveries LIMIT 0");
+if($ready===false){fwrite(STDERR,"DISPATCH_CLAIM_UNAVAILABLE\n");exit(1);}
+if($retryFailed){
+    $retry=pg_query_params($conn,"UPDATE schoolsafe_notify_deliveries SET status='pending',updated_at=CURRENT_TIMESTAMP"
+        ." WHERE status='failed' AND dispatch_claim_token IS NULL AND last_error LIKE 'PRE_SEND:%' AND ($1='all' OR channel=$1)",[$channel]);
+    if($retry===false){fwrite(STDERR,"RETRY_UNAVAILABLE\n");exit(1);}
 }
-
-// Miroir WhatsApp : pour chaque evenement eligible porte par une livraison
-// push/email (pending/accepted/sent), ajoute la livraison whatsapp manquante
-// (meme evenement/audience/destinataire). Les lignes push/email ne sont ni
-// lues en ecriture ni modifiees ; le doublon est impossible (NOT EXISTS).
-if ($channel === 'all' || $channel === 'whatsapp') {
-    @pg_query($conn, "INSERT INTO schoolsafe_notify_deliveries"
-        . '(event_id, school_id, syear, audience, recipient_staff_id, channel)'
-        . ' SELECT d.event_id, d.school_id, d.syear, d.audience, d.recipient_staff_id, \'whatsapp\''
-        . ' FROM schoolsafe_notify_deliveries d'
-        . ' JOIN schoolsafe_notify_events e ON e.id=d.event_id'
-        . " WHERE d.channel IN ('push','email') AND d.status IN ('pending','accepted','sent')"
-        . " AND e.event_type IN ('security.entry','student.pickup','payment.receipt',"
-        . "'school.announcement','remediation.update','attendance.closure',"
-        . "'absence.detected','case.updated','security.p1')"
-        . ' AND NOT EXISTS (SELECT 1 FROM schoolsafe_notify_deliveries x'
-        . ' WHERE x.event_id=d.event_id AND x.audience=d.audience'
-        . ' AND x.recipient_staff_id=d.recipient_staff_id AND x.channel=\'whatsapp\')'
-        . ' ON CONFLICT (event_id, audience, recipient_staff_id, channel) DO NOTHING');
+// Original deliveries only; no newly linked parent is resolved by this mirror.
+if($channel==='all'||$channel==='whatsapp'){
+    $mirror=pg_query($conn,"INSERT INTO schoolsafe_notify_deliveries(event_id,school_id,syear,audience,recipient_staff_id,channel)"
+        ." SELECT DISTINCT d.event_id,d.school_id,d.syear,d.audience,d.recipient_staff_id,'whatsapp'"
+        .' FROM schoolsafe_notify_deliveries d JOIN schoolsafe_notify_events e ON e.id=d.event_id'
+        .' AND e.school_id=d.school_id AND e.syear=d.syear'
+        ." WHERE d.channel IN ('email','push') AND d.status IN ('pending','accepted','sent')"
+        ." AND e.event_type IN ('security.entry','student.pickup','financial.control','payment.receipt','school.announcement','remediation.update','attendance.closure','absence.detected','case.updated','security.p1')"
+        .' ON CONFLICT(event_id,audience,recipient_staff_id,channel) DO NOTHING');
+    if($mirror===false){fwrite(STDERR,"WA_MIRROR_UNAVAILABLE\n");exit(1);}
 }
-
-$forceFail = getenv('SCHOOLSAFE_NOTIFY_FORCE_FAIL') === '1';
-$res = pg_query_params($conn, "SELECT d.id, d.channel, d.recipient_staff_id, d.event_id,"
-    . " s.email, e.event_type, e.payload, e.school_id, sch.title AS school_title"
-    . ' FROM schoolsafe_notify_deliveries d'
-    . ' JOIN schoolsafe_notify_events e ON e.id=d.event_id'
-    . ' LEFT JOIN staff s ON s.staff_id=d.recipient_staff_id'
-    . ' LEFT JOIN schools sch ON sch.id=d.school_id AND sch.syear=d.syear'
-    . " WHERE d.status='pending' AND ($1='all' OR d.channel=$1)"
-    . " ORDER BY d.created_at, d.id LIMIT $limit", [$channel]);
-if ($res === false) { fwrite(STDERR, "QUERY_FAILED\n"); exit(1); }
-
-$sent = 0; $failed = 0;
-while ($row = pg_fetch_assoc($res)) {
-    $id = (int) $row['id'];
-    $ch = $row['channel'];
-    $ok = false; $err = '';
-    $status = 'sent'; $providerId = '';
-    if ($forceFail) { $ok = false; $err = 'FORCED_FAILURE'; }
-    elseif ($ch === 'feed') { $ok = true; $status = 'sent'; }
-    elseif ($ch === 'email') {
-        $email = trim((string) ($row['email'] ?? ''));
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) { $ok = false; $err = 'NO_RECIPIENT_EMAIL'; }
-        else {
-            try {
-                $payload = json_decode((string) ($row['payload'] ?? '{}'), true);
-                if (!is_array($payload)) $payload = [];
-                // Identite visuelle : logo SchoolSafe + portrait JASPE officiels,
-                // servis en HTTPS depuis l'application (surchageable en isole via
-                // SCHOOLSAFE_ASSETS_BASE_URL) ; absents => simplement omis.
-                $assetsBase = rtrim(trim((string) getenv('SCHOOLSAFE_ASSETS_BASE_URL')
-                    ?: 'https://app.shoolsafe.tech'), '/');
-                $mail = SchoolSafeMailBuild(
-                    ['event_type' => (string) ($row['event_type'] ?? ''), 'payload' => $payload],
-                    ['school_name' => (string) ($row['school_title'] ?? ''), 'locale' => 'fr',
-                     'brand_logo_url' => $assetsBase . '/assets/themes/SchoolSafe/logo.png',
-                     'jaspe_url' => $assetsBase . '/assets/jaspe2d/pack1/wave.webp']);
-                $out = SchoolSafeBrevoSend($email, $mail);
-                $ok = true; $status = 'accepted'; $providerId = $out['provider_msg_id'];
-            } catch (Throwable $e) { $ok = false; $err = $e->getMessage(); }
+$transports=$GLOBALS['schoolsafe_notify_transports']??[];
+if(!is_array($transports)||array_diff(array_keys($transports),['email','push','waha','evolution','status']))throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
+foreach($transports as$transport)if(!is_callable($transport))throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
+$forceFail=getenv('SCHOOLSAFE_NOTIFY_FORCE_FAIL')==='1';$sent=0;$failed=0;$held=0;
+for($i=0;$i<$limit;$i++){
+    try{$row=SchoolSafeNotifyDispatchClaim($conn,$channel);}catch(Throwable $error){fwrite(STDERR,"DISPATCH_CLAIM_UNAVAILABLE\n");exit(1);}
+    if($row===null)break;
+    // Server-side injection only for the guarded disposable CLI harness.
+    // No HTTP/env input selects hooks; ordinary workers have none.
+    $afterClaim=$GLOBALS['schoolsafe_notify_after_claim']??null;
+    if(is_callable($afterClaim))$afterClaim($row);
+    $attempted=false;$status='failed';$provider='';$error='';$uncertain=false;
+    try{
+        $staff=SchoolSafeNotifyDispatchRecipient($conn,$row);
+        if($forceFail)throw new RuntimeException('FORCED_FAILURE');
+        $payload=json_decode($row['payload'],true,32,JSON_THROW_ON_ERROR);
+        if($row['channel']==='feed'){
+            $status='sent';
+        }elseif($row['channel']==='email'){
+            $email=trim((string)$staff['EMAIL']);
+            if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('NO_RECIPIENT_EMAIL');
+            $config=SchoolSafeBrevoConfig();if($config===null)throw new RuntimeException('NO_EMAIL_PROVIDER');
+            $assets=rtrim(trim((string)getenv('SCHOOLSAFE_ASSETS_BASE_URL'))?:'https://app.shoolsafe.tech','/');
+            $mail=SchoolSafeMailBuild(['event_type'=>$row['event_type'],'payload'=>$payload],
+                ['school_name'=>$row['school_title'],'locale'=>'fr','brand_logo_url'=>$assets.'/assets/themes/SchoolSafe/logo.png','jaspe_url'=>$assets.'/assets/jaspe2d/pack1/wave.webp']);
+            $current=SchoolSafeNotifyDispatchRecipient($conn,$row);
+            if(trim((string)$current['EMAIL'])!==$email)throw new RuntimeException('RECIPIENT_CHANGED');
+            $attempted=true;$out=SchoolSafeBrevoSend($email,$mail,$config,$transports['email']??null);
+            if(!is_string($out['provider_msg_id']??null)||$out['provider_msg_id']==='')throw new RuntimeException('ACCEPTANCE_UNKNOWN');
+            $provider=$out['provider_msg_id'];$status='accepted';
+        }elseif($row['channel']==='whatsapp'){
+            $to=SchoolSafeWaNormalize($staff['CUSTOM_200000001']??'');
+            if($to===false)throw new RuntimeException('NO_RECIPIENT_PHONE');
+            if(SchoolSafeWaSimulate())throw new RuntimeException('SIMULATION_ONLY');
+            if(!SchoolSafeWaConsented((int)$row['school_id'],(int)$row['recipient_staff_id'],$to))throw new RuntimeException('CONSENT_REQUIRED');
+            if(!SchoolSafeWaActiveSession('waha',$transports['status']??null))throw new RuntimeException('NO_WA_SESSION');
+            $copy=$payload['message']??('SchoolSafe — '.$row['event_type'].' — '.$row['school_title']);
+            if(!is_string($copy)||mb_strlen(trim($copy))>2000||!SchoolSafeWaSanitize($copy))throw new RuntimeException('WA_COPY_UNAVAILABLE');
+            $authorize=function()use($conn,$row,$to){
+                $live=SchoolSafeNotifyDispatchRecipient($conn,$row);
+                return SchoolSafeWaNormalize($live['CUSTOM_200000001']??'')===$to;
+            };
+            $attempted=true;
+            $out=SchoolSafeWaSend($to,$copy,['school_id'=>(int)$row['school_id'],'staff_id'=>(int)$row['recipient_staff_id'],
+                'purpose'=>'notify','actor'=>'native-notify-dispatch','dedup_key'=>'notify:delivery:'.$row['id'],'authorize'=>$authorize,'retry_blocked'=>true,
+                'http_waha'=>$transports['waha']??null,'http_evo'=>$transports['evolution']??null,'http_status'=>$transports['status']??null]);
+            if(($out['status']??'')==='blocked'){$attempted=false;throw new RuntimeException('WA_BLOCKED');}
+            if(($out['status']??'')==='accepted'){
+                $receipt=pg_query_params($conn,'SELECT engine,provider_msg_id FROM schoolsafe_wa_outbox WHERE id=$1',[(int)($out['outbox_id']??0)]);
+                $proof=$receipt===false?false:pg_fetch_assoc($receipt);
+                if(!$proof||$proof['engine']==='simulated'||trim($proof['provider_msg_id'])==='')throw new RuntimeException('ACCEPTANCE_UNKNOWN');
+                $provider=$proof['provider_msg_id'];$status='accepted';
+            }else{throw new RuntimeException('ACCEPTANCE_UNKNOWN');}
+        }elseif($row['channel']==='push'){
+            $sub=pg_query_params($conn,'SELECT endpoint FROM schoolsafe_notification_push_subscriptions WHERE staff_id=$1 ORDER BY created_at DESC LIMIT 1',[(int)$row['recipient_staff_id']]);
+            if($sub===false)throw new RuntimeException('PUSH_UNAVAILABLE');
+            $subscription=pg_fetch_assoc($sub);$endpoint=$subscription['endpoint']??'';
+            if($endpoint===''||!preg_match('#^https://#i',$endpoint))throw new RuntimeException('PUSH_UNAVAILABLE');
+            $config=SchoolSafeWebPushConfig();if($config===null)throw new RuntimeException('NO_PUSH_PROVIDER');
+            $parts=parse_url($endpoint);SchoolSafeWebPushJwt('https://'.($parts['host']??''),$config);
+            SchoolSafeNotifyDispatchRecipient($conn,$row);
+            $attempted=true;SchoolSafeWebPushSend(['endpoint'=>$endpoint],$config,$transports['push']??null);$status='accepted';
         }
-    } elseif ($ch === 'whatsapp') {
-        // Copie courte + expurgee : jamais de secret. Meme table de decision
-        // que SchoolSafeWaSend (simulation, consentement, WAHA puis secours
-        // Evolution sur echec confirme uniquement), executee sur la connexion
-        // $conn du dispatcher (Warehouse non charge en CLI) ; les branches
-        // feed/email/push ci-dessus et ci-dessous sont inchangees.
-        $ph = pg_query_params($conn, 'SELECT custom_200000001 FROM staff WHERE staff_id=$1 LIMIT 1',
-            [(int) $row['recipient_staff_id']]);
-        $rawPhone = ($ph !== false && ($prow = pg_fetch_assoc($ph))) ? trim((string) ($prow['custom_200000001'] ?? '')) : '';
-        $copy = 'SchoolSafe — ' . (string) ($row['event_type'] ?? '') . ' — ' . (string) ($row['school_title'] ?? '');
-        $toWa = SchoolSafeWaNormalize($rawPhone);
-        if ($rawPhone === '' || $toWa === false) { $ok = false; $err = 'NO_RECIPIENT_PHONE'; }
-        elseif (!SchoolSafeWaSanitize($copy)) { $ok = false; $err = 'SENSITIVE_BLOCKED'; }
-        else {
-            $simRow = pg_query_params($conn, "SELECT config_value FROM config WHERE title='WHATSAPP_SIMULATE' LIMIT 1", []);
-            $simOn = ($simRow !== false && ($srow = pg_fetch_assoc($simRow))) && trim((string) ($srow['config_value'] ?? '')) === 'Y';
-            if ($simOn) { $ok = true; $status = 'accepted'; $providerId = 'simulated'; }
-            else {
-                $cs = pg_query_params($conn, 'SELECT 1 FROM schoolsafe_wa_consents'
-                    . ' WHERE school_id=$1 AND staff_id=$2 AND phone_e164=$3 AND consented=$4 LIMIT 1',
-                    [(int) ($row['school_id'] ?? 0), (int) $row['recipient_staff_id'], $toWa, 'Y']);
-                $consented = ($cs !== false && pg_fetch_assoc($cs) !== false);
-                if (!$consented) { $ok = false; $err = 'CONSENT_REQUIRED'; }
-                else {
-                    $se = pg_query_params($conn, "SELECT id, session_name FROM schoolsafe_wa_sessions"
-                        . " WHERE engine='waha' AND status='active' AND conn_state<>'offline' ORDER BY id LIMIT 1", []);
-                    $waha = ($se !== false) ? pg_fetch_assoc($se) : false;
-                    if ($waha === false) { $ok = false; $err = 'NO_WA_SESSION'; }
-                    else {
-                        $wb = trim((string) getenv('WAHA_BASE')); $wk = (string) getenv('WAHA_KEY');
-                        if ($wb === '' || $wk === '') { $ok = false; $err = 'NO_WA_CREDENTIALS'; }
-                        else {
-                            try {
-                                $chatId = preg_replace('/[^0-9]/', '', $toWa) . '@c.us';
-                                $res = SchoolSafeWaHttp('POST', rtrim($wb, '/') . '/api/sendText', $wk,
-                                    json_encode(['chatId' => $chatId, 'text' => $copy,
-                                        'session' => (string) $waha['session_name']],
-                                        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-                                $codeWa = (int) ($res['http_code'] ?? 0);
-                            } catch (Throwable $e) { $res = ['http_code' => 0, 'network_error' => $e->getMessage()]; $codeWa = 0; }
-                            if ($codeWa === 200 || $codeWa === 201 || $codeWa === 202) {
-                                $ok = true; $status = 'accepted'; $providerId = 'waha';
-                            } elseif (!SchoolSafeWaConfirmedFailure($res)) {
-                                $ok = false; $err = 'WAHA_ERROR:' . $codeWa;
-                            } else {
-                                $se2 = pg_query_params($conn, "SELECT session_name FROM schoolsafe_wa_sessions"
-                                    . " WHERE engine='evolution' AND status='active' AND conn_state<>'offline' ORDER BY id LIMIT 1", []);
-                                $evo = ($se2 !== false) ? pg_fetch_assoc($se2) : false;
-                                $eb = trim((string) getenv('EVOLUTION_BASE')); $ek = (string) getenv('EVOLUTION_KEY');
-                                if ($evo === false) { $ok = false; $err = 'WAHA_FAILED_NO_FALLBACK'; }
-                                elseif ($eb === '' || $ek === '') { $ok = false; $err = 'NO_EVO_CREDENTIALS'; }
-                                else {
-                                    try {
-                                        $res2 = SchoolSafeWaHttp('POST', rtrim($eb, '/') . '/message/sendText/'
-                                            . rawurlencode((string) $evo['session_name']), $ek,
-                                            json_encode(['number' => preg_replace('/[^0-9]/', '', $toWa), 'text' => $copy],
-                                                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-                                        $codeEvo = (int) ($res2['http_code'] ?? 0);
-                                    } catch (Throwable $e) { $codeEvo = 0; }
-                                    if ($codeEvo === 200 || $codeEvo === 201 || $codeEvo === 202) {
-                                        $ok = true; $status = 'accepted'; $providerId = 'evolution-fallback';
-                                    } else { $ok = false; $err = 'EVO_ERROR:' . $codeEvo; }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+    }catch(Throwable $failure){
+        // Never store raw provider/DB errors or presume an ambiguous request
+        // was rejected. A durable unresolved claim requires reconciliation.
+        if($attempted&&$row['channel']==='push'&&$failure->getMessage()==='SUBSCRIPTION_EXPIRED'){
+            pg_query_params($conn,'DELETE FROM schoolsafe_notification_push_subscriptions WHERE staff_id=$1 AND endpoint=$2',[(int)$row['recipient_staff_id'],$endpoint]);
+            $attempted=false;
         }
-    } elseif ($ch === 'push') {
-        $sub = pg_query_params($conn, 'SELECT endpoint FROM schoolsafe_notification_push_subscriptions'
-            . ' WHERE staff_id=$1 ORDER BY created_at DESC LIMIT 1', [(int) $row['recipient_staff_id']]);
-        $endpoint = ($sub !== false && ($srow = pg_fetch_assoc($sub))) ? (string) $srow['endpoint'] : '';
-        if ($endpoint === '') { $ok = false; $err = 'PUSH_UNAVAILABLE'; }
-        else {
-            try {
-                SchoolSafeWebPushSend(['endpoint' => $endpoint]);
-                $ok = true; $status = 'accepted';
-            } catch (Throwable $e) {
-                $ok = false; $err = $e->getMessage();
-                if ($e->getMessage() === 'SUBSCRIPTION_EXPIRED') {
-                    pg_query_params($conn, 'DELETE FROM schoolsafe_notification_push_subscriptions'
-                        . ' WHERE staff_id=$1 AND endpoint=$2',
-                        [(int) $row['recipient_staff_id'], $endpoint]);
-                }
-            }
+        if($attempted){$status='pending';$uncertain=true;$error='ACCEPTANCE_UNKNOWN';}
+        else{
+            $known=['FORCED_FAILURE','RECIPIENT_FORBIDDEN','RECIPIENT_UNAVAILABLE','NO_RECIPIENT_EMAIL','NO_EMAIL_PROVIDER',
+                'RECIPIENT_CHANGED','NO_RECIPIENT_PHONE','SIMULATION_ONLY','CONSENT_REQUIRED','NO_WA_SESSION','WA_COPY_UNAVAILABLE','WA_BLOCKED','PUSH_UNAVAILABLE','NO_PUSH_PROVIDER','SUBSCRIPTION_EXPIRED'];
+            $code=in_array($failure->getMessage(),$known,true)?$failure->getMessage():'CONTEXT_UNAVAILABLE';
+            $error='PRE_SEND:'.$code;$status='failed';
         }
     }
-    if ($ok) {
-        pg_query_params($conn, 'UPDATE schoolsafe_notify_deliveries SET status=$2, attempts=attempts+1,'
-            . " last_error='', provider_msg_id=$3, updated_at=now() WHERE id=$1",
-            [$id, $status, substr($providerId, 0, 128)]);
-        $sent++;
-    } else {
-        pg_query_params($conn, "UPDATE schoolsafe_notify_deliveries SET status='failed', attempts=attempts+1,"
-            . " last_error=$2, updated_at=now() WHERE id=$1", [$id, substr($err, 0, 500)]);
-        $failed++;
-    }
+    try{SchoolSafeNotifyDispatchFinish($conn,$row,$status,$error,$provider,$uncertain);}
+    catch(Throwable $failure){fwrite(STDERR,"DISPATCH_RESULT_UNAVAILABLE\n");exit(1);}
+    if($uncertain)$held++;elseif(in_array($status,['sent','accepted'],true))$sent++;else$failed++;
 }
-echo "DISPATCH sent=$sent failed=$failed channel=$channel\n";
-exit(0);
+echo "DISPATCH sent=$sent failed=$failed held=$held channel=$channel\n";

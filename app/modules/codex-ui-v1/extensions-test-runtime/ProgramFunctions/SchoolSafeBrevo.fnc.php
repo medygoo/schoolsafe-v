@@ -63,8 +63,9 @@ function SchoolSafeBrevoSend($toEmail, array $mail, $config = null, $http = null
     }
     $code = (int) ($res['http_code'] ?? 0);
     $decoded = json_decode((string) ($res['body'] ?? ''), true);
-    $msgId = is_array($decoded) && isset($decoded['messageId']) ? (string) $decoded['messageId'] : '';
-    if (($code === 201 || $code === 200) && $msgId !== '') {
+    $msgId = is_array($decoded) ? ($decoded['messageId'] ?? null) : null;
+    if (($code === 201 || $code === 200) && is_string($msgId)
+        && preg_match('/^[^\\x00-\\x20\\x7f]{1,256}$/uD',$msgId)===1) {
         return ['accepted' => true, 'provider_msg_id' => $msgId];
     }
     throw new RuntimeException('BREVO_ERROR:' . $code . ':' . substr((string) ($res['body'] ?? ''), 0, 200));

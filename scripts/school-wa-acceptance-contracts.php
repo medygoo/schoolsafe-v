@@ -27,7 +27,7 @@ function fixture_status($method,$url){
 function attempt(array $primary,array $secondary=['http_code'=>202,'body'=>'{"key":{"id":"fixture-evo-id"}}']){
     $GLOBALS['known']=[];$GLOBALS['sql']=[];$GLOBALS['writes']=[];$GLOBALS['calls']=['waha'=>0,'evolution'=>0];
     return SchoolSafeWaSend('+243000000000','Observation synthétique — pas un reçu',[
-        'school_id'=>1,'staff_id'=>27,'actor'=>'isolated-fixture','dedup_key'=>'fixture-acceptance','http_status'=>'fixture_status',
+        'school_id'=>1,'staff_id'=>27,'actor'=>'isolated-fixture','dedup_key'=>'fixture-acceptance','http_status'=>'fixture_status','authorize'=>static fn()=>true,
         'http_waha'=>function()use($primary){$GLOBALS['calls']['waha']++;return $primary;},
         'http_evo'=>function()use($secondary){$GLOBALS['calls']['evolution']++;return $secondary;},
     ]);
@@ -53,7 +53,7 @@ check('ambiguous secondary is queued and never attempted a second time',($out['s
 check('generic network failure is not definitive nonacceptance',SchoolSafeWaConfirmedFailure(['http_code'=>0,'network_error'=>'reset'])===false);
 check('contradictory success cannot authorize fallback',SchoolSafeWaConfirmedFailure($notSent+['unused'=>true])===true&&SchoolSafeWaConfirmedFailure(array_replace($notSent,['http_code'=>202]))===false);
 $GLOBALS['known']=[1=>['ID'=>9,'STATUS'=>'queued']];$GLOBALS['calls']=['waha'=>0,'evolution'=>0];
-$out=SchoolSafeWaSend('+243000000000','Observation synthétique',['school_id'=>1,'staff_id'=>27,'dedup_key'=>'fixture-acceptance','http_waha'=>function(){throw new RuntimeException('REPLAY_SENT');}]);
+$out=SchoolSafeWaSend('+243000000000','Observation synthétique',['school_id'=>1,'staff_id'=>27,'dedup_key'=>'fixture-acceptance','authorize'=>static fn()=>true,'http_waha'=>function(){throw new RuntimeException('REPLAY_SENT');}]);
 check('queued uncertain intention is never resent on replay',($out['status']??'')==='queued'&&($out['via']??'')==='dedup');
 $GLOBALS['reject_insert']=true;
 $out=attempt(['http_code'=>202,'body'=>'{"id":"must-not-send"}']);
