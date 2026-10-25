@@ -77,7 +77,7 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     $money=static fn($v)=>html_entity_decode(strip_tags(Currency($v)),ENT_QUOTES,'UTF-8');
     $count=static function(string $sql):int{$rows=DBGet($sql);$row=reset($rows);return (int)($row['TOTAL']??0);};
     $staff=AllowUse('Users/User.php')?$count("SELECT COUNT(*) AS total FROM staff WHERE syear=$year AND profile IN ('admin','teacher') AND (current_school_id=$school OR position(',$school,' IN schools)>0)"):null;
-    $staffDetail='Sexe non renseigne';
+    $staffDetail='Sexe non renseigné';
     if($staff!==null){
         $fields=DBGet("SELECT id FROM staff_fields WHERE LOWER(title) IN ('gender','sex','sexe','genre') ORDER BY id LIMIT 1");
         if($fields){
@@ -140,7 +140,7 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     $logoUrl=SchoolSafeSchoolLogoUrl($school);
     $logoCampus='/assets/dashboard-reference/campus-day-logo.webp';
     [$birthdays,$schoolLife]=SchoolSafePhotoSplitSchoolLife(SchoolSafeDashboardNativeWidget(false));
-    echo '<link rel="stylesheet" href="assets/css/schoolsafe-photo-dashboard.css?v=school-logo-search-above-20261025"><link rel="stylesheet" href="assets/css/schoolsafe-dashboard-matrices.css?v=1"><script defer src="assets/js/schoolsafe-matrix-primary.js?v=2"></script>';
+    echo '<link rel="stylesheet" href="assets/css/schoolsafe-photo-dashboard.css?v=hero-logo-desktop-20261025a"><link rel="stylesheet" href="assets/css/schoolsafe-dashboard-matrices.css?v=1"><script defer src="assets/js/schoolsafe-matrix-primary.js?v=2"></script>';
     echo '<main id="ss-photo-dashboard" class="ss-photo-dashboard ss-connected-dashboard" data-dashboard-profile="admin" data-dashboard-tab="overview">';
     echo '<div class="ss-photo-toolbar"><a class="ss-photo-mobile-brand" href="Modules.php?modname=misc/Portal.php"><img src="/schoolsafe-card-bridge/studio-validated-20261008/logo-schoolsafe.png" alt="" width="38" height="38"><strong>School<span>Safe</span></strong></a>';
     echo '<figure class="ss-photo-school-logo" data-school-logo data-logo-stage="'.($logoUrl!==''?'school':'campus').'"><span class="ss-photo-logo-orbit" aria-hidden="true"></span><img src="'.$e($logoUrl!==''?$logoUrl:$logoCampus).'" data-logo-campus="'.$e($logoCampus).'" data-logo-brand="/schoolsafe-logo.png" alt="'.($logoUrl!==''?'Logo de l’école '.$e($schoolName):'Image par défaut de l’école '.$e($schoolName)).'" loading="lazy" width="120" height="120"><figcaption>'.$e($schoolName).'</figcaption></figure>';
@@ -174,8 +174,8 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     echo '<article class="ss-photo-metric ss-photo-mobile-presence" data-photo-metric="presence"><span class="ss-photo-icon">'.SchoolSafePhotoIcon('ChartNoAxesCombined').'</span><span class="ss-photo-metric-copy"><small>Taux de présence</small><strong>'.($rate===null?'&mdash;':$e($rate).'%').'</strong><span>'.($rate===null?'Relevés non renseignés':'Relevés du jour').'</span></span></article></section>';
     $topTen=SchoolSafePalmaresMatrixVisual($school,$year);
     if($birthdays!==''||$topTen!=='')echo '<div class="ss-photo-top-row">'.$birthdays.$topTen.'</div>';
-    $financeSummary='<section class="ss-closing-finance" aria-label="Encaissements et depenses">';
-    foreach([['Encaissements du jour',$dailyReceipts,'Aujourd\'hui'],['Encaissements du mois',$receipts,'Mois en cours'],['Depenses',$annualExpenses,'Annee scolaire, a ce jour'],['Recettes',$annualReceipts,'Annee scolaire, a ce jour']] as [$label,$amount,$period])if($amount!==null)$financeSummary.='<article><span>'.$e($label).'</span><strong>'.$e($money($amount)).'</strong><small>'.$e($period).'</small></article>';
+    $financeSummary='<section class="ss-closing-finance" aria-label="Encaissements et dépenses">';
+    foreach([['Encaissements du jour',$dailyReceipts,'Aujourd\'hui'],['Encaissements du mois',$receipts,'Mois en cours'],['Depenses',$annualExpenses,'Année scolaire, à ce jour'],['Recettes',$annualReceipts,'Année scolaire, à ce jour']] as [$label,$amount,$period])if($amount!==null)$financeSummary.='<article><span>'.$e($label).'</span><strong>'.$e($money($amount)).'</strong><small>'.$e($period).'</small></article>';
     $financeSummary.='</section>';
     echo '<div class="ss-photo-grid"><div class="ss-photo-core"><section id="ss-photo-rubriques" class="ss-photo-modules"><header><h2><span class="ss-photo-desktop-title">Modules principaux</span><span class="ss-photo-mobile-title">Accès rapides</span></h2><a href="#ss-photo-rubriques">Voir tout</a></header><div class="ss-photo-module-grid">';
     $modules=[['pilotage','Pilotage','LayoutDashboard','#ss-photo-home','Retour à l’accueil de l’école'],['school','École','School','Students/Student.php',($data['total']??0).' élèves inscrits'],['people','Personnel','ContactRound','Users/User.php',($staff??0).' membres'],['pedagogy','Pédagogie','BookOpenCheck','Scheduling/Courses.php',($subjects??0).' matières'],['finance','Finances','WalletCards','Student_Billing/DailyTransactions.php','Année scolaire '.$year],['accounting','Comptabilité','Landmark','Accounting/DailyTransactions.php','Année scolaire '.$year],['communication','Communication','MessagesSquare','School_Setup/PortalNotes.php',count($feed['activities']).' annonces accessibles'],['reports','Contrôle et rapports','ChartNoAxesCombined','Grades/GPARankList.php','Période sélectionnée']];

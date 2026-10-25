@@ -5,7 +5,7 @@ function SchoolSafeOverviewData(): array
     if(User('PROFILE')!=='admin'||!AllowUse('Students/Student.php')) return $d;
     $school=(int)UserSchool(); $year=(int)UserSyear();
     if($school<1||$year<1)return $d;
-    $d['gender']=DBGet("SELECT COALESCE(g.title,'Niveau non renseigne') AS title,GROUPING(g.title) AS is_total,
+    $d['gender']=DBGet("SELECT COALESCE(g.title,'Niveau non renseigné') AS title,GROUPING(g.title) AS is_total,
         COUNT(DISTINCT s.student_id) AS total,
         COUNT(DISTINCT s.student_id) FILTER(WHERE LOWER(TRIM(s.custom_200000000)) IN ('female','f','feminin','fille')) AS girls,
         COUNT(DISTINCT s.student_id) FILTER(WHERE LOWER(TRIM(s.custom_200000000)) IN ('male','m','masculin','garcon')) AS boys
@@ -14,7 +14,7 @@ function SchoolSafeOverviewData(): array
         WHERE en.school_id=$school AND en.syear=$year AND en.start_date<=CURRENT_DATE
         AND (en.end_date IS NULL OR en.end_date>=CURRENT_DATE)
         GROUP BY GROUPING SETS ((g.title,g.sort_order),()) ORDER BY g.sort_order NULLS FIRST,g.title NULLS FIRST");
-    $d['groups']=DBGet("SELECT COALESCE(g.title,'Niveau non renseigne') AS title,COUNT(DISTINCT e.student_id) AS total FROM student_enrollment e
+    $d['groups']=DBGet("SELECT COALESCE(g.title,'Niveau non renseigné') AS title,COUNT(DISTINCT e.student_id) AS total FROM student_enrollment e
         LEFT JOIN school_gradelevels g ON g.id=e.grade_id AND g.school_id=e.school_id WHERE e.school_id=$school AND e.syear=$year
         AND e.start_date<=CURRENT_DATE AND (e.end_date IS NULL OR e.end_date>=CURRENT_DATE) GROUP BY g.title,g.sort_order ORDER BY g.sort_order,g.title");
     $d['total']=array_sum(array_map(static function($r){return (int)$r['TOTAL'];},array_values($d['groups'])));
@@ -61,7 +61,7 @@ function SchoolSafeNativeDashboardSources(): string
         $html.='<p><a href="Modules.php?modname='.$escape($route).'">Ouvrir '.$escape($title).'</a></p></details>';
     }
     if(!$html)return '';
-    return '<section class="ss-native-dashboard" aria-label="Syntheses Rosario"><h3>Syntheses Rosario</h3><div class="ss-dashboard-native-totals">'.$html.'</div></section>';
+    return '<section class="ss-native-dashboard" aria-label="Synthèses Rosario"><h3>Synthèses Rosario</h3><div class="ss-dashboard-native-totals">'.$html.'</div></section>';
 }
 
 function SchoolSafePersonalOverview(string $profile, array $feed): void
@@ -122,7 +122,7 @@ function SchoolSafePersonalOverview(string $profile, array $feed): void
         }
         echo '<li><a href="'.$escape($url).'">'.$escape($label).'</a></li>';
     }
-    if(!$rows)echo '<li>'.($parent?'Aucun enfant actif accessible dans cette ecole.':'Aucun groupe de cours accessible.').'</li>';
+    if(!$rows)echo '<li>'.($parent?'Aucun enfant actif accessible dans cette école.':'Aucun groupe de cours accessible.').'</li>';
     echo '</ul></section><aside><h3>Alertes et notifications</h3>';
     if($parent)echo '<a href="parent-notifications-view.php">Mes notifications</a>';
     echo SchoolSafeDashboardNativeWidget().'</aside></div><section class="sscx-overview-quick"><h3>Acces rapides</h3><div class="sscx-shortcuts">';
@@ -145,14 +145,14 @@ function SchoolSafeOverview()
     $feed=SchoolSafeOverviewFeed();
     $e=static function($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');};
     $profile=User('PROFILE');
-    $titles=['admin'=>"Vue generale de l'ecole",'teacher'=>'Ma journee de classe','parent'=>'Le suivi de mes enfants','student'=>'Mon suivi scolaire'];
+    $titles=['admin'=>"Vue générale de l'école",'teacher'=>'Ma journée de classe','parent'=>'Le suivi de mes enfants','student'=>'Mon suivi scolaire'];
     $title=$titles[$profile]??'Mon tableau de bord';
     $icons=['students'=>'ContactRound','classes'=>'School','presence'=>'BadgeCheck','teachers'=>'ContactRound'];
     foreach(['codex-ui-v1','lot2-screens','overview-composition','schoolsafe-dashboard','schoolsafe-dashboard-reference'] as $css)echo '<link rel="stylesheet" href="assets/css/'.$css.'.css?v=reference-20">';
-    $roles=['admin'=>'Administrateur','teacher'=>'Professeur','parent'=>'Parent','student'=>'Eleve'];
+    $roles=['admin'=>'Administrateur','teacher'=>'Professeur','parent'=>'Parent','student'=>'Élève'];
     echo '<header class="ss-dashboard-context"><div class="ss-dashboard-brand"><img src="/schoolsafe-card-bridge/studio-validated-20261008/logo-schoolsafe.png" width="40" height="40" alt=""><strong>SchoolSafe</strong></div>';
-    if(AllowUse('Students/Student.php'))echo '<form class="ss-dashboard-search" method="get" action="Modules.php"><input type="hidden" name="modname" value="Students/Student.php"><input type="hidden" name="search_modfunc" value="list"><input name="last" aria-label="Rechercher un eleve par nom" placeholder="Rechercher un eleve par nom..."><button type="submit" title="Rechercher" aria-label="Rechercher"><img src="assets/themes/SchoolSafeCodex/navigation-icons/PackageSearch.svg" width="20" height="20" alt=""></button></form>';
-    echo '<div><span>Ecole selectionnee</span><strong data-native-dashboard-context="school">'.$e(ParseMLField(SchoolInfo('TITLE'))).'</strong></div><div><span>Annee scolaire</span><strong data-native-dashboard-context="syear">'.$e(UserSyear()).'</strong></div><div><span>'.$e($roles[$profile]??'Profil connecte').'</span><strong>'.$e(User('NAME')).'</strong></div></header><script src="assets/js/schoolsafe-dashboard-context.js?v=2"></script>';
+    if(AllowUse('Students/Student.php'))echo '<form class="ss-dashboard-search" method="get" action="Modules.php"><input type="hidden" name="modname" value="Students/Student.php"><input type="hidden" name="search_modfunc" value="list"><input name="last" aria-label="Rechercher un élève par nom" placeholder="Rechercher un élève par nom..."><button type="submit" title="Rechercher" aria-label="Rechercher"><img src="assets/themes/SchoolSafeCodex/navigation-icons/PackageSearch.svg" width="20" height="20" alt=""></button></form>';
+    echo '<div><span>École sélectionnée</span><strong data-native-dashboard-context="school">'.$e(ParseMLField(SchoolInfo('TITLE'))).'</strong></div><div><span>Année scolaire</span><strong data-native-dashboard-context="syear">'.$e(UserSyear()).'</strong></div><div><span>'.$e($roles[$profile]??'Profil connecté').'</span><strong>'.$e(User('NAME')).'</strong></div></header><script src="assets/js/schoolsafe-dashboard-context.js?v=3"></script>';
     if($profile==='admin'){
         require_once __DIR__.'/SchoolSafeReferenceDashboard.fnc.php';
         SchoolSafeReferenceDashboard($d,$feed);
@@ -172,11 +172,11 @@ function SchoolSafeOverview()
         return;
     }
     echo '<div class="sscx-app ss-connected-dashboard" data-dashboard-profile="'.$e($profile).'"><section class="sscx-section sscx-role-overview sscx-school-overview"><header class="sscx-overview-header"><div><h2>'.$e($title).'</h2><p>'.$e(date('d/m/Y')).' <span class="sscx-badge">'.$e(UserSyear()).' · Rosario</span></p></div><a class="ss-dashboard-refresh" href="Modules.php?modname=misc/Portal.php" title="Actualiser la synthese" aria-label="Actualiser la synthese">Actualiser</a></header><div class="sscx-overview-summary"><div class="sscx-overview-core"><div class="sscx-metrics sscx-overview-metrics">';
-    $metrics=[['students','Eleves inscrits',$d['total'],'Inscriptions actives'],['classes','Classes',User('PROFILE')==='admin'&&AllowUse('Scheduling/Courses.php')?count($d['classes']):null,'Groupes de cours Rosario'],['presence','Eleves presents',$d['present'],'Releves journaliers Rosario'],['teachers','Enseignants presents',$feed['staff_present'],'Dernier pointage du jour : entree']];
+    $metrics=[['students','Élèves inscrits',$d['total'],'Inscriptions actives'],['classes','Classes',User('PROFILE')==='admin'&&AllowUse('Scheduling/Courses.php')?count($d['classes']):null,'Groupes de cours Rosario'],['presence','Élèves présents',$d['present'],'Relevés journaliers Rosario'],['teachers','Enseignants présents',$feed['staff_present'],'Dernier pointage du jour : entrée']];
     foreach($metrics as $m)echo '<article class="sscx-metric" data-metric-kind="'.$m[0].'"><span><img src="assets/themes/SchoolSafeCodex/navigation-icons/'.$icons[$m[0]].'.svg" width="20" height="20" alt="">'.$m[1].'</span><strong>'.($m[2]===null?'&mdash;':$e($m[2])).'</strong><small>'.$m[3].'</small></article>';
     echo '</div><div class="sscx-overview-insights"><section class="sscx-snapshot"><h3>Presences du jour</h3>';
     if($d['present']!==null&&$d['total']>0){
-        echo '<div class="sscx-presence-total"><strong>'.round($d['present']/$d['total']*100).'<small>%</small></strong><span>des eleves presents<br><b>'.$d['present'].' / '.$d['total'].'</b></span></div><dl class="sscx-presence-legend">';
+        echo '<div class="sscx-presence-total"><strong>'.round($d['present']/$d['total']*100).'<small>%</small></strong><span>des élèves présents<br><b>'.$d['present'].' / '.$d['total'].'</b></span></div><dl class="sscx-presence-legend">';
         foreach(['present'=>'Presents','absent'=>'Absents','partial'=>'Journee partielle','unknown'=>'Non verifies'] as $key=>$label)echo '<div><dt>'.$label.'</dt><dd>'.$d[$key].'</dd></div>';
         echo '</dl>';
     }else echo '<p class="sscx-empty">Aucune presence journaliere disponible.</p>';
@@ -186,10 +186,10 @@ function SchoolSafeOverview()
     echo '</ul></section></div></div><aside class="sscx-overview-inbox" aria-label="Alertes et dossiers"><h3>Alertes et notifications</h3><p class="sscx-empty">';
     echo User('PROFILE')==='parent'?'<a href="parent-notifications-view.php">Mes notifications</a>':'Consultez les annonces et alertes natives ci-dessous.';
     echo '</p></aside></div><section class="sscx-overview-quick"><h3>Acces rapides</h3><div class="sscx-shortcuts">';
-    foreach(['Students/Student.php'=>'Eleves','Scheduling/Courses.php'=>'Classes','Users/User.php'=>'Personnel','Attendance/DailySummary.php'=>'Presences','Grades/StudentGrades.php'=>'Cotes','Student_Billing/StudentFees.php'=>'Frais scolaires','School_Setup/Calendar.php'=>'Calendrier'] as $route=>$label)if(AllowUse($route))echo '<a href="Modules.php?modname='.$e($route).'">'.$label.'</a>';
+    foreach(['Students/Student.php'=>'Élèves','Scheduling/Courses.php'=>'Classes','Users/User.php'=>'Personnel','Attendance/DailySummary.php'=>'Presences','Grades/StudentGrades.php'=>'Cotes','Student_Billing/StudentFees.php'=>'Frais scolaires','School_Setup/Calendar.php'=>'Calendrier'] as $route=>$label)if(AllowUse($route))echo '<a href="Modules.php?modname='.$e($route).'">'.$label.'</a>';
     require_once __DIR__.'/SchoolSafeFinanceOverview.fnc.php';
     echo '</div></section>'.SchoolSafeFinanceOverview().SchoolSafeNativeDashboardSources().'<div class="sscx-tabs" role="tablist" aria-label="Rubriques de la vue generale">';
-    $tabs=['students'=>'Eleves'];
+    $tabs=['students'=>'Élèves'];
     if(User('PROFILE')==='admin'&&AllowUse('Users/User.php'))$tabs['staff']='Enseignants';
     if(AllowUse('Grades/GPARankList.php'))$tabs['awards']='Palmares';
     foreach($tabs as $id=>$label)echo '<button type="button" role="tab" id="ss-dashboard-tab-'.$id.'" aria-selected="'.($id==='students'?'true':'false').'" tabindex="'.($id==='students'?'0':'-1').'" aria-controls="ss-dashboard-'.$id.'" data-dashboard-tab="'.$id.'">'.$label.'</button>';
@@ -209,15 +209,15 @@ function SchoolSafeOverview()
             $label=$state==='in'?'Entree enregistree':($state==='out'?'Sortie enregistree':'Non verifie');
             echo '<li><strong>'.$e($s['FIRST_NAME'].' '.$s['LAST_NAME']).'</strong><span>'.$label.'</span></li>';
         }
-        if(!$d['staff'])echo '<li>Aucun enseignant renseigne.</li>';
+        if(!$d['staff'])echo '<li>Aucun enseignant renseigné.</li>';
         if(count($d['staff'])>100)echo '<li><a href="Modules.php?modname=Users/User.php">Consulter la liste complete</a></li>';
         echo '</ul>';
-        if(AllowUse('Entry_Exit/Records.php'))echo '<a href="Modules.php?modname=Entry_Exit/Records.php">Consulter les pointages Rosario</a><p class="sscx-empty">Les enseignants non pointes ou rattaches a plusieurs ecoles restent non verifies.</p>';
+        if(AllowUse('Entry_Exit/Records.php'))echo '<a href="Modules.php?modname=Entry_Exit/Records.php">Consulter les pointages Rosario</a><p class="sscx-empty">Les enseignants non pointes ou rattachés à plusieurs écoles restent non vérifiés.</p>';
         echo '</section>';
     }
     if(isset($tabs['awards']))echo '<section id="ss-dashboard-awards" role="tabpanel" aria-labelledby="ss-dashboard-tab-awards" hidden>'.SchoolSafeDashboardNativeWidget().'</section>';
     else echo SchoolSafeDashboardNativeWidget();
-    echo '<footer class="sscx-overview-footer"><section><h3>Dernieres activites</h3><small>Annonces publiees de l\'ecole</small><ul class="sscx-feed">';
+    echo '<footer class="sscx-overview-footer"><section><h3>Dernières activités</h3><small>Annonces publiées de l\'ecole</small><ul class="sscx-feed">';
     foreach($feed['activities'] as $item)echo '<li><time>'.$e(substr($item['CREATED_AT'],0,10)).'</time><strong>'.$e(ParseMLField($item['TITLE'])).'</strong></li>';
     if(!$feed['activities'])echo '<li>Aucune annonce publiee pour votre profil.</li>';
     echo '</ul></section><section><h3>Calendrier scolaire</h3><ul class="sscx-feed">';

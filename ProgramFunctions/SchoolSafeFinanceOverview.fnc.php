@@ -30,13 +30,13 @@ function SchoolSafeFinanceOverview(): string
     $html='<section class="ss-finance-overview"><h3>Finances et operations</h3><div class="ss-finance-metrics">';
     foreach($sources as $kind=>$source){
         $route=in_array($kind,['fees','payments'],true)?'Student_Billing/DailyTransactions.php':'Accounting/DailyTransactions.php';
-        $html.='<article data-finance-kind="'.$kind.'"><span>'.$source[2].'</span><strong>'.$escape($money($totals[$kind])).'</strong><small>'.($start!==''?$escape($start.' au '.$end):'Annee scolaire selectionnee').'</small><details class="ss-finance-indicator-detail"><summary>Detail mensuel</summary><table><thead><tr><th>Mois</th><th>Montant</th></tr></thead><tbody>';
+        $html.='<article data-finance-kind="'.$kind.'"><span>'.$source[2].'</span><strong>'.$escape($money($totals[$kind])).'</strong><small>'.($start!==''?$escape($start.' au '.$end):'Année scolaire selectionnee').'</small><details class="ss-finance-indicator-detail"><summary>Detail mensuel</summary><table><thead><tr><th>Mois</th><th>Montant</th></tr></thead><tbody>';
         $hasRows=false;
         foreach($series as $month=>$values)if(array_key_exists($kind,$values)){$hasRows=true;$html.='<tr><th scope="row">'.$escape($month).'</th><td>'.$escape($money($values[$kind])).'</td></tr>';}
         if(!$hasRows)$html.='<tr><td colspan="2">Aucune transaction enregistree.</td></tr>';
         $html.='</tbody></table><a href="Modules.php?modname='.$route.'">Consulter les operations</a></details><a class="ss-finance-metric-link" href="Modules.php?modname=misc/Portal.php&amp;dashboard_tab=finance&amp;finance_kind='.$kind.'">Details</a></article>';
     }
-    $html.='</div><div class="ss-finance-analysis"><section><header class="ss-chart-heading"><h3>Encaissements et depenses</h3><a href="Modules.php?modname=misc/Portal.php&amp;dashboard_tab=finance">Periode</a></header>';
+    $html.='</div><div class="ss-finance-analysis"><section><header class="ss-chart-heading"><h3>Encaissements et dépenses</h3><a href="Modules.php?modname=misc/Portal.php&amp;dashboard_tab=finance">Periode</a></header>';
     $cashSeries=[];$labels=[];
     if($billing||$accounting)$labels['income']='Encaissements';
     if($accounting)$labels['expense']='Depenses';

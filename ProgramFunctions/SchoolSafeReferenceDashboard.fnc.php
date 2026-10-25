@@ -32,7 +32,7 @@ function SchoolSafeReferenceDashboard(array $data,array $feed): void
     $operations=[
         ['Scheduling/Courses.php','School','Classes',count($data['classes']),'Groupes de cours'],
         ['Users/User.php','ContactRound','Personnel',$staffTotal,'Personnel de l\'ecole'],
-        ['Attendance/DailySummary.php','BadgeCheck','Presences',$data['present'],'Eleves presents aujourd\'hui'],
+        ['Attendance/DailySummary.php','BadgeCheck','Presences',$data['present'],'Élèves présents aujourd\'hui'],
         ['School_Setup/Calendar.php','BookOpenCheck','Calendrier',count($feed['events']),'Evenements a venir'],
         ['School_Setup/PortalNotes.php','MessagesSquare','Communication',count($feed['activities']),'Annonces accessibles'],
     ];
@@ -45,10 +45,10 @@ function SchoolSafeReferenceDashboard(array $data,array $feed): void
         echo '<tr><th scope="row">Total</th><td>'.$staffTotal.'</td></tr></tbody></table><details><summary>Pointages des enseignants du jour</summary><table><thead><tr><th>Enseignant</th><th>Pointage du jour</th></tr></thead><tbody>';
         $states=[];foreach($feed['presence'] as $row)$states[(int)$row['STAFF_ID']]=$row['TYPE'];
         foreach(array_slice(array_values($data['staff']),0,6) as $row){$state=$states[(int)$row['STAFF_ID']]??null;$label=$state==='in'?'Entree enregistree':($state==='out'?'Sortie enregistree':'Non verifie');echo '<tr><th scope="row">'.$e($row['FIRST_NAME'].' '.$row['LAST_NAME']).'</th><td>'.$label.'</td></tr>';}
-        if(!$data['staff'])echo '<tr><td colspan="2">Aucun enseignant renseigne.</td></tr>';
+        if(!$data['staff'])echo '<tr><td colspan="2">Aucun enseignant renseigné.</td></tr>';
         echo '</tbody></table></details></section>';
     }
-    echo '<section class="ss-reference-events"><header><h3>Activites et calendrier</h3>';
+    echo '<section class="ss-reference-events"><header><h3>Activités et calendrier</h3>';
     if(AllowUse('School_Setup/Calendar.php'))echo '<a href="Modules.php?modname=School_Setup/Calendar.php">Voir tout</a>';
     echo '</header><ul>';
     foreach($feed['events'] as $row)echo '<li><time>'.$e($row['SCHOOL_DATE']).'</time><strong>'.$e(ParseMLField($row['TITLE'])).'</strong></li>';

@@ -510,3 +510,16 @@ body.ss-school-shell:has(#ss-photo-dashboard) #ss-photo-dashboard .ss-photo-tool
 #ss-photo-dashboard .ss-photo-practical-rank{flex:0 0 21px;height:21px;display:grid;place-items:center;border:1px solid var(--photo-line);border-radius:5px;font-weight:700}
 @media(max-width:1150px){#ss-photo-dashboard .ss-photo-practical-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){#ss-photo-dashboard .ss-photo-practical-list{grid-template-columns:minmax(0,1fr)}}
+
+/* ===== 2026-10-25 Option A (validee) : logo d'ecole en grand dans le bandeau - ordinateur =====
+   Restaure la grande carte logo d'origine, neutralisee par la variante "search-above".
+   La figure reste dans la toolbar (DOM inchange) mais s'ancre au tableau de bord et se
+   place comme a l'origine a droite du bandeau. Mobile (<=700px) garde la vue actuelle. */
+#ss-photo-dashboard{position:relative}
+@media(min-width:701px){
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo{position:absolute;inset:auto;right:20px;top:62px;flex:none;width:min(37%,330px);height:205px;margin:0;gap:7px;border-radius:20px;box-shadow:0 12px 35px #10253f16}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo:before{inset:12px;border-radius:14px}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-logo-orbit{inset:20px}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo img{width:75%;height:135px;max-height:none;object-fit:contain;animation:ss-logo-float 6s ease-in-out infinite}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo figcaption{font-size:11px;line-height:1.35}
+}

@@ -9,7 +9,7 @@
             select.removeAttribute('onchange');
             select.id = 'dashboard-context-' + key;
             select.className = 'ss-dashboard-context-select';
-            select.setAttribute('aria-label', key === 'school' ? 'Ecole selectionnee' : 'Annee scolaire');
+            select.setAttribute('aria-label', key === 'school' ? 'École sélectionnée' : 'Année scolaire');
             select.disabled = nativeSelect.disabled || select.options.length < 2;
             select.value = nativeSelect.value;
             select.addEventListener('change', function () {

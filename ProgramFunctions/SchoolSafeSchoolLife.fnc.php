@@ -8,9 +8,9 @@ function SchoolSafeBirthdayVisual(string $title,array $rows,bool $topTen = false
     foreach($rows as $row){
         $date=new DateTimeImmutable($row['BIRTHDAY']['date'],new DateTimeZone('Africa/Kinshasa'));
         $today=(new DateTimeImmutable('today',new DateTimeZone('Africa/Kinshasa')))->format('Y-m-d');
-        $html.='<li><time datetime="'.$e($row['BIRTHDAY']['date']).'"><b>'.$date->format('d').'</b><small>'.$date->format('m/Y').'</small></time><div><strong>'.$e($row['FIRST_NAME'].' '.$row['LAST_NAME']).'</strong><small>'.$e($row['KIND']??'Eleve').' · '.($row['BIRTHDAY']['date']===$today?'Aujourd\'hui':$date->format('d/m/Y')).'</small></div></li>';
+        $html.='<li><time datetime="'.$e($row['BIRTHDAY']['date']).'"><b>'.$date->format('d').'</b><small>'.$date->format('m/Y').'</small></time><div><strong>'.$e($row['FIRST_NAME'].' '.$row['LAST_NAME']).'</strong><small>'.$e($row['KIND']??'Élève').' · '.($row['BIRTHDAY']['date']===$today?'Aujourd\'hui':$date->format('d/m/Y')).'</small></div></li>';
     }
-    if(!$rows)$html.='<li class="ss-life-empty">'.($topTen?'Aucune date de naissance renseignee pour les personnes accessibles de cette ecole.':'Aucun anniversaire renseigne dans les sept prochains jours.').'</li>';
+    if(!$rows)$html.='<li class="ss-life-empty">'.($topTen?'Aucune date de naissance renseignée pour les personnes accessibles de cette école.':'Aucun anniversaire renseigne dans les sept prochains jours.').'</li>';
     return $html.'</ul></details></section>';
 }
 

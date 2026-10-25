@@ -48,7 +48,7 @@ function SchoolSafeBirthdayParentInbox(array $principalIds, array $nativeIds, in
         $result[] = ['id'=>'birthday:' . $row['STUDENT_ID'] . ':' . $birthday['date'],
             'student_id'=>(string)$row['STUDENT_ID'], 'student_name'=>$row['FIRST_NAME'] . ' ' . $row['LAST_NAME'],
             'event_type'=>'student.birthday', 'created_at'=>(new DateTimeImmutable($birthday['date']))->modify('-7 days')->format('Y-m-d') . ' 00:00:00',
-            'payload'=>['message'=>$birthday['school_open'] ? "Anniversaire dans les sept prochains jours : celebration possible a l'ecole." : "Anniversaire dans les sept prochains jours : l'ecole est fermee ce jour-la.",
+            'payload'=>['message'=>$birthday['school_open'] ? "Anniversaire dans les sept prochains jours : celebration possible a l'école." : "Anniversaire dans les sept prochains jours : l'école est fermee ce jour-la.",
                 'birthday_date'=>$birthday['date'], 'school_open'=>$birthday['school_open']]];
     }
     return $result;
@@ -115,7 +115,7 @@ function SchoolSafeSchoolBirthdayTopTen(int $school, int $year): array
     $rows = [];
     if (AllowUse('Students/Student.php')) {
         $rows = array_values(DBGet("SELECT s.student_id AS person_id,s.first_name,s.last_name,
-            s.custom_200000004 AS birthdate,'Eleve' AS kind FROM students s
+            s.custom_200000004 AS birthdate,'Élève' AS kind FROM students s
             WHERE s.custom_200000004 IS NOT NULL AND EXISTS(SELECT 1 FROM student_enrollment e
             WHERE e.student_id=s.student_id AND e.school_id=$school AND e.syear=$year
             AND e.start_date<='$date' AND (e.end_date IS NULL OR e.end_date>='$date'))"));
@@ -170,7 +170,7 @@ function SchoolSafeDashboardNativeWidget(bool $includeRemediation = true): strin
         $html .= SchoolSafeBirthdayVisual('Anniversaires de mes enfants',$rows);
     }
     if (User('PROFILE') === 'admin' && (AllowUse('Students/Student.php') || AllowUse('Users/User.php'))) {
-        $html .= SchoolSafeBirthdayVisual('Anniversaires de l\'ecole',SchoolSafeSchoolBirthdayTopTen($school,$year),true);
+        $html .= SchoolSafeBirthdayVisual('Anniversaires de l\'école',SchoolSafeSchoolBirthdayTopTen($school,$year),true);
     }
     if (Config('SCHOOLSAFE_PALMARES') === 'Y') {
         if (!in_array(User('PROFILE'), ['admin', 'teacher', 'parent'], true) || !AllowUse('Grades/GPARankList.php')) return $html;

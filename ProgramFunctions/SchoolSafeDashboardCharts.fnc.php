@@ -33,7 +33,7 @@ function SchoolSafeDashboardExpenseChart(array $rows): string
 {
     $e=static function($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');};
     $total=array_sum(array_column(array_values($rows),'TOTAL'));
-    if($total<=0)return '<div class="ss-expense-breakdown"><svg viewBox="0 0 200 200" role="img" aria-label="Aucune depense positive enregistree"><circle cx="100" cy="100" r="70" fill="none" stroke="#e6eff9" stroke-width="28"/><text x="100" y="104" text-anchor="middle">Sans donnees</text></svg><p class="sscx-empty">Aucune depense positive enregistree.</p></div>';
+    if($total<=0)return '<div class="ss-expense-breakdown"><svg viewBox="0 0 200 200" role="img" aria-label="Aucune dépense positive enregistrée"><circle cx="100" cy="100" r="70" fill="none" stroke="#e6eff9" stroke-width="28"/><text x="100" y="104" text-anchor="middle">Sans données</text></svg><p class="sscx-empty">Aucune dépense positive enregistrée.</p></div>';
     $palette=['#087bff','#00bda5','#ffb400','#ed583e','#ac49d7','#2584a6'];$offset=0;$i=0;
     $html='<div class="ss-expense-breakdown"><svg viewBox="0 0 200 200" role="img" aria-label="Repartition des depenses positives"><title>Repartition des depenses positives</title>';
     foreach($rows as $row){$share=(float)$row['TOTAL']/$total*100;$color=$palette[$i++%count($palette)];$html.='<circle cx="100" cy="100" r="70" fill="none" stroke="'.$color.'" stroke-width="28" pathLength="100" stroke-dasharray="'.$share.' '.(100-$share).'" stroke-dashoffset="'.(-$offset).'" transform="rotate(-90 100 100)"><title>'.$e($row['TITLE'].' : '.html_entity_decode(strip_tags(Currency($row['TOTAL'])),ENT_QUOTES,'UTF-8')).'</title></circle>';$offset+=$share;}
