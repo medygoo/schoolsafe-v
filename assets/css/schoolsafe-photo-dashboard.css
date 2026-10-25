@@ -533,3 +533,13 @@ body.ss-school-shell:has(#ss-photo-dashboard) #ss-photo-dashboard .ss-photo-tool
 #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo:before{inset:8px;border-radius:12px}
 #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo figcaption{font-size:10px}
 }
+
+/* ===== 2026-10-25 (2e retour utilisateur) : logo au CENTRE du bandeau,
+   legerement plus grand, texte du titre reste visible, aucune animation. ===== */
+@media(min-width:701px){
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo{left:50%;right:auto;top:120px;transform:translateX(-50%);width:220px;height:165px;box-shadow:0 8px 20px #10253f14}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo img{height:118px;animation:none}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-logo-orbit{display:none}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo:before{inset:9px;border-radius:13px}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo figcaption{font-size:10px}
+}
