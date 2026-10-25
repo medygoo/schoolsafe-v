@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SchoolSafe — modèle de référence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #01268d;
+  --secondary: #023fbf;
+  --accent: #f0b515;
+  --on-brand: #fcfcfc;
+  --text: #1a1a1a;
+  --muted: #5c6775;
+  --success: #0ba473;
+  --warning: #fc6f06;
+  --danger: #e32822;
+  --surface: #f4f6f9;
+  --card: #ffffff;
+  --line: #e3e7ee;
+  --line-strong: #d5dbe4;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --sidebar: 248px;
+  --top: 64px;
+  --space: 8px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: Inter, sans-serif;
+  color: var(--text);
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.45;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+h1, h2, h3 { font-family: Poppins, Inter, sans-serif; margin: 0; color: var(--primary); }
+
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: var(--sidebar);
+  flex: 0 0 var(--sidebar);
+  background: var(--primary);
+  color: var(--on-brand);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 18px 12px;
+}
+.brand img { width: 46px; height: 46px; object-fit: contain; }
+.brand strong { display: block; font-family: Poppins, Inter, sans-serif; font-size: 16px; letter-spacing: -0.02em; }
+.brand strong span { color: var(--accent); }
+.brand small { display: block; color: rgba(252,252,252,.72); font-size: 12px; margin-top: 2px; }
+.nav { padding: 8px 12px 24px; overflow: auto; }
+.nav-label {
+  margin: 16px 8px 6px;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(252,252,252,.55);
+}
+.nav button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: var(--on-brand);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  margin: 2px 0;
+}
+.nav button[aria-current="page"] {
+  background: var(--secondary);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.nav button:hover { background: rgba(2, 63, 191, .55); }
+.nav button[aria-current="page"]:hover { background: var(--secondary); }
+
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  height: var(--top);
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.context { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.context select, .search {
+  height: 36px;
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+}
+.search { width: 220px; }
+.who { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--primary); color: var(--on-brand);
+  display: grid; place-items: center; font-weight: 600; font-size: 13px;
+}
+.who b { display: block; font-size: 13px; }
+.who span { color: var(--muted); font-size: 12px; }
+
+.content { padding: 24px; }
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 16px; }
+.page-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.page-head h1 { font-size: 22px; letter-spacing: -0.02em; }
+
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+.kpi {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 16px 14px;
+}
+.kpi .label { color: var(--muted); font-size: 12px; font-weight: 500; }
+.kpi .value { font-family: Poppins, Inter, sans-serif; font-size: 28px; line-height: 1.2; margin-top: 6px; color: var(--primary); }
+.kpi .hint { margin-top: 6px; font-size: 12px; color: var(--muted); }
+
+.board { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.card-head h2 { font-size: 15px; }
+.card-head span { color: var(--muted); font-size: 12px; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 12px 16px; vertical-align: middle; }
+th {
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  background: #f8f9fb;
+  border-bottom: 1px solid var(--line);
+}
+td { border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+.name { font-weight: 600; }
+.sub { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #eef1f6;
+  color: var(--muted);
+}
+.pill.ok { background: #e7f7f1; color: #087a56; }
+.pill.warn { background: #fff1e6; color: #c45504; }
+.pill.bad { background: #fdeceb; color: #b4231c; }
+.pill.info { background: #e8eefc; color: var(--secondary); }
+
+.side-list { list-style: none; margin: 0; padding: 0; }
+.side-list li {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  gap: 10px;
+  align-items: start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.side-list li:last-child { border-bottom: 0; }
+.dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; background: var(--secondary); }
+.dot.warn { background: var(--warning); }
+.dot.bad { background: var(--danger); }
+.dot.ok { background: var(--success); }
+.side-list b { display: block; font-size: 13px; }
+.side-list span { color: var(--muted); font-size: 12px; }
+
+.toolbar { display: flex; gap: 8px; align-items: center; }
+.btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+}
+.btn.primary { background: var(--secondary); border-color: var(--secondary); color: var(--on-brand); font-weight: 600; }
+
+.filters { display: flex; gap: 8px; margin-bottom: 16px; }
+.filters select, .filters input { height: 36px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); padding: 0 10px; background: var(--card); }
+.filters input { flex: 1; min-width: 180px; }
+
+.table-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  color: var(--muted);
+  font-size: 12px;
+  border-top: 1px solid var(--line);
+}
+.view { display: none; }
+.view.active { display: block; }
+.note {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.roster { display: flex; gap: 6px; }
+.roster span {
+  min-width: 72px;
+  text-align: center;
+  height: 28px;
+  line-height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+.roster span.on.ok { background: #e7f7f1; color: #087a56; border-color: #b7e7d4; font-weight: 600; }
+.roster span.on.warn { background: #fff1e6; color: #c45504; border-color: #ffd2b0; font-weight: 600; }
+.roster span.on.bad { background: #fdeceb; color: #b4231c; border-color: #f6c4c1; font-weight: 600; }
+
+@media (max-width: 1100px) {
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .board { grid-template-columns: 1fr; }
+  .search { display: none; }
+}
+@media (max-width: 800px) {
+  .sidebar { display: none; }
+  .kpis { grid-template-columns: 1fr; }
+  .content { padding: 16px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="../../assets/themes/SchoolSafe/logo.png" alt="SchoolSafe">
+      <div>
+        <strong>School<span>Safe</span></strong>
+        <small>École Test</small>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Navigation du modèle">
+      <div class="nav-label">Pilotage</div>
+      <button type="button" data-view="dashboard" aria-current="page">Tableau de bord</button>
+      <div class="nav-label">Vie scolaire</div>
+      <button type="button" data-view="presences">Présences</button>
+      <button type="button" data-view="notes">Notes & bulletins</button>
+      <button type="button" data-view="discipline">Discipline</button>
+      <div class="nav-label">Personnes</div>
+      <button type="button" data-view="eleves">Élèves & familles</button>
+      <button type="button" data-view="personnel">Personnel</button>
+      <div class="nav-label">École</div>
+      <button type="button" data-view="finance">Finance</button>
+      <button type="button" data-view="rapports">Rapports</button>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="context">
+        <select aria-label="École"><option>École Test</option></select>
+        <select aria-label="Année"><option>2026-2027</option></select>
+        <select aria-label="Période"><option>Trimestre 2</option></select>
+      </div>
+      <input class="search" type="search" placeholder="Rechercher" aria-label="Recherche">
+      <div class="who">
+        <div>
+          <b>Admin A. Administrator</b>
+          <span>Direction</span>
+        </div>
+        <div class="avatar" aria-hidden="true">AA</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="view active" id="dashboard">
+        <div class="page-head">
+          <div>
+            <h1>Tableau de bord</h1>
+            <p>Mardi 7 octobre 2026 · ce qui demande une action aujourd’hui</p>
+          </div>
+        </div>
+        <div class="kpis">
+          <article class="kpi"><div class="label">Élèves inscrits</div><div class="value">486</div><div class="hint">12 classes ouvertes</div></article>
+          <article class="kpi"><div class="label">Absents ce matin</div><div class="value">18</div><div class="hint">7 sans motif</div></article>
+          <article class="kpi"><div class="label">Factures ouvertes</div><div class="value">23</div><div class="hint">4 280 en attente</div></article>
+          <article class="kpi"><div class="label">Signalements ouverts</div><div class="value">3</div><div class="hint">1 à traiter aujourd’hui</div></article>
+        </div>
+        <div class="board">
+          <section class="card">
+            <div class="card-head"><h2>Classes de la matinée</h2><span>Présences du jour</span></div>
+            <table>
+              <thead>
+                <tr><th>Classe</th><th>Enseignant</th><th>Présents</th><th>Absents</th><th>État</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="name">6e A</td><td>Rita Prof</td><td>28</td><td>2</td><td><span class="pill warn">À compléter</span></td></tr>
+                <tr><td class="name">6e B</td><td>Marc Nzinga</td><td>30</td><td>0</td><td><span class="pill ok">Faite</span></td></tr>
+                <tr><td class="name">5e A</td><td>Aline Kanda</td><td>26</td><td>3</td><td><span class="pill bad">Retard</span></td></tr>
+                <tr><td class="name">5e B</td><td>Rita Prof</td><td>29</td><td>1</td><td><span class="pill ok">Faite</span></td></tr>
+                <tr><td class="name">4e A</td><td>Paul Ilunga</td><td>27</td><td>2</td><td><span class="pill info">En cours</span></td></tr>
+                <tr><td class="name">3e A</td><td>Sara Mbayo</td><td>31</td><td>0</td><td><span class="pill ok">Faite</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+          <aside class="card">
+            <div class="card-head"><h2>À traiter</h2><span>4</span></div>
+            <ul class="side-list">
+              <li><i class="dot bad"></i><div><b>7 absences sans motif</b><span>Prévenir les familles</span></div></li>
+              <li><i class="dot warn"></i><div><b>4 factures échues</b><span>Finance · cette semaine</span></div></li>
+              <li><i class="dot warn"></i><div><b>Signalement 6e A</b><span>Incident du 6 octobre</span></div></li>
+              <li><i class="dot ok"></i><div><b>Bulletins trimestre 2</b><span>Ouverture dans 5 jours</span></div></li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="eleves">
+        <div class="page-head">
+          <div>
+            <h1>Élèves & familles</h1>
+            <p>Liste de l’école · 486 inscrits</p>
+          </div>
+          <div class="toolbar"><button class="btn primary" type="button">Ajouter un élève</button></div>
+        </div>
+        <div class="filters">
+          <input type="search" placeholder="Nom, identifiant, responsable" aria-label="Filtrer les élèves">
+          <select aria-label="Niveau"><option>Tous les niveaux</option><option>6e</option><option>5e</option></select>
+          <select aria-label="Statut"><option>Inscrits</option><option>Absents aujourd’hui</option></select>
+        </div>
+        <section class="card">
+          <table>
+            <thead>
+              <tr><th>Élève</th><th>Classe</th><th>Responsable</th><th>Présence</th><th>Solde</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="name">Leo Eleve</span><span class="sub">ID 1001</span></td><td>6e A</td><td>Paul Parent</td><td><span class="pill ok">Présent</span></td><td>15,00</td></tr>
+              <tr><td><span class="name">Amina Diallo</span><span class="sub">ID 1002</span></td><td>6e A</td><td>Fatou Diallo</td><td><span class="pill bad">Absente</span></td><td>0,00</td></tr>
+              <tr><td><span class="name">David Mukendi</span><span class="sub">ID 1008</span></td><td>5e A</td><td>Grace Mukendi</td><td><span class="pill warn">Retard</span></td><td>40,00</td></tr>
+              <tr><td><span class="name">Sarah Ngoie</span><span class="sub">ID 1014</span></td><td>5e B</td><td>Joseph Ngoie</td><td><span class="pill ok">Présente</span></td><td>0,00</td></tr>
+              <tr><td><span class="name">Eliot Kabongo</span><span class="sub">ID 1020</span></td><td>4e A</td><td>Chantal Kabongo</td><td><span class="pill ok">Présent</span></td><td>25,00</td></tr>
+              <tr><td><span class="name">Naomi Tshisekedi</span><span class="sub">ID 1033</span></td><td>3e A</td><td>Ruth Tshisekedi</td><td><span class="pill info">Excusée</span></td><td>0,00</td></tr>
+            </tbody>
+          </table>
+          <div class="table-foot"><span>1–6 sur 486</span><span>Page 1</span></div>
+        </section>
+      </section>
+
+      <section class="view" id="presences">
+        <div class="page-head">
+          <div>
+            <h1>Présences</h1>
+            <p>6e A · Rita Prof · mardi 7 octobre 2026</p>
+          </div>
+          <div class="toolbar"><button class="btn" type="button">Classe précédente</button><button class="btn primary" type="button">Enregistrer</button></div>
+        </div>
+        <div class="filters">
+          <select aria-label="Classe"><option>6e A</option><option>6e B</option><option>5e A</option></select>
+          <select aria-label="Date"><option>7 octobre 2026</option></select>
+        </div>
+        <section class="card">
+          <table>
+            <thead>
+              <tr><th>Élève</th><th>Statut</th><th>Motif</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="name">Leo Eleve</td><td><div class="roster"><span class="on ok">Présent</span><span>Absent</span><span>Retard</span></div></td><td>—</td></tr>
+              <tr><td class="name">Amina Diallo</td><td><div class="roster"><span>Présent</span><span class="on bad">Absent</span><span>Retard</span></div></td><td>Sans motif</td></tr>
+              <tr><td class="name">Jonas Mbuyi</td><td><div class="roster"><span>Présent</span><span>Absent</span><span class="on warn">Retard</span></div></td><td>Transport</td></tr>
+              <tr><td class="name">Sarah Ngoie</td><td><div class="roster"><span class="on ok">Présent</span><span>Absent</span><span>Retard</span></div></td><td>—</td></tr>
+              <tr><td class="name">Eliot Kabongo</td><td><div class="roster"><span class="on ok">Présent</span><span>Absent</span><span>Retard</span></div></td><td>—</td></tr>
+            </tbody>
+          </table>
+          <div class="table-foot"><span>28 présents · 2 absents · 1 retard</span><span>Appel non encore enregistré</span></div>
+        </section>
+      </section>
+
+      <section class="view" id="notes">
+        <div class="page-head">
+          <div>
+            <h1>Notes & bulletins</h1>
+            <p>Algèbre · trimestre 2 · 6e A</p>
+          </div>
+        </div>
+        <section class="card">
+          <table>
+            <thead>
+              <tr><th>Élève</th><th>Contrôle 1</th><th>Devoir</th><th>Moyenne</th><th>Bulletin</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="name">Leo Eleve</td><td>14</td><td>16</td><td>15,0</td><td><span class="pill ok">Prêt</span></td></tr>
+              <tr><td class="name">Amina Diallo</td><td>11</td><td>—</td><td>11,0</td><td><span class="pill warn">Incomplet</span></td></tr>
+              <tr><td class="name">Jonas Mbuyi</td><td>8</td><td>9</td><td>8,5</td><td><span class="pill bad">Sous le seuil</span></td></tr>
+              <tr><td class="name">Sarah Ngoie</td><td>17</td><td>18</td><td>17,5</td><td><span class="pill ok">Prêt</span></td></tr>
+            </tbody>
+          </table>
+          <div class="table-foot"><span>Notes sur 20</span><span>Saisie ouverte</span></div>
+        </section>
+      </section>
+
+      <section class="view" id="discipline">
+        <div class="page-head">
+          <div><h1>Discipline</h1><p>Signalements ouverts</p></div></div>
+        <section class="card">
+          <table>
+            <thead><tr><th>Élève</th><th>Date</th><th>Rapporteur</th><th>État</th></tr></thead>
+            <tbody>
+              <tr><td class="name">Leo Eleve</td><td>6 octobre 2026</td><td>Admin A. Administrator</td><td><span class="pill warn">Ouvert</span></td></tr>
+              <tr><td class="name">Jonas Mbuyi</td><td>3 octobre 2026</td><td>Rita Prof</td><td><span class="pill info">En suivi</span></td></tr>
+              <tr><td class="name">David Mukendi</td><td>28 septembre 2026</td><td>Aline Kanda</td><td><span class="pill ok">Clos</span></td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <section class="view" id="personnel">
+        <div class="page-head"><div><h1>Personnel</h1><p>Enseignants et direction</p></div></div>
+        <section class="card">
+          <table>
+            <thead><tr><th>Nom</th><th>Rôle</th><th>Classes</th><th>État</th></tr></thead>
+            <tbody>
+              <tr><td class="name">Rita Prof</td><td>Enseignante</td><td>6e A, 5e B</td><td><span class="pill ok">Actif</span></td></tr>
+              <tr><td class="name">Aline Kanda</td><td>Enseignante</td><td>5e A</td><td><span class="pill ok">Actif</span></td></tr>
+              <tr><td class="name">Paul Ilunga</td><td>Enseignant</td><td>4e A</td><td><span class="pill warn">Absence</span></td></tr>
+              <tr><td class="name">Admin A. Administrator</td><td>Direction</td><td>—</td><td><span class="pill ok">Actif</span></td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <section class="view" id="finance">
+        <div class="page-head"><div><h1>Finance</h1><p>Frais et paiements des familles</p></div></div>
+        <section class="card">
+          <table>
+            <thead><tr><th>Famille</th><th>Élève</th><th>Frais</th><th>Payé</th><th>Solde</th></tr></thead>
+            <tbody>
+              <tr><td>Paul Parent</td><td>Leo Eleve</td><td>25,00</td><td>10,00</td><td><span class="pill warn">15,00</span></td></tr>
+              <tr><td>Fatou Diallo</td><td>Amina Diallo</td><td>25,00</td><td>25,00</td><td><span class="pill ok">0,00</span></td></tr>
+              <tr><td>Grace Mukendi</td><td>David Mukendi</td><td>40,00</td><td>0,00</td><td><span class="pill bad">40,00</span></td></tr>
+            </tbody>
+          </table>
+          <div class="table-foot"><span>Soldes d’illustration</span><span>Trimestre 2</span></div>
+        </section>
+      </section>
+
+      <section class="view" id="rapports">
+        <div class="page-head"><div><h1>Rapports</h1><p>Documents déjà disponibles dans Rosario</p></div></div>
+        <section class="card">
+          <table>
+            <thead><tr><th>Document</th><th>Public</th><th>Période</th></tr></thead>
+            <tbody>
+              <tr><td class="name">Relevés de notes</td><td>Familles</td><td>Trimestre 2</td></tr>
+              <tr><td class="name">Relevés de frais</td><td>Familles</td><td>Année 2026-2027</td></tr>
+              <tr><td class="name">Emplois du temps</td><td>Élèves</td><td>Trimestre 2</td></tr>
+              <tr><td class="name">Présences du jour</td><td>Direction</td><td>7 octobre 2026</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <p class="note">Modèle de référence visuel. Couleurs mesurées sur le logo SchoolSafe. Les chiffres et les noms autres que l’école de test servent à montrer la disposition. Ce n’est pas l’application.</p>
+    </div>
+  </div>
+</div>
+<script>
+document.querySelectorAll(".nav button").forEach(function (button) {
+  button.addEventListener("click", function () {
+    document.querySelectorAll(".nav button").forEach(function (item) {
+      item.removeAttribute("aria-current");
+    });
+    button.setAttribute("aria-current", "page");
+    document.querySelectorAll(".view").forEach(function (view) {
+      view.classList.toggle("active", view.id === button.dataset.view);
+    });
+  });
+});
+</script>
+</body>
+</html>

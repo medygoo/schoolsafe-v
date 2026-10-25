@@ -1,0 +1,33 @@
+.cla-screen {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: grid;
+  gap: 16px;
+}
+
+.cla-screen form,
+.cla-screen ul,
+.cla-screen dl {
+  display: grid;
+  gap: 12px;
+}
+
+.cla-screen input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1440px) {
+  .cla-screen { padding: 32px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .cla-screen { padding: 20px; }
+}
+
+@media (max-width: 390px) {
+  .cla-screen { padding: 12px; }
+  .cla-screen button { width: 100% }
+}

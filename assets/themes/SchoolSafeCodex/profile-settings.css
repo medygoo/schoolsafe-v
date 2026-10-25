@@ -1,0 +1,29 @@
+body.modules #menu-top > #ss-native-settings { display: none !important; }
+#ss-settings-button { flex: 0 0 auto; min-height: 48px; margin: 8px 12px 12px; border: 1px solid #4667a8; border-radius: 5px; background: #123488; color: #fff; font: 600 14px system-ui, sans-serif; }
+#ss-context-summary { display: block; width: calc(100% - 24px); margin: 0 12px 12px; padding: 8px; border: 0; background: transparent; color: #d8e5ff; text-align: left; font: 12px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+body.modules.ss-settings-open #menu-top > #ss-native-settings {
+    display: block !important; position: fixed !important; z-index: 95;
+    top: 64px; bottom: 0; left: var(--ss-primary-width); width: var(--ss-context-width);
+    height: auto !important; box-sizing: border-box; overflow-y: auto !important;
+    margin: 0; padding: 16px; background: #fff; color: #172333;
+    border-right: 1px solid #dbe2ec; border-top: 3px solid #526170;
+}
+body.modules.ss-settings-open .adminmenu .wp-submenu { display: none !important; }
+body.modules #ss-native-settings .username { display: block; color: #172333; margin: 12px 0; }
+body.modules #ss-native-settings .ss-lang-link { color: #173b90; }
+body.modules #ss-native-settings .ss-lang-link.is-active { background: #edf3ff; color: #173b90; }
+body.modules #ss-native-settings select { width: 100%; min-height: 44px; border: 1px solid #bac9dc; border-radius: 5px; background: #fff; color: #172333; margin-top: 4px; }
+body.modules #ss-native-settings .br-after { display: block; margin-bottom: 16px; }
+body.modules #ss-native-settings label { position: static; width: auto; height: auto; clip: auto; clip-path: none; overflow: visible; display: block; color: #516176; font-size: 13px; }
+.ss-settings-close { display: block; margin-left: auto; width: 44px; height: 44px; border: 1px solid #dbe2ec; border-radius: 5px; background: #fff; color: #172333; font-size: 26px; }
+.ss-settings-heading { display: flex; align-items: center; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid #dbe2ec; }
+.ss-settings-heading strong { min-width: 0; overflow-wrap: anywhere; font: 700 16px/1.4 system-ui, sans-serif; }
+.ss-settings-heading .ss-settings-close { flex: 0 0 44px; }
+@media screen and (min-width: 701px) {
+    body.modules.ss-settings-open #body { margin-left: calc(var(--ss-primary-width) + var(--ss-context-width)) !important; }
+}
+@media screen and (max-width: 700px) {
+    body.modules #menu.slide #ss-settings-button { display: block; width: min(286px, calc(100% - 24px)); }
+    body.modules.ss-settings-open #menu-top > #ss-native-settings { inset: 0 0 calc(72px + env(safe-area-inset-bottom)); width: 100%; }
+}
+@media print { #ss-settings-button, #ss-context-summary, #ss-native-settings { display: none !important; } }

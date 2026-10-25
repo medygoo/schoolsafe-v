@@ -1,0 +1,42 @@
+/* Native Rosario theme variant; the existing SchoolSafe theme remains a dependency. */
+@import url("../SchoolSafe/stylesheet.css");
+@import url("redesign.css?v=10");
+@import url("school-forms.css?v=1");
+@import url("mobile-navigation.css?v=19");
+@import url("profile-settings.css?v=1");
+@import url("context-navigation.css?v=3.4");
+@import url("branch-icons.css?v=4");
+@import url("interior-screens.css?v=8");
+@import url("ecc-consistency.css?v=5");
+@import url("menu-logo.css?v=1");
+@import url("compact-menu.css?v=1");
+@import url("menu-corrections.css?v=1");
+@import url("profile-menu.css?v=1");
+@import url("header-profile.css?v=4");
+@import url("school-impeccable.css?v=1");
+@import url("pedagogy-impeccable.css?v=1");
+@import url("branch-page-heading.css?v=1");
+@import url("security-impeccable.css?v=1");
+@import url("finance-impeccable.css?v=1");
+@import url("accounting-impeccable.css?v=1");
+@import url("people-impeccable.css?v=1");
+@import url("inventory-impeccable.css?v=1");
+@import url("communication-impeccable.css?v=1");
+@import url("care-impeccable.css?v=1");
+@import url("administration-impeccable.css?v=1");
+@import url("reports-impeccable.css?v=1");
+@import url("branch-form-layout.css?v=1");
+@import url("branch-details.css?v=1");
+@import url("advanced-search.css?v=1");
+@import url("users-impeccable.css?v=1");
+@import url("secondary-surfaces.css?v=1");
+@import url("initial-render.css?v=1");
+@import url("menu-final-details.css?v=2");
+@import url("search-layout.css?v=2");
+@import url("header-controls.css?v=5");
+@import url("menu-themes.css?v=9");
+@import url("night-theme.css?v=1");
+/* External destinations are plain labels; internal navigation is unchanged. */
+a.ss-external-label { color: inherit; text-decoration: none; cursor: default; }
+/* Keep original notices in source; omit the About panel from the branded view. */
+.about-rosariosis { display: none !important; }

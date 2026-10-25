@@ -1,0 +1,108 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Medical Report module for RosarioSIS\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-08 17:37+0200\n"
+"PO-Revision-Date: 2026-09-09 23:26+0300\n"
+"Last-Translator: Alexey <support@digiology.org>\n"
+"Language-Team: Alexey <support@digiology.org>\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Poedit-KeywordsList: ;dgettext:2\n"
+"X-Poedit-Basepath: ../../..\n"
+"X-Generator: Poedit 3.8\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: MedicalReport.php:39
+msgid "Nurse Visits"
+msgstr "Посещения медсестры"
+
+#: MedicalReport.php:40
+msgid "Immunizations or Physicals"
+msgstr "Вакцинация или осмотр врача"
+
+#: Menu.php:14 Menu.php:19
+msgid "Medical Report"
+msgstr "Медицинский отчёт"
+
+#~ msgid "Relatives"
+#~ msgstr "Родители"
+
+#~ msgid "Sibling"
+#~ msgstr "Брат или сестра"
+
+#~ msgid "Siblings"
+#~ msgstr "Братья или сёстры"
+
+#~ msgid "Siblings for %s"
+#~ msgstr "Note de Discipline pour le %s"
+
+#~ msgid "Siblings is not activated for this school year."
+#~ msgstr "La Note de Discipline n'est pas activée cette année scolaire."
+
+#~ msgid "Schedule View"
+#~ msgstr "Vue Emploi du Temps"
+
+#~ msgid "Events and Assignments View"
+#~ msgstr "Vue Évènements et Devoirs"
+
+#~ msgid "PDF Header Footer %s"
+#~ msgstr "En-tête et Pied de page PDF %s"
+
+#~ msgid "Header"
+#~ msgstr "En-tête"
+
+#~ msgid "Top Margin (mm)"
+#~ msgstr "Marge Supérieure (mm)"
+
+#~ msgid "Footer"
+#~ msgstr "Pied de page"
+
+#~ msgid "Bottom Margin (mm)"
+#~ msgstr "Marge Inférieure (mm)"
+
+#~ msgid "Exclude PDF generated using the \"Print\" button"
+#~ msgstr "Exclure PDF générés grâce au bouton \"Imprimer\""
+
+#~ msgid "# of Students"
+#~ msgstr "# d'Élèves"
+
+#~ msgid "# of Administrators"
+#~ msgstr "# d'Administrateurs"
+
+#~ msgid "# of Teachers"
+#~ msgstr "# de Professeurs"
+
+#~ msgid "# of Parents"
+#~ msgstr "# de Parents"
+
+#~ msgid "Create Subject PDF for Selected Students"
+#~ msgstr "Créer le PDF Matière pour les Élèves Sélectionnés"
+
+#~ msgid "Example"
+#~ msgstr "Exemple"
+
+#~ msgid "Example Widget"
+#~ msgstr "Widget Exemple"
+
+#~ msgid "Setup"
+#~ msgstr "Paramétrage"
+
+#~ msgid "Example Resource"
+#~ msgstr "Ressource Exemple"
+
+#~ msgid "The configuration value has been modified."
+#~ msgstr "La valeur de configuration a été modifiée."
+
+#~ msgid "Example module Setup"
+#~ msgstr "Paramétrage du Module Exemple"
+
+#~ msgid "Try to enter a non-numeric value"
+#~ msgstr "Essayez d'entrer une valuer non-numérique"
+
+#~ msgid "Example config value label"
+#~ msgstr "Exemple de nom de valeur de config"

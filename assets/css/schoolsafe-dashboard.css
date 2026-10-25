@@ -1,0 +1,96 @@
+.ss-connected-dashboard{padding:20px 0;color:#182638;letter-spacing:0}
+.ss-connected-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;border-bottom:1px solid #dce3ed;padding-bottom:12px}
+.ss-connected-heading h2{font-size:23px;margin:0;color:#182638}
+.ss-connected-heading>span{color:#52627a;font-size:14px}
+.ss-connected-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px}
+.ss-connected-metric{min-width:0;background:#fff;border:1px solid #dce3ed;border-top:3px solid #315ec4;border-radius:6px;padding:18px;overflow-wrap:anywhere}
+.ss-connected-metric:nth-child(4n+2){border-top-color:#218269}
+.ss-connected-metric:nth-child(4n+3){border-top-color:#987321}
+.ss-connected-metric:nth-child(4n){border-top-color:#8766a7}
+.ss-connected-metric .dashboard-module-title{font-size:16px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.ss-connected-metric .dashboard-module-data{font-size:28px;font-weight:600;margin-top:10px}
+.ss-connected-metric .dashboard-module-data input{max-width:100%}
+.ss-connected-metric a{color:#315ec4}
+.ss-connected-metric table{max-width:100%}
+.ss-connected-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;margin:28px 0;border-bottom:1px solid #dce3ed;padding-bottom:24px}
+.ss-connected-dashboard h3{font-size:18px;margin:0 0 16px}
+.ss-connected-distribution{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:14px 0}
+.ss-connected-distribution progress{grid-column:1/-1;width:100%;height:10px;accent-color:#218269}
+.ss-connected-links{display:flex;flex-wrap:wrap;gap:12px}
+.ss-connected-links a{padding:10px 0;border-bottom:1px solid #dce3ed;min-width:100px}
+.ss-connected-tabs{display:flex;gap:24px;border-bottom:1px solid #dce3ed;margin-bottom:20px;flex-wrap:wrap}
+.ss-connected-tabs button{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;color:#52627a;padding:12px 4px;cursor:pointer;font:inherit}
+.ss-connected-tabs button[aria-selected=true]{border-bottom-color:#315ec4;color:#315ec4}
+.ss-connected-dashboard [hidden]{display:none!important}
+.ss-connected-table{border-collapse:collapse;width:100%;font-size:14px}
+.ss-connected-table th,.ss-connected-table td{text-align:left;padding:14px;border-bottom:1px solid #dce3ed}
+.ss-connected-table thead,.ss-connected-table tr:nth-child(even){background:#eef2fb}
+@media(max-width:650px){.ss-connected-overview{grid-template-columns:1fr}}
+.ss-native-dashboard{padding:18px 0;border-bottom:1px solid #dce3ed}
+.ss-native-dashboard h3{font-size:18px;color:#182638}
+.ss-portal-actions{display:flex;flex-wrap:wrap;gap:12px;padding:16px 0}
+@media(max-width:480px){.ss-connected-dashboard{padding:14px 0}.ss-connected-metric{padding:14px}.ss-connected-heading h2{font-size:20px}}
+.sscx-app.ss-connected-dashboard{min-height:0;padding:24px;background:#f5f7fb;isolation:auto;container-type:inline-size;--sscx-positive:#258467;--sscx-negative:#b84754;--sscx-caution:#b48624}
+.ss-connected-dashboard .sscx-overview-header h2{color:#172333}
+.ss-connected-dashboard .sscx-overview-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
+.ss-connected-dashboard .sscx-metric>strong{display:block}
+.ss-connected-dashboard .sscx-school-overview .sscx-metric+.sscx-metric{border-left:1px solid #dbe2ec}
+.ss-connected-dashboard .sscx-overview-pending{margin-top:28px;padding-top:20px;border-top:1px solid #dbe2ec}
+.ss-connected-dashboard .sscx-shortcuts a{display:flex;align-items:center;min-height:60px;padding:10px 12px;background:white;border:1px solid #dbe2ec;border-radius:6px;color:#2563eb;text-decoration:none}
+.ss-connected-dashboard .sscx-cycle-distribution progress{width:100%;height:7px;accent-color:#258467}
+.ss-connected-dashboard .sscx-empty{margin-top:14px;font-size:13px;color:#516176}
+.ss-connected-dashboard .ss-dashboard-refresh{padding:8px 12px;background:white;border:1px solid #dbe2ec;border-radius:6px;font-size:24px}
+.ss-connected-dashboard .sscx-teacher-list{padding:0;list-style:none}
+.ss-connected-dashboard .sscx-teacher-list li{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #dbe2ec;flex-wrap:wrap}
+.ss-connected-dashboard .sscx-teacher-list span{color:#516176;font-size:12px}
+.ss-connected-dashboard .ss-dashboard-native-totals>div{padding:14px 0;border-bottom:1px solid #dbe2ec}
+.ss-connected-dashboard .sscx-class-table{display:block!important;overflow-x:auto;max-width:100%}
+.ss-setup-assistant-link a{display:block;padding:12px 8px;color:inherit;overflow-wrap:anywhere;font-size:12px}
+@container(max-width:900px){.ss-connected-dashboard .sscx-overview-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.sscx-app.ss-connected-dashboard{padding:16px 12px}.ss-connected-dashboard .sscx-metric{min-height:142px}.ss-connected-dashboard .sscx-metric span{overflow-wrap:anywhere}.ss-connected-dashboard .sscx-overview-header{align-items:flex-start}}
+.sscx-feed{list-style:none;padding:0;margin:12px 0;display:grid;gap:12px}
+.sscx-feed li{display:flex;gap:12px;align-items:baseline;border-bottom:1px solid #dde6ef;padding:8px 0}
+.sscx-feed time{font-size:12px;color:#526477;white-space:nowrap}
+.sscx-feed strong{font-size:13px;overflow-wrap:anywhere}
+
+/* Preserve the Cursor composition while keeping native reports readable. */
+.ss-connected-dashboard .sscx-overview-header { gap:16px; margin-bottom:24px; }
+.ss-connected-dashboard .sscx-overview-header h2 { font-size:24px; letter-spacing:0; }
+.ss-connected-dashboard .sscx-metric { border-radius:6px; min-width:0; padding:16px; }
+.ss-connected-dashboard .sscx-metric>span { display:flex; align-items:center; gap:8px; font-size:14px; }
+.ss-connected-dashboard .sscx-metric>span img { flex:0 0 20px; }
+.ss-connected-dashboard .sscx-metric>strong { font-size:30px; font-variant-numeric:tabular-nums; margin:12px 0 8px; }
+.ss-connected-dashboard .sscx-metric small { font-size:12px; line-height:1.5; color:#465568; }
+.ss-connected-dashboard .ss-dashboard-refresh { display:inline-flex; align-items:center; justify-content:center; min-width:44px; height:44px; padding:0 12px; flex-shrink:0; font-size:14px; }
+.ss-connected-dashboard .sscx-overview-insights { margin-top:24px; gap:24px; }
+.ss-connected-dashboard .sscx-shortcuts { gap:12px; }
+.ss-connected-dashboard .sscx-shortcuts a { min-height:44px; font-size:14px; }
+.ss-connected-dashboard [role=tablist] { display:flex; flex-wrap:wrap; gap:8px; border-bottom:1px solid #dbe2ec; margin:24px 0 16px; }
+.ss-connected-dashboard [role=tab] { min-height:44px; padding:10px 16px; border-radius:0; background:transparent; border:0; border-bottom:3px solid transparent; color:#465568; font:inherit; cursor:pointer; }
+.ss-connected-dashboard [role=tab][aria-selected=true] { color:#214da7; border-bottom-color:#214da7; }
+.ss-connected-dashboard [role=tabpanel] { padding:8px 0 24px; min-width:0; }
+.ss-connected-dashboard .sscx-class-table table { width:100%; border-collapse:collapse; font-size:14px; }
+.ss-connected-dashboard .sscx-class-table th,
+.ss-connected-dashboard .sscx-class-table td { padding:12px 16px; text-align:left; border-bottom:1px solid #dbe2ec; }
+.ss-connected-dashboard .sscx-class-table thead { background:#eaf0fa; }
+.ss-connected-dashboard .sscx-class-table td { font-variant-numeric:tabular-nums; }
+.ss-connected-dashboard .sscx-overview-footer { gap:24px; padding-top:24px; border-top:1px solid #dbe2ec; }
+.ss-connected-dashboard :is(a,button,summary):focus-visible { outline:3px solid #315ec4; outline-offset:3px; }
+.ss-connected-dashboard :is(a,button):hover { text-decoration:underline; text-underline-offset:3px; }
+/* SchoolSafe dashboard controls stay at their original position (2026-10-14). */
+.ss-connected-dashboard :is(a,button,summary):is(:hover,:focus-visible,:active) {
+    transform: none !important;
+    translate: none !important;
+    rotate: none !important;
+    scale: none !important;
+}
+.ss-connected-dashboard ::selection { background:#dbe7fc; color:#172333; }
+.ss-connected-dashboard[data-dashboard-profile]:not([data-dashboard-profile=admin]) .sscx-overview-core { display:none; }
+.ss-connected-dashboard[data-dashboard-profile]:not([data-dashboard-profile=admin]) .sscx-overview-summary { grid-template-columns:1fr; }
+.ss-connected-dashboard[data-dashboard-profile]:not([data-dashboard-profile=admin]) .sscx-overview-inbox { border-left:0; padding-left:0; }
+@media(max-width:650px) {
+  .ss-connected-dashboard .sscx-overview-header h2 { font-size:20px; }
+  .ss-connected-dashboard .sscx-overview-footer { grid-template-columns:1fr; }
+  .ss-connected-dashboard .sscx-feed li { flex-wrap:wrap; gap:4px 12px; }
+  .ss-connected-dashboard [role=tab] { padding:10px 12px; }
+}

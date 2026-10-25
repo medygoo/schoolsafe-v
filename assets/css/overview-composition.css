@@ -1,0 +1,88 @@
+/* Isolated overview composition. Keep the validated SchoolSafe tokens and navigation. */
+.sscx-school-overview {
+  --sscx-cycle-0: var(--sscx-accent);
+  --sscx-cycle-1: var(--sscx-positive);
+  --sscx-cycle-2: var(--sscx-caution);
+}
+.sscx-overview-summary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, .34fr); gap: 24px; align-items: start; }
+.sscx-overview-core, .sscx-overview-inbox { min-width: 0; }
+.sscx-app .sscx-school-overview .sscx-overview-metrics { gap: 10px; border: 0; background: transparent; }
+.sscx-app .sscx-school-overview .sscx-metric {
+  --sscx-metric-ink: var(--sscx-accent);
+  border: 1px solid var(--sscx-border); border-top: 3px solid var(--sscx-metric-ink);
+  border-radius: 6px; background: var(--sscx-surface); padding: 14px 12px; min-height: 142px;
+}
+.sscx-app .sscx-school-overview [data-metric-kind="classes"] { --sscx-metric-ink: var(--sscx-positive); }
+.sscx-app .sscx-school-overview [data-metric-kind="presence"] { --sscx-metric-ink: var(--sscx-caution); }
+.sscx-app .sscx-school-overview [data-metric-kind="teachers"] { --sscx-metric-ink: #7445a6; }
+.sscx-app[data-theme="dark"] .sscx-school-overview [data-metric-kind="teachers"] { --sscx-metric-ink: #d4b5ff; }
+.sscx-app .sscx-school-overview .sscx-metric > span { align-items: flex-start; }
+.sscx-app .sscx-school-overview .sscx-metric svg { flex-shrink: 0; color: var(--sscx-metric-ink); }
+.sscx-app .sscx-school-overview .sscx-metric > strong { margin: 10px 0 4px; }
+.sscx-app .sscx-school-overview .sscx-metric > small { display: block; line-height: 1.6; }
+.sscx-overview-insights { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; padding-top: 24px; }
+.sscx-overview-heading { display: flex; gap: 8px; align-items: center; }
+.sscx-overview-heading svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--sscx-accent); }
+.sscx-presence-total { display: flex; gap: 16px; align-items: center; margin: 16px 0; }
+.sscx-presence-total > strong { font-size: 2rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.sscx-presence-total > strong small { font-size: 1rem; margin-left: 3px; }
+.sscx-presence-total > span { font-size: .8125rem; color: var(--sscx-muted); }
+.sscx-presence-total b { color: var(--sscx-text); font-weight: 600; }
+.sscx-presence-bar { display: flex; gap: 3px; height: 14px; overflow: hidden; border-radius: 3px; background: var(--sscx-border); }
+.sscx-presence-bar span { min-width: 3px; flex-basis: 0; }
+.sscx-school-overview :is(.sscx-chart-key,.sscx-presence-bar span) { background: var(--sscx-muted); }
+.sscx-school-overview :is(.sscx-chart-key,.sscx-presence-bar span)[data-presence="present"] { background: var(--sscx-positive); }
+.sscx-school-overview :is(.sscx-chart-key,.sscx-presence-bar span)[data-presence="absent"] { background: var(--sscx-negative); }
+.sscx-school-overview :is(.sscx-chart-key,.sscx-presence-bar span)[data-presence="late"] { background: var(--sscx-caution); }
+.sscx-presence-legend { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px 16px; margin: 16px 0 0; font-size: .8125rem; }
+.sscx-presence-legend > div { display: flex; gap: 8px; justify-content: space-between; }
+.sscx-presence-legend dt { display: flex; align-items: center; gap: 6px; color: var(--sscx-muted); }
+.sscx-presence-legend dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sscx-chart-key { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 2px; }
+.sscx-cycle-distribution { padding: 0; margin: 16px 0 0; list-style: none; display: grid; gap: 12px; }
+.sscx-cycle-distribution li > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: .8125rem; }
+.sscx-cycle-distribution li > div:first-child > span { flex-shrink: 0; }
+.sscx-cycle-distribution small { font-size: .75rem; color: var(--sscx-muted); }
+.sscx-cycle-track { height: 7px; background: var(--sscx-border); margin: 5px 0 2px; border-radius: 2px; overflow: hidden; }
+.sscx-cycle-track > span { display: block; height: 100%; background: var(--sscx-cycle-color); }
+.sscx-overview-inbox { border-left: 1px solid var(--sscx-border); padding-left: 20px; }
+.sscx-overview-inbox > h3 svg { color: var(--sscx-negative); }
+.sscx-overview-inbox .sscx-record-list li { flex-wrap: wrap; padding: 14px 0; font-size: .8125rem; }
+.sscx-overview-inbox .sscx-record-list li > div { flex-basis: 100%; }
+.sscx-overview-inbox .sscx-record-list li > button { margin-left: auto; }
+.sscx-overview-inbox .sscx-record-list li > .sscx-badge { max-width: 100%; }
+.sscx-overview-inbox .sscx-overview-followup { margin-top: 16px; }
+.sscx-overview-followup h4 { font-size: .8125rem; margin: 10px 0 0; color: var(--sscx-muted); }
+.sscx-overview-followup[open] > div { max-height: 360px; overflow-y: auto; scrollbar-width: thin; padding: 0 4px; }
+.sscx-overview-quick { border-block: 1px solid var(--sscx-border); padding: 18px 0; margin-top: 24px; }
+.sscx-overview-quick .sscx-shortcuts { display: grid; grid-template-columns: repeat(auto-fit,minmax(110px,1fr)); margin-top: 12px; }
+.sscx-app .sscx-overview-quick .sscx-shortcuts button { justify-content: flex-start; padding: 10px 12px; min-height: 60px; text-align: left; background: var(--sscx-surface); }
+.sscx-overview-quick .sscx-shortcuts button span { min-width: 0; }
+.sscx-overview-quick .sscx-shortcuts svg { flex-shrink: 0; }
+.sscx-school-overview .sscx-overview-layout { gap: 0 28px; }
+.sscx-school-overview .sscx-teacher-scroll { max-height: 344px; }
+.sscx-overview-pending { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; }
+.sscx-overview-pending > section { min-width: 0; }
+.sscx-overview-pending .sscx-badge { display: inline-block; margin-block: 12px 6px; }
+.sscx-overview-pending p { font-size: .8125rem; }
+@container (max-width: 900px) {
+  .sscx-overview-summary { grid-template-columns: minmax(0,1fr); }
+  .sscx-overview-inbox { border-left: 0; border-top: 1px solid var(--sscx-border); padding: 20px 0 0; }
+  .sscx-overview-inbox > .sscx-record-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+  .sscx-overview-quick .sscx-shortcuts { grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); }
+}
+@container (max-width: 620px) {
+  .sscx-app .sscx-school-overview .sscx-overview-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .sscx-overview-insights { grid-template-columns: minmax(0,1fr); }
+  .sscx-cycle-snapshot { border-top: 1px solid var(--sscx-border); padding-top: 20px; }
+  .sscx-overview-inbox > .sscx-record-list { grid-template-columns: minmax(0,1fr); gap: 0; }
+  .sscx-overview-pending { grid-template-columns: minmax(0,1fr); }
+  .sscx-overview-pending > section + section { border-top: 1px solid var(--sscx-border); padding-top: 20px; }
+}
+@media (max-width: 1199px) {
+  .sscx-school-overview .sscx-teacher-scroll { max-height: none; }
+}
+@media (forced-colors: active) {
+  .sscx-cycle-track, .sscx-presence-bar { border: 1px solid CanvasText; }
+  .sscx-cycle-track > span, .sscx-presence-bar > span { background: CanvasText; }
+}

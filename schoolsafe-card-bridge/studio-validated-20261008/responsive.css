@@ -1,0 +1,26 @@
+@media screen {
+ .ss-responsive-face:not(.ss-preview-physical){width:var(--preview-width)!important;height:var(--preview-height)!important;overflow:hidden!important;flex:none}
+ .ss-responsive-face:not(.ss-preview-physical)>.art{transform:scale(var(--preview-scale));transform-origin:top left}
+}
+button,input,select{touch-action:manipulation}
+main{box-sizing:border-box;width:100%}
+.ss-production{align-items:end}
+@media(max-width:600px){
+ body{min-width:0}main{padding:12px;min-width:0}header{gap:10px}header h1{font-size:18px}
+ fieldset{min-width:0!important;max-width:100%;box-sizing:border-box}
+ fieldset>label,fieldset>output{min-width:0!important;max-width:100%;flex:1 1 140px!important;box-sizing:border-box}
+ input,select,button{min-height:44px;font-size:16px;box-sizing:border-box;max-width:100%}
+ input[type=checkbox]{min-height:24px;min-width:24px;vertical-align:middle}
+ input[type=color]{min-width:44px;min-height:44px}
+ input[type=file]{width:100%;font-size:14px}
+ .controls{gap:10px}.controls>label{display:block;min-width:0;flex:1 1 100%;width:100%}.controls label select{display:block;width:100%;margin-top:4px}
+ .controls>button:not(.ss-fam-btn):not(.ss-var-btn){flex:1 1 100%}
+ .ss-fam-btn{flex:1 1 140px;white-space:normal;font-size:13px}
+ .ss-var-btn{width:44px!important;height:44px!important}
+ .ss-model-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .ss-model-fields label{min-width:0}.ss-model-fields select{font-size:14px}
+ #ss-model-manager table{table-layout:fixed;overflow-wrap:anywhere}#ss-model-manager th,#ss-model-manager td{padding:4px 2px;vertical-align:top}
+ #ss-card-studio{max-width:100%;overflow:visible}#ss-type-label{font-size:12px;overflow-wrap:anywhere}
+ dialog{max-width:calc(100vw - 16px)!important;padding:8px!important;box-sizing:border-box}
+}
+@media(max-width:380px){.ss-model-fields{grid-template-columns:minmax(0,1fr)!important}}

@@ -1,0 +1,24 @@
+/* Hide the selected-staff shortcut, without changing the native selection. */
+body.modules #menu-top .current-person.staff { display:none!important; }
+/* Native hover/focus rules must not reopen a panel marked closed. */
+@media screen {
+  body.modules #menu .adminmenu[data-ss-organized="1"] > .menu-module:not(.ss-open) > .wp-submenu {
+    display:none!important; visibility:hidden!important; pointer-events:none!important;
+  }
+  body.modules #menu .adminmenu[data-ss-organized="1"] > .menu-module.ss-open > .wp-submenu {
+    display:block!important; visibility:visible!important; pointer-events:auto!important;
+  }
+  body.modules #menu .wp-submenu { overscroll-behavior:contain; }
+}
+@media screen {
+  body.modules #menu { background:transparent!important; }
+  body.modules #menu-top,
+  body.modules #menu .adminmenu { background:var(--ss-sidebar, #123488); }
+  body.modules #menu .adminmenu { height:auto!important; min-height:0!important; padding-bottom:0!important; }
+  body.modules #menu-top .ss-menu-emblem { width:58px!important; height:58px!important; flex:0 0 58px; }
+  body.modules #menu-top .ss-menu-animated-logo { width:58px!important; height:58px!important; max-width:100%; }
+  body.modules #menu-top .ss-brand-name { font-size:22px!important; }
+  body.modules .ss-page-back { display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+  body.modules:has(#menu .menu-module.ss-open) #menu-top .ss-menu-emblem { width:44px!important; height:44px!important; flex-basis:44px; }
+  body.modules:has(#menu .menu-module.ss-open) #menu-top .ss-menu-animated-logo { width:44px!important; height:44px!important; }
+}

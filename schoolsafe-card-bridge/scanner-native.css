@@ -1,0 +1,71 @@
+/* Scanner uses the dashboard's schoolsafe-background choice, not a fixed blue canvas. */
+:root{color-scheme:light;--scan-page:#fff;--scan-surface:#fff;--scan-raised:#f2f6fb;--scan-ink:#17344d;--scan-muted:#52677b;--scan-line:#d6e1ec;--scan-accent:#1466a1;--scan-accent-soft:#e5f2fb;--scan-success:#117451;--scan-focus:#b7640e}
+:root[data-ss-background="blue"]{--scan-page:#dcecff;--scan-surface:#f5faff;--scan-raised:#e8f3ff;--scan-line:#bad4ec;--scan-accent:#115b9a}
+:root[data-ss-background="gray"]{--scan-page:#eef0f3;--scan-surface:#fff;--scan-raised:#e8ebef;--scan-line:#c9cfd7;--scan-accent:#475569}
+:root[data-ss-background="mint"]{--scan-page:#e5f5ed;--scan-surface:#f7fdf9;--scan-raised:#dff2e8;--scan-line:#add3bd;--scan-accent:#14684d}
+:root[data-ss-background="rose"]{--scan-page:#fbe9ef;--scan-surface:#fff8fa;--scan-raised:#fae4ec;--scan-line:#e5b8c8;--scan-accent:#94395c}
+:root[data-ss-background="yellow"]{--scan-page:#fff5d9;--scan-surface:#fffdf6;--scan-raised:#fff0c4;--scan-line:#dfca94;--scan-accent:#765308}
+:root[data-ss-background="night"]{color-scheme:dark;--scan-page:#101b2d;--scan-surface:#1b2b42;--scan-raised:#253852;--scan-ink:#edf4ff;--scan-muted:#b8cae0;--scan-line:#405877;--scan-accent:#87c9fa;--scan-accent-soft:#203e58;--scan-success:#75e6ae;--scan-focus:#ffce74}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--scan-page);color:var(--scan-ink);font:16px/1.5 system-ui,sans-serif}
+[hidden]{display:none!important}
+.skip-link{position:absolute;left:12px;top:-60px;padding:9px 16px;background:var(--scan-surface);z-index:5}.skip-link:focus{top:12px}
+a{color:var(--scan-accent);text-underline-offset:4px}
+.scan-header{max-width:940px;margin:0 auto;padding:22px 24px;display:grid;grid-template-columns:56px 1fr 56px;align-items:center}
+.scan-header strong{display:flex;align-items:center;justify-content:center;gap:12px;font-size:clamp(22px,3vw,28px);letter-spacing:-.035em;color:var(--scan-ink)}
+.scan-header strong img{object-fit:contain;width:50px;height:50px}
+.scan-back{display:grid;place-items:center;width:48px;height:48px;background:var(--scan-surface);border:1px solid var(--scan-line);border-radius:50%;font-size:28px;text-decoration:none}
+main{max-width:940px;margin:0 auto;padding:0 24px 44px}
+.scan-heading{text-align:center;margin:12px auto 28px}
+.scan-eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--scan-accent);margin:0 0 8px}
+h1{font-size:clamp(30px,5vw,52px);line-height:1.12;letter-spacing:-.045em;margin:0 0 12px;text-wrap:balance}
+.scan-heading>p:last-child{margin:0;color:var(--scan-muted)}
+h2{font-size:19px;letter-spacing:-.02em;margin:0 0 14px}
+#modes{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:18px}
+button{min-height:44px;padding:10px 16px;border:1px solid var(--scan-line);border-radius:12px;color:var(--scan-ink);background:var(--scan-surface);font:600 14px/1.4 system-ui,sans-serif;cursor:pointer;transition:background-color .18s,border-color .18s,transform .18s}
+button:hover:not(:disabled){background:var(--scan-raised);border-color:var(--scan-accent)}
+button:active:not(:disabled){transform:translateY(1px)}
+button[aria-pressed=true]{color:var(--scan-accent);border-color:var(--scan-accent);background:var(--scan-accent-soft);box-shadow:inset 0 -3px var(--scan-accent)}
+button:disabled{opacity:.55;cursor:not-allowed}
+:is(button,input,select,a):focus-visible{outline:3px solid var(--scan-focus);outline-offset:3px}
+#scanner-state{text-align:center;min-height:24px;color:var(--scan-success);font-weight:600;margin:0 0 14px}
+.scan-workspace,.scan-feedback{max-width:760px;margin:0 auto 20px;padding:18px;background:var(--scan-surface);border:1px solid var(--scan-line);border-radius:24px}
+.scan-viewfinder{position:relative;min-height:280px;border:2px solid var(--scan-accent);border-radius:18px;background:var(--scan-raised);overflow:hidden}
+.scan-viewfinder-corners{position:absolute;inset:15px;border:1px dashed var(--scan-line);border-radius:12px;pointer-events:none}
+.scan-viewfinder-idle{min-height:276px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;text-align:center}
+.scan-viewfinder-idle strong{font-size:22px;letter-spacing:-.02em}
+.scan-viewfinder-idle>span:last-of-type{color:var(--scan-muted);max-width:35ch}
+.scan-viewfinder-symbol{font-size:52px;line-height:1;color:var(--scan-accent)}
+.scan-viewfinder-idle button,#scan-form button[type=submit],#pickup-confirm button{background:var(--scan-accent);color:var(--scan-page);border-color:var(--scan-accent);margin-top:14px}
+:root[data-ss-background="night"] .scan-viewfinder-idle button,:root[data-ss-background="night"] #scan-form button[type=submit],:root[data-ss-background="night"] #pickup-confirm button{color:#101b2d}
+.scan-viewfinder:has(#camera-area:not([hidden])) .scan-viewfinder-idle{display:none}
+#camera-area{position:relative;padding:12px;text-align:center}
+#scan-video{display:block;max-height:480px;width:100%;aspect-ratio:4/3;object-fit:contain;background:#11191d;border-radius:10px}
+#camera-stop{margin:12px auto 0}
+#scan-form{margin-top:16px}
+form label{display:block;font-size:14px;font-weight:600;margin-bottom:14px}
+.scan-hint{font-weight:400;color:var(--scan-muted)}
+input:not([type=checkbox]),select{display:block;width:100%;min-height:48px;padding:11px 14px;margin-top:7px;border:1px solid var(--scan-line);border-radius:9px;background:var(--scan-page);color:var(--scan-ink);font:inherit}
+input::placeholder{color:var(--scan-muted)}
+input[type=checkbox]{width:20px;height:20px;vertical-align:middle;accent-color:var(--scan-accent)}
+.scan-actions{display:flex;justify-content:flex-end}
+.scan-feedback:has(#scan-result:empty):has(#scan-people:empty):has(#pickup-confirm[hidden]){display:none}
+#scan-result:not(:empty){display:flow-root;min-height:100px;padding:18px;border:1px solid var(--scan-line);border-radius:14px;background:var(--scan-raised);font-size:18px;overflow-wrap:anywhere}
+#scan-result .scan-student-photo{float:left;width:96px;height:128px;object-fit:contain;margin:0 18px 8px 0;border:2px solid var(--scan-accent);border-radius:12px;background:var(--scan-surface)}
+#scan-result[data-fee-color=red]{border-color:#a84659;color:#8b233d;background:#ffe8ed}
+#scan-result[data-fee-color=green]{border-color:#117451;color:#075238;background:#dcf9eb}
+#scan-result[data-fee-color=yellow]{border-color:#a5701d;color:#704700;background:#fff2ca}
+:root[data-ss-background="night"] #scan-result[data-fee-color=red]{color:#ffd2dc;background:#492635}
+:root[data-ss-background="night"] #scan-result[data-fee-color=green]{color:#b7ffda;background:#183c35}
+:root[data-ss-background="night"] #scan-result[data-fee-color=yellow]{color:#ffecb8;background:#473923}
+#scan-people{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px;margin-top:16px}
+.scan-person{border:1px solid var(--scan-line);border-radius:12px;padding:16px;background:var(--scan-raised);display:flex;flex-direction:column;align-items:flex-start}
+.scan-person img{display:block;width:120px;height:150px;object-fit:contain;margin-bottom:12px;border:2px solid var(--scan-accent);border-radius:9px;background:var(--scan-surface)}
+.scan-person strong{font-size:17px;overflow-wrap:anywhere}
+.scan-person p{font-size:14px;color:var(--scan-muted)}
+.scan-person button{margin-top:auto;width:100%}
+#pickup-confirm{border-top:1px solid var(--scan-line);padding-top:18px}
+.scan-links{border-top:1px solid var(--scan-line);max-width:760px;margin:26px auto 0;padding-top:18px;display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:center;font-size:14px}
+#scanner-retry{display:block;margin:12px auto}
+@media(max-width:600px){.scan-header{padding:15px 16px;grid-template-columns:48px 1fr 48px}.scan-header strong{gap:6px}.scan-header strong img{width:40px;height:40px}main{padding:0 14px 30px}.scan-heading{margin:8px auto 20px}#modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#modes button{padding:10px 7px}.scan-workspace,.scan-feedback{padding:12px;border-radius:18px}.scan-viewfinder{min-height:240px}.scan-viewfinder-idle{min-height:236px}.scan-actions button{width:100%}#scan-result:not(:empty){padding:14px;font-size:16px}#scan-result .scan-student-photo{width:80px;height:106px;margin-right:12px}}
+@media(prefers-reduced-motion:reduce){button{transition:none}}

@@ -1,0 +1,22 @@
+/* Presentation only. Reuse the existing ProDeli workspace; no provider logic. */
+body:has(.ss-communication){margin:0;font-family:system-ui,sans-serif}
+.ss-communication{font-variant-numeric:tabular-nums}
+.ss-communication .card{background:#fff;border:1px solid #dbe5f3;border-radius:12px;padding:22px;margin:22px 0;min-width:0}
+.ss-communication .card>h2{margin-top:0}
+.ss-communication .card>form:not(.inline){max-width:42rem}
+.ss-communication .inline{display:flex;align-items:center;gap:8px;min-width:15rem}
+.ss-communication .inline select{width:auto;margin:0}
+.ss-communication .sskc-table{max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain}
+.ss-communication table{width:max-content;min-width:100%;font-size:.9rem}
+.ss-communication :is(th,td){min-width:6rem;max-width:28rem;overflow-wrap:break-word}
+.ss-communication .mut{font-size:.9rem;color:#526985;overflow-wrap:anywhere}
+.ss-communication :is(.ok,.ko,.warn){padding:14px 18px;border-radius:8px;border:1px solid;overflow-wrap:anywhere}
+.ss-communication .ok{background:#edf7ef;color:#245c36;border-color:#b7d7bf}
+.ss-communication .ko{background:#fff1ef;color:#852e26;border-color:#e5b9b4}
+.ss-communication .warn{background:#fff8e7;color:#68521e;border-color:#e2d3a9}
+.ss-communication :is(.sskc-table,a):focus-visible{outline:3px solid #15597b;outline-offset:3px}
+.ss-communication-skip{position:absolute;left:1rem;top:-8rem;padding:12px;background:#fff;color:#12305b;z-index:2}
+.ss-communication-skip:focus{top:1rem}
+@media(max-width:700px){.ss-communication .card{padding:18px 14px}.ss-communication .sskc-top>a:last-child{min-height:44px;display:flex;align-items:center}}
+@media(prefers-color-scheme:dark){body:has(.ss-communication){background:#101c2e!important}.ss-communication{color:#e0e9f6}.ss-communication :is(h1,h2,.sskc-brand){color:#edf4ff}.ss-communication .card{background:#18273c;border-color:#40546d}.ss-communication :is(.mut,.sskc-brand small,label){color:#bacbe0}.ss-communication a{color:#9bc6ff}.ss-communication th{background:#223853;color:#e0e9f6}.ss-communication td{border-color:#40546d}.ss-communication :is(input:not([type=checkbox]),select){background:#101c2e!important;color:#edf4ff!important;border-color:#627b9b}.ss-communication button{background:#294362;color:#edf4ff}.ss-communication .sskc-table{background:#18273c}.ss-communication .sskc-top{border-color:#40546d}}
+@media print{.ss-communication .sskc-top,.ss-communication form,.ss-communication-skip{display:none}.ss-communication .sskc-table{overflow:visible}.ss-communication table{min-width:0}.ss-communication .card{box-shadow:none;break-inside:avoid}}

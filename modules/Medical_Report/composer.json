@@ -1,0 +1,26 @@
+{
+	"name": "francoisjacquet/medical_report",
+	"description": "RosarioSIS module to consult reports about nurse visits and immunizations or physicals.",
+	"keywords": ["medical", "student", "nurse", "immunization", "physical"],
+	"homepage": "https://gitlab.com/francoisjacquet/Medical_Report/",
+	"license": "GPL-2.0-or-later",
+	"authors": [{
+		"name": "François Jacquet"
+	}],
+	"type": "rosariosis-module",
+	"version": "1.2",
+	"time": "2026-09-11",
+	"require": {
+		"php": ">=5.5.9"
+	},
+	"extra": {
+		"require": {
+			"francoisjacquet/rosariosis": ">=11.7"
+		},
+		"self_url": "https://gitlab.com/francoisjacquet/Medical_Report/raw/main/composer.json"
+	},
+	"_comment": [
+		"https://getcomposer.org/doc/04-schema.md",
+		"https://wp-kama.com/note/package-versions-in-composer-json"
+	]
+}

@@ -1,0 +1,87 @@
+/* Accounting presentation; native workflows and permissions are unchanged. */
+#body[data-ss-section="accounting"], .ss-school-tool {
+    --school-ink: #292d3d;
+    --school-muted: #596075;
+    --school-line: #dce0ee;
+    --school-wash: #f2f3fa;
+    --school-accent: #4e5990;
+    --school-focus: #4e5990;
+    font-family: system-ui, Arial, sans-serif;
+    color: var(--school-ink);
+    font-size: 14px;
+    line-height: 1.5;
+    letter-spacing: 0;
+}
+body.modules #menu .adminmenu .ss-branch-accounting:not(.ss-open) > #ss_menu_accounting { display: none !important; }
+#body[data-ss-section="accounting"] .ss-f13 { margin: 0 0 20px; padding: 0 0 16px; border: 0; border-bottom: 1px solid var(--school-line); background: transparent; box-shadow: none; animation: none; }
+#body[data-ss-section="accounting"] .ss-f13-kicker,
+#body[data-ss-section="accounting"] .ss-f13 > p:not(.ss-f13-kicker) { display: none; }
+#body[data-ss-section="accounting"] .ss-f13 h2,
+#body[data-ss-section="accounting"] .header1 h2 { margin: 0; font-size: 22px; line-height: 1.35; color: var(--school-ink); }
+#body[data-ss-section="accounting"] .header1:has(+ .ss-f13) { display: none; }
+#body[data-ss-section="accounting"] .header1 { padding: 12px 0 16px; border-bottom: 1px solid var(--school-line); }
+#body[data-ss-section="accounting"] .list-wrapper { border-top: 1px solid var(--school-line); border-radius: 0; }
+#body[data-ss-section="accounting"] .list-nav { border: 0; background: var(--school-wash); }
+#body[data-ss-section="accounting"] .list-nav td { padding: 10px 12px; }
+#body[data-ss-section="accounting"] .list-wrapper,
+#body[data-ss-section="accounting"] .ss-school-table-scroll { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; }
+#body[data-ss-section="accounting"] .widefat { width: 100%; border-collapse: collapse; border: 0; font-variant-numeric: tabular-nums; }
+#body[data-ss-section="accounting"] .widefat th { padding: 12px 10px; background: var(--school-wash); color: var(--school-muted); font-weight: 600; font-size: 13px; text-transform: none; line-height: 1.4; }
+#body[data-ss-section="accounting"] .widefat td { padding: 10px; border: 0; border-bottom: 1px solid var(--school-line); vertical-align: middle; }
+#body[data-ss-section="accounting"] .widefat tr:focus-within td { background: #f1f7ee !important; }
+#body[data-ss-section="accounting"] .postbox-wrapper { margin: 20px 0; }
+#body[data-ss-section="accounting"] .postbox > thead h3,
+#body[data-ss-section="accounting"] legend { font-size: 16px; font-weight: 650; color: var(--school-ink); }
+#body[data-ss-section="accounting"] fieldset { min-width: 0; }
+#body[data-ss-section="accounting"] .legend-gray { color: var(--school-muted); font-size: 13px; line-height: 1.4; }
+#body[data-ss-section="accounting"] input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="image"]),
+#body[data-ss-section="accounting"] select,
+#body[data-ss-section="accounting"] textarea,
+.ss-school-tool input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.ss-school-tool select, .ss-school-tool textarea {
+    box-sizing: border-box; max-width: 100%; min-height: 44px; padding: 9px 12px;
+    background: #fff; color: var(--school-ink); border: 1px solid #a9beb5; border-radius: 5px;
+    font-family: inherit; font-size: 14px; line-height: 1.5;
+}
+#body[data-ss-section="accounting"] input::placeholder,
+#body[data-ss-section="accounting"] textarea::placeholder,
+.ss-school-tool input::placeholder { color: var(--school-muted); opacity: 1; }
+#body[data-ss-section="accounting"] input[type="submit"],
+.ss-school-tool button[type="submit"], .ss-school-tool input[type="submit"] {
+    background: var(--school-accent) !important; color: #fff !important; border-color: var(--school-accent) !important;
+    font-weight: 600; min-height: 44px;
+}
+#body[data-ss-section="accounting"] input[type="submit"]:hover,
+.ss-school-tool button[type="submit"]:hover { background: #4e5990 !important; }
+#body[data-ss-section="accounting"] :is(input,button,select,textarea):disabled,
+.ss-school-tool :is(input,button,select,textarea):disabled { opacity: .65; cursor: not-allowed; }
+#body[data-ss-section="accounting"] :focus-visible,
+.ss-school-tool :focus-visible { outline: 3px solid var(--school-focus); outline-offset: 3px; }
+#body[data-ss-section="accounting"] input[type="checkbox"],
+#body[data-ss-section="accounting"] input[type="radio"],
+.ss-school-tool input[type="checkbox"] { accent-color: var(--school-accent); }
+#body[data-ss-section="accounting"] a { text-underline-offset: 3px; }
+#body[data-ss-section="accounting"] .list-wrapper a img.button { width: 20px; height: 20px; object-fit: contain; }
+#body[data-ss-section="accounting"] .schoolsafe-native-tool { background: #fff; border-radius: 0; }
+.ss-school-tool { margin: 0; padding: 16px; background: #fff; }
+.ss-school-tool :is(h1,h2) { font-size: 22px; line-height: 1.35; letter-spacing: 0; }
+.ss-school-tool h3 { font-size: 16px; letter-spacing: 0; }
+.ss-school-tool :is(button,a.button) { min-height: 44px; border-radius: 5px; font-family: inherit; }
+.ss-school-tool table { font-variant-numeric: tabular-nums; }
+.ss-school-tool :is(label,legend) { color: var(--school-ink); }
+@media (max-width: 700px) {
+    body.modules:has(#body[data-ss-section="accounting"]) #menu.hide:not(.slide) { display: none !important; }
+    #body[data-ss-section="accounting"] { padding-bottom: 96px; }
+    #body[data-ss-section="accounting"] :is(.header1 h2,.ss-f13 h2) { font-size: 20px; }
+    #body[data-ss-section="accounting"] .list-nav td { padding: 8px; }
+    #body[data-ss-section="accounting"] .widefat :is(td,th) { padding: 8px; }
+    #body[data-ss-section="accounting"] .widefat :is(input:not([type="checkbox"]):not([type="radio"]),select) { min-width: 88px; }
+    #body[data-ss-section="accounting"] #general_table > tbody > tr { display: block; }
+    #body[data-ss-section="accounting"] #general_table > tbody > tr > td { display: block; width: 100%; box-sizing: border-box; padding: 6px 0; }
+    .ss-school-tool { padding: 12px; }
+    .ss-school-tool :is(h1,h2) { font-size: 20px; overflow-wrap: anywhere; }
+}
+@media print {
+    #body[data-ss-section="accounting"] :is(.list-wrapper,.ss-school-table-scroll) { overflow: visible; }
+    #body[data-ss-section="accounting"] { padding-bottom: 0; }
+}

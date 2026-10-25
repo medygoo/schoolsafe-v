@@ -1,0 +1,153 @@
+/* Shared theme surface; branch colors remain independent of the selected background. */
+@media screen {
+    html[data-ss-background] body.modules #menu,
+    html[data-ss-background] body.modules #menu #menu-top,
+    html[data-ss-background] body.modules #menu .adminmenu {
+        background:var(--ss-page-background) !important;
+        color:#173b5a;
+        transition:background-color .2s ease;
+    }
+    html[data-ss-background] body.modules #menu .ss-brand-name { color:#173b5a; }
+    html[data-ss-background] body.modules #menu .ss-brand-safe { color:var(--ss-nav-accent); }
+    html[data-ss-background] body.modules #menu .adminmenu > .menu-module > .menu-top {
+        background:transparent !important;
+        color:#173b5a !important;
+        border-color:color-mix(in srgb,var(--ss-branch-ink) 25%,var(--ss-page-background)) !important;
+        border-left-color:var(--ss-branch-ink) !important;
+    }
+    html[data-ss-background] body.modules #menu .menu-module[data-ss-branch] > .menu-top .module-icon {
+        background-color:var(--ss-branch-ink) !important;
+    }
+    html[data-ss-background] body.modules #menu .adminmenu > .menu-module > .menu-top:hover,
+    html[data-ss-background] body.modules #menu .adminmenu > .ss-open > .menu-top {
+        background:color-mix(in srgb,var(--ss-branch-ink) 10%,var(--ss-page-background)) !important;
+        color:var(--ss-branch-ink) !important;
+    }
+    html[data-ss-background] body.modules #menu #ss-settings-button {
+        background:transparent; color:#173b5a;
+        border-color:var(--ss-nav-border); border-left-color:#526170;
+    }
+    html[data-ss-background] body.modules #menu #ss-settings-button::before { background-color:#526170; }
+    html[data-ss-background] body.modules #menu #ss-settings-button:hover,
+    html[data-ss-background] body.modules #menu #ss-settings-button[aria-expanded="true"] {
+        background:color-mix(in srgb,var(--ss-nav-accent) 10%,var(--ss-page-background));
+        color:var(--ss-nav-accent);
+    }
+    html[data-ss-background] body.modules #menu .menu-top:focus-visible,
+    html[data-ss-background] body.modules #menu #ss-settings-button:focus-visible {
+        outline:2px solid var(--ss-nav-accent); outline-offset:-3px;
+    }
+}
+@media(prefers-reduced-motion:reduce) {
+    html[data-ss-background] body.modules #menu,
+    html[data-ss-background] body.modules #menu #menu-top,
+    html[data-ss-background] body.modules #menu .adminmenu { transition:none; }
+}
+@media screen and (max-width:700px) {
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu.slide {
+        width:min(374px,calc(100vw - 16px)) !important; right:auto !important; background:transparent !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .ss-open > .wp-submenu {
+        left:64px !important; width:min(310px,calc(100vw - 80px)) !important;
+        min-width:0 !important; padding:0 8px 12px !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu #menu-top,
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .adminmenu,
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .adminmenu > .menu-module > .menu-top {
+        width:64px !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .wp-submenu a {
+        white-space:normal; overflow-wrap:anywhere; font-size:13px;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .ss-context-heading {
+        display:grid !important; grid-template-columns:minmax(0,1fr) 44px; padding:8px 0 !important; gap:4px;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .ss-context-heading strong {
+        grid-column:1/-1; grid-row:2; width:100%; font-size:14px; overflow-wrap:normal;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .ss-context-close {
+        grid-column:2; grid-row:1; width:44px !important; height:44px !important; min-width:44px;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="primary"] #menu.slide {
+        width:min(220px,calc(100vw - 24px)) !important; right:auto !important; background:transparent !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="primary"] #menu.slide #menu-top,
+    html[data-ss-background] body.modules[data-ss-mobile-panel="primary"] #menu.slide .adminmenu { width:100% !important; }
+    body.modules[data-ss-mobile-panel="primary"] #menu .adminmenu > .menu-module > .menu-top { white-space:normal !important; }
+    body.modules[data-ss-mobile-panel="primary"] #menu .ss-brand-name { font-size:16px !important; white-space:normal !important; }
+}
+@media screen {
+    html[data-ss-background] body.modules #menu .wp-submenu {
+        background:var(--ss-page-background) !important;
+        color:var(--ss-text,#172333) !important;
+    }
+    html[data-ss-background] body.modules #menu .adminmenu .wp-submenu a {
+        color:var(--ss-text,#172333) !important;
+        background:transparent !important;
+    }
+    html[data-ss-background] body.modules #menu .wp-submenu .menu-inter {
+        color:var(--ss-text,#172333) !important;
+        background:color-mix(in srgb,var(--ss-branch-ink,#2455c6) 12%,var(--ss-page-background)) !important;
+    }
+}
+/* Keep the native menu contents on phones; only its presentation changes. */
+@media screen and (max-width:700px) {
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu.slide {
+        width:min(312px,calc(100vw - 8px)) !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu #menu-top,
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .adminmenu > .menu-module > .menu-top,
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .adminmenu > .menu-module:not(.ss-open) {
+        display:block !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .adminmenu {
+        width:64px !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .ss-open > .wp-submenu {
+        left:64px !important; right:auto !important; top:64px !important;
+        width:min(248px,calc(100vw - 72px)) !important; padding:16px 10px !important;
+        border-radius:0 !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .ss-context-heading {
+        display:flex !important; align-items:center; justify-content:space-between;
+        margin:-16px -10px 12px !important; padding:12px 16px !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .ss-context-heading strong {
+        width:auto; font-size:18px;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu #menu-top {
+        width:64px !important; height:64px; overflow:hidden;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu #menu-top > a {
+        padding:4px !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .adminmenu > .menu-module > .menu-top {
+        display:flex !important; width:64px !important;
+        justify-content:center; min-height:44px !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .menu-top .ss-menu-label {
+        display:none !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu #ss-settings-button {
+        font-size:0 !important; overflow:hidden;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="context"] #menu .adminmenu {
+        overflow-y:auto !important; overflow-x:hidden !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="primary"] #menu .menu-top .ss-menu-label {
+        display:inline !important;
+    }
+    html[data-ss-background] body.modules[data-ss-mobile-panel="primary"] #menu .adminmenu > .menu-module > .menu-top {
+        width:100% !important; justify-content:flex-start; gap:10px;
+    }
+}
+@media screen {
+    /* The fixed menu owns its spacing; the legacy plugin spacer must not paint. */
+    body.modules #menu.fixedmenu-fixed + div,
+    body.modules #menu + div[style*="float"] {
+        display:none !important;
+        width:0 !important; height:0 !important;
+        background:transparent !important;
+        pointer-events:none !important;
+    }
+}

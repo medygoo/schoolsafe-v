@@ -1,0 +1,45 @@
+/* Native secondary navigation; links, fields and handlers remain intact. */
+#body[data-ss-section]:not([data-ss-section=""]) .h3multi {
+    display: flex; flex-wrap: wrap; align-items: stretch; gap: 4px;
+    margin: 16px 0; padding: 0; max-width: 100%;
+    border-bottom: 1px solid var(--school-line);
+}
+#body[data-ss-section]:not([data-ss-section=""]) .h3multi h3 {
+    display: flex; align-items: center; margin: 0; padding: 0;
+    min-width: 0; max-width: 100%; font-size: 14px; line-height: 1.4;
+    border: 0 !important; border-top: 2px solid transparent !important;
+    background: transparent; box-shadow: none;
+}
+#body[data-ss-section]:not([data-ss-section=""]) .h3multi h3 > a {
+    display: flex; align-items: center; box-sizing: border-box;
+    min-height: 44px; padding: 10px 12px; max-width: 100%;
+    white-space: normal; overflow-wrap: anywhere;
+    color: var(--school-muted); text-decoration: none;
+}
+#body[data-ss-section]:not([data-ss-section=""]) .h3multi .h3selected {
+    border-top-color: var(--school-accent) !important;
+    background: var(--school-wash); color: var(--school-accent);
+}
+#body[data-ss-section]:not([data-ss-section=""]) .h3multi .h3selected > a {
+    color: var(--school-accent); font-weight: 650;
+    border-bottom: 0 !important; background: transparent;
+}
+#body[data-ss-section]:not([data-ss-section=""]) .h3multi a:hover {
+    background: var(--school-wash); color: var(--school-accent);
+}
+#body[data-ss-section]:not([data-ss-section=""]) :is(input,textarea) {
+    caret-color: var(--school-accent);
+}
+#body[data-ss-section]:not([data-ss-section=""]) ::selection {
+    background: var(--school-wash); color: var(--school-ink);
+}
+#body[data-ss-section]:not([data-ss-section=""]) .list-wrapper {
+    scrollbar-width: thin; scrollbar-color: var(--school-accent) var(--school-wash);
+}
+@media (max-width: 700px) {
+    #body[data-ss-section]:not([data-ss-section=""]) .h3multi { gap: 4px; }
+    #body[data-ss-section]:not([data-ss-section=""]) .h3multi h3 > a { padding: 8px 10px; }
+}
+@media print {
+    #body[data-ss-section]:not([data-ss-section=""]) .h3multi { display: block; }
+}

@@ -1,0 +1,290 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Medical Report module for RosarioSIS.\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-25 16:09+0200\n"
+"PO-Revision-Date: 2026-05-25 16:09+0200\n"
+"Last-Translator: François Jacquet <info@rosariosis.org>\n"
+"Language-Team: RosarioSIS <info@rosariosis.org>\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Poedit-KeywordsList: ;dgettext:2\n"
+"X-Poedit-Basepath: ../../..\n"
+"X-Generator: Poedit 3.6\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: MedicalReport.php:25
+msgid "Nurse Visits"
+msgstr "Visites infirmerie"
+
+#: MedicalReport.php:26
+msgid "Immunizations or Physicals"
+msgstr "Vaccinations ou visites médicales"
+
+#: Menu.php:14 Menu.php:19
+msgid "Medical Report"
+msgstr "Rapport médical"
+
+#~ msgid "Action"
+#~ msgstr "Action"
+
+#~ msgid "URL (Student)"
+#~ msgstr "URL (élève)"
+
+#~ msgid "URL (User)"
+#~ msgstr "URL (utilisateur)"
+
+#~ msgid "URL (Student): replace the student ID with <code>__STUDENT_ID__</code> in the URL"
+#~ msgstr "URL (élève) : remplacer l'ID élève avec le code <code>__STUDENT_ID__</code> dans l'URL"
+
+#~ msgid "URL (User): replace the user ID with <code>__STAFF_ID__</code> in the URL"
+#~ msgstr "URL (utilisateur) : remplacer l'ID utilisateur avec le code <code>__STAFF_ID__</code> dans l'URL"
+
+#~ msgid "Actions"
+#~ msgstr "Actions"
+
+#~ msgid "NFC/QR Actions"
+#~ msgstr "Actions NFC/QR"
+
+#~ msgid "My Actions"
+#~ msgstr "Mes actions"
+
+#~ msgid "NFC URL/QR codes"
+#~ msgstr "URL NFC/QR codes"
+
+#~ msgid "Remove"
+#~ msgstr "Retirer"
+
+#~ msgid "Close tab after (seconds)"
+#~ msgstr "Fermer l'onglet après (secondes)"
+
+#~ msgid "Write the URL to a NFC tag using third-party software or app."
+#~ msgstr "Écrivez l'URL sur une carte NFC avec un logiciel ou une application tierce."
+
+#~ msgid "NFC URL"
+#~ msgstr "URL NFC"
+
+#~ msgid "QR codes"
+#~ msgstr "QR codes"
+
+#~ msgid "Perform action and display student information"
+#~ msgstr "Accomplir l'action et afficher les informations de l'élève"
+
+#~ msgid "Perform action and display user information"
+#~ msgstr "Accomplir l'action et afficher les informations de l'utilisateur"
+
+#~ msgid "Template"
+#~ msgstr "Modèle"
+
+#~ msgid "Invalid URL"
+#~ msgstr "URL invalide"
+
+#~ msgid "No possible actions were found."
+#~ msgstr "Aucune action possible trouvée."
+
+#~ msgid "Select an action"
+#~ msgstr "Sélectionner une action"
+
+#~ msgid "Set as default action for this session"
+#~ msgstr "Définir comme action par défaut pour cette session"
+
+#~ msgid "No URL (Student) set for this action."
+#~ msgstr "Aucune URL (élève) définie pour cette action."
+
+#~ msgid "No URL (User) set for this action."
+#~ msgstr "Aucune URL (utilisateur) définie pour cette action."
+
+#~ msgid "Cancel automatic tab closing"
+#~ msgstr "Annuler la fermeture automatique de l'onglet"
+
+#~ msgid "External URL"
+#~ msgstr "URL externe"
+
+#~ msgid "NFC URL or QR codes"
+#~ msgstr "URL NFC ou QR codes"
+
+#~ msgid "Download QR codes as zip"
+#~ msgstr "Télécharger les QR codes comme zip"
+
+#~ msgid "Copied"
+#~ msgstr "Copié"
+
+#~ msgid "No URL (Students) set for this action."
+#~ msgstr "Aucune URL (élèves) définie pour cette action."
+
+#~ msgid "No URL (Users) set for this action."
+#~ msgstr "Aucune URL (utilisateurs) définie pour cette action."
+
+#~ msgid "QR code"
+#~ msgstr "QR code"
+
+#~ msgid "Drop-off"
+#~ msgstr "Accueil"
+
+#~ msgid "Person"
+#~ msgstr "Personne"
+
+#~ msgid "Pickup"
+#~ msgstr "Sortie"
+
+#~ msgid "Mother"
+#~ msgstr "Mère"
+
+#~ msgid "Father"
+#~ msgstr "Père"
+
+#~ msgid "Skill"
+#~ msgstr "Compétence"
+
+#~ msgid "Skills"
+#~ msgstr "Compétences"
+
+#~ msgid "Qualification"
+#~ msgstr "Diplôme"
+
+#~ msgid "Institute"
+#~ msgstr "Institut"
+
+#~ msgid "Completed on"
+#~ msgstr "Obtenu le"
+
+#~ msgid "Qualifications"
+#~ msgstr "Diplômes"
+
+#~ msgid "Certification"
+#~ msgstr "Certification"
+
+#~ msgid "Granted on"
+#~ msgstr "Accordée le"
+
+#~ msgid "Valid through"
+#~ msgstr "Valide jusqu'à"
+
+#~ msgid "Certifications"
+#~ msgstr "Certifications"
+
+#~ msgid "Language"
+#~ msgstr "Langue"
+
+#~ msgid "Reading"
+#~ msgstr "Lu"
+
+#~ msgid "Speaking"
+#~ msgstr "Parlé"
+
+#~ msgid "Writing"
+#~ msgstr "Écrit"
+
+#~ msgid "Languages"
+#~ msgstr "Langues"
+
+#~ msgid "Elementary proficiency"
+#~ msgstr "Compétence élémentaire"
+
+#~ msgid "Limited working proficiency"
+#~ msgstr "Compétence professionnelle limitée"
+
+#~ msgid "Professional working proficiency"
+#~ msgstr "Compétence professionnelle générale"
+
+#~ msgid "Full professional proficiency"
+#~ msgstr "Compétence professionnelle avancée"
+
+#~ msgid "Native or bilingual proficiency"
+#~ msgstr "Compétence bilingue ou langue maternelle"
+
+#~ msgid "Email Alert"
+#~ msgstr "Alerte par Email"
+
+#~ msgid "Please set your user email address: %s"
+#~ msgstr "Veuillez définir votre adresse email: %s"
+
+#~ msgid "Send me an email alert when..."
+#~ msgstr "Envoyez-moi une alerte par email lorsque..."
+
+#~ msgid "Student reaches"
+#~ msgstr "L'élève atteint"
+
+#~ msgid "With value"
+#~ msgstr "Avec la valeur"
+
+#~ msgid "During"
+#~ msgstr "Durant"
+
+#~ msgid "Alerts sent"
+#~ msgstr "Alertes envoyées"
+
+#~ msgid "Email Alerts"
+#~ msgstr "Alertes par Email"
+
+#~ msgid "Student %s has reached %d %s with value %s within %s."
+#~ msgstr "L'élève %s a atteint %d %s avec la valeur %s durant le %s."
+
+#~ msgid "User %s has reached %d %s with value %s within %s."
+#~ msgstr "L'utilisateur %s a atteint %d %s avec la valeur %s durant le %s."
+
+#~ msgid "Week"
+#~ msgstr "Semaine"
+
+#~ msgid "Print Invoice for the Selected Fees"
+#~ msgstr "Imprimer Facture pour les Frais Sélectionnés"
+
+#~ msgid "No Fees were found."
+#~ msgstr "Aucun Frais n'a été trouvé."
+
+#~ msgid "Monthly Fees"
+#~ msgstr "Frais de Scolarité Mensuels"
+
+#~ msgid "Print Invoices"
+#~ msgstr "Imprimer Factures"
+
+#~ msgid "Print Receipts"
+#~ msgstr "Imprimer Reçus"
+
+#~ msgid "Print Receipt for the Selected Payments"
+#~ msgstr "Imprimer Reçu pour les Paiements Sélectionnés"
+
+#~ msgid "No Payments were found."
+#~ msgstr "Aucun Paiement n'a été trouvé."
+
+#~ msgid "Please select a valid Assigned day."
+#~ msgstr "Veuillez sélectionner un jour Attribué valide."
+
+#~ msgid "Print Receipt"
+#~ msgstr "Imprimer Reçu"
+
+#~ msgid "Print Invoice"
+#~ msgstr "Imprimer Facture"
+
+#~ msgid "Fees due as of today. Due date must be set. Does not check for corresponding Payments."
+#~ msgstr "Frais dus à la date du jour. La date d'Échéance doit être définie. Ne fait pas la relation avec les Paiements."
+
+#~ msgid "Include Invoice Number"
+#~ msgstr "Inclure le Numéro de Facture"
+
+#~ msgid "Invoice %s"
+#~ msgstr "Facture %s"
+
+#~ msgid "In two copies"
+#~ msgstr "En deux exemplaires"
+
+#~ msgid "Hide \"Lunch Payment\" column"
+#~ msgstr "Occulter colonne \"Paiement de la Cantine\""
+
+#~ msgid "Include Receipt Number"
+#~ msgstr "Inclure le Numéro de Reçu"
+
+#~ msgid "Payment Receipt %s"
+#~ msgstr "Reçu de Paiement %s"
+
+#~ msgid "Payment Date"
+#~ msgstr "Date du Paiement"
+
+#~ msgid "You must choose at least one payment."
+#~ msgstr "Vous devez choisir au moins un  paiement."
+
+#~ msgid "Assign"
+#~ msgstr "Attribuer"

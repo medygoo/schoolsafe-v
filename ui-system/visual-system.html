@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>SchoolSafe Visual System</title>
+	<link rel="stylesheet" href="tokens.css">
+	<link rel="stylesheet" href="components.css">
+	<link rel="stylesheet" href="animations.css">
+</head>
+<body>
+	<header class="ss-topbar">
+		<div class="ss-brand">
+			<img src="../assets/themes/SchoolSafe/logo.png" alt="SchoolSafe" width="36" height="36">
+			<strong>SchoolSafe</strong>
+		</div>
+		<span>Système visuel</span>
+	</header>
+
+	<main class="ss-page ss-rise">
+		<section class="ss-section">
+			<p class="ss-kicker">Identité</p>
+			<h1>Galerie SchoolSafe</h1>
+			<p class="ss-muted">Bleu, blanc et or. Cette page montre les pièces. Elle ne branche pas Rosario.</p>
+		</section>
+
+		<section class="ss-section" id="palette">
+			<h2>Palette</h2>
+			<div class="ss-grid">
+				<div class="ss-swatch ss-palette-primary"><b>Primary</b><code>#01268d</code></div>
+				<div class="ss-swatch ss-palette-dark"><b>Primary dark</b><code>#011f74</code></div>
+				<div class="ss-swatch ss-palette-light"><b>Primary light</b><code>#023fbf</code></div>
+				<div class="ss-swatch ss-palette-accent"><b>Accent</b><code>#f0b515</code></div>
+				<div class="ss-swatch ss-palette-surface"><b>Surface</b><code>#fcfcfc</code></div>
+				<div class="ss-swatch ss-palette-alt"><b>Surface alt</b><code>#f4f7fb</code></div>
+				<div class="ss-swatch ss-palette-success"><b>Success</b><code>#0ba473</code></div>
+				<div class="ss-swatch ss-palette-warning"><b>Warning</b><code>#fc6f06</code></div>
+				<div class="ss-swatch ss-palette-danger"><b>Danger</b><code>#e32822</code></div>
+				<div class="ss-swatch ss-palette-ai"><b>AI</b><code>#7940f3</code></div>
+			</div>
+		</section>
+
+		<section class="ss-section" id="type">
+			<h2>Typographie</h2>
+			<div class="ss-type-sample">
+				<h3>Poppins pour les titres</h3>
+				<p>Inter pour l’interface, les tableaux et les formulaires. Le texte courant reste noir, pas or.</p>
+				<p class="ss-muted">Texte secondaire, 14px.</p>
+			</div>
+		</section>
+
+		<section class="ss-section" id="buttons">
+			<h2>Boutons</h2>
+			<div class="ss-row">
+				<button class="ss-btn ss-btn-primary" type="button">Enregistrer</button>
+				<button class="ss-btn ss-btn-secondary" type="button">Annuler</button>
+				<button class="ss-btn ss-btn-accent" type="button">Repérer</button>
+				<button class="ss-btn ss-btn-danger" type="button">Retirer</button>
+				<button class="ss-btn ss-btn-primary" type="button" disabled>Indisponible</button>
+			</div>
+		</section>
+
+		<section class="ss-section" id="fields">
+			<h2>Champs</h2>
+			<div class="ss-grid">
+				<label class="ss-field">Nom
+					<input class="ss-input" type="text" value="Ecole Test Rosario">
+				</label>
+				<label class="ss-field">Niveau
+					<select class="ss-select">
+						<option>Kindergarten</option>
+						<option>1st</option>
+					</select>
+				</label>
+				<label class="ss-search">Recherche
+					<input type="search" placeholder="Rechercher">
+				</label>
+				<label class="ss-field is-error">Courriel
+					<input class="ss-input" type="email" value="exemple">
+					<small>Indiquez un courriel complet.</small>
+				</label>
+			</div>
+		</section>
+
+		<section class="ss-section" id="cards">
+			<h2>Cards</h2>
+			<div class="ss-grid">
+				<article class="ss-card">
+					<h3>Classe</h3>
+					<p>Algebre Test, Quarter 2. Le titre vient de Rosario quand l’écran sera branché.</p>
+				</article>
+				<article class="ss-kpi">
+					<span>Élèves, exemple</span>
+					<b>2</b>
+					<span>Maquette, pas un compteur live.</span>
+				</article>
+				<article class="ss-kpi">
+					<span>Cours, exemple</span>
+					<b>1</b>
+					<span>Maquette, pas un compteur live.</span>
+				</article>
+			</div>
+		</section>
+
+		<section class="ss-section" id="badges">
+			<h2>Badges et alertes</h2>
+			<div class="ss-row">
+				<span class="ss-badge">Admin</span>
+				<span class="ss-badge ss-badge-success">Présent</span>
+				<span class="ss-badge ss-badge-warning">À suivre</span>
+				<span class="ss-badge ss-badge-danger">Absent</span>
+				<span class="ss-badge ss-badge-ai">JASPE plus tard</span>
+			</div>
+			<div class="ss-grid" style="margin-top: 16px">
+				<div class="ss-alert"><strong>Info.</strong> Le menu Rosario reste la source des programmes.</div>
+				<div class="ss-alert ss-alert-success"><strong>Enregistré.</strong> Rosario a confirmé l’écriture.</div>
+				<div class="ss-alert ss-alert-warning"><strong>Solde bas.</strong> Le texte porte l’alerte, pas seulement la couleur.</div>
+				<div class="ss-alert ss-alert-danger"><strong>Refusé.</strong> Le droit Rosario manque.</div>
+			</div>
+		</section>
+
+		<section class="ss-section" id="table">
+			<h2>Tableau</h2>
+			<div class="ss-table-wrap">
+				<table class="ss-table">
+					<thead>
+						<tr>
+							<th>Élève</th>
+							<th>Cours</th>
+							<th>Statut</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Leo Eleve</td>
+							<td>Algebre Test</td>
+							<td><span class="ss-badge ss-badge-success">Inscrit</span></td>
+						</tr>
+						<tr>
+							<td>Exemple</td>
+							<td>Aucun cours</td>
+							<td><span class="ss-badge">Vide</span></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<nav class="ss-pagination" aria-label="Pages" style="margin-top: 16px">
+				<button class="ss-page-btn" type="button">Préc.</button>
+				<button class="ss-page-btn" type="button" aria-current="page">1</button>
+				<button class="ss-page-btn" type="button">2</button>
+				<button class="ss-page-btn" type="button">Suiv.</button>
+			</nav>
+		</section>
+
+		<section class="ss-section" id="desktop">
+			<h2>Bureau</h2>
+			<div class="ss-shell ss-demo-desktop">
+				<nav class="ss-sidebar" aria-label="Exemple bureau">
+					<img src="../assets/themes/SchoolSafe/logo.png" alt="">
+					<a href="#desktop" aria-current="page">Tableau</a>
+					<a href="#table">Élèves</a>
+					<a href="#fields">École</a>
+				</nav>
+				<div class="ss-shell-main">
+					<div class="ss-topbar">
+						<button class="ss-btn ss-btn-ghost ss-menu-btn ss-icon-btn" type="button" aria-label="Ouvrir le menu">☰</button>
+						<strong>Ecole Test Rosario</strong>
+						<button class="ss-btn ss-btn-accent" type="button">Action</button>
+					</div>
+					<div class="ss-shell-body">
+						<article class="ss-card">
+							<h3>Journée</h3>
+							<p>La barre latérale reste ouverte. L’action principale reste dans la barre haute.</p>
+						</article>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="ss-section" id="mobile">
+			<h2>Mobile</h2>
+			<div class="ss-demo-mobile">
+				<div class="ss-shell">
+					<nav class="ss-sidebar is-closed" id="mobile-menu" aria-label="Exemple mobile">
+						<a href="#mobile" aria-current="page">Tableau</a>
+						<a href="#table">Élèves</a>
+					</nav>
+					<div class="ss-shell-main">
+						<div class="ss-topbar">
+							<button class="ss-btn ss-btn-ghost ss-icon-btn" id="open-menu" type="button" aria-label="Ouvrir le menu" aria-controls="mobile-menu">☰</button>
+							<strong>SchoolSafe</strong>
+							<button class="ss-btn ss-btn-accent" type="button">Action</button>
+						</div>
+						<div class="ss-shell-body">
+							<article class="ss-card">
+								<h3>Une colonne</h3>
+								<p>Le menu est fermé tant que le bouton n’est pas utilisé.</p>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="ss-section" id="states">
+			<h2>États</h2>
+			<div class="ss-grid">
+				<div class="ss-loading ss-card">
+					<div class="ss-spinner" role="status" aria-label="Chargement"></div>
+					<strong>Chargement</strong>
+					<span class="ss-muted">Rosario n’a pas encore répondu.</span>
+				</div>
+				<div class="ss-empty">
+					<h3>Aucun résultat</h3>
+					<p>La liste Rosario est vide. Rien n’est inventé à la place.</p>
+				</div>
+				<div class="ss-error-state">
+					<h3>Erreur</h3>
+					<p>Le message vient de Rosario. L’action n’est pas marquée réussie.</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="ss-section ss-specimen" id="modal-specimen">
+			<h2>Modal</h2>
+			<div class="ss-card" style="min-height: 220px">
+				<p>Le panneau confirme une action que Rosario possède déjà.</p>
+			</div>
+			<div class="ss-modal is-open" aria-hidden="true">
+				<div class="ss-modal-panel" role="dialog" aria-labelledby="specimen-title">
+					<h3 id="specimen-title">Confirmer</h3>
+					<p>Cette maquette ne modifie aucune donnée.</p>
+					<div class="ss-row" style="margin-top: 16px">
+						<button class="ss-btn ss-btn-primary" type="button">Continuer</button>
+						<button class="ss-btn ss-btn-secondary" type="button">Fermer</button>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<p class="ss-row">
+			<button class="ss-btn ss-btn-primary" id="open-modal" type="button">Ouvrir une fenêtre</button>
+		</p>
+	</main>
+
+	<div class="ss-modal" id="live-modal">
+		<div class="ss-modal-panel" role="dialog" aria-modal="true" aria-labelledby="live-title">
+			<h3 id="live-title">Fenêtre</h3>
+			<p>Fermez pour revenir à la galerie.</p>
+			<button class="ss-btn ss-btn-secondary" id="close-modal" type="button">Fermer</button>
+		</div>
+	</div>
+
+	<script>
+		document.getElementById("open-menu").addEventListener("click", function () {
+			document.getElementById("mobile-menu").classList.toggle("is-closed");
+		});
+		document.getElementById("open-modal").addEventListener("click", function () {
+			document.getElementById("live-modal").classList.add("is-open");
+		});
+		document.getElementById("close-modal").addEventListener("click", function () {
+			document.getElementById("live-modal").classList.remove("is-open");
+		});
+	</script>
+</body>
+</html>

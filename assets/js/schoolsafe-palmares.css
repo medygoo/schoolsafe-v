@@ -1,0 +1,5 @@
+[data-palmares-parent] ul{display:flex;flex-wrap:wrap;gap:10px;padding:0;list-style:none}
+[data-palmares-parent] li{padding:10px;border:1px solid #c4d8dc;border-radius:8px;background:#f3faf7;color:#243b36;overflow-wrap:anywhere}
+[data-palmares-parent] strong{display:inline-block;padding:4px 8px;margin-right:6px;border-radius:4px;background:#d1eadf;color:#174e3c}
+[data-palmares-parent] strong::before{content:"\2605";margin-right:6px;color:#946200}
+[data-palmares-parent] [data-palmares-event]{color:#174e3c}

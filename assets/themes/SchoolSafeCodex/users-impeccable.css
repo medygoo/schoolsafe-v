@@ -1,0 +1,34 @@
+/* Users retain native layouts and permissions, with their own identity. */
+body.modules #menu .menu-module[data-ss-branch="users"] {
+    --ss-branch: #ffc7b5;
+    --ss-branch-ink: #a62f20;
+}
+.ss-users-icon { display: inline-grid; place-items: center; width: 28px; height: 28px; font-size: 20px; flex: 0 0 28px; }
+body.modules #menu .menu-module[data-ss-branch="users"] .ss-context-heading strong::before { content: none; display: none; }
+#body[data-ss-users] {
+    --school-accent: #a62f20; --school-focus: #a62f20;
+    --school-ink: #49231f; --school-muted: #714c45;
+    --school-line: #eccbc1; --school-wash: #fff3ee;
+    --ss-page-accent: #a62f20;
+}
+#body[data-ss-users] :is(input[type="submit"],button[type="submit"]) {
+    background: #a62f20 !important; border-color: #a62f20 !important; color: #fff !important;
+    min-height: 44px; padding: 9px 16px; border-radius: 5px;
+}
+#body[data-ss-users] :is(input[type="submit"],button[type="submit"]):hover { background: #842419 !important; }
+#body[data-ss-users] :is(input,select,textarea):focus-visible { outline: 2px solid #a62f20; outline-offset: 2px; }
+#body[data-ss-users] .widefat th { background: #fff3ee !important; color: #49231f !important; }
+#body[data-ss-users] :is(.header2,.tabs) { gap: 12px; }
+#body[data-ss-users] ::selection { background: #ffc7b5; color: #49231f; }
+#body[data-ss-users] .ss-page-heading { border-color: #a62f20; background: #fff3ee; }
+#body[data-ss-users] .ss-page-heading h2 { color: #a62f20; }
+#body[data-ss-users] #general_table { max-width: 1040px; margin: 20px auto; }
+#body[data-ss-users] :is(table.general-info,table.create-account) { margin-block: 16px; }
+#body[data-ss-users] .legend-gray { display: block; margin: 6px 0 10px; color: #714c45; }
+#body[data-ss-users] table.general-info > tbody > tr:first-child,
+#body[data-ss-users] table.general-info > tbody > tr:first-child > td { display: block; width: 100%; box-sizing: border-box; }
+#body[data-ss-users] table.general-info > tbody > tr:first-child > td:first-child { padding-bottom: 4px; }
+#body[data-ss-users] table.general-info details { margin: 0; }
+#body[data-ss-users] table.general-info summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #a62f20; }
+#body[data-ss-users] table.general-info summary::before { content: '+'; margin-right: 8px; }
+#body[data-ss-users] table.general-info details[open] > summary::before { content: '-'; }

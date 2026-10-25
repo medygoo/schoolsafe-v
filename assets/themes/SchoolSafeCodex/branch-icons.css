@@ -1,0 +1,26 @@
+/* Lucide assets reused from the approved model library. */
+body.modules #menu .menu-module[data-ss-branch] > .menu-top .module-icon { filter: none !important; }
+body.modules #menu .menu-module[data-ss-branch] > #selectedModuleLink .module-icon { background-color: var(--ss-branch-ink) !important; }
+#menu .menu-module[data-ss-branch="pilotage"] { --ss-icon-url: url("navigation-icons/LayoutDashboard.svg"); }
+#menu .menu-module[data-ss-branch="school"] { --ss-icon-url: url("navigation-icons/School.svg"); }
+#menu .menu-module[data-ss-branch="pedagogy"] { --ss-icon-url: url("navigation-icons/BookOpenCheck.svg"); }
+#menu .menu-module[data-ss-branch="security"] { --ss-icon-url: url("navigation-icons/ShieldCheck.svg"); }
+#menu .menu-module[data-ss-branch="finance"] { --ss-icon-url: url("navigation-icons/WalletCards.svg"); }
+#menu .menu-module[data-ss-branch="feeControl"] { --ss-icon-url: url("navigation-icons/BadgeCheck.svg"); }
+#menu .menu-module[data-ss-branch="accounting"] { --ss-icon-url: url("navigation-icons/Landmark.svg"); }
+#menu .menu-module[data-ss-branch="people"] { --ss-icon-url: url("navigation-icons/ContactRound.svg"); }
+#menu .menu-module[data-ss-branch="inventory"] { --ss-icon-url: url("navigation-icons/PackageSearch.svg"); }
+#menu .menu-module[data-ss-branch="communication"] { --ss-icon-url: url("navigation-icons/MessagesSquare.svg"); }
+#menu .menu-module[data-ss-branch="care"] { --ss-icon-url: url("navigation-icons/HeartPulse.svg"); }
+#menu .menu-module[data-ss-branch="administration"] { --ss-icon-url: url("navigation-icons/FolderCog.svg"); }
+#menu .menu-module[data-ss-branch="reports"] { --ss-icon-url: url("navigation-icons/ChartNoAxesCombined.svg"); }
+body.modules #menu .menu-module[data-ss-branch] > .menu-top .module-icon { background-image: none !important; background-color: var(--ss-branch); mask: var(--ss-icon-url) center / contain no-repeat; -webkit-mask: var(--ss-icon-url) center / contain no-repeat; }
+body.modules #menu .ss-open > .menu-top .module-icon { background-color: var(--ss-branch-ink); }
+body.modules #menu .menu-module[data-ss-branch] > #selectedModuleLink .module-icon { display: inline-block !important; }
+body.modules #menu .menu-module[data-ss-branch] .ss-context-heading strong { display: flex; align-items: center; gap: 8px; font-size: 16px; }
+body.modules #menu .menu-module[data-ss-branch] .ss-context-heading strong::before {
+    content: ""; display: block; flex: 0 0 20px; width: 20px; height: 20px;
+    background-color: var(--ss-branch-ink);
+    mask: var(--ss-icon-url) center / contain no-repeat;
+    -webkit-mask: var(--ss-icon-url) center / contain no-repeat;
+}

@@ -1,0 +1,130 @@
+/* Visual layer only: native forms, controls and business actions are retained. */
+body.modules #body[data-ss-page] .list-wrapper {
+    width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto;
+}
+body.modules #body[data-ss-page="Discipline/DisciplineForm"] .list-wrapper {
+    contain: inline-size;
+}
+body.modules #body[data-ss-page] .postbox-wrapper { margin: 20px 0; max-width: 100%; }
+body.modules #body[data-ss-page] table.postbox:not(:has(table.dashboard)):not(:has(.list-wrapper)):not(:has(table.list)) {
+    border: 0; border-radius: 0; box-shadow: none; width: 100%;
+}
+body.modules #body[data-ss-page] table.postbox > thead th {
+    padding: 12px 0; text-align: left; border-bottom: 1px solid #dbe2ec;
+    color: #172333; font-family: inherit; text-transform: none;
+}
+body.modules #body[data-ss-page] table.postbox > thead h3 { margin: 0; padding: 0; font-size: 16px; text-align: left; }
+body.modules #body[data-ss-page] table.postbox > tbody > tr > td.popTable { padding: 16px 0; }
+body.modules #body[data-ss-page] .postbox fieldset {
+    box-sizing: border-box; border: 0; border-top: 1px solid #dbe2ec;
+    border-radius: 0; padding: 16px 0; margin: 0 0 16px;
+}
+body.modules #body[data-ss-page] .postbox fieldset legend { color: #172333; font-weight: 600; }
+body.modules #body[data-ss-page="Custom/Registration"] fieldset .widefat { width: 100%; border: 0; }
+body.modules #body[data-ss-page="Custom/Registration"] fieldset .widefat td { padding: 12px 8px; }
+body.modules #body[data-ss-page="Custom/Registration"] fieldset img.button { float: none !important; margin: 0 8px 0 0; }
+body.modules #body[data-ss-page="Custom/Registration"] fieldset select { width: 100%; }
+body.modules #body[data-ss-page="Custom/Registration"] fieldset .legend-gray { font-size: 12px; color: #516176; }
+body.modules { background: #fff !important; }
+body.modules #body { background: #fff !important; --ss-surface: #fff; --ss-surface-raised: #fff; }
+#body[data-ss-page] .postbox, #body[data-ss-page] fieldset,
+#body[data-ss-page] .popTable { background-color: #fff !important; }
+#body[data-ss-page] .widefat tbody tr td,
+#body[data-ss-page] .widefat tbody tr:nth-child(even) td { background-color: #fff !important; }
+#body[data-ss-page] .widefat tbody tr:hover td { background-color: #f0f5ff !important; }
+#body[data-ss-page="Custom/Registration"] { --ss-page-accent: #08766b; }
+#body[data-ss-page="Custom/Registration"] img.button {
+    width: 20px !important; height: 20px !important;
+    min-width: 0 !important; max-width: 20px !important;
+    object-fit: contain; display: inline-block; vertical-align: middle;
+}
+#body[data-ss-page="Custom/Registration"] fieldset { min-width: 0; padding: 12px; }
+#body[data-ss-page="Custom/Registration"] fieldset legend { padding: 0 6px; }
+#body[data-ss-page="Custom/Registration"] fieldset .checkbox-label { min-height: 32px; display: inline-flex; align-items: center; }
+#body[data-ss-page="Custom/Registration"] .postbox { width: 100%; }
+@media screen and (max-width: 1100px) {
+    #body[data-ss-page="Custom/Registration"] tr.st:has(> td > fieldset) { display: block; }
+    #body[data-ss-page="Custom/Registration"] tr.st > td:has(> fieldset) { display: block; width: 100%; box-sizing: border-box; padding: 8px 0; }
+    #body[data-ss-page="Custom/Registration"] table:has(> tbody > tr > td > fieldset) { width: 100%; }
+}
+#body[data-ss-page] { --ss-page-accent: #2455c6; }
+#body[data-ss-page^="School_Setup/"],
+#body[data-ss-page^="Students/"] { --ss-page-accent: #08766b; }
+#body[data-ss-page^="Scheduling/"],
+#body[data-ss-page^="Grades/"] { --ss-page-accent: #7445a6; }
+#body[data-ss-page^="Attendance/"],
+#body[data-ss-page^="Discipline/"] { --ss-page-accent: #a5324d; }
+#body[data-ss-page^="Student_Billing/"] { --ss-page-accent: #23682d; }
+#body[data-ss-page^="Accounting/"] { --ss-page-accent: #4e5990; }
+#body[data-ss-page^="Users/"] { --ss-page-accent: #9c446b; }
+#body[data-ss-page^="Resources/"] { --ss-page-accent: #9a4f20; }
+#body[data-ss-page="School_Setup/PortalNotes"],
+#body[data-ss-page="School_Setup/PortalPolls"] { --ss-page-accent: #066e93; }
+#body[data-ss-page^="Food_Service/"] { --ss-page-accent: #ad3d5b; }
+#body[data-ss-page="Custom/RemoveAccess"] { --ss-page-accent: #a5324d; }
+#body[data-ss-page] #search { text-align: left; }
+#body[data-ss-page] #search #general_table { width: 100%; border-collapse: collapse; }
+#body[data-ss-page] #search #general_table td { padding: 8px; vertical-align: middle; }
+#body[data-ss-page] #search #general_table > tbody > tr > td:first-child {
+    width: 32%; text-align: left; font-size: 14px; font-weight: 600;
+    color: var(--ss-text-secondary);
+}
+#body[data-ss-page] #search #general_table input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+#body[data-ss-page] #search #general_table select { width: 100%; min-height: 44px !important; }
+#body[data-ss-page] #search > .center { text-align: left; padding: 12px 8px; }
+#body[data-ss-page] #search > .center > label {
+    display: inline-flex; align-items: center; min-height: 44px; gap: 6px;
+    font-size: 14px; max-width: 100%;
+}
+#body[data-ss-page] #search input[type="checkbox"] { accent-color: #1459d9; width: 18px; height: 18px; flex-shrink: 0; }
+#body[data-ss-page] .postbox:has(#search) { width: 100%; background: #fff; }
+#body[data-ss-page] .postbox:has(#search) > thead h3 {
+    text-align: left; padding: 12px 16px; margin: 0;
+    border-bottom: 1px solid var(--ss-line); font-size: 16px;
+}
+#body[data-ss-page] .postbox:has(#search) .popTable { padding: 12px; }
+#body[data-ss-page] .ss-f13 {
+    margin: 0 0 20px; padding: 16px 0;
+    border: 0; border-top: 3px solid var(--ss-page-accent);
+    border-bottom: 1px solid var(--ss-line);
+    border-radius: 0; background: transparent; box-shadow: none;
+}
+#body[data-ss-page] .ss-f13 h2 { margin: 6px 0 8px; font-size: 24px; line-height: 1.3; color: var(--ss-text); }
+#body[data-ss-page] .ss-f13 p { max-width: 76ch; line-height: 1.5; }
+#body[data-ss-page] .ss-f13-kicker { color: var(--ss-page-accent); font-size: 12px; font-weight: 700; }
+#body[data-ss-page] .header2 {
+    padding: 10px 8px; vertical-align: middle;
+    background: #fff; border-bottom: 1px solid var(--ss-line);
+}
+#body[data-ss-page] .header2 .nobr { white-space: normal; }
+#body[data-ss-page] .header2 select { margin: 3px; }
+#body[data-ss-page] .button-primary,
+#body[data-ss-page] input[type="submit"] {
+    padding: 10px 16px; border-radius: 6px; font-size: 14px;
+    line-height: 1.4; text-transform: none; letter-spacing: 0;
+}
+#body[data-ss-page] input:disabled,
+#body[data-ss-page] select:disabled,
+#body[data-ss-page] button:disabled { cursor: not-allowed; opacity: .65; }
+#body[data-ss-page] .widefat th { padding: 12px 8px; font-weight: 600; }
+#body[data-ss-page] .widefat tbody tr:nth-child(even) td { background: #f5f7fb; }
+#body[data-ss-page] .widefat tbody tr:hover td { background: #edf3ff; }
+#body[data-ss-page] .list-wrapper { border-top: 3px solid var(--ss-page-accent); border-radius: 0; }
+@media screen and (max-width: 700px) {
+    #body[data-ss-page] #search #general_table > tbody > tr > td {
+        display: block; box-sizing: border-box; width: 100%; padding: 4px 8px;
+    }
+    #body[data-ss-page] #search #general_table > tbody > tr { display: block; margin-bottom: 12px; }
+    #body[data-ss-page] .ss-f13 { margin-bottom: 16px; padding: 12px 0; }
+    #body[data-ss-page] .ss-f13 h2 { font-size: 21px; overflow-wrap: anywhere; }
+    #body[data-ss-page] table.header { width: 100%; table-layout: fixed; }
+    #body[data-ss-page] table.header > tbody > tr > td.header2 {
+        display: block; box-sizing: border-box; width: 100%; text-align: left;
+    }
+    #body[data-ss-page] .header2 table { float: none !important; max-width: 100%; }
+    #body[data-ss-page] .header2 select { max-width: calc(100% - 6px); }
+}
+@media print {
+    #body[data-ss-page] .ss-f13 { border-top: 0; background: #fff; }
+    #body[data-ss-page] .widefat tbody tr:nth-child(even) td { background: #fff; }
+}

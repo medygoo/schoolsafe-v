@@ -1,0 +1,42 @@
+.p1-screen {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: grid;
+  gap: 16px;
+}
+
+.p1-screen form,
+.p1-facts,
+.p1-screen ul {
+  display: grid;
+  gap: 12px;
+}
+
+.p1-screen input,
+.p1-screen select,
+.p1-screen textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.p1-facts div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 14rem) 1fr;
+  gap: 8px;
+}
+
+@media (min-width: 1440px) {
+  .p1-screen { padding: 32px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .p1-screen { padding: 20px; }
+}
+
+@media (max-width: 390px) {
+  .p1-screen { padding: 12px; }
+  .p1-screen button { width: 100% }
+  .p1-facts div { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,54 @@
+/* SchoolSafe shell for existing settings/operations. No controller or form changes. */
+body:has(.ss-native-workspace-header){--workspace-blue:#175bcc;--workspace-ink:#172d4a;--workspace-line:#d5e1f0;margin:0;background:#f2f6fc!important;color:var(--workspace-ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+body:has(.ss-native-workspace-header) :is(#footer,#footerwrap,#menu,.sskc-manager-navigation){display:none!important}
+body:has(.ss-native-workspace-header) #wrap{padding:0!important;margin:0!important;background:transparent!important}
+body:has(.ss-native-workspace-header) #body{position:static!important;margin:0 auto!important;padding:0 32px 40px!important;width:100%!important;max-width:1320px;min-height:100dvh!important;box-sizing:border-box;background:transparent!important;color:var(--workspace-ink);font:inherit}
+.ss-native-workspace-header{max-width:1256px;margin:0 auto 28px;padding:24px 0 22px;border-bottom:1px solid var(--workspace-line);box-sizing:border-box;color:var(--workspace-ink)}
+body>.ss-native-workspace-header{max-width:1320px;padding-inline:32px}
+.ss-native-workspace-top{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.ss-native-workspace-brand{display:flex;align-items:center;gap:12px;color:#12305b!important;text-decoration:none!important;flex-shrink:0}
+.ss-native-workspace-emblem{display:grid;place-items:center;width:60px;height:64px;border-radius:10px;background:#123466;overflow:hidden;flex-shrink:0}
+.ss-native-workspace-brand img{display:block;width:48px;height:52px;object-fit:contain}
+.ss-native-workspace-languages{display:inline-flex;gap:2px;align-items:center}
+.ss-native-workspace-languages a[aria-current=true]{font-weight:750;text-decoration:underline!important;text-underline-offset:4px}
+.ss-native-workspace-brand strong{display:block;font-size:25px;font-weight:750;letter-spacing:-.03em}
+.ss-native-workspace-brand small{display:block;font-size:13px;color:#526985}
+.ss-native-workspace-top nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px 18px}
+.ss-native-workspace-top nav a{display:inline-flex;align-items:center;min-height:44px;padding:4px 6px;color:#1751a3;font-size:14px;font-weight:600;text-decoration:none!important;border-radius:6px}
+.ss-native-workspace-top nav a:hover{background:#e4edfc}
+.ss-native-workspace-return{background:#e8f0ff;padding-inline:12px!important}
+.ss-native-workspace-heading{margin-top:26px}
+.ss-native-workspace-heading p{margin:0 0 7px;color:#526985;font-size:13px}
+.ss-native-workspace-heading h1{margin:0;font:750 clamp(24px,3vw,32px)/1.2 system-ui,sans-serif;letter-spacing:-.025em;color:#12305b}
+body:has(.ss-native-workspace-header)>main{max-width:1320px;padding:0 32px 40px;box-sizing:border-box}
+body:has(.ss-native-workspace-header) #body :is(h2,h3){font-family:inherit;color:#15385f}
+body:has(.ss-native-workspace-header) #body p{max-width:76ch;line-height:1.6}
+body:has(.ss-native-workspace-header) #body table{max-width:100%;width:100%;box-sizing:border-box;border-collapse:collapse}
+body:has(.ss-native-workspace-header) #body :is(td,th){white-space:normal;overflow-wrap:anywhere;border-color:var(--workspace-line)}
+body:has(.ss-native-workspace-header) #body .tabbar{background:#e8effa;border-color:var(--workspace-line)}
+body:has(.ss-native-workspace-header) :is(button,input[type=submit],input[type=button],.button){min-height:44px;border-radius:7px;font:600 14px/1.4 system-ui,sans-serif;text-transform:none;cursor:pointer}
+body:has(.ss-native-workspace-header) #body :is(input,select,textarea){box-sizing:border-box;max-width:100%;font-family:inherit}
+body:has(.ss-native-workspace-header) #body input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]),body:has(.ss-native-workspace-header) #body :is(select,textarea){min-height:44px;padding:8px 10px;border:1px solid #c6d5e8;border-radius:6px;background:#fff;color:#172d4a;font-size:16px}
+body:has(.ss-native-workspace-header) #body :is(input[type=submit],button){padding:10px 16px;background:#175bcc;color:white;border:1px solid #175bcc}
+body:has(.ss-native-workspace-header) :is(a,button,input,select,textarea,summary):focus-visible{outline:3px solid #175bcc;outline-offset:3px}
+body:has(.ss-native-workspace-header) .card{min-width:0;border-color:var(--workspace-line);border-radius:10px;background:#fff}
+body:has(.ss-native-workspace-header) .inline>div{min-width:0}
+/* Native click-to-edit controls keep their handlers, with a larger hit area. */
+body:has(.ss-native-workspace-header) #body .onclick{display:inline-flex;flex-direction:column;align-items:flex-start;min-height:44px;box-sizing:border-box;padding:8px 10px;border:1px solid #d5e1f0;border-radius:6px;background:#fcfdff;color:#172d4a;font-size:16px}
+body:has(.ss-native-workspace-header) #body label:has(input[type=checkbox]),body:has(.ss-native-workspace-header) #body label:has(input[type=radio]){display:inline-flex;align-items:center;gap:8px;min-height:44px}
+body:has(.ss-native-workspace-header) #body :is(input[type=checkbox],input[type=radio]){width:20px;height:20px;accent-color:#175bcc}
+body:has(.ss-native-workspace-header) #body .tabbar a{display:inline-flex;align-items:center;min-height:44px;padding:6px 10px;box-sizing:border-box;color:#1751a3;font-size:14px;text-decoration:none}
+body:has(.ss-native-workspace-header) #body :is(.list,.postbox){background:#fff;border:1px solid var(--workspace-line);border-radius:8px}
+body:has(.ss-native-workspace-header) :is(.flash,.err){overflow-wrap:anywhere}
+@media(max-width:700px){
+ body:has(.ss-native-workspace-header) #body{padding:0 14px 28px!important}
+ body>.ss-native-workspace-header{padding-inline:14px}
+ body:has(.ss-native-workspace-header)>main{padding:0 14px 28px}
+ .ss-native-workspace-header{padding-top:16px;padding-bottom:14px;margin-bottom:16px}
+ .ss-native-workspace-top{align-items:flex-start;flex-direction:column;gap:10px}
+ .ss-native-workspace-top nav{justify-content:flex-start;gap:4px 10px}
+ .ss-native-workspace-heading{margin-top:12px}
+ body:has(.ss-native-workspace-header) #body :is(td,th){padding:7px 5px}
+ body:has(.ss-native-workspace-header) .card{padding:18px 14px}
+}
+@media print{.ss-native-workspace-header{display:none}body:has(.ss-native-workspace-header){background:white!important;color:black}body:has(.ss-native-workspace-header) #body{padding:0!important;min-height:0!important}}

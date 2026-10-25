@@ -1,0 +1,219 @@
+/* ============================================================
+   SchoolSafe — adaptation Rosario des deux écrans bleus.
+
+   Les fichiers voisins (design-tokens.css, design-system.css,
+   components.css, entry.css, auth.css, entree-visuel.css, jaspe2d.css,
+   auth-companion.css, auth-models.css, visuel-global.css,
+   dashboard-liquid-glass.css) sont la copie fidèle du prototype validé :
+   mêmes variables, mêmes composants, mêmes animations, mêmes paliers
+   responsive (ordinateur, tablette, téléphone).
+
+   Ce fichier ne contient QUE ce que Rosario impose en plus :
+   - neutraliser le cadre de la page de connexion (table.postbox, #body) ;
+   - rendre les messages natifs DANS le panneau ;
+   - rhabiller les liens natifs (langue, mot de passe oublié, mentions) ;
+   - garder l'ensemble plein écran, bureau comme téléphone.
+   Aucune règle métier, aucune règle d'authentification ici.
+   ============================================================ */
+
+/* Le gabarit de la page de connexion Rosario (marges du #body, table.postbox
+   et ses bordures) est neutralisé : les deux écrans occupent tout l'écran.
+   Le DOM de Rosario est conservé, rien n'est supprimé. */
+body.login,
+body.first-login {
+  margin: 0;
+  padding: 0;
+  background: #071a3d;
+  /* Le prototype pose `body { overflow: hidden }` : sur une page Rosario,
+     seul le défilement horizontal doit être bloqué. */
+  overflow-x: hidden;
+}
+
+body.login #body,
+body.first-login #body {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  width: 100%;
+  background: transparent;
+}
+
+body.login #body .postbox,
+body.login #body table.postbox,
+body.login #body .postbox td,
+body.login #body .postbox th,
+body.first-login #body .postbox,
+body.first-login #body table.postbox,
+body.first-login #body .postbox td,
+body.first-login #body .postbox th {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  width: 100%;
+  max-width: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Conteneur des deux écrans : plein cadre, au-dessus du gabarit. */
+#ss-blue {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+}
+
+#ss-blue .screen {
+  position: fixed;
+  inset: 0;
+}
+
+/* ---------------------------------------------------------------
+   Messages natifs de Rosario (erreur, note) : rendus dans le panneau,
+   jamais par-dessus les écrans.
+   --------------------------------------------------------------- */
+#ss-blue .ss-blue-messages {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+#ss-blue .ss-blue-messages :is(.error, .note, .warning, .updated) {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+#ss-blue .ss-blue-messages .error {
+  background: #ffe4e6;
+  color: #771c2e;
+  border: 1px solid #e2a6b0;
+}
+
+#ss-blue .ss-blue-messages :is(.note, .updated) {
+  background: #eaf3ff;
+  color: #12325f;
+  border: 1px solid #cfe3fa;
+}
+
+/* ---------------------------------------------------------------
+   Liens natifs rhabillés pour le fond clair de l'écran de connexion.
+   --------------------------------------------------------------- */
+#ss-blue .language-switch a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 11px;
+  opacity: .55;
+  transition: opacity 160ms ease-out, background-color 160ms ease-out;
+}
+
+#ss-blue .language-switch a:hover,
+#ss-blue .language-switch a:focus-visible {
+  opacity: 1;
+  background: #ffffffb0;
+}
+
+#ss-blue .language-switch a.selected {
+  opacity: 1;
+  background: #ffffff;
+  box-shadow: 0 4px 12px #92c5e72c;
+}
+
+#ss-blue .language-switch a img {
+  width: 26px;
+  height: auto;
+  border-radius: 4px;
+}
+
+#ss-blue .label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#ss-blue .text-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #0961d7;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#ss-blue .text-button:hover,
+#ss-blue .text-button:focus-visible {
+  text-decoration: underline;
+}
+
+/* Création de compte native : conservée sous le panneau. */
+#ss-blue .ss-blue-secondary {
+  margin-top: 14px;
+  display: grid;
+  gap: 6px;
+  text-align: right;
+  font-size: 13px;
+}
+
+#ss-blue .ss-blue-secondary a {
+  color: #0961d7;
+  font-weight: 600;
+}
+
+/* Mentions légales natives, en clair sous l'écran de connexion. */
+#ss-blue .ss-blue-legal {
+  margin: 4px auto 0;
+  max-width: 760px;
+  padding: 0 20px 28px;
+  color: #4e6b9a;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+#ss-blue .ss-blue-legal a {
+  color: #0961d7;
+}
+
+#ss-blue .ss-blue-legal summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #264576;
+}
+
+/* ---------------------------------------------------------------
+   Enchaînement accueil -> connexion : court fondu montant, désactivé si
+   l'utilisateur demande moins d'animation.
+   --------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  #ss-blue .screen.ss-blue-entering {
+    animation: ssBlueRiseIn 320ms ease both;
+  }
+}
+
+@keyframes ssBlueRiseIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------------------------------------------------------------
+   Téléphone : le prototype masque déjà les engagements et l'illustration
+   aux petits paliers ; on garde le panneau atteignable et lisible.
+   --------------------------------------------------------------- */
+@media (max-width: 600px) {
+  #ss-blue .ss-blue-legal {
+    font-size: 11.5px;
+    padding: 0 14px 22px;
+  }
+
+  #ss-blue .ss-blue-secondary {
+    text-align: center;
+  }
+}

@@ -1,0 +1,30 @@
+/* SchoolSafe native login layout, 2026-10-14. Authentication stays native. */
+html:has(body.login),body.login { background: #eaf2fc !important; color: #173b5a; min-height: 100%; }
+body.login { margin: 0; font: 16px/1.5 system-ui,sans-serif; }
+body.login .ss-splash { display: none !important; }
+body.login #body { padding: 24px 16px !important; box-sizing: border-box; background: transparent !important; min-width: 0; }
+body.login .postbox-wrapper {
+    width: min(420px,100%) !important; max-width: 100%; box-sizing: border-box;
+    margin: 16px auto 24px !important; padding: 24px; background: #fff !important;
+    border: 0 !important; border-radius: 8px; box-shadow: 0 8px 26px rgba(31,65,96,.1);
+}
+body.login .postbox { width: 100%; border: 0; background: transparent; }
+body.login .postbox th,body.login .postbox td { border: 0; background: transparent; }
+body.login .postbox thead .title { margin: 0 0 16px; font: 650 22px/1.3 system-ui,sans-serif; text-transform: none; color: #173b5a; }
+body.login .logo { display: block; width: 88px !important; height: 88px !important; max-width: 100%; object-fit: contain; margin: 0 auto 8px !important; }
+body.login h4 { margin: 8px 0 20px; font: 600 18px/1.4 system-ui,sans-serif; color: #173b5a; }
+body.login #loginform { max-width: none; margin: 0; padding: 0; background: transparent; }
+body.login #loginform table,body.login #loginform tbody,body.login #loginform tr,body.login #loginform td { display: block; width: 100%; box-sizing: border-box; }
+body.login #loginform td { padding: 0 0 16px; }
+body.login #loginform label { display: block; color: #173b5a; font-size: 15px; }
+body.login #loginform input:not([type="hidden"]) { box-sizing: border-box; display: block; width: 100%; min-height: 48px; margin: 6px 0 0; padding: 10px 12px; border: 1px solid #9fb4c6; border-radius: 6px; background: #fff; color: #173b5a; font: 16px system-ui,sans-serif; }
+body.login #loginform input[type="submit"] { border: 0; background: #255e98; color: #fff; font-weight: 600; cursor: pointer; }
+body.login a { color: #174e85; text-underline-offset: 3px; }
+body.login #loginform .align-right { margin-top: 8px; }
+body.login #loginform a[href*="locale="] { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border-radius: 6px; background: #eef4fb; }
+body.login .about-schoolsafe { padding-top: 12px; border-top: 1px solid #dce6ee; }
+body.login .about-schoolsafe summary { cursor: pointer; }
+body.login .size-1 { font-size: 12px; line-height: 1.6; color: #355a76; overflow-wrap: anywhere; }
+body.login :focus-visible { outline: 3px solid #255e98; outline-offset: 2px; }
+body.login ::selection { background: #255e98; color: #fff; }
+@media(max-width:420px) { body.login #body { padding: 12px !important; } body.login .postbox-wrapper { margin: 8px auto 16px !important; padding: 20px 16px; } }

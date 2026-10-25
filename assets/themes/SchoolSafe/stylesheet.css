@@ -1,0 +1,2798 @@
+/* SchoolSafe: polices locales (Lato via FlatSIS), aucun chargement externe. */
+@import url("../FlatSIS/stylesheet.css");
+@import url("../../../ui-system/tokens.css");
+@import url("../../../ui-system/animations.css");
+
+/*
+ * LOT-01 shell tokens, measured from the SchoolSafe logo.
+ * Shield face #01268D, brighter blue #023FBF, word "Safe" #F0B515,
+ * word "School" #FCFCFC. State colors are the logo blocks, used only
+ * for meaning. FlatSIS still supplies layout, menu items and permissions.
+ */
+:root {
+	--ss-brand-primary: #01268d;
+	--ss-brand-secondary: #023fbf;
+	--ss-brand-accent: #f0b515;
+	--ss-surface: #fcfcfc;
+	--ss-surface-raised: #ffffff;
+	--ss-text: #1a1a1a;
+	--ss-text-secondary: #5c6775;
+	--ss-text-on-brand: #fcfcfc;
+	--ss-sidebar: #01268d;
+	--ss-sidebar-active: #023fbf;
+	--ss-success: #0ba473;
+	--ss-warning: #fc6f06;
+	--ss-danger: #e32822;
+	--ss-ai: #7940f3;
+	--ss-focus: #01268d;
+	--ss-space: 8px;
+}
+
+html,
+body {
+	background: var(--ss-surface);
+	color: var(--ss-text);
+	font-family: Inter, Lato, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+.header1 h2 {
+	font-family: Poppins, Inter, Lato, sans-serif;
+	color: var(--ss-brand-primary);
+}
+
+#menu,
+#menu.fixedmenu-fixed + div,
+.adminmenu,
+.menu-top {
+	background: var(--ss-sidebar);
+	border-color: var(--ss-brand-secondary);
+	color: var(--ss-text-on-brand);
+}
+
+#menu .logo {
+	display: block;
+	float: none;
+	width: 148px;
+	max-width: 168px;
+	max-height: none;
+	height: auto;
+	margin: 12px auto 4px;
+}
+
+#menu-top select {
+	background: var(--ss-sidebar);
+	border-color: var(--ss-brand-secondary);
+	color: var(--ss-text-on-brand);
+	min-height: 32px;
+}
+
+#footer {
+	background: var(--ss-brand-primary);
+	box-shadow: none;
+}
+
+#footerwrap {
+	border-color: var(--ss-brand-secondary);
+}
+
+.BottomButton,
+a.menu-top {
+	color: var(--ss-text-on-brand);
+}
+
+.adminmenu a,
+.BottomButton:hover,
+.BottomButton:focus,
+.BottomButton:active,
+a.menu-top:hover,
+a.menu-top:focus {
+	color: var(--ss-text-on-brand);
+}
+
+#selectedModuleLink,
+.menu-top:hover,
+.menu-top:focus {
+	background: var(--ss-sidebar-active);
+}
+
+.wp-submenu {
+	background: var(--ss-sidebar);
+	border-color: var(--ss-brand-secondary);
+}
+
+.wp-submenu a {
+	color: var(--ss-text-on-brand);
+	padding-top: 8px;
+	padding-bottom: 8px;
+}
+
+#selectedMenuLink,
+.wp-submenu a:hover,
+.wp-submenu a:focus,
+.wp-submenu a:active {
+	background: var(--ss-sidebar-active);
+	color: var(--ss-text-on-brand);
+	box-shadow: inset 3px 0 0 var(--ss-brand-accent);
+}
+
+@media only screen and (max-width: 874px) {
+	#menu .logo {
+		float: none;
+		width: 112px;
+		max-width: 112px;
+		margin: 12px auto;
+	}
+
+	#menu {
+		box-sizing: border-box;
+		width: 100%;
+		border-width: 0;
+	}
+}
+
+.adminmenu a:focus,
+.BottomButton:focus,
+#menu-top select:focus,
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+	outline: 2px solid var(--ss-focus);
+	outline-offset: 2px;
+}
+
+#menu a:focus,
+#menu select:focus,
+.BottomButton:focus {
+	outline-color: var(--ss-brand-accent);
+}
+
+a {
+	color: var(--ss-brand-secondary);
+}
+
+a:hover,
+a:focus,
+a:active {
+	color: var(--ss-brand-primary);
+}
+
+input.button-primary,
+button.button-primary,
+a.button-primary {
+	background: var(--ss-brand-secondary);
+	border-color: var(--ss-brand-primary);
+	color: var(--ss-text-on-brand);
+}
+
+input.button-primary:hover,
+button.button-primary:hover,
+a.button-primary:hover,
+input.button-primary:focus,
+button.button-primary:focus,
+a.button-primary:focus {
+	background: var(--ss-brand-primary);
+	border-color: var(--ss-brand-primary);
+	color: var(--ss-text-on-brand);
+}
+
+body.login,
+body.first-login,
+body.password-reset {
+	background: var(--ss-brand-primary);
+	min-height: 100%;
+}
+
+html:has(body.login),
+html:has(body.first-login),
+html:has(body.password-reset) {
+	background: var(--ss-brand-primary);
+}
+
+body.login .mod,
+body.first-login .mod,
+body.password-reset .mod {
+	overflow: visible;
+	height: auto;
+}
+
+body.login #body,
+body.first-login #body,
+body.password-reset #body {
+	background: transparent;
+}
+
+body.login .postbox-wrapper,
+body.first-login .postbox-wrapper,
+body.password-reset .postbox-wrapper {
+	width: min(420px, calc(100vw - 32px));
+	margin: 24px auto 32px;
+	background: var(--ss-surface-raised);
+	border-radius: 16px;
+	overflow: hidden;
+	border-top: 4px solid var(--ss-brand-accent);
+	box-shadow: 0 16px 40px rgba(1, 20, 70, 0.28);
+}
+
+body.login .postbox,
+body.first-login .postbox,
+body.password-reset .postbox {
+	width: 100%;
+	margin: 0;
+	background: transparent;
+	border: 0;
+}
+
+body.login .postbox thead {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+body.login .logo,
+body.first-login .logo,
+body.password-reset .logo {
+	width: 220px;
+	max-width: 240px;
+	max-height: none;
+	height: auto;
+	margin: 16px auto 8px;
+}
+
+body.login h4,
+body.first-login h4,
+body.password-reset h4 {
+	color: var(--ss-brand-primary);
+}
+
+body.login #loginform,
+body.password-reset form {
+	display: block;
+	box-sizing: border-box;
+	max-width: none;
+	margin: 8px 0 0;
+	padding: 0;
+	background: transparent;
+}
+
+#loginform input[type="submit"] {
+	background: var(--ss-brand-secondary);
+	border-color: var(--ss-brand-primary);
+	color: var(--ss-text-on-brand);
+}
+
+/* LOT-02 entry. The splash is paint only. Username, Password and Password help stay the Rosario form. */
+.ss-splash {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--ss-brand-primary);
+	pointer-events: auto;
+	animation: ss-splash-out 0.4s ease 0.9s forwards;
+}
+
+.ss-splash img {
+	width: min(280px, 72vw);
+	height: auto;
+}
+
+@keyframes ss-splash-out {
+	to {
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ss-splash {
+		display: none;
+	}
+}
+
+body.login #loginform label {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 8px;
+	margin: 0 0 16px;
+	font-weight: 600;
+	color: var(--ss-text);
+}
+
+body.login #loginform input[type="text"],
+body.login #loginform input[type="password"] {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	min-height: 44px;
+	margin: 0;
+	padding: 8px 12px;
+	font-size: 16px;
+	border: 1px solid #c5ced8;
+	border-radius: 8px;
+}
+
+body.login #loginform input:focus,
+body.password-reset form input:focus {
+	outline: 2px solid var(--ss-focus);
+	outline-offset: 2px;
+}
+
+body.login #loginform .align-right {
+	margin-top: -8px;
+}
+
+body.login #loginform a[href="PasswordReset.php"] {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	color: var(--ss-brand-secondary);
+	font-weight: 600;
+}
+
+body.login #loginform input[type="submit"] {
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 44px;
+	border-radius: 8px;
+	font-weight: 600;
+}
+
+body.login .error,
+body.login .updated {
+	margin: 0 0 16px;
+}
+
+/* LOT-03 portals. Cards show the counts Rosario already prints. Modules with no data stay absent. */
+.postbox-wrapper:has(> .postbox table.dashboard) {
+	display: block;
+	width: 100%;
+	margin: 16px 0 24px;
+}
+
+.postbox-wrapper:has(> .postbox table.dashboard) > .postbox,
+.postbox-wrapper:has(> .postbox table.dashboard) > .postbox > thead,
+.postbox-wrapper:has(> .postbox table.dashboard) > .postbox > thead > tr,
+.postbox-wrapper:has(> .postbox table.dashboard) > .postbox > thead th,
+.postbox-wrapper:has(> .postbox table.dashboard) > .postbox > tbody,
+.postbox-wrapper:has(> .postbox table.dashboard) > .postbox > tbody > tr,
+.postbox-wrapper:has(> .postbox table.dashboard) .popTable {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.postbox-wrapper:has(> .postbox table.dashboard) > .postbox {
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+}
+
+.postbox-wrapper:has(> .postbox table.dashboard) > .postbox > thead th {
+	background: transparent;
+	border: 0;
+	padding: 0 0 8px;
+	text-align: left;
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--ss-brand-primary);
+}
+
+.postbox-wrapper:has(> .postbox table.dashboard) .popTable {
+	background: transparent;
+	border: 0;
+	padding: 0;
+}
+
+table.dashboard {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 16px;
+	width: 100%;
+	border-spacing: 0;
+}
+
+table.dashboard tbody,
+table.dashboard tr {
+	display: contents;
+}
+
+table.dashboard td {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	min-width: 0;
+	min-height: 132px;
+	padding: 16px;
+	background: var(--ss-surface-raised);
+	border: 1px solid #e4e9ef;
+	border-top: 4px solid var(--ss-brand-accent);
+	border-radius: 16px;
+	box-shadow: 0 8px 24px rgba(1, 20, 70, 0.08);
+}
+
+.dashboard-module-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 12px;
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+}
+
+.dashboard-module-title .module-icon {
+	flex: 0 0 32px;
+	width: 32px;
+	height: 32px;
+}
+
+.dashboard-module-data {
+	padding-left: 0;
+}
+
+.dashboard-module-data .tipmsg-label {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	margin: 0;
+	border-bottom: 0;
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-size: 32px;
+	font-weight: 700;
+	line-height: 1.1;
+	color: var(--ss-brand-primary);
+}
+
+.dashboard-module-data .no-input-value {
+	font: inherit;
+	color: inherit;
+	line-height: 1.1;
+}
+
+.dashboard-module-data .legend-gray {
+	font-family: Inter, Lato, sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.3;
+	color: var(--ss-text-secondary);
+	border-bottom: 1px dashed #c5ced8;
+}
+
+@media (max-width: 1279px) {
+	table.dashboard {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 767px) {
+	table.dashboard {
+		grid-template-columns: 1fr;
+	}
+}
+
+#body:has(header[class*="ss-f"]) .postbox-wrapper:has(> .postbox table.dashboard) > .postbox > thead {
+	display: none !important;
+}
+
+/* LOT-04 daily class work. The roster, assignment and grade fields stay Rosario's. */
+#body a.list-save {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 10px;
+	background: #f4f6f9;
+}
+
+#body a.list-save img {
+	width: 20px;
+	height: 20px;
+	content: url("icons/download.svg");
+}
+
+#body img[src*="btn/remove_button.png"],
+#body img[src*="btn/x_button.png"] {
+	width: 18px;
+	height: 18px;
+	content: url("icons/remove.svg");
+}
+
+#body img[src*="btn/add_button.png"] {
+	width: 18px;
+	height: 18px;
+	content: url("icons/add.svg");
+}
+
+#body .list-wrapper {
+	max-width: 100%;
+	overflow-x: auto;
+	background: var(--ss-surface-raised);
+	border: 1px solid #e4e9ef;
+	border-top: 4px solid var(--ss-brand-accent);
+	border-radius: 16px;
+}
+
+#body table.list {
+	background: var(--ss-surface-raised);
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+#body table.list th {
+	background: #f8f9fb;
+	color: var(--ss-text-secondary);
+	font-family: Inter, Lato, sans-serif;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	padding: 12px 16px;
+	border-bottom: 1px solid #e3e7ee;
+}
+
+#body table.list th a {
+	color: var(--ss-text-secondary);
+	text-decoration: none;
+}
+
+#body table.list td {
+	padding: 12px 16px;
+	border-bottom: 1px solid #e3e7ee;
+	vertical-align: middle;
+}
+
+#body table.list tbody tr:hover td {
+	background: #f4f7fb;
+}
+
+#body input[type="text"],
+#body input[type="number"],
+#body input[type="search"],
+#body textarea,
+#body select {
+	box-sizing: border-box;
+	min-height: 36px;
+	border: 1px solid #c5ced8;
+	border-radius: 8px;
+	font-size: 16px;
+}
+
+#body input:focus,
+#body select:focus,
+#body textarea:focus {
+	outline: 2px solid var(--ss-focus);
+	outline-offset: 2px;
+}
+
+#body .attendance-code:not(:has(input)) {
+	display: inline-flex;
+	align-items: center;
+	height: 24px;
+	min-height: 24px;
+	padding: 0 8px;
+	border-radius: 999px;
+	background: #eef1f6;
+	color: #5c6775;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 24px;
+}
+
+#body .attendance-code.present:not(:has(input)),
+#body .attendance-code.present-alt:not(:has(input)) {
+	background: #e7f7f1;
+	color: #087a56;
+}
+
+#body .attendance-code.absent:not(:has(input)),
+#body .attendance-code.absent-alt:not(:has(input)) {
+	background: #fdeceb;
+	color: #b4231c;
+}
+
+#body .attendance-code.half-day:not(:has(input)),
+#body .attendance-code.half-day-alt:not(:has(input)) {
+	background: #fff1e6;
+	color: #c45504;
+}
+
+#body .attendance-code:has(input[type="radio"]) {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-width: 72px;
+	height: 32px;
+	border: 1px solid #d5dbe4;
+	border-radius: 8px;
+	background: #fff;
+	cursor: pointer;
+}
+
+#body .attendance-code:has(input[type="radio"]) input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+#body .attendance-code.present:has(input[type="radio"]),
+#body .attendance-code.present-alt:has(input[type="radio"]) {
+	background: #e7f7f1;
+	border-color: #b7e7d4;
+}
+
+#body .attendance-code.absent:has(input[type="radio"]),
+#body .attendance-code.absent-alt:has(input[type="radio"]) {
+	background: #fdeceb;
+	border-color: #f6c4c1;
+}
+
+#body .attendance-code.half-day:has(input[type="radio"]),
+#body .attendance-code.half-day-alt:has(input[type="radio"]) {
+	background: #fff1e6;
+	border-color: #ffd2b0;
+}
+
+body.modules #body .h3multi {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0;
+	margin: 0 0 8px;
+	border-bottom: 1px solid #e3e7ee;
+}
+
+body.modules #body .h3multi h3 {
+	margin: 0;
+	font-family: Inter, Lato, sans-serif;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+body.modules #body .h3multi h3 a {
+	display: inline-flex;
+	align-items: center;
+	height: 36px;
+	padding: 0 14px;
+	border-bottom: 2px solid transparent;
+	color: var(--ss-text-secondary);
+	text-decoration: none;
+}
+
+body.modules #body .h3multi h3.h3selected a,
+body.modules #body .h3multi h3.title.h3selected {
+	color: var(--ss-brand-primary);
+	border-bottom: 2px solid var(--ss-brand-accent);
+}
+
+body.modules #body div.error,
+body.modules #body div.updated {
+	box-sizing: border-box;
+	margin: 12px 0;
+	padding: 12px 16px;
+	border: 1px solid #e3e7ee;
+	border-radius: 12px;
+	background: #fff;
+}
+
+#body img[src*="btn/check_button.png"] {
+	width: 18px;
+	height: 18px;
+	content: url("icons/check.svg");
+}
+
+#body img[src*="btn/calendar.png"] {
+	width: 20px;
+	height: 20px;
+	content: url("icons/calendar.svg");
+}
+
+#footer img[src*="btn/print.png"] {
+	width: 20px;
+	height: 20px;
+	content: url("icons/print.svg");
+}
+
+#footer img[src*="btn/help.png"] {
+	width: 20px;
+	height: 20px;
+	content: url("icons/help.svg");
+}
+
+#footer img[src*="btn/logout.png"] {
+	width: 20px;
+	height: 20px;
+	content: url("icons/logout.svg");
+}
+
+#footer img[src*="btn/back.png"] {
+	width: 20px;
+	height: 20px;
+	content: url("icons/back.svg");
+}
+
+#menu img[src*="btn/x_button.png"] {
+	width: 16px;
+	height: 16px;
+	content: url("icons/close.svg");
+}
+
+#footer .BottomButton img {
+	background: transparent;
+	border-radius: 0;
+	padding: 0;
+	filter: brightness(0) invert(1);
+}
+
+#body table.list td a {
+	color: var(--ss-text);
+	font-weight: 600;
+	text-decoration: none;
+}
+
+#body table.list td a:hover,
+#body table.list td a:focus {
+	color: var(--ss-brand-secondary);
+}
+
+/* LOT-05 people. Group the existing student and user fields. None are hidden. */
+#body .postbox-wrapper:has(#last),
+#body .postbox-wrapper:has(#username) {
+	max-width: 520px;
+	margin: 24px auto;
+}
+
+#body table.general-info,
+#body table.other-info,
+#body table.enrollment,
+#body table.create-account {
+	width: 100%;
+	margin: 0 0 16px;
+	background: var(--ss-surface-raised);
+	border: 1px solid #e4e9ef;
+	border-top: 4px solid var(--ss-brand-accent);
+	border-radius: 16px;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+#body table.general-info > tbody > tr > td,
+#body table.other-info > tbody > tr > td,
+#body table.enrollment > tbody > tr > td,
+#body table.create-account > tbody > tr > td {
+	padding: 12px 16px;
+	vertical-align: top;
+}
+
+#body .user-photo {
+	max-width: 128px;
+	height: auto;
+	border-radius: 16px;
+}
+
+@media (max-width: 767px) {
+	#body table.general-info,
+	#body table.general-info > tbody,
+	#body table.general-info > tbody > tr,
+	#body table.other-info,
+	#body table.other-info > tbody,
+	#body table.other-info > tbody > tr,
+	#body table.enrollment,
+	#body table.enrollment > tbody,
+	#body table.enrollment > tbody > tr {
+		display: block;
+		width: 100%;
+	}
+
+	#body table.general-info > tbody > tr > td,
+	#body table.other-info > tbody > tr > td,
+	#body table.enrollment > tbody > tr > td {
+		display: block;
+		width: auto;
+		box-sizing: border-box;
+	}
+}
+
+/* LOT-06 schedule. The course name stays the Rosario schedule value. */
+#body form:has(#printSchedulesLink) table.list td:first-child {
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-weight: 600;
+	color: var(--ss-brand-primary);
+}
+
+/* LOT-07 discipline. Presentation of the referral form. PHP still decides which fields exist. */
+#body form[action*="MakeReferral"] table.postbox,
+#body form[action*="Referrals.php"] table.postbox {
+	background: var(--ss-surface-raised);
+	border: 1px solid #e4e9ef;
+	border-top: 4px solid var(--ss-brand-accent);
+	border-radius: 16px;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+#body form[action*="MakeReferral"] table.width-100p > tbody > tr > td,
+#body form[action*="Referrals.php"] table.width-100p > tbody > tr > td {
+	padding: 12px 16px;
+	vertical-align: top;
+}
+
+#body form[action*="MakeReferral"] fieldset {
+	margin: 0;
+	border: 1px solid #e4e9ef;
+	border-radius: 12px;
+	padding: 12px 16px;
+}
+
+#body form[action*="MakeReferral"] fieldset legend {
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-weight: 600;
+	color: var(--ss-brand-primary);
+	padding: 0 8px;
+}
+
+@media (max-width: 767px) {
+	#body form[action*="MakeReferral"] fieldset table,
+	#body form[action*="MakeReferral"] fieldset tbody,
+	#body form[action*="MakeReferral"] fieldset tr,
+	#body form[action*="MakeReferral"] fieldset td {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+	}
+}
+
+/* LOT-08 finance. The amounts stay the Rosario currency values. */
+#body table.student-billing-totals,
+#body table.accounting-totals {
+	margin-left: auto;
+	background: var(--ss-surface-raised);
+	border: 1px solid #e4e9ef;
+	border-top: 4px solid var(--ss-brand-accent);
+	border-radius: 16px;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+#body table.student-billing-totals td,
+#body table.accounting-totals td {
+	padding: 8px 16px;
+	font-variant-numeric: tabular-nums;
+}
+
+#body table.student-billing-totals b,
+#body table.accounting-totals b {
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-weight: 600;
+	color: var(--ss-brand-primary);
+}
+
+@media (max-width: 767px) {
+	#body table.student-billing-totals,
+	#body table.accounting-totals {
+		width: 100%;
+	}
+}
+
+/* LOT-09 school setup. The school name and calendar days stay the Rosario values. */
+#body form[action*="Schools.php"] table.postbox {
+	background: var(--ss-surface-raised);
+	border: 1px solid #e4e9ef;
+	border-top: 4px solid var(--ss-brand-accent);
+	border-radius: 16px;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+#body form[action*="Schools.php"] td.popTable > table > tbody > tr > td {
+	padding: 8px 16px;
+	vertical-align: top;
+}
+
+#body #calendar {
+	background: var(--ss-surface-raised);
+	border: 1px solid #e4e9ef;
+	border-top: 4px solid var(--ss-brand-accent);
+	border-radius: 16px;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+#body #calendar > thead > tr > th {
+	background: var(--ss-brand-primary);
+	color: var(--ss-text-on-brand);
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-weight: 600;
+}
+
+#body .calendar-day.full,
+#body .legend-square.full {
+	background: #e7f6ef;
+}
+
+#body .calendar-day.minutes,
+#body .legend-square.minutes {
+	background: #e8eefb;
+}
+
+#body .calendar-day.no-school,
+#body .legend-square.no-school {
+	background: #fdeceb;
+}
+
+#body .legend-square.full {
+	border: 1px solid var(--ss-success);
+}
+
+#body .legend-square.minutes {
+	border: 1px solid var(--ss-brand-secondary);
+}
+
+#body .legend-square.no-school {
+	border: 1px solid var(--ss-danger);
+}
+
+@media (max-width: 767px) {
+	#body form[action*="Schools.php"] td.popTable > table,
+	#body form[action*="Schools.php"] td.popTable > table > tbody,
+	#body form[action*="Schools.php"] td.popTable > table > tbody > tr,
+	#body form[action*="Schools.php"] td.popTable > table > tbody > tr > td {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+	}
+}
+
+/* Portal actions. Same buttons as the theme. No new palette. */
+.ss-portal-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--ss-space);
+	max-width: 100%;
+	margin: 8px 0 24px;
+}
+
+.ss-portal-actions a {
+	display: inline-flex;
+	align-items: center;
+	box-sizing: border-box;
+	min-height: 40px;
+	padding: 8px 16px;
+	border-radius: 8px;
+	text-decoration: none;
+}
+
+.dashboard-module-title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.dashboard-module-title a:hover,
+.dashboard-module-title a:focus {
+	text-decoration: underline;
+}
+
+@media (max-width: 767px) {
+	.ss-portal-actions a {
+		min-height: 44px;
+	}
+}
+
+/* École / Annonces. Portal Notes keeps its Rosario fields. This is the list header only. */
+.ss-f01 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-annonces);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f01-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-annonces);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f01 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f01 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f01 p.ss-f01-kicker {
+	color: var(--ss-branch-annonces);
+}
+
+.ss-f01 + form .list-wrapper,
+.ss-f01 + form .rt {
+	max-width: 100%;
+}
+
+@media (max-width: 767px) {
+	.ss-f01 {
+		padding: 16px;
+	}
+
+	.ss-f01 h2 {
+		font-size: 22px;
+	}
+
+	.ss-f01 + form .rt2colorBox,
+	.ss-f01 + form table.widefat {
+		max-width: 100%;
+	}
+}
+
+/* École / Sondages. Portal Polls keeps its Rosario fields. This is the list header only. */
+.ss-f02 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-sondages);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f02-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-sondages);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f02 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f02 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f02 p.ss-f02-kicker {
+	color: var(--ss-branch-sondages);
+}
+
+.ss-f02 + form .list-wrapper,
+.ss-f02 + form .rt {
+	max-width: 100%;
+}
+
+@media (max-width: 767px) {
+	.ss-f02 {
+		padding: 16px;
+	}
+
+	.ss-f02 h2 {
+		font-size: 22px;
+	}
+
+	.ss-f02 + form .rt2colorBox,
+	.ss-f02 + form table.widefat {
+		max-width: 100%;
+	}
+}
+
+/* École / Calendrier. The month grid stays Rosario. This is the page header only. */
+.ss-f03 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-calendrier);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f03-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-calendrier);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f03 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f03 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f03 p.ss-f03-kicker {
+	color: var(--ss-branch-calendrier);
+}
+
+.ss-f03 + form #calendar {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+@media (max-width: 767px) {
+	.ss-f03 {
+		padding: 16px;
+	}
+
+	.ss-f03 h2 {
+		font-size: 22px;
+	}
+}
+
+/* École / Périodes. Marking Periods keeps its Rosario fields and lists. This is the page header only. */
+.ss-f04 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-periodes);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f04-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-periodes);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f04 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f04 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f04 p.ss-f04-kicker {
+	color: var(--ss-branch-periodes);
+}
+
+.ss-f04 ~ .st {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+@media (max-width: 767px) {
+	.ss-f04 {
+		padding: 16px;
+	}
+
+	.ss-f04 h2 {
+		font-size: 22px;
+	}
+}
+
+/* École / Créneaux. School periods keep their Rosario columns. This is the list header only. */
+.ss-f05 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-creneaux);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f05-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-creneaux);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f05 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f05 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f05 p.ss-f05-kicker {
+	color: var(--ss-branch-creneaux);
+}
+
+.ss-f05 + form .list-wrapper,
+.ss-f05 + form .rt {
+	max-width: 100%;
+}
+
+@media (max-width: 767px) {
+	.ss-f05 {
+		padding: 16px;
+	}
+
+	.ss-f05 h2 {
+		font-size: 22px;
+	}
+
+	.ss-f05 + form {
+		max-width: 100%;
+		overflow-x: auto;
+	}
+}
+
+/* École / Niveaux. Grade levels keep their Rosario columns. This is the list header only. */
+.ss-f06 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-niveaux);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f06-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-niveaux);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f06 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f06 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f06 p.ss-f06-kicker {
+	color: var(--ss-branch-niveaux);
+}
+
+.ss-f06 + form .list-wrapper,
+.ss-f06 + form .rt {
+	max-width: 100%;
+}
+
+@media (max-width: 767px) {
+	.ss-f06 {
+		padding: 16px;
+	}
+
+	.ss-f06 h2 {
+		font-size: 22px;
+	}
+
+	.ss-f06 + form {
+		max-width: 100%;
+		overflow-x: auto;
+	}
+}
+
+/* École / Établissement. School Information keeps its Rosario fields. This is the page header only. */
+.ss-f07 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-etablissement);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f07-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-etablissement);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f07 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f07 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f07 p.ss-f07-kicker {
+	color: var(--ss-branch-etablissement);
+}
+
+@media (max-width: 767px) {
+	.ss-f07 {
+		padding: 16px;
+	}
+
+	.ss-f07 h2 {
+		font-size: 22px;
+	}
+}
+
+/* École / Établissement. Copy School keeps its Rosario fields. This is the page header only. */
+.ss-f08 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-etablissement);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f08-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-etablissement);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f08 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f08 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f08 p.ss-f08-kicker {
+	color: var(--ss-branch-etablissement);
+}
+
+@media (max-width: 767px) {
+	.ss-f08 {
+		padding: 16px;
+	}
+
+	.ss-f08 h2 {
+		font-size: 22px;
+	}
+}
+
+/* École / Établissement. School Fields keeps its Rosario fields. This is the page header only. */
+.ss-f09 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-etablissement);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f09-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-etablissement);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f09 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f09 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f09 p.ss-f09-kicker {
+	color: var(--ss-branch-etablissement);
+}
+
+@media (max-width: 767px) {
+	.ss-f09 {
+		padding: 16px;
+	}
+
+	.ss-f09 h2 {
+		font-size: 22px;
+	}
+}
+
+/* École / Paramètres. Configuration keeps its Rosario fields. This is the page header only. */
+.ss-f10 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-parametres);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f10-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-parametres);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f10 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f10 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f10 p.ss-f10-kicker {
+	color: var(--ss-branch-parametres);
+}
+
+.ss-f10-note {
+	max-width: 68ch;
+	margin: 0 0 12px;
+	color: var(--ss-text-muted);
+}
+
+.ss-f10-caution {
+	margin-top: 8px;
+	padding: 8px 12px 12px;
+	border: 1px solid #f6d7bc;
+	border-left: 4px solid var(--ss-warning);
+	border-radius: 12px;
+	background: var(--ss-warning-bg);
+}
+
+@media (max-width: 767px) {
+	.ss-f10 {
+		padding: 16px;
+	}
+
+	.ss-f10 h2 {
+		font-size: 22px;
+	}
+
+	.ss-f10 ~ form {
+		max-width: 100%;
+		overflow-x: auto;
+	}
+}
+
+/* École / Année. Rollover keeps its Rosario choices. This is the page header only. */
+.ss-f11 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-annee);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f11-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-annee);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f11 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f11 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f11 p.ss-f11-kicker {
+	color: var(--ss-branch-annee);
+}
+
+@media (max-width: 767px) {
+	.ss-f11 {
+		padding: 16px;
+	}
+
+	.ss-f11 h2 {
+		font-size: 22px;
+	}
+}
+
+/* École / Journal. Access Log keeps its Rosario columns. This is the page header only. */
+.ss-f12 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-journal);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f12-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-journal);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f12 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f12 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f12 p.ss-f12-kicker {
+	color: var(--ss-branch-journal);
+}
+
+@media (max-width: 767px) {
+	.ss-f12 {
+		padding: 16px;
+	}
+
+	.ss-f12 h2 {
+		font-size: 22px;
+	}
+
+	.ss-f12 ~ form {
+		max-width: 100%;
+		overflow-x: auto;
+	}
+}
+
+/* Élèves / Dossier. Student Info keeps its Rosario search and file. This is the page header only. */
+.ss-f13 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-dossier);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f13-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-dossier);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f13 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f13 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f13 p.ss-f13-kicker {
+	color: var(--ss-branch-dossier);
+}
+
+@media (max-width: 767px) {
+	.ss-f13 {
+		padding: 16px;
+	}
+
+	.ss-f13 h2 {
+		font-size: 22px;
+	}
+}
+
+/* Élèves / Inscription. Add a Student keeps the Rosario form. This is the page header and the three section titles. */
+.ss-f14 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-inscription);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f14-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-inscription);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f14 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f14 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f14 p.ss-f14-kicker {
+	color: var(--ss-branch-inscription);
+}
+
+#body h3.ss-f14-section {
+	display: block;
+	clear: both;
+	width: 100%;
+	height: auto;
+	margin: 16px 0 8px;
+	padding: 0;
+	color: var(--ss-text);
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+@media (max-width: 767px) {
+	#body form:has(.ss-f14-section) .nobr {
+		white-space: normal;
+	}
+
+	#body form:has(.ss-f14-section) table.list {
+		display: block;
+		max-width: 100%;
+		overflow-x: auto;
+	}
+}
+
+@media (max-width: 767px) {
+	.ss-f14 {
+		padding: 16px;
+	}
+
+	.ss-f14 h2 {
+		font-size: 22px;
+	}
+}
+
+/* Élèves / Dossier. Group assign keeps the Rosario search, list and save. Header and warning only. */
+.ss-f15 {
+	margin: 0 0 16px;
+	padding: 16px 20px 18px;
+	border: 1px solid var(--ss-border);
+	border-top: 4px solid var(--ss-branch-dossier);
+	border-radius: 16px;
+	background: var(--ss-surface);
+}
+
+.ss-f15-kicker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+	color: var(--ss-branch-dossier);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.ss-f15 h2 {
+	margin: 0 0 8px;
+	color: var(--ss-text);
+	font-size: 28px;
+	line-height: 1.2;
+}
+
+.ss-f15 p {
+	max-width: 68ch;
+	margin: 0;
+	color: var(--ss-text-muted);
+}
+
+.ss-f15 p.ss-f15-kicker {
+	color: var(--ss-branch-dossier);
+}
+
+.ss-f15 p.ss-f15-warning {
+	margin-top: 10px;
+	padding-left: 12px;
+	border-left: 4px solid var(--ss-warning);
+	color: var(--ss-text);
+}
+
+@media (max-width: 767px) {
+	.ss-f15 {
+		padding: 16px;
+	}
+
+	.ss-f15 h2 {
+		font-size: 22px;
+	}
+}
+
+/* LOT-10 campus extras. Screen warning only. The wkhtmltopdf stylesheet stays the FlatSIS import. */
+#body div.error:has(img[alt="Warning"]) {
+	background: #fff6ee;
+	border: 1px solid #f6d7bc;
+	border-left: 4px solid var(--ss-warning);
+	border-radius: 12px;
+	padding: 12px 16px;
+	color: var(--ss-text);
+}
+
+/*
+ * Shell reference. Desktop: full-height blue menu, white bar over the pages.
+ * The menu items, selectors and footer actions stay the Rosario ones.
+ */
+@media (min-width: 875px) {
+	body.modules {
+		background: #f4f6f9;
+	}
+
+	body.modules #wrap {
+		padding-top: 0;
+		min-height: 100vh;
+		background: #f4f6f9;
+	}
+
+	body.modules #menu {
+		position: fixed !important;
+		top: 12px;
+		left: 12px !important;
+		bottom: 12px;
+		width: 248px;
+		height: auto;
+		min-height: 0;
+		margin: 0;
+		float: none;
+		overflow-x: hidden;
+		overflow-y: auto;
+		background: var(--ss-sidebar);
+		border: 0;
+		border-radius: 16px;
+		box-shadow: 0 16px 36px rgba(1, 20, 70, 0.22);
+		z-index: 30 !important;
+	}
+
+	body.modules #menu .logo {
+		float: none;
+		display: block;
+		width: 168px;
+		max-width: 168px;
+		max-height: none;
+		height: auto;
+		margin: 20px auto 8px;
+	}
+
+	body.modules #menu-top .today-date {
+		display: block;
+		flex: 0 1 auto;
+		min-width: 0;
+		margin: 0;
+		padding: 0 4px 0 0;
+		overflow: hidden;
+		color: var(--ss-text-secondary);
+		font-size: 12px;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	body.modules #menu-top .username,
+	body.modules #menu-top .username.br-after {
+		display: none;
+	}
+
+	body.modules #menu-top form {
+		position: fixed;
+		top: 0;
+		left: 272px;
+		right: 488px;
+		z-index: 44;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		height: 64px;
+		margin: 0;
+		padding: 0 16px;
+		background: transparent;
+		overflow: hidden;
+	}
+
+	body.modules:has(#BottomButtonBack:not(.hide)) #menu-top form {
+		left: 480px;
+	}
+
+	body.modules #menu-top form br {
+		display: none;
+	}
+
+	body.modules #menu-top .br-after {
+		display: flex;
+		flex: 1 1 0;
+		min-width: 0;
+		max-width: 196px;
+		padding: 0;
+	}
+
+	body.modules #menu-top select {
+		width: 100%;
+		min-width: 0;
+		max-width: none;
+		height: 36px;
+		margin: 0;
+		padding: 0 8px;
+		border: 1px solid #d5dbe4;
+		border-radius: 8px;
+		background: #fff;
+		color: var(--ss-text);
+	}
+
+	body.modules:has(#BottomButtonBack:not(.hide)) #menu-top .today-date {
+		display: none;
+	}
+
+	body.modules #footer {
+		top: 0;
+		left: 272px;
+		right: 0;
+		width: auto;
+		height: 64px;
+		background: #fff;
+		box-shadow: none;
+		border-bottom: 1px solid #e3e7ee;
+		z-index: 20;
+	}
+
+	body.modules #footerwrap {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 4px;
+		height: 64px;
+		padding: 0 16px;
+		background: #fff;
+		border: 0;
+	}
+
+	body.modules #BottomButtonMenu,
+	body.modules .BottomButton.hide {
+		display: none;
+	}
+
+	body.modules .BottomButton {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		margin: 0;
+		padding: 0;
+		border-radius: 8px;
+		color: var(--ss-brand-primary);
+	}
+
+	body.modules #BottomButtonBack {
+		width: auto;
+		height: 36px;
+		margin-right: auto;
+		padding: 0 10px;
+		gap: 6px;
+	}
+
+	body.modules .BottomButton span {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+	}
+
+	body.modules #BottomButtonBack span {
+		position: static;
+		width: auto;
+		height: auto;
+		overflow: visible;
+		clip: auto;
+		color: var(--ss-brand-primary);
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	body.modules #footer .BottomButton img {
+		width: 20px;
+		height: 20px;
+		filter: none;
+	}
+
+	body.modules #body {
+		margin-left: 272px;
+		width: auto;
+		min-height: 100vh;
+		padding: 88px 28px 40px;
+		box-sizing: border-box;
+		background: #f4f6f9;
+	}
+
+	body.modules .adminmenu {
+		margin: 8px 0 24px;
+		padding: 0;
+		background: transparent;
+	}
+
+	body.modules .menu-top {
+		min-width: 0;
+		margin: 2px 12px;
+		padding: 10px 12px;
+		border: 0;
+		border-radius: 8px;
+		background: transparent;
+		font-family: Inter, Lato, sans-serif;
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 20px;
+		text-transform: none;
+	}
+
+	body.modules #selectedModuleLink,
+	body.modules .menu-top:hover,
+	body.modules .menu-top:focus {
+		background: var(--ss-sidebar-active);
+		color: var(--ss-text-on-brand);
+	}
+
+	body.modules .wp-submenu {
+		background: transparent;
+		border: 0;
+	}
+
+	body.modules .wp-submenu a {
+		margin: 2px 12px 2px 36px;
+		padding: 8px 12px;
+		border-radius: 8px;
+		font-size: 13px;
+		font-weight: 500;
+	}
+
+	body.modules #selectedMenuLink,
+	body.modules .wp-submenu a:hover,
+	body.modules .wp-submenu a:focus {
+		background: var(--ss-sidebar-active);
+		color: var(--ss-text-on-brand);
+		box-shadow: inset 3px 0 0 var(--ss-brand-accent);
+	}
+
+	body.modules .menu-module > .menu-top {
+		position: relative;
+		padding-right: 32px;
+	}
+
+	body.modules .current-person {
+		margin: 8px 12px;
+		padding: 8px 10px;
+		border-radius: 8px;
+		background: var(--ss-sidebar-active);
+		color: var(--ss-text-on-brand);
+	}
+
+	body.modules .current-person a {
+		color: var(--ss-text-on-brand);
+	}
+
+}
+
+/* Main functions stay closed. The open one shows its pages inside the menu, not over the page. */
+body.modules .adminmenu .wp-submenu {
+	display: none !important;
+	position: static !important;
+	top: auto !important;
+	left: auto !important;
+	width: 100% !important;
+	min-width: 0 !important;
+	max-height: none !important;
+	margin: 0 !important;
+	padding: 2px 0 6px;
+	border: 0 !important;
+	box-shadow: none !important;
+	background: transparent;
+	overflow: visible;
+}
+
+body.modules .adminmenu .menu-module.ss-open > .wp-submenu,
+body.modules .adminmenu #selectedModuleLink + .wp-submenu {
+	display: block !important;
+}
+
+body.modules .adminmenu a.menu-top {
+	position: relative;
+	padding-right: 32px;
+}
+
+body.modules .adminmenu a.menu-top::after {
+	content: "";
+	position: absolute;
+	right: 14px;
+	top: 50%;
+	width: 7px;
+	height: 7px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: translateY(-70%) rotate(45deg);
+}
+
+body.modules .adminmenu .menu-module.ss-open > a.menu-top::after,
+body.modules .adminmenu #selectedModuleLink::after {
+	transform: translateY(-20%) rotate(225deg);
+}
+
+body.modules .adminmenu .menu-inter {
+	margin: 10px 16px 2px 48px;
+	padding: 0;
+	border: 0;
+	color: rgba(252, 252, 252, 0.62);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	line-height: 16px;
+	text-transform: uppercase;
+}
+
+/* The SchoolSafe card keeps the title and the explanation. The Rosario program title is the same name, so it stays hidden. */
+#body:has(header[class*="ss-f"]) table.header:has(td.header1) {
+	display: none;
+}
+
+#menu .module-icon {
+	width: 22px;
+	height: 22px;
+	background-size: 22px 22px;
+	filter: brightness(0) invert(1);
+	vertical-align: middle;
+}
+
+.module-icon.Accounting { background-image: url("icons/coins.svg") !important; }
+.module-icon.Attendance { background-image: url("icons/check.svg") !important; }
+.module-icon.Discipline { background-image: url("icons/shield.svg") !important; }
+.module-icon.Grades { background-image: url("icons/grades.svg") !important; }
+.module-icon.Eligibility { background-image: url("icons/star.svg") !important; }
+.module-icon.Example { background-image: url("icons/misc.svg") !important; }
+.module-icon.Food_Service { background-image: url("icons/meal.svg") !important; }
+.module-icon.Library { background-image: url("icons/book.svg") !important; }
+.module-icon.Messaging { background-image: url("icons/chat.svg") !important; }
+.module-icon.misc { background-image: url("icons/home.svg") !important; }
+.module-icon.Quiz { background-image: url("icons/quiz.svg") !important; }
+.module-icon.Resources { background-image: url("icons/folder.svg") !important; }
+.module-icon.Reports { background-image: url("icons/report.svg") !important; }
+.module-icon.Scheduling { background-image: url("icons/calendar.svg") !important; }
+.module-icon.School_Setup { background-image: url("icons/school.svg") !important; }
+.module-icon.SMS { background-image: url("icons/phone.svg") !important; }
+.module-icon.Staff_Absences { background-image: url("icons/absence.svg") !important; }
+.module-icon.Student_Billing { background-image: url("icons/card.svg") !important; }
+.module-icon.Students { background-image: url("icons/student.svg") !important; }
+.module-icon.Users { background-image: url("icons/staff.svg") !important; }
+
+.dashboard-module-title .module-icon {
+	filter: none;
+	width: 22px;
+	height: 22px;
+	flex-basis: 22px;
+}
+
+/* One title. When a SchoolSafe card follows, the Rosario program title is the same page name. */
+#footer .ss-user {
+	margin-right: 8px;
+	color: var(--ss-text);
+	font-size: 13px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+#footer .ss-lang,
+#menu .ss-lang-menu {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-right: 8px;
+}
+
+#menu .ss-lang-menu {
+	display: none;
+}
+
+#footer .ss-lang-link {
+	padding: 4px 8px;
+	border-radius: 8px;
+	color: var(--ss-text);
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 20px;
+	text-decoration: none;
+}
+
+#footer .ss-lang-link.is-active {
+	background: var(--ss-brand-secondary);
+	color: var(--ss-text-on-brand);
+}
+
+/* École. The Rosario fields, lists and save buttons stay. The card is wider and the label sits above the value. */
+body[class*="modname-school-setup-"] .postbox-wrapper {
+	width: min(760px, 100%);
+	max-width: 100%;
+	margin: 8px 0 24px;
+}
+
+body[class*="modname-school-setup-"] table.postbox {
+	width: 100%;
+	background: #fff;
+	border: 1px solid #e3e7ee;
+	border-radius: 12px;
+	border-collapse: separate;
+	border-spacing: 0;
+	overflow: hidden;
+}
+
+body[class*="modname-school-setup-"] table.postbox > thead th {
+	padding: 16px 20px 4px;
+	background: #fff;
+	border: 0;
+	text-align: left;
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-size: 16px;
+	color: var(--ss-brand-primary);
+}
+
+body[class*="modname-school-setup-"] .popTable {
+	padding: 8px 12px 16px;
+}
+
+body[class*="modname-school-setup-"] .popTable > table {
+	width: 100%;
+}
+
+body[class*="modname-school-setup-"] .popTable td {
+	padding: 8px 8px 4px;
+	vertical-align: top;
+}
+
+body[class*="modname-school-setup-"] .onclick {
+	display: flex;
+	flex-direction: column-reverse;
+	align-items: stretch;
+	gap: 6px;
+	width: 100%;
+}
+
+body[class*="modname-school-setup-"] .legend-gray {
+	color: var(--ss-text);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+body[class*="modname-school-setup-"] .onclick .uld {
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 40px;
+	padding: 8px 12px;
+	border: 1px solid #d5dbe4;
+	border-radius: 8px;
+	background: #fff;
+	text-decoration: none;
+	font-weight: 500;
+}
+
+body[class*="modname-school-setup-"] .popTable input[type="text"],
+body[class*="modname-school-setup-"] .popTable input[type="number"],
+body[class*="modname-school-setup-"] .popTable select,
+body[class*="modname-school-setup-"] .popTable textarea {
+	width: 100%;
+	max-width: 100%;
+}
+
+body[class*="modname-school-setup-"] input[type="submit"] {
+	min-height: 40px;
+	padding: 0 18px;
+	border: 0;
+	border-radius: 8px;
+	background: var(--ss-brand-secondary);
+	color: var(--ss-text-on-brand);
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+body[class*="modname-school-setup-calendar-php"] .postbox-wrapper,
+body[class*="modname-school-setup-markingperiods-php"] .postbox-wrapper {
+	width: 100%;
+}
+
+/* Personnel. Search and the user file share the Élèves card. Other pages keep a full-width white card. */
+body[class*="modname-users-"] table.postbox {
+	width: 100%;
+	background: #fff;
+	border: 1px solid #e3e7ee;
+	border-radius: 12px;
+	border-collapse: separate;
+	border-spacing: 0;
+	overflow: hidden;
+}
+
+body[class*="modname-users-"] table.postbox > thead th {
+	padding: 16px 20px 4px;
+	background: #fff;
+	border: 0;
+	text-align: left;
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-size: 16px;
+	color: var(--ss-brand-primary);
+}
+
+body[class*="modname-users-"] input[type="submit"] {
+	min-height: 40px;
+	padding: 0 18px;
+	border: 0;
+	border-radius: 8px;
+	background: var(--ss-brand-secondary);
+	color: var(--ss-text-on-brand);
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+/* Élèves. Search keeps the Rosario fields. Labels sit above full-width boxes, inside the centered card. */
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) .postbox-wrapper:has(form#search) {
+	width: min(520px, 100%);
+	max-width: 100%;
+	margin: 8px auto 24px;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) .postbox-wrapper:has(form#search) table.postbox {
+	width: 100%;
+	background: #fff;
+	border: 1px solid #e3e7ee;
+	border-radius: 12px;
+	border-collapse: separate;
+	border-spacing: 0;
+	overflow: hidden;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) .postbox-wrapper:has(form#search) table.postbox > thead th {
+	padding: 16px 20px 4px;
+	background: #fff;
+	border: 0;
+	text-align: left;
+	text-transform: none;
+	letter-spacing: 0;
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--ss-brand-primary);
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search .popTable {
+	padding: 8px 20px 20px;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search #general_table,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search #general_table tbody,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search #general_table tr,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search #general_table td {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	text-align: left;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search #general_table td {
+	padding: 0 0 12px;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search #general_table label {
+	display: block;
+	margin: 0 0 6px;
+	color: var(--ss-text);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search #general_table input[type="text"],
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search #general_table select {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	min-height: 40px;
+	padding: 8px 12px;
+	border: 1px solid #d5dbe4;
+	border-radius: 8px;
+	background: #fff;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search .center {
+	text-align: left;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search .center label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 8px;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search .center input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin: 0;
+	accent-color: var(--ss-brand-secondary);
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search input[type="submit"] {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: none;
+	min-height: 40px;
+	margin-top: 8px;
+	border: 0;
+	border-radius: 8px;
+	background: var(--ss-brand-secondary);
+	color: var(--ss-text-on-brand);
+	font-weight: 600;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) form#search > a {
+	display: inline-block;
+	margin-top: 4px;
+	font-weight: 600;
+}
+
+/* Inscription and fiche. The three Rosario sections keep their fields. Each one gets its own tint. */
+#body h3.ss-f14-section {
+	font-family: Poppins, Inter, Lato, sans-serif;
+	color: var(--ss-brand-primary);
+}
+
+#body table.general-info {
+	background: #f4f7fd;
+	border-color: #d5e0f5;
+	border-top-color: var(--ss-brand-secondary);
+}
+
+#body table.other-info {
+	background: #fffaf0;
+	border-color: #f3e4c0;
+	border-top-color: var(--ss-brand-accent);
+}
+
+#body table.enrollment {
+	background: #f3faf6;
+	border-color: #cfe8d8;
+	border-top-color: var(--ss-success);
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.general-info .onclick,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.other-info .onclick,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.enrollment .onclick {
+	display: flex;
+	flex-direction: column-reverse;
+	align-items: flex-start;
+	gap: 4px;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.general-info > tbody > tr > td:not(:has(table)):not(:has(select ~ select)):not(:has(input ~ input)),
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.other-info > tbody > tr > td:not(:has(table)):not(:has(select ~ select)):not(:has(input ~ input)),
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.enrollment > tbody > tr > td:not(:has(table)):not(:has(select ~ select)):not(:has(input ~ input)) {
+	position: relative;
+	padding-top: 32px;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.general-info > tbody > tr > td:not(:has(table)):not(:has(select ~ select)):not(:has(input ~ input)) > br,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.other-info > tbody > tr > td:not(:has(table)):not(:has(select ~ select)):not(:has(input ~ input)) > br,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.enrollment > tbody > tr > td:not(:has(table)):not(:has(select ~ select)):not(:has(input ~ input)) > br,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.cellspacing-0 td > br {
+	display: none;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.general-info > tbody > tr > td:not(:has(table)):not(:has(select ~ select)):not(:has(input ~ input)) > label,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.other-info > tbody > tr > td:not(:has(table)):not(:has(select ~ select)):not(:has(input ~ input)) > label,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.enrollment > tbody > tr > td:not(:has(table)):not(:has(select ~ select)):not(:has(input ~ input)) > label {
+	position: absolute;
+	top: 8px;
+	left: 16px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.cellspacing-0 tr {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.cellspacing-0 td {
+	display: flex;
+	flex: 1 1 140px;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.cellspacing-0 td > label {
+	order: -1;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.general-info input[type="text"],
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.general-info input[type="password"],
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.general-info select,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.other-info input[type="text"],
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.other-info select,
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.enrollment input[type="text"],
+:is(body[class*="modname-students-"], body[class*="modname-custom-"], body[class*="modname-users-"], body[class*="modname-scheduling-"], body[class*="modname-grades-"], body[class*="modname-attendance-"], body[class*="modname-eligibility-"], body[class*="modname-discipline-"], body[class*="modname-accounting-"], body[class*="modname-student-billing-"], body[class*="modname-food-service-"], body[class*="modname-resources-"]) table.enrollment select {
+	box-sizing: border-box;
+	max-width: 100%;
+	min-height: 36px;
+	padding: 6px 10px;
+	border: 1px solid #d5dbe4;
+	border-radius: 8px;
+	background: #fff;
+}
+
+@media (max-width: 874px) {
+	#footer .ss-user,
+	#footer .ss-lang {
+		display: none;
+	}
+
+	#menu .ss-lang-menu {
+		display: inline-flex;
+		margin: 8px 12px 0;
+	}
+
+	#menu .ss-lang-link {
+		color: var(--ss-text-on-brand);
+	}
+
+	#menu .ss-lang-link.is-active {
+		background: var(--ss-brand-accent);
+		color: var(--ss-text);
+	}
+
+	.rt tbody {
+		max-width: calc(100vw - 168px);
+	}
+
+	body.modules #footer {
+		background: var(--ss-sidebar);
+		box-shadow: none;
+	}
+
+	body.modules #footerwrap {
+		background: var(--ss-sidebar);
+		border-color: var(--ss-brand-secondary);
+	}
+
+	body.modules #footer {
+		z-index: 45;
+	}
+
+	body.modules #menu {
+		top: 48px;
+		left: 0;
+		right: 0;
+		bottom: auto;
+		width: 100vw;
+		height: 0;
+		border-radius: 0;
+		overflow: hidden;
+		box-shadow: none;
+		background: transparent;
+	}
+
+	body.modules #menu.slide {
+		height: calc(100% - 48px);
+		overflow-y: auto;
+		background: rgba(16, 24, 40, 0.4);
+		box-shadow: none;
+		z-index: 40;
+	}
+
+	body.modules #menu.slide .logo,
+	body.modules #menu.slide #menu-top,
+	body.modules #menu.slide .adminmenu {
+		box-sizing: border-box;
+		width: min(300px, calc(100vw - 24px));
+		margin-left: 12px;
+		margin-right: 12px;
+		background: var(--ss-sidebar);
+	}
+
+	body.modules #menu.slide .logo {
+		margin-top: 12px;
+		margin-bottom: 0;
+		padding-top: 16px;
+		border-radius: 16px 16px 0 0;
+	}
+
+	body.modules #menu.slide #menu-top {
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+
+	body.modules #menu.slide .adminmenu {
+		margin-top: 0;
+		margin-bottom: 12px;
+		padding-bottom: 12px;
+		border-radius: 0 0 16px 16px;
+		box-shadow: 0 18px 40px rgba(1, 20, 70, 0.28);
+	}
+
+	body.modules .menu-top {
+		text-transform: none;
+		border-radius: 8px;
+	}
+
+	#footer .ss-user {
+		color: var(--ss-text-on-brand);
+	}
+
+	#footer .ss-lang-link {
+		color: var(--ss-text-on-brand);
+	}
+
+	#footer .ss-lang-link.is-active {
+		background: var(--ss-brand-accent);
+		color: var(--ss-text);
+	}
+}
+
+/* Accessoires du modèle, sur toutes les pages. Les champs et les actions Rosario restent. */
+body.modules #body input[type="submit"],
+body.modules #body button[type="submit"] {
+	min-height: 36px;
+	padding: 0 14px;
+	border: 0;
+	border-radius: 8px;
+	background: var(--ss-brand-secondary);
+	color: var(--ss-text-on-brand);
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	cursor: pointer;
+}
+
+body.modules #body input[type="submit"]:hover,
+body.modules #body button[type="submit"]:hover,
+body.modules #body input[type="submit"]:focus,
+body.modules #body button[type="submit"]:focus {
+	background: var(--ss-brand-primary);
+	color: var(--ss-text-on-brand);
+}
+
+body.modules #body input[type="button"] {
+	min-height: 36px;
+	padding: 0 14px;
+	border: 1px solid #d5dbe4;
+	border-radius: 8px;
+	background: #fff;
+	color: var(--ss-text);
+	font-weight: 600;
+	cursor: pointer;
+}
+
+body.modules #body input[type="date"],
+body.modules #body input[type="password"],
+body.modules #body input[type="email"],
+body.modules #body input[type="tel"] {
+	box-sizing: border-box;
+	min-height: 36px;
+	border: 1px solid #d5dbe4;
+	border-radius: 8px;
+	padding: 0 10px;
+	background: #fff;
+}
+
+body.modules #body input[type="checkbox"],
+body.modules #body input[type="radio"] {
+	accent-color: var(--ss-brand-secondary);
+}
+
+body.modules #body table.postbox:not(:has(table.dashboard)):not(:has(.list-wrapper)):not(:has(table.list)) {
+	width: 100%;
+	background: #fff;
+	border: 1px solid #e3e7ee;
+	border-radius: 12px;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+body.modules #body table.postbox:not(:has(table.dashboard)):not(:has(.list-wrapper)):not(:has(table.list)) > thead th {
+	padding: 14px 16px;
+	background: #fff;
+	border: 0;
+	border-bottom: 1px solid #e3e7ee;
+	text-align: left;
+	text-transform: none;
+	letter-spacing: 0;
+	font-family: Poppins, Inter, Lato, sans-serif;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--ss-brand-primary);
+}
+
+body.modules #body .list-nav td {
+	padding: 12px 16px;
+	color: var(--ss-text-secondary);
+	font-size: 12px;
+	background: #fff;
+}
+
+body.modules #body #LO_search {
+	height: 36px;
+	border-radius: 8px;
+}
+
+.attendance-code:not(:has(input)) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	height: 24px;
+	min-width: 24px;
+	padding: 0 8px;
+	border-radius: 999px;
+	background: #eef1f6;
+	color: #5c6775;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 24px;
+}
+
+.attendance-code.present:not(:has(input)),
+.attendance-code.present-alt:not(:has(input)) {
+	background: #e7f7f1;
+	color: #087a56;
+}
+
+.attendance-code.absent:not(:has(input)),
+.attendance-code.absent-alt:not(:has(input)) {
+	background: #fdeceb;
+	color: #b4231c;
+}
+
+.attendance-code.half-day:not(:has(input)),
+.attendance-code.half-day-alt:not(:has(input)) {
+	background: #fff1e6;
+	color: #c45504;
+}

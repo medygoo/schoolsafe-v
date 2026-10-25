@@ -1,0 +1,33 @@
+.wiring-surface {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 24px;
+}
+
+.wiring-surface form,
+.wiring-card-form {
+  display: grid;
+  gap: 12px;
+}
+
+.wiring-surface input,
+.wiring-card-form input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1440px) {
+  .wiring-surface { padding: 32px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .wiring-surface { padding: 20px; }
+}
+
+@media (max-width: 390px) {
+  .wiring-surface,
+  .wiring-card-form { padding: 12px; }
+  .wiring-surface button { width: 100%; }
+}

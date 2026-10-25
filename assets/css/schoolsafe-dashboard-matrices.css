@@ -1,0 +1,23 @@
+.ss-closing-finance{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 24px}
+.ss-closing-finance article{padding:16px;border:1px solid var(--photo-line);border-radius:8px;background:var(--photo-panel);display:grid;gap:6px;min-width:0}
+.ss-closing-finance strong{font-size:22px;overflow-wrap:anywhere}.ss-closing-finance small{color:var(--photo-muted)}
+.ss-closing-matrices{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:24px;margin:32px 0}
+.ss-closing-matrices>div{min-width:0}.ss-closing-matrices h3{font-size:18px;line-height:1.4}
+.ss-closing-matrices{padding-top:24px;border-top:2px solid var(--photo-line)}
+.ss-closing-matrices .ss-dashboard-directory{margin:0;padding:0;background:transparent;border:0;box-shadow:none}
+.ss-closing-matrices a{color:var(--photo-blue)}
+.ss-closing-matrices .ss-directory-group th{background:var(--photo-soft);color:var(--photo-ink)}
+.ss-closing-matrices .ss-directory-search button{min-height:44px;background:var(--photo-soft);color:var(--photo-ink);border:1px solid var(--photo-line);border-radius:6px}
+.ss-closing-matrices .ss-directory-pages{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:12px}
+.ss-closing-native-information{margin:24px 0;color:var(--photo-ink)}
+.ss-closing-matrices .ss-directory-scroll{max-height:560px;overflow:auto;overscroll-behavior:contain;border:1px solid var(--photo-line)}
+.ss-closing-matrices table{border-collapse:separate;border-spacing:0;min-width:640px;width:100%;background:var(--photo-panel);color:var(--photo-ink)}
+.ss-closing-matrices td,.ss-closing-matrices th{padding:10px;text-align:left;border-bottom:1px solid var(--photo-line);font-size:13px}
+.ss-closing-matrices thead th{position:sticky;top:0;z-index:1;background:var(--photo-soft);color:var(--photo-ink)}
+.ss-closing-matrices .ss-directory-groups{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.ss-closing-matrices .ss-directory-groups a{padding:8px 12px;border:1px solid var(--photo-line);border-radius:6px;min-height:44px;background:var(--photo-panel)}
+.ss-closing-matrices .ss-directory-search{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.ss-closing-matrices input{max-width:100%;min-height:44px}.ss-closing-matrices .ss-personnel-statistics{margin-top:24px}
+.ss-closing-matrices .ss-personnel-tables>div,.ss-closing-matrices .ss-personnel-table-scroll{overflow:auto;max-width:100%}
+@media(max-width:1000px){.ss-closing-matrices{grid-template-columns:1fr}}
+@media(max-width:600px){.ss-closing-finance{grid-template-columns:1fr 1fr}.ss-closing-finance strong{font-size:18px}.ss-closing-matrices .ss-directory-scroll{max-height:440px}}

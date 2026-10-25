@@ -1,0 +1,45 @@
+@media screen {
+    html[data-ss-background="night"] {
+        color-scheme:dark; --ss-page-background:#0b1e3b;
+        --ss-nav-accent:#98ceff; --ss-nav-border:#405c82;
+        --ss-text:#edf4ff; --ss-text-secondary:#b9cce5; --ss-line:#405c82;
+        --ss-surface:#0b1e3b; --ss-surface-raised:#142e51;
+    }
+    html[data-ss-background="night"] body.modules #body { color:#edf4ff; }
+    html[data-ss-background="night"] .sscx-app {
+        --sscx-text:#edf4ff; --sscx-muted:#b9cce5; --sscx-surface:#142e51;
+        --sscx-soft:#1c395e; --sscx-border:#405c82; --sscx-accent:#98ceff;
+        color:#edf4ff !important;
+    }
+    html[data-ss-background="night"] body.modules :is(#menu .ss-brand-name,#menu .menu-top,#menu #ss-settings-button,#ss-mobile-navigation a,#ss-mobile-navigation button) { color:#edf4ff !important; }
+    html[data-ss-background="night"] body.modules #menu .ss-brand-name,
+    html[data-ss-background="night"] body.modules #menu .adminmenu > .menu-module > .menu-top,
+    html[data-ss-background="night"] body.modules #menu #ss-settings-button,
+    html[data-ss-background="night"] #ss-mobile-navigation a,
+    html[data-ss-background="night"] #ss-mobile-navigation button { color:#edf4ff !important; }
+    html[data-ss-background="night"] #menu .menu-top .module-icon { background-color:var(--ss-branch) !important; }
+    html[data-ss-background="night"] #menu .menu-top { border-left-color:var(--ss-branch) !important; }
+    html[data-ss-background="night"] body.modules #menu .menu-module[data-ss-branch] > .menu-top .module-icon { background-color:var(--ss-branch) !important; }
+    html[data-ss-background="night"] body.modules #menu .adminmenu > .menu-module > .menu-top { border-left-color:var(--ss-branch) !important; }
+    html[data-ss-background="night"] #menu .ss-open > .menu-top,
+    html[data-ss-background="night"] #menu .menu-top:hover { color:var(--ss-branch) !important; }
+    html[data-ss-background="night"] #menu .wp-submenu,
+    html[data-ss-background="night"] #menu .ss-context-heading { background:#142e51 !important; color:#edf4ff !important; }
+    html[data-ss-background="night"] #menu .wp-submenu a { color:#edf4ff !important; }
+    html[data-ss-background="night"] #footer { background:#0b1e3b !important; }
+    html[data-ss-background="night"] body.modules #footer .ss-header-action[data-background="night"] { background:#142e51; color:#edf4ff; border-color:#98ceff; }
+    html[data-ss-background="night"] .ss-connected-dashboard :is(h2,h3,h4,strong,dt,td,th) { color:#edf4ff !important; }
+    html[data-ss-background="night"] .ss-connected-dashboard :is(p,small,time,caption,.sscx-empty,.sscx-metric > span) { color:#b9cce5 !important; }
+    html[data-ss-background="night"] .ss-connected-dashboard :is(a,summary) { color:#98ceff !important; }
+    html[data-ss-background="night"] .ss-connected-dashboard :is(.sscx-metric,.ss-connected-metric,.sscx-shortcuts a,.sscx-table-scroll,.ss-dashboard-refresh) { background:#142e51 !important; border-color:#405c82 !important; }
+    html[data-ss-background="night"] .ss-connected-dashboard :is(thead,th,tr:nth-child(even)) { background:#1c395e !important; }
+    html[data-ss-background="night"] #body :is(input:not([type="submit"]),select,textarea) { background:#142e51; color:#edf4ff; border-color:#617fa6; }
+    html[data-ss-background="night"] #body input::placeholder { color:#b9cce5; }
+    html[data-ss-background="night"] #ss-mobile-navigation .module-icon { filter:brightness(0) invert(1); }
+    html[data-ss-background="night"] #ss-mobile-navigation .ss-nav-active { color:#98ceff !important; }
+    html[data-ss-background="night"] #ss-jaspe-dialog .ss-jaspe-close { color:#edf4ff; }
+    html[data-ss-background="night"] .ss-connected-dashboard :is(.ss-dashboard-context,.ss-finance-metrics article,.ss-finance-analysis > section,.ss-finance-balances,.ss-reference-operation,.ss-reference-bottom > section,.ss-reference-alerts) { background:#142e51 !important; color:#edf4ff; border-color:#405c82 !important; }
+    html[data-ss-background="night"] .ss-connected-dashboard :is(.ss-dashboard-context span,.ss-dashboard-context label,.ss-dashboard-context strong,.ss-reference-operation span,.ss-reference-operation strong) { color:#edf4ff !important; }
+    html[data-ss-background="night"] .ss-connected-dashboard :is(.ss-life-status,.ss-directory-groups a) { background:#1c395e; color:#98ceff !important; }
+    html[data-ss-background="night"] .ss-connected-dashboard svg text { fill:#b9cce5; }
+}

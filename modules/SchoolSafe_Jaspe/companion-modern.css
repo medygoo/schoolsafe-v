@@ -1,0 +1,95 @@
+/* Impeccable: focused embedded conversation, 2026-10-14. */
+html { --jaspe-panel: rgba(220,236,255,.98); --jaspe-log-border: #6d8fa6; --jaspe-accent:#255e98; }
+html[data-ss-conversation-theme="gray"] { --jaspe-log-border:#8794a5; --jaspe-accent:#475569; }
+html[data-ss-conversation-theme="mint"] { --jaspe-log-border:#72a58d; --jaspe-accent:#14684d; }
+html[data-ss-conversation-theme="rose"] { --jaspe-log-border:#b37c94; --jaspe-accent:#94395c; }
+html[data-ss-conversation-theme="yellow"] { --jaspe-log-border:#ad985b; --jaspe-accent:#765308; }
+html[data-ss-conversation-theme="white"] { --jaspe-panel: rgba(255,255,255,.98); }
+html[data-ss-conversation-theme="night"] { --jaspe-panel:rgba(20,46,81,.98); --jaspe-log-border:#83b6e4; --jaspe-accent:#326faf; color-scheme:dark; }
+html[data-ss-conversation-theme="night"] body #jaspe-native :is(h2,span,p,label,#jaspe-status,#jaspe-destinations a) { color:#edf4ff !important; }
+html[data-ss-conversation-theme="night"] body #jaspe-native #jaspe-question { background:#0b1e3b; color:#edf4ff; }
+html[data-ss-conversation-theme="night"] body #jaspe-native #jaspe-question::placeholder { color:#b9cce5; }
+html[data-ss-conversation-theme="night"] body #jaspe-native .jaspe-voice-tools button { background:#1c395e; color:#edf4ff; }
+html[data-ss-conversation-theme="blue"] { --jaspe-panel: rgba(220,236,255,.98); }
+html[data-ss-conversation-theme="gray"] { --jaspe-panel: rgba(238,240,243,.98); }
+html[data-ss-conversation-theme="mint"] { --jaspe-panel: rgba(229,245,237,.98); }
+html[data-ss-conversation-theme="rose"] { --jaspe-panel: rgba(251,233,239,.98); }
+html[data-ss-conversation-theme="yellow"] { --jaspe-panel: rgba(255,245,217,.98); }
+html:has(#jaspe-native),html body.modules.modname-schoolsafe-jaspe-assistant-php,
+html body.modules.modname-schoolsafe-jaspe-assistant-php #wrap,
+html body.modules.modname-schoolsafe-jaspe-assistant-php #wrap #body.mod,
+html,body,body.modules #wrap,body.modules #wrap #body.mod,
+html[data-ss-background] body.modules #wrap #body.mod {
+    background: transparent !important; margin: 0 !important; padding: 0 !important;
+    width: 100% !important; height: 100% !important; min-width: 0 !important;
+    overflow: hidden !important; box-shadow: none !important; border: 0 !important;
+}
+body.modules #body { visibility: visible !important; animation: none !important; }
+html[data-ss-background] body.modules,
+html[data-ss-background] body.modules #wrap,
+html[data-ss-background] body.modules #body { background:transparent !important; }
+html body #jaspe-stage .jaspe2d { display:none !important; }
+html body #jaspe-stage:has(.jaspe2d__live-canvas) #jaspe-fallback { display:none !important; }
+#menu,#footer,#ss-mobile-navigation,#BottomButtonMenu { display: none !important; }
+#body:has(#jaspe-native) > :not(#jaspe-native) { display: none !important; }
+html body #jaspe-native.jaspe-native {
+    box-sizing: border-box; position: absolute; inset: 0 0 0 auto;
+    width: 64%; max-width: none; margin: 0; padding: 12px;
+    display: flex; flex-direction: column; gap: 10px;
+    background: var(--jaspe-panel); border: 0; border-radius: 16px;
+    color: #173b5a; font: 15px/1.5 system-ui,sans-serif; letter-spacing: 0;
+}
+html body #jaspe-native .jaspe-heading {
+    flex: none; display: block; margin: 0; padding: 0 34px 12px 0;
+    border: 0; border-bottom: 1px solid rgba(34,86,130,.14);
+}
+html body #jaspe-native .jaspe-heading h2 { margin: 0; font: 650 20px/1.3 system-ui,sans-serif; }
+html body #jaspe-native .jaspe-heading span { display: block; margin: 4px 0 0; font-size: 12px; color: #355a76; }
+html body #jaspe-native #jaspe-stage {
+    position: fixed; left: 0; bottom: 0; width: 32%; height: 95%; max-height: 380px;
+    pointer-events: none; z-index: 2; background: transparent !important; border: 0; box-shadow: none;
+}
+#jaspe-stage img,#jaspe-stage canvas { width: 100%; height: 100%; object-fit: contain; background: transparent !important; }
+html body #jaspe-native #jaspe-stage .jaspe2d__live-canvas,
+html body #jaspe-native #jaspe-stage #jaspe-fallback,
+html body #jaspe-native #jaspe-stage .jaspe2d img {
+    position: absolute; left: -60%; right: auto; width: 220%; max-width: none;
+    height: 100%; object-fit: contain;
+}
+html body #jaspe-native #jaspe-log { flex: 1; min-height: 64px; overflow: auto; margin: 0; padding: 12px; scrollbar-width: none; border: 2px solid var(--jaspe-log-border); border-radius: 14px 4px 14px 4px; box-sizing: border-box; background: transparent; box-shadow: inset 0 1px 0 rgba(255,255,255,.5); }
+html body #jaspe-native #jaspe-log::-webkit-scrollbar { display: none; }
+html body #jaspe-native #jaspe-log p {
+    width: fit-content; max-width: 100%; box-sizing: border-box; margin: 0 0 10px;
+    padding: 4px 0; background: transparent; border: 0; border-radius: 0;
+    font: 15px/1.6 system-ui,sans-serif; color: #173b5a; overflow-wrap: anywhere; white-space: pre-wrap;
+}
+html body #jaspe-native #jaspe-log p[data-speaker="user"] { margin-left: auto; padding: 4px 8px; background: rgba(37,94,152,.1); color: #173b5a; border-radius: 6px; }
+html body #jaspe-native #jaspe-status { flex: none; min-height: 0; margin: 0; font-size: 12px; color: #355a76; }
+#jaspe-status:empty { display: none; }
+html body #jaspe-native #jaspe-destinations { flex: none; max-height: 66px; overflow: auto; padding: 0; border: 0; font-size: 13px; }
+html body #jaspe-native #jaspe-destinations a { color: #174e85; text-decoration: underline; text-underline-offset: 3px; }
+html body #jaspe-native .jaspe-voice-tools { order: 0; flex: none; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0; }
+html body #jaspe-native .jaspe-voice-tools button {
+    display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+    border: 0; border-radius: 8px; background: rgba(255,255,255,.84); color: #173b5a;
+}
+html body #jaspe-native .jaspe-voice-tools button[aria-pressed="true"] { background: #255e98; color: #fff; }
+html body #jaspe-native .jaspe-voice-tools label { font-size: 12px; margin-left: auto; color: #355a76; }
+html body #jaspe-native #jaspe-search { order: 0; flex: none; margin: 0; }
+html body #jaspe-native #jaspe-search > label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+html body #jaspe-native .jaspe-query { display: flex; flex-direction: row; gap: 8px; align-items: center; }
+html body #jaspe-native #jaspe-question { min-width: 0; flex: 1; height: 48px; padding: 10px 12px; margin: 0; border: 1px solid #8fafcb; border-radius: 8px; background: #fff; color: #173b5a; font: 16px system-ui,sans-serif; caret-color: #255e98; }
+html body #jaspe-native #jaspe-question::placeholder { color: #52677b; }
+html body #jaspe-native .jaspe-query button { flex: 0 0 44px; width: 44px; height: 48px; padding: 0; border: 0; border-radius: 8px; background: #255e98; }
+html body #jaspe-native .jaspe-query button img { filter: invert(1); }
+html body #jaspe-native button:hover { box-shadow: 0 3px 8px rgba(24,57,85,.14); }
+html body #jaspe-native :focus-visible { outline: 3px solid #255e98; outline-offset: 2px; }
+html body #jaspe-native .jaspe-query button,html body #jaspe-native .jaspe-voice-tools button[aria-pressed="true"] { background:var(--jaspe-accent); }
+html body #jaspe-native :focus-visible { outline-color:var(--jaspe-accent); }
+html body #jaspe-native #jaspe-question { caret-color:var(--jaspe-accent); border-color:var(--jaspe-log-border); }
+#jaspe-native ::selection { background:var(--jaspe-accent); color:#fff; }
+@media(max-width:420px) {
+    html body #jaspe-native { padding: 14px 12px; gap: 8px; }
+    html body #jaspe-native .jaspe-heading h2 { font-size: 18px; }
+    html body #jaspe-native #jaspe-log p { padding: 4px 0; font-size: 14px; }
+}
