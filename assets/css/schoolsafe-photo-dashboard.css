@@ -523,3 +523,13 @@ body.ss-school-shell:has(#ss-photo-dashboard) #ss-photo-dashboard .ss-photo-tool
 #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo img{width:75%;height:135px;max-height:none;object-fit:contain;animation:ss-logo-float 6s ease-in-out infinite}
 #ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo figcaption{font-size:11px;line-height:1.35}
 }
+
+/* ===== 2026-10-25 Ajustement Option A (retour utilisateur) : conteneur plus petit,
+   bien place dans le bandeau, aucune animation. Logo fixe et lisible. ===== */
+@media(min-width:701px){
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo{width:200px;height:150px;top:110px;box-shadow:0 8px 20px #10253f14}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo img{height:104px;animation:none}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-logo-orbit{display:none}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo:before{inset:8px;border-radius:12px}
+#ss-photo-dashboard .ss-photo-toolbar .ss-photo-school-logo figcaption{font-size:10px}
+}
