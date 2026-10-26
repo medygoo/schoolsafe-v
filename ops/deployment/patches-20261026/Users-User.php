@@ -439,6 +439,7 @@ if ( $_REQUEST['modfunc'] === 'update'
 				WHERE STAFF_ID='" . UserStaffID() . "'" );
 
 			if ( isset( $_REQUEST['staff']['PROFILE'] )
+				&& $_REQUEST['staff']['PROFILE'] != $profile_RET[1]['PROFILE']
 				&& $_REQUEST['staff']['PROFILE'] != $profile_RET[1]['PROFILE_ID'] )
 			{
 				if ( $_REQUEST['staff']['PROFILE'] == 'admin' )
