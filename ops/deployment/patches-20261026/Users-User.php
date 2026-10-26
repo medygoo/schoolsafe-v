@@ -818,7 +818,9 @@ if ( $_REQUEST['modfunc'] === 'delete'
 	&& basename( $_SERVER['PHP_SELF'] ) !== 'index.php'
 	&& UserStaffID() !== User( 'STAFF_ID' )
 	&& User( 'PROFILE' ) === 'admin'
-	&& AllowEdit() )
+	&& AllowEdit()
+	&& ( ! function_exists( 'SchoolSafeAccountBlocksWrite' ) || ! SchoolSafeAccountBlocksWrite() )
+	&& ( ( function_exists( 'SchoolSafeGlobalAdmin' ) && SchoolSafeGlobalAdmin() ) || SchoolSafeStaffWithinScope( (int) $_REQUEST['staff_id'] ) ) )
 {
 	if ( DeletePrompt( _( 'User' ) ) )
 	{
