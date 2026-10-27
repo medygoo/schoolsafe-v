@@ -1,0 +1,2 @@
+# SchoolSafe Device Hub — keep-alive du collecteur supervise (2026-10-27)
+* * * * * www-data /usr/local/bin/php /var/www/html/schoolsafe-device-hub/health.php >/dev/null 2>&1 || nohup /usr/local/bin/php /var/www/html/schoolsafe-device-hub/worker.php --supervise >/dev/null 2>&1 &
