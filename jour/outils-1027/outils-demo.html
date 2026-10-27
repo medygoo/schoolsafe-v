@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SchoolSafe — Atelier technique</title>
+<style>
+:root{--vert:#176b52;--fond:#f4f7fb}
+body{font-family:system-ui,sans-serif;background:var(--fond);color:#1c2833;margin:0 auto;padding:16px;max-width:760px}
+h1{font-size:1.3rem;color:var(--vert)}h2{font-size:1.05rem;margin:18px 0 8px}
+.carte{background:#fff;border-radius:12px;padding:14px;margin:10px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.8rem;font-weight:600}
+.ok{background:#d4efdf;color:#196f3d}.ko{background:#fadbd8;color:#943126}.attente{background:#fdebd0;color:#9c640c}
+button{background:var(--vert);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:.9rem;cursor:pointer}
+input{padding:8px;border:1px solid #bbb;border-radius:8px;font-size:.9rem;width:60%}
+.ligne{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#carte-map{height:260px;border-radius:8px}
+.mini{font-size:.8rem;color:#666}
+img.med{width:110px;height:80px;object-fit:cover;border-radius:8px;margin:4px}
+canvas{max-width:100%}
+</style>
+</head>
+<body>
+<h1>SchoolSafe — Atelier technique</h1>
+<p class="mini">Ouvre cette page <b>connecté(e) à SchoolSafe</b> (même navigateur) : les proxys exigent ta session.</p>
+<div class="carte"><h2>État des briques</h2><div id="etats" class="mini">Chargement…</div></div>
+<div class="carte"><h2>PDF.js — affichage de PDF <span id="b-pdf" class="badge attente">…</span></h2><canvas id="c-pdf"></canvas></div>
+<div class="carte"><h2>Tesseract.js — texte dans les photos <span id="b-ocr" class="badge attente">…</span></h2><canvas id="c-ocr" width="420" height="90"></canvas><div class="ligne"><button id="t-ocr">Tester l'OCR</button><span id="r-ocr" class="mini">Dessine « SCHOOLSAFE 2026 » puis le lit.</span></div></div>
+<div class="carte"><h2>MapLibre + Turf — carte et distances <span id="b-map" class="badge attente">…</span></h2><div id="carte-map"></div><p class="mini" id="r-turf">Turf calcule…</p></div>
+<div class="carte"><h2>Dictionnaire (Wiktionary FR / EN) <span id="b-dico" class="badge attente">…</span></h2><div class="ligne"><input id="i-mot" value="école"><button id="t-dico">Définition</button></div><div id="r-dico" class="mini"></div></div>
+<div class="carte"><h2>Météo (OpenWeather, cache 30 min) <span id="b-meteo" class="badge attente">…</span></h2><div class="ligne"><button id="t-meteo">Météo à Kinshasa</button><span id="r-meteo" class="mini"></span></div><p class="mini">Sans clé, réponse « CLE_METEO_MANQUANTE » — donne-moi ta clé gratuite openweathermap.org et je l'installe.</p></div>
+<div class="carte"><h2>Openverse — images réutilisables (licences CC) <span id="b-medias" class="badge attente">…</span></h2><div class="ligne"><input id="i-medias" value="classroom africa"><button id="t-medias">Chercher</button></div><div id="r-medias"></div></div>
+<script src="/assets/libs/pdfjs/pdf.min.js"></script>
+<script src="/assets/libs/maplibre/maplibre-gl.js"></script>
+<script src="/assets/libs/maplibre/turf.min.js"></script>
+<script src="/assets/libs/tesseract/tesseract.min.js"></script>
+<script>
+'use strict';
+function badge(id,txt,cls){var b=document.getElementById(id);if(b){b.textContent=txt;b.className='badge '+cls;}}
+function ligne(id,txt){var e=document.getElementById(id);if(e)e.innerHTML=txt;}
+function statut(nom,ok){var e=document.getElementById('etats');var s=document.createElement('div');s.innerHTML=(ok?'\u2705 ':'\u274c ')+nom;e.appendChild(s);}
+window.addEventListener('load',function(){
+// ---- PDF.js ----
+try{
+  pdfjsLib.GlobalWorkerOptions.workerSrc='/assets/libs/pdfjs/pdf.worker.min.js';
+  var pdfB64='JVBERi0xLjcKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3ggWzAgMCA1OTUgODQyXS9QYXJlbnQgMiAwIFIvUmVzb3VyY2VzPDwvRm9udDw8L0YxIDQgMCBSPj4+PmNvbnRlbnRzIDUgMCBSPgplbmRvYmoKNCAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2E+PgplbmRvYmoKNSAwIG9iago8PC9MZW5ndGggNDQ+PgpzdHJlYW0KQlQgL0YxIDI0IFRmIDUwIDgwMCBUCihTY2hvb2xTYWZlIFBERikgVGoKRVQKZW5kc3RyZWFtCmVuZG9iagp0cmFpbGVyCjw8L1Jvb3QgMSAwIFI+PgolJUVPRgo=';
+  var octets=Uint8Array.from(atob(pdfB64),function(c){return c.charCodeAt(0);});
+  pdfjsLib.getDocument({data:octets}).promise.then(function(pdf){return pdf.getPage(1);}).then(function(page){
+    var vp=page.getViewport({scale:1.2});var c=document.getElementById('c-pdf');
+    c.width=vp.width;c.height=vp.height;
+    return page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+  }).then(function(){badge('b-pdf','PDF OK','ok');statut('PDF.js rendu OK',true);})
+  .catch(function(e){badge('b-pdf','PDF KO','ko');statut('PDF.js: '+e.message,false);});
+}catch(e){badge('b-pdf','PDF KO','ko');}
+// ---- MapLibre + Turf ----
+try{
+  var carte=new maplibregl.Map({container:'carte-map',
+    style:{version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'(c) OpenStreetMap'}},layers:[{id:'osm',type:'raster',source:'osm'}]},
+    center:[15.31,-4.32],zoom:10.5});
+  new maplibregl.Marker().setLngLat([15.31,-4.32]).addTo(carte);
+  carte.on('load',function(){badge('b-map','Carte OK','ok');statut('MapLibre carte OSM OK',true);});
+  carte.on('error',function(){badge('b-map','r\u00e9seau requis','attente');statut('MapLibre charg\u00e9 (tuiles r\u00e9seau requises)',true);});
+  var km=Math.round(turf.distance(turf.point([15.31,-4.32]),turf.point([27.48,-11.66])));
+  ligne('r-turf','Turf (hors ligne) : Kinshasa \u2192 Lubumbashi = <b>'+km+' km</b>');
+  statut('Turf distance '+km+' km OK',true);
+}catch(e){badge('b-map','Carte KO','ko');statut('MapLibre: '+e.message,false);}
+// ---- Dictionnaire ----
+badge('b-dico','pr\u00eat','ok');
+document.getElementById('t-dico').addEventListener('click',async function(){
+  var mot=document.getElementById('i-mot').value.trim();
+  ligne('r-dico','Recherche\u2026');
+  try{
+    var r=await fetch('/ss-proxy-dico.php?lang=fr&mot='+encodeURIComponent(mot));
+    var d=await r.json();
+    if(d.error){ligne('r-dico','\u26a0\ufe0f '+d.error);return;}
+    var fr=(d.def&&(d.def.fr||d.def[0]))||[];
+    var html='';
+    (Array.isArray(fr)?fr.slice(0,3):[]).forEach(function(cate){
+      var g=((cate.meanings||[]).map(function(m){return (m.glosses||[]).join(' ');}).filter(Boolean)).slice(0,2);
+      html+='<b>'+(cate.partOfSpeech||'')+'</b> : '+g.join(' \u00b7 ')+'<br>';
+    });
+    ligne('r-dico',html||JSON.stringify(d.def).slice(0,300));
+  }catch(e){ligne('r-dico','\u26a0\ufe0f indisponible (connexion ?)');}
+});
+// ---- M\u00e9t\u00e9o ----
+badge('b-meteo','pr\u00eat','ok');
+document.getElementById('t-meteo').addEventListener('click',async function(){
+  ligne('r-meteo','Recherche\u2026');
+  try{
+    var r=await fetch('/ss-proxy-weather.php?lat=-4.32&lon=15.31');
+    var d=await r.json();
+    if(d.error){ligne('r-meteo','\u26a0\ufe0f '+d.error);return;}
+    ligne('r-meteo','<b>'+Math.round(d.main.temp)+'\u00b0C</b> \u2014 '+d.weather[0].description);
+  }catch(e){ligne('r-meteo','\u26a0\ufe0f indisponible');}
+});
+// ---- Openverse ----
+badge('b-medias','pr\u00eat','ok');
+document.getElementById('t-medias').addEventListener('click',async function(){
+  var q=document.getElementById('i-medias').value.trim();
+  ligne('r-medias','Recherche\u2026');
+  try{
+    var r=await fetch('/ss-proxy-openverse.php?q='+encodeURIComponent(q));
+    var d=await r.json();
+    if(d.error){ligne('r-medias','\u26a0\ufe0f '+d.error);return;}
+    var html='';
+    (d.results||[]).slice(0,8).forEach(function(im){
+      html+='<img class="med" src="'+(im.thumbnail||im.url)+'" alt=""> <span class="mini">'+(im.license||'?')+' \u00b7 '+(im.creator||'?')+'</span> ';
+    });
+    ligne('r-medias',html||'Aucun r\u00e9sultat');
+  }catch(e){ligne('r-medias','\u26a0\ufe0f indisponible');}
+});
+// ---- Tesseract ----
+document.getElementById('t-ocr').addEventListener('click',async function(){
+  var c=document.getElementById('c-ocr');var ctx=c.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle='#000';ctx.font='bold 34px Arial';ctx.fillText('SCHOOLSAFE 2026',20,55);
+  badge('b-ocr','OCR en cours\u2026','attente');
+  try{
+    var travailleur=await Tesseract.createWorker('fra',1,{
+      workerPath:'/assets/libs/tesseract/worker.min.js',
+      corePath:'/assets/libs/tesseract',
+      langPath:'/assets/libs/tesseract/lang',
+      gzip:false});
+    var resultat=await travailleur.recognize(c);
+    var texte=(resultat.data.text||'').trim().replace(/\s+/g,' ');
+    ligne('r-ocr','Lu : <b>'+texte+'</b>');
+    badge('b-ocr',texte?'OCR OK':'OCR \u00e0 revoir','ok');
+    statut('Tesseract a lu : '+texte,true);
+    await travailleur.terminate();
+  }catch(e){badge('b-ocr','OCR KO','ko');statut('Tesseract: '+e.message,false);}
+});
+});
+</script>
+</body>
+</html>
