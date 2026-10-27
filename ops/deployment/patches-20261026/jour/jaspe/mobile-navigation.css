@@ -1,0 +1,227 @@
+html { --ss-nav-accent:#245f94; --ss-nav-border:#9aafc3; }
+html[data-ss-background="gray"] { --ss-nav-accent:#475569; --ss-nav-border:#a4adb9; }
+html[data-ss-background="mint"] { --ss-nav-accent:#14684d; --ss-nav-border:#86b5a0; }
+html[data-ss-background="rose"] { --ss-nav-accent:#94395c; --ss-nav-border:#c69aad; }
+html[data-ss-background="yellow"] { --ss-nav-accent:#765308; --ss-nav-border:#bca767; }
+#ss-mobile-navigation, .ss-context-heading { display: none; }
+body.modules #BottomButtonMenu { display: none !important; }
+body.modules .adminmenu > .menu-module > .menu-top::after { content: none !important; display: none !important; }
+body.modules #menu-top > a:has(.logo) { display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 18px 12px 10px; text-decoration: none; }
+body.modules #menu-top > a .logo { width: 36px !important; height: 36px !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; object-fit: contain; }
+.ss-brand-name { color: #fff; font: 700 23px system-ui, sans-serif; }
+@media screen and (min-width: 701px) {
+    body.modules #menu { display: flex; flex-direction: column; overflow: visible; }
+    body.modules #menu-top { flex: 0 0 auto; }
+    body.modules #menu .adminmenu { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 12px; }
+    body.modules .adminmenu .wp-submenu::before { display: none; }
+    body.modules .wp-submenu .ss-context-heading {
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        position: sticky; top: -16px; z-index: 1; margin: -16px -12px 12px;
+        padding: 12px; background: #fff; border-bottom: 1px solid #dbe2ec;
+        color: #172333; font: 700 18px system-ui, sans-serif;
+    }
+    .ss-context-heading strong { min-width: 0; overflow-wrap: anywhere; }
+    .ss-context-close { flex: 0 0 44px; width: 44px; height: 44px; border: 1px solid #dbe2ec; border-radius: 5px; background: #fff; color: #172333; font-size: 26px; }
+    body.modules .adminmenu .wp-submenu { margin: 0 !important; }
+}
+@media screen and (max-width: 700px) {
+    body.modules { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+    #ss-mobile-navigation {
+        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: 1fr; align-items: stretch;
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+        min-height: 72px; box-sizing: border-box;
+        padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+        background: #12213e; border-top: 1px solid #405473;
+    }
+    #ss-mobile-navigation a, #ss-mobile-navigation button {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        grid-row: 1; min-width: 0; box-sizing: border-box;
+        gap: 4px; min-height: 48px; margin: 0; padding: 4px; border: 0;
+        background: transparent; color: #e3edfa; font: 11px system-ui, sans-serif;
+        text-decoration: none; border-radius: 5px;
+    }
+    #ss-mobile-navigation button:disabled { color: #516176; opacity: .6; cursor: not-allowed; }
+    #ss-mobile-navigation svg, #ss-mobile-navigation .module-icon { width: 22px; height: 22px; margin: 0; }
+    #ss-mobile-navigation svg { stroke: currentColor; stroke-width: 2; fill: none; flex-shrink: 0; }
+    #ss-mobile-navigation > * > :first-child { transition: transform .28s cubic-bezier(.16,1,.3,1), background-color .28s; }
+    #ss-mobile-navigation .ss-nav-active > :first-child { transform: translateY(-18px); }
+    #ss-mobile-navigation .ss-nav-active { color: #fff; }
+    #ss-mobile-navigation .ss-nav-active > svg,
+    #ss-mobile-navigation .ss-nav-active > .module-icon { box-sizing: content-box; padding: 10px; margin: -10px; border-radius: 50%; background-color: #284b7c; outline: 4px solid #12213e; }
+    #ss-mobile-navigation .ss-jaspe-portrait { position: relative; flex: 0 0 44px; width: 44px; height: 44px; overflow: hidden; border-radius: 50%; border: 3px solid #a7c9f2; background: #f5f8fc; margin-top: -12px; }
+    #ss-mobile-navigation .ss-jaspe-portrait img { position: absolute; width: 102px; max-width: none; height: auto; left: -29px; top: -8px; }
+    .ss-watch-icon { position: relative; display: grid; place-items: center; width: 28px; height: 32px; border: 2px solid currentColor; border-radius: 7px; background: #253c5d; color: #bcf6e3; }
+    .ss-watch-icon::before, .ss-watch-icon::after { content: ''; position: absolute; left: 6px; right: 6px; height: 6px; background: #8da8c9; }
+    .ss-watch-icon::before { top: -8px; border-radius: 3px 3px 0 0; }
+    .ss-watch-icon::after { bottom: -8px; border-radius: 0 0 3px 3px; }
+    .ss-watch-icon span { font: 700 9px system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+    #ss-mobile-navigation a > span:last-child, #ss-mobile-navigation button > span:last-child { text-align: center; overflow-wrap: anywhere; line-height: 1.3; }
+    #ss-mobile-navigation :focus-visible { outline: 3px solid #2174cb; outline-offset: -3px; }
+    body.modules #BottomButtonMenu { display: none !important; }
+    body.modules #body { margin-left: 0 !important; padding-bottom: 24px; }
+    body.modules #menu.slide {
+        display: flex !important; flex-direction: column; align-items: flex-start;
+        position: fixed !important; inset: 0 0 calc(72px + env(safe-area-inset-bottom)) !important;
+        width: 100% !important; height: auto !important; max-height: none !important;
+        padding: 0 !important; transform: none !important;
+        overflow: hidden; z-index: 90 !important; border-radius: 0;
+    }
+    body.modules #menu.slide #menu-top,
+    body.modules #menu.slide .adminmenu {
+        box-sizing: border-box; width: min(220px, calc(100% - 24px)) !important; margin: 0 !important;
+        border-radius: 0 !important; background: #123488;
+    }
+    body.modules #menu.slide #menu-top { flex: 0 0 auto; }
+    body.modules #menu.slide #ss-context-summary { width: 100%; box-sizing: border-box; white-space: normal; overflow-wrap: anywhere; text-align: left; line-height: 1.5; }
+    body.modules #menu.slide #menu-top > a:has(.logo) { padding: 12px; }
+    body.modules #menu.slide #menu-top .logo { width: 36px !important; height: 36px !important; margin: 0 !important; padding: 0 !important; }
+    body.modules #menu.slide .ss-brand-name { font-size: 20px; line-height: 1.3; }
+    body.modules #menu.slide .adminmenu { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px 0 8px !important; box-shadow: none; }
+    body.modules #menu.slide .adminmenu > .menu-module { margin: 0; }
+    body.modules #menu.slide .adminmenu > .menu-module > .menu-top {
+        display: flex; align-items: center; gap: 10px; box-sizing: border-box;
+        min-height: 44px; height: auto; margin: 0; padding: 8px 12px !important;
+        font: 400 14px/1.4 system-ui, sans-serif; text-transform: none;
+        border-radius: 0; white-space: normal; overflow-wrap: anywhere;
+    }
+    body.modules #menu.slide .adminmenu > .menu-module > .menu-top .module-icon {
+        flex: 0 0 20px; width: 20px !important; height: 20px !important;
+        margin: 0 !important; background-size: contain;
+    }
+    body.modules #menu.slide #ss-settings-button { flex: 0 0 auto; min-height: 44px; max-width: min(196px, calc(100% - 48px)); margin: 8px 12px; font-size: 14px; white-space: normal; overflow-wrap: anywhere; }
+    body.modules[data-ss-mobile-panel="primary"] #menu .adminmenu .wp-submenu { display: none !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu { background: #fff; overflow: hidden; }
+    body.modules[data-ss-mobile-panel="context"] #menu .logo,
+    body.modules[data-ss-mobile-panel="context"] #menu #menu-top,
+    body.modules[data-ss-mobile-panel="context"] #menu .ss-lang,
+    body.modules[data-ss-mobile-panel="context"] .adminmenu .menu-top,
+    body.modules[data-ss-mobile-panel="context"] .adminmenu > .menu-module:not(.ss-open) { display: none !important; }
+    body.modules[data-ss-mobile-panel="context"] .adminmenu { width: 100% !important; }
+    body.modules[data-ss-mobile-panel="context"] .ss-open > .wp-submenu {
+        display: block !important; position: fixed !important;
+        inset: 0 0 calc(72px + env(safe-area-inset-bottom)) !important;
+        width: 100% !important; height: auto !important; max-height: none !important;
+        margin: 0 !important; padding: 0 12px 16px !important; box-sizing: border-box;
+        overflow-y: auto !important; background: #fff !important;
+        border: 0 !important; border-top: 3px solid var(--ss-branch-ink, #2455c6) !important;
+    }
+    body.modules .wp-submenu .ss-context-heading {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        position: sticky; top: 0; z-index: 1; padding: 12px 0;
+        background: #fff; color: #172333; border-bottom: 1px solid #dbe2ec;
+    }
+    .ss-context-heading strong { font: 700 18px system-ui, sans-serif; overflow-wrap: anywhere; }
+    .ss-context-close { flex: 0 0 44px; width: 44px; height: 44px; border: 1px solid #dbe2ec; border-radius: 5px; background: #fff; color: #172333; font-size: 26px; }
+    body.modules .adminmenu .wp-submenu a { color: #172333 !important; background: transparent; padding: 12px; }
+    body.modules .adminmenu .wp-submenu #selectedMenuLink { background: #edf3ff; color: var(--ss-branch-ink, #2455c6) !important; }
+    body.modules .adminmenu .menu-inter { color: #516176; padding: 12px; }
+}
+@media print { #ss-mobile-navigation, .ss-context-heading { display: none !important; } }
+#ss-jaspe-dialog{box-sizing:border-box;width:min(560px,calc(100vw - 24px));height:min(760px,calc(100dvh - 24px));max-width:100%;max-height:100%;padding:44px 0 0;border:1px solid #bbc6cf;border-radius:8px;background:#fff;color:#20252c;overflow:hidden}
+#ss-jaspe-dialog::backdrop{background:transparent}
+#ss-jaspe-dialog iframe{display:block;width:100%;height:100%;border:0;background:transparent!important;box-shadow:none}
+#ss-jaspe-dialog iframe[hidden]{display:none!important}
+#ss-jaspe-dialog .ss-jaspe-unavailable{position:absolute;right:0;bottom:0;width:64%;box-sizing:border-box;padding:20px;border:1px solid var(--ss-nav-border,#8fafcb);border-radius:8px;background:var(--ss-page-background,#edf5ff);color:var(--ss-nav-accent,#173b5a);}
+#ss-jaspe-dialog .ss-jaspe-close{position:absolute;top:4px;right:8px;width:36px;height:36px;padding:0;font-size:26px;line-height:1;border:0;background:transparent;color:#20252c;cursor:pointer}
+#ss-jaspe-dialog[open]{position:fixed;inset:auto 8px calc(84px + env(safe-area-inset-bottom)) auto;margin:0;width:min(520px,calc(100% - 16px));height:min(400px,calc(100dvh - 148px));padding:0;border:0;border-radius:0;background:transparent!important;box-shadow:none;overflow:hidden;z-index:2000}
+#ss-jaspe-dialog .ss-jaspe-close{z-index:2;top:6px;right:6px;width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:#173b5a;transition:background-color .18s}
+#ss-jaspe-dialog .ss-jaspe-close:hover{background:rgba(255,255,255,.65)}
+#ss-jaspe-dialog .ss-jaspe-close:focus-visible{outline:2px solid #255e98;outline-offset:-4px}
+@media screen and (max-width:700px){
+    #ss-mobile-navigation{height:calc(60px + env(safe-area-inset-bottom));min-height:60px;padding:4px 8px calc(4px + env(safe-area-inset-bottom));background:#12213e;border-top:1px solid #405473}
+    #ss-mobile-navigation a,#ss-mobile-navigation button{font-size:11px;line-height:1.3;gap:3px;min-height:44px;padding:2px;outline:none;box-shadow:none;-webkit-tap-highlight-color:transparent}
+    #ss-mobile-navigation .module-icon{filter:brightness(0) invert(1);opacity:.9}
+    #ss-mobile-navigation .ss-nav-active > :first-child{transform:translateY(-4px)}
+    #ss-mobile-navigation .ss-nav-active{color:#8edbff;background:transparent;border-radius:0}
+    #ss-mobile-navigation .ss-nav-active > svg,#ss-mobile-navigation .ss-nav-active > .module-icon{box-sizing:border-box;padding:0;margin:0;background-color:transparent;outline:none;border-radius:0}
+    #ss-mobile-navigation .ss-jaspe-portrait{flex-basis:36px;width:36px;height:36px;margin-top:-6px;border-color:#b4d4f8}
+    #ss-mobile-navigation .ss-jaspe-portrait img{width:84px;left:-24px;top:-7px}
+    #ss-mobile-navigation .ss-watch-icon{width:24px;height:26px}
+    #ss-mobile-navigation :focus-visible{outline:3px solid #8edbff;outline-offset:-3px}
+    body.modules{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+    body.modules #menu.slide,body.modules[data-ss-mobile-panel="context"] .ss-open > .wp-submenu{bottom:calc(60px + env(safe-area-inset-bottom))!important}
+    #ss-jaspe-dialog[open]{bottom:calc(68px + env(safe-area-inset-bottom))}
+    #ss-watch-dialog{bottom:calc(68px + env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){#ss-mobile-navigation > * > :first-child,#ss-jaspe-dialog .ss-jaspe-close{transition:none}}
+#ss-watch-dialog { box-sizing: border-box; position: fixed; inset: auto 12px 88px auto; margin: 0; width: min(360px, calc(100vw - 24px)); padding: 24px; border: 1px solid #9bbbe2; border-radius: 8px; background: #eff6ff; color: #172c49; z-index: 2000; }
+#ss-watch-dialog h2 { margin: 0 36px 16px 0; font: 700 20px system-ui, sans-serif; }
+#ss-watch-dialog p { font: 14px/1.5 system-ui, sans-serif; }
+.ss-watch-close { position: absolute; right: 8px; top: 8px; width: 40px; height: 40px; padding: 0; border: 0; background: transparent; color: #172c49; font-size: 26px; }
+@media (prefers-reduced-motion: reduce) { #ss-mobile-navigation > * > :first-child { transition: none; } }
+@media print { #ss-watch-dialog { display: none !important; } }
+@media screen and (max-width:700px) {
+    html[data-ss-background] #ss-mobile-navigation { background:var(--ss-page-background); border-top-color:var(--ss-nav-border); transition:background-color .2s ease; }
+    html[data-ss-background] #ss-mobile-navigation a,html[data-ss-background] #ss-mobile-navigation button { color:#173b5a; background:transparent; box-shadow:none; }
+    html[data-ss-background] #ss-mobile-navigation .ss-nav-active { color:var(--ss-nav-accent); background:transparent; }
+    html[data-ss-background] #ss-mobile-navigation .module-icon { filter:none; opacity:1; }
+    html[data-ss-background] #ss-mobile-navigation .ss-jaspe-portrait { background:var(--ss-page-background); border-color:var(--ss-nav-accent); }
+    html[data-ss-background] #ss-mobile-navigation .ss-watch-icon { background:var(--ss-page-background); color:var(--ss-nav-accent); }
+    html[data-ss-background] #ss-mobile-navigation .ss-watch-icon::before,html[data-ss-background] #ss-mobile-navigation .ss-watch-icon::after { background:var(--ss-nav-border); }
+    html[data-ss-background] #ss-mobile-navigation :focus-visible { outline-color:var(--ss-nav-accent); }
+}
+@media screen and (max-width: 700px) {
+    body.modules:not([data-ss-mobile-panel="primary"]):not([data-ss-mobile-panel="context"]) #menu {
+        display: none !important;
+    }
+}
+
+/* SchoolSafe JASPE — panneau flottant compact translucide (2026-10-26).
+   JASPE ne doit pas cacher l'application : petit, translucent, repliable. */
+#ss-jaspe-dialog[open] {
+  inset: auto 10px calc(64px + env(safe-area-inset-bottom)) auto !important;
+  width: min(340px, calc(100vw - 20px)) !important;
+  height: min(470px, calc(100dvh - 110px)) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(23, 107, 82, .18) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, .86) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.15) !important;
+  backdrop-filter: blur(14px) saturate(1.15) !important;
+  box-shadow: 0 14px 44px rgba(10, 40, 30, .20) !important;
+  overflow: hidden !important;
+  z-index: 2400;
+}
+#ss-jaspe-dialog[open] iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+#ss-jaspe-dialog .ss-jaspe-close {
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  width: 26px !important;
+  height: 26px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: rgba(23, 107, 82, .10) !important;
+  color: #176b52 !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+  z-index: 3;
+}
+#ss-jaspe-dialog .ss-jaspe-unavailable {
+  font-size: 12px !important;
+}
+#ss-jaspe-dialog[open] iframe {
+  background: #f7fbf9 !important;
+}
+
+/* JASPE grande : le cadre disparait totalement */
+#ss-jaspe-dialog[open] {
+  width: min(480px, calc(100vw - 20px)) !important;
+  height: min(560px, calc(100dvh - 110px)) !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+#ss-jaspe-dialog[open] iframe {
+  background: transparent !important;
+}
+
+#ss-jaspe-dialog .ss-jaspe-close { display: none !important; }
