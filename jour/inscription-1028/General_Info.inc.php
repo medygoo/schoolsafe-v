@@ -305,3 +305,19 @@ else
 		});
 	})();
 	</script>';
+
+// SchoolSafe - les cellules-enveloppes ne doivent pas avaler les touchers (le bug telephone, GO 2026-10-28).
+echo '<script>
+(function() {
+	var chasse = function() {
+		document.querySelectorAll("td").forEach(function(td) {
+			if (getComputedStyle(td).position === "relative" && td.getBoundingClientRect().height > 300) {
+				td.style.pointerEvents = "none";
+				td.querySelectorAll("input,select,textarea,button,a,label").forEach(function(i) { i.style.pointerEvents = "auto"; });
+			}
+		});
+	};
+	chasse();
+	setTimeout(chasse, 800);
+})();
+</script>';
