@@ -1,0 +1,41 @@
+/* SchoolSafe — couche effets (GO 2026-10-28) : phase 1 = menus arrondis
+   + bande d'actions rapides défilante. Les phases 2-3 (logo-fond, verre,
+   animations) arriveront dans ce même fichier. */
+
+/* --- La barre mobile : rayons généreux (fini le carré) --- */
+#ss-mobile-navigation a, #ss-mobile-navigation button { border-radius: 14px; }
+#ss-mobile-navigation { border-radius: 0 0 18px 18px; }
+.ss-context-close { border-radius: 12px; }
+
+/* --- Les boîtes et listes de menu (écrans RosarioSIS) --- */
+.menu-module, .menu-group, .list, .list-container { border-radius: 16px; overflow: hidden; }
+.list thead tr th:first-child { border-top-left-radius: 16px; }
+.list thead tr th:last-child { border-top-right-radius: 16px; }
+.list tbody tr:last-child td:first-child { border-bottom-left-radius: 16px; }
+.list tbody tr:last-child td:last-child { border-bottom-right-radius: 16px; }
+
+/* --- La bande d'actions rapides (menu principal défilant) --- */
+#ss-actions-rapides { margin: 0 0 14px; }
+#ss-actions-rapides .ss-ar-titre { font-size: .78rem; font-weight: 700; opacity: .85; margin: 0 0 8px; }
+#ss-actions-rapides .ss-ar-bande { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 2px 2px 10px; -webkit-overflow-scrolling: touch; }
+#ss-actions-rapides .ss-ar-bande::-webkit-scrollbar { height: 0; }
+#ss-actions-rapides a.ss-ar-carte { flex: 0 0 auto; scroll-snap-align: start; width: 92px; min-height: 88px;
+  border-radius: 18px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  text-decoration: none; color: inherit; text-align: center; padding: 10px 6px;
+  transition: transform .18s ease, background .18s ease; }
+#ss-actions-rapides a.ss-ar-carte:hover, #ss-actions-rapides a.ss-ar-carte:active { transform: translateY(-4px); background: rgba(255,255,255,.22); }
+#ss-actions-rapides .ss-ar-icone { width: 40px; height: 40px; border-radius: 13px; background: rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+#ss-actions-rapides .ss-ar-libelle { font-size: .68rem; font-weight: 700; line-height: 1.15; }
+
+/* Sur machine : la bande devient une grille stable */
+@media (min-width: 1024px) {
+  #ss-actions-rapides .ss-ar-bande { overflow: visible; flex-wrap: wrap; }
+  #ss-actions-rapides a.ss-ar-carte { width: 118px; min-height: 96px; }
+}
+
+/* --- La barre mobile ne doit jamais couvrir les formulaires (bug telephone 2026-10-28) --- */
+@media (max-width: 900px) {
+  body { padding-bottom: 76px !important; }
+}
