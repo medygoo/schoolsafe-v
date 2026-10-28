@@ -1,0 +1,39 @@
+# Caddyfile — 2026-10-18
+{
+	acme_ca https://acme-v02.api.letsencrypt.org/directory
+}
+
+# Domaine réel — application SchoolSafe (runtime RosarioSIS), 2026-10-18.
+# L'ancienne application V2 (127.0.0.1:8787) reste en service, non publiee :
+# voir /etc/caddy/Caddyfile.bak-* pour le retour arriere.
+app.shoolsafe.tech {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# SchoolSafe/Rosario sert du PHP : on ne peut donc plus bloquer *.php.
+	# En revanche les fichiers de schema, docs et scripts ne doivent jamais
+	# sortir en statique (rosariosis.sql et les migrations le seraient sinon).
+	@not_public path_regexp (?i)\.(sql|md|cjs|ts|map|lock|ya?ml|sh|py|env|ini|log)$
+	respond @not_public 404
+
+	reverse_proxy 127.0.0.1:18081
+}
+
+# 2026-10-18 — instance Rosario/SchoolSafe reelle, isolee de la V2.
+# Base dediee, conteneur dedie ; le site app.shoolsafe.tech n est pas modifie.
+rosario.179.198.195.15.sslip.io {
+	encode zstd gzip
+
+	# Meme protection que le domaine public : ni schemas, ni docs, ni scripts.
+	@not_public path_regexp (?i)\.(sql|md|cjs|ts|map|lock|ya?ml|sh|py|env|ini|log)$
+	respond @not_public 404
+
+	reverse_proxy 127.0.0.1:18081
+}
