@@ -338,6 +338,7 @@ small{color:#456}
 .badge{display:inline-block;padding:.1rem .5rem;border-radius:1rem;background:#e8eef7;font-size:.8rem}
 .badge.ok{background:#e8f5e9}
 .badge.no{background:#fdecea}
+tr.ss-task-group th{background:#eef3f9;color:#0b3b7a;font-size:.85rem;text-transform:uppercase;letter-spacing:.03em}
 </style>
 </head>
 <body>
@@ -356,17 +357,15 @@ small{color:#456}
 <?php if ( $hub_error !== '' ) : ?>
 <p role="alert" style="background:#fdecea;padding:.6rem;border-radius:.5rem"><?php echo htmlspecialchars( $hub_error, ENT_QUOTES, 'UTF-8' ); ?></p>
 <?php endif; ?>
-<p><small>Compte = connexion (staff) · Profil = famille native (admin/teacher/parent) · Fonction = titre nommé
-(Directeur, Comptable, Gardien…) · Permissions = profile_exceptions (+ staff_exceptions si personnalisées) ·
-Délégation = ensemble scolaire autorisé, complet ou partiel · École = périmètre SCHOOLS.
-L’attribution reste native ; cette page contrôle et oriente.</small></p>
+<p>Créez les profils de votre école (Économat, Secrétariat, Surveillant, Cantine…), choisissez les tâches de chacun,
+puis attribuez-les à votre personnel. Vous ne pouvez donner que des tâches que vous avez vous-même.</p>
 
 <section class="card" aria-labelledby="t-matrix">
-<h2 id="t-matrix">Matrice appliquée (vos droits effectifs)</h2>
+<h2 id="t-matrix">Profils existants et ce que vous pouvez attribuer</h2>
 <table>
-<thead><tr><th>Fonction</th><th>Famille</th><th>Attribuable par vous</th><th>Gérer (natif)</th></tr></thead>
+<thead><tr><th>Profil</th><th>Base</th><th>Attribuable par vous</th></tr></thead>
 <tbody>
-<?php foreach ( (array) $profiles as $p ) : ?>
+<?php foreach ( (array) $profiles as $p ) : if ( strpos( (string) $p['TITLE'], 'Obsolète' ) === 0 ) continue; ?>
 <?php
 $delegable = SchoolSafeProfileDelegable( (string) $p['ID'], $p['PROFILE'] );
 $reserved_hit = false;
@@ -389,19 +388,14 @@ if ( $delegable )
 ?>
 <tr>
 <td><?php echo htmlspecialchars( $p['TITLE'], ENT_QUOTES, 'UTF-8' ); ?></td>
-<td><?php echo htmlspecialchars( $p['PROFILE'], ENT_QUOTES, 'UTF-8' ); ?></td>
+<td><?php echo htmlspecialchars( [ 'admin' => 'Administration', 'teacher' => 'Enseignant', 'parent' => 'Parent', 'student' => 'Élève' ][ $p['PROFILE'] ] ?? $p['PROFILE'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><span class="badge <?php echo $delegable && ! $reserved_hit ? 'ok' : 'no'; ?>">
-<?php echo $delegable && ! $reserved_hit ? 'Oui' : 'Non — élévation refusée'; ?></span></td>
-<td>Profils propres à l’école : gestion ci-dessous. Les profils globaux restent protégés.</td>
+<?php echo $delegable && ! $reserved_hit ? 'Oui' : 'Non — droits supérieurs aux vôtres'; ?></span></td>
 </tr>
 <?php endforeach; ?>
 </tbody>
 </table>
-<p><small>Un administrateur scolaire ne peut s’accorder que des permissions qu’il possède déjà :
-un profil propre à l’école peut porter le même ensemble autorisé ; tout droit plus large ou réservé global reste refusé côté serveur
-(SchoolSafeProfileDelegable + AllowEdit + SchoolSafeScopeDelegates). Le changement de contexte
-d’école ne change jamais les permissions effectives : vos droits sont l’intersection de votre
-profil et de votre périmètre.</small></p>
+<p><small>Sécurité : un profil ne peut jamais recevoir plus de droits que les vôtres ; le serveur refuse tout élargissement.</small></p>
 </section>
 
 <?php
@@ -409,21 +403,22 @@ if ( SchoolSafeNativeCommandPermission( 'SchoolSafe/DelegationRead.php' ) )
     SchoolSafeAccessRender( $school_id, (int) UserSyear(), (int) ( $_POST['access_staff'] ?? $_GET['access_staff'] ?? 0 ),
         false, '/ecoles/' . $school_id . '/profils', 'token' );
 $ecole_profiles = SchoolSafeSchoolProfileColumnExists()
-	? DBGet( "SELECT ID,TITLE,PROFILE FROM user_profiles WHERE SCHOOL_ID='" . $school_id . "' ORDER BY ID" )
+	? DBGet( "SELECT ID,TITLE,PROFILE FROM user_profiles WHERE SCHOOL_ID='" . $school_id . "' AND TITLE NOT LIKE 'Obsolète%' ORDER BY ID" )
 	: [];
+require_once 'ProgramFunctions/SchoolSafeTaskCatalog.fnc.php';
 $actor_rights_list = SchoolSafeHubActorRights();
 $actor_mods = array_keys( $actor_rights_list );
 sort( $actor_mods );
 ?>
 <section class="card" aria-labelledby="t-ecole">
-<h2 id="t-ecole">Profils propres à l’école (création et gestion ici)</h2>
+<h2 id="t-ecole">Les profils de votre école</h2>
 <?php if ( ! $ecole_profiles ) : ?>
 <p><small>Aucun profil propre à cette école pour l’instant.</small></p>
 <?php endif; ?>
 <?php foreach ( (array) $ecole_profiles as $ep ) : ?>
 <?php $ep_rights = DBGet( "SELECT MODNAME,CAN_USE,CAN_EDIT FROM profile_exceptions WHERE PROFILE_ID='" . (int) $ep['ID'] . "'", [], [ 'MODNAME' ] ); ?>
 <?php $ep_holders = DBGet( "SELECT USERNAME,SCHOOLS FROM staff WHERE PROFILE_ID='" . (int) $ep['ID'] . "' AND SYEAR='" . (int) UserSyear() . "' ORDER BY USERNAME" ); ?>
-<h3><?php echo htmlspecialchars( $ep['TITLE'], ENT_QUOTES, 'UTF-8' ); ?> <small>(n°<?php echo (int) $ep['ID']; ?>, base <?php echo htmlspecialchars( $ep['PROFILE'], ENT_QUOTES, 'UTF-8' ); ?>)</small></h3>
+<h3><?php echo htmlspecialchars( $ep['TITLE'], ENT_QUOTES, 'UTF-8' ); ?> <small>(base <?php echo $ep['PROFILE'] === 'admin' ? 'Administration' : 'Enseignant'; ?>)</small></h3>
 <p><small>Détenteurs : <?php echo $ep_holders ? htmlspecialchars( implode( ', ', array_map( function ( $h ) { return $h['USERNAME'] . ' ' . ( $h['SCHOOLS'] ?? '' ); }, (array) $ep_holders ) ), ENT_QUOTES, 'UTF-8' ) : 'aucun'; ?></small></p>
 <form method="post" action="/ecoles/<?php echo $school_id; ?>/profils">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( (string) ( $_SESSION['token'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>">
@@ -432,16 +427,14 @@ sort( $actor_mods );
 <p><label><input type="checkbox" name="profile_confirm" value="Y" required> Je confirme la modification pour tous les détenteurs listés.</label></p>
 <input type="hidden" name="profil_id" value="<?php echo (int) $ep['ID']; ?>">
 <table>
-<thead><tr><th>Écran</th><th>Use</th><th>Edit</th></tr></thead>
+<thead><tr><th>Tâche</th><th>Voir</th><th>Modifier</th></tr></thead>
 <tbody>
-<?php foreach ( $actor_mods as $mod ) : ?>
-<tr><td><?php echo htmlspecialchars( $mod, ENT_QUOTES, 'UTF-8' ); ?></td>
-<td><input type="checkbox" name="droit[<?php echo htmlspecialchars( $mod, ENT_QUOTES, 'UTF-8' ); ?>]" value="Y"<?php echo ! empty( $ep_rights[$mod] ) ? ' checked' : ''; ?>></td>
-<td><input type="checkbox" name="edit[<?php echo htmlspecialchars( $mod, ENT_QUOTES, 'UTF-8' ); ?>]" value="Y"<?php echo ( $ep_rights[$mod][1]['CAN_EDIT'] ?? '' ) === 'Y' ? ' checked' : ''; ?>></td></tr>
-<?php endforeach; ?>
+<?php echo SchoolSafeTaskRows( $actor_mods,
+	function( $mod ) use ( $ep_rights ) { return ! empty( $ep_rights[ $mod ] ); },
+	function( $mod ) use ( $ep_rights ) { return ( $ep_rights[ $mod ][1]['CAN_EDIT'] ?? '' ) === 'Y'; } ); ?>
 </tbody>
 </table>
-<p><input type="submit" value="Enregistrer les droits"> <small>Seuls vos propres droits sont proposés ; tout élargissement est refusé côté serveur.</small></p>
+<p><input type="submit" value="Enregistrer les tâches"> <small>Seules vos propres tâches sont proposées.</small></p>
 </form>
 <form method="post" action="/ecoles/<?php echo $school_id; ?>/profils" onsubmit="return confirm('Supprimer ce profil ? Ses détenteurs perdront ces droits.');">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( (string) ( $_SESSION['token'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>">
@@ -452,29 +445,26 @@ sort( $actor_mods );
 <p><input type="submit" value="Supprimer le profil"></p>
 </form>
 <?php endforeach; ?>
-<h3>Créer un profil propre à l’école</h3>
+<h3>Créer un profil pour votre école</h3>
 <form method="post" action="/ecoles/<?php echo $school_id; ?>/profils">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( (string) ( $_SESSION['token'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="ecole_profil_action" value="creer">
 <p><label><input type="checkbox" name="profile_confirm" value="Y" required> Je confirme la création de ce profil pour cette école.</label></p>
-<p><label>Nom du profil (max 100) <input type="text" name="titre" maxlength="100" required></label>
-<label>Base Rosario <select name="base"><option value="teacher">Enseignant</option><option value="admin">Administrateur</option></select></label></p>
+<p><label>Nom du profil <input type="text" name="titre" maxlength="100" required list="ss-role-ideas" placeholder="ex. Économat"></label>
+<datalist id="ss-role-ideas"><option value="Économat"><option value="Secrétariat"><option value="Surveillant"><option value="Cantine"><option value="Direction pédagogique"><option value="Accueil"></datalist>
+<label>Base <select name="base"><option value="admin">Administration (bureau, finances, secrétariat)</option><option value="teacher">Enseignant (classes, appel, notes)</option></select></label></p>
 <table>
-<thead><tr><th>Écran (vos droits)</th><th>Use</th><th>Edit</th></tr></thead>
+<thead><tr><th>Tâche</th><th>Voir</th><th>Modifier</th></tr></thead>
 <tbody>
-<?php foreach ( $actor_mods as $mod ) : ?>
-<tr><td><?php echo htmlspecialchars( $mod, ENT_QUOTES, 'UTF-8' ); ?></td>
-<td><input type="checkbox" name="droit[<?php echo htmlspecialchars( $mod, ENT_QUOTES, 'UTF-8' ); ?>]" value="Y"></td>
-<td><input type="checkbox" name="edit[<?php echo htmlspecialchars( $mod, ENT_QUOTES, 'UTF-8' ); ?>]" value="Y"></td></tr>
-<?php endforeach; ?>
+<?php echo SchoolSafeTaskRows( $actor_mods, function() { return false; }, function() { return false; } ); ?>
 </tbody>
 </table>
-<p><input type="submit" class="button-primary" value="Créer le profil d’école"> <small>Tout ou partie de vos droits scolaires délégables ; famille parent refusée.</small></p>
+<p><input type="submit" class="button-primary" value="Créer le profil"> <small>Cochez les tâches de ce profil ; vous pourrez les modifier ensuite.</small></p>
 </form>
 </section>
 
 <section class="card" aria-labelledby="t-exc">
-<h2 id="t-exc">Exceptions individuelles de l’école (staff_exceptions, lecture seule ici)</h2>
+<h2 id="t-exc">Droits personnalisés d’un compte (consultation)</h2>
 <p><small>Personnalisations par compte : modifiables uniquement via l’écran natif, selon les mêmes gardes.</small></p>
 <?php
 $exc = DBGet( "SELECT e.USER_ID,e.MODNAME,e.CAN_USE,e.CAN_EDIT,s.USERNAME
@@ -483,11 +473,11 @@ $exc = DBGet( "SELECT e.USER_ID,e.MODNAME,e.CAN_USE,e.CAN_EDIT,s.USERNAME
 	ORDER BY s.USERNAME,e.MODNAME LIMIT 200" );
 ?>
 <table>
-<thead><tr><th>Compte</th><th>Écran</th><th>Use</th><th>Edit</th></tr></thead>
+<thead><tr><th>Compte</th><th>Tâche</th><th>Voir</th><th>Modifier</th></tr></thead>
 <tbody>
 <?php foreach ( (array) $exc as $row ) : ?>
 <tr><td><?php echo htmlspecialchars( $row['USERNAME'], ENT_QUOTES, 'UTF-8' ); ?></td>
-<td><?php echo htmlspecialchars( $row['MODNAME'], ENT_QUOTES, 'UTF-8' ); ?></td>
+<td><?php echo htmlspecialchars( SchoolSafeTaskLabel( $row['MODNAME'] ), ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( $row['CAN_USE'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( $row['CAN_EDIT'], ENT_QUOTES, 'UTF-8' ); ?></td></tr>
 <?php endforeach; ?>
