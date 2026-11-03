@@ -164,6 +164,7 @@ elseif ( User( 'PROFILE' ) === 'parent' )
 		['🔔', 'Notifications', 'SchoolSafe/Notifications.php'],
 		['🎯', 'Rattrapage', 'SchoolSafe/RemediationRead.php'],
 		['👨‍👩‍👧', 'Récupération', 'SchoolSafe/FamilyRead.php'],
+		['🤒', 'Signaler une absence', 'signaler-absence.php'],
 	];
 }
 else
@@ -175,7 +176,9 @@ if ( $ss_actions )
 	echo '<div id="ss-actions-rapides"><p class="ss-ar-titre">Actions rapides</p><div class="ss-ar-bande">';
 	foreach ( $ss_actions as $ss_a )
 	{
-		echo '<a class="ss-ar-carte" href="Modules.php?modname=' . $ss_a[2] . '"><span class="ss-ar-icone">' . $ss_a[0] . '</span><span class="ss-ar-libelle">' . $ss_a[1] . '</span></a>';
+		// Ecran autonome (ex. signaler-absence.php) ou programme du moteur (Modules.php).
+		$ss_href = strpos( $ss_a[2], '/' ) === false ? $ss_a[2] : 'Modules.php?modname=' . $ss_a[2];
+		echo '<a class="ss-ar-carte" href="' . $ss_href . '"><span class="ss-ar-icone">' . $ss_a[0] . '</span><span class="ss-ar-libelle">' . $ss_a[1] . '</span></a>';
 	}
 	echo '</div></div>';
 }

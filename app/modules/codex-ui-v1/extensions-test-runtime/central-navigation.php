@@ -46,6 +46,9 @@ if (SchoolSafeNativePermission('SchoolSafe/FeeModelsRead.php')) {
 if (SchoolSafeNativePermission('SchoolSafe/RemediationPaymentsRead.php')) {
     $add('finance', 'Rattrapage', 'Paiements de rattrapage', 'Modules.php?modname=SchoolSafe/RemediationPaymentsRead.php');
 }
+if (User('PROFILE') === 'parent') {
+    $add('communication', 'Suivi de mon enfant', 'Signaler une absence ou un retard', 'signaler-absence.php');
+}
 if (SchoolSafeNativePermission('SchoolSafe/Notifications.php')) {
     $add('communication', 'Suivi de mon enfant', 'Notifications', 'Modules.php?modname=SchoolSafe/Notifications.php');
 }

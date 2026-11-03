@@ -65,24 +65,33 @@ $closed = 0; $detected = 0; $skipped = 0; $caughtUp = 0;
 if (is_array($schools)) foreach ($schools as $s) {
     if (!isset($s['ID'])) continue;
     $school = (int) $s['ID'];
+    // Portees reglees (03/11) : un horaire par niveau (ecran Horaires d'arrivee) et/ou un horaire general.
+    $scopes = [];
     try {
-        $policy = SchoolSafeAttendanceResolvePolicy($school, $year, null, null,
-            $dateOverride !== '' ? $dateOverride : date('Y-m-d'), $db);
+        $probeDay = $dateOverride !== '' ? $dateOverride : date('Y-m-d');
+        $sections = $db['get']('SELECT DISTINCT GRADELEVEL_ID FROM schoolsafe_attendance_policy WHERE SCHOOL_ID=' . $school
+            . ' AND SYEAR=' . $year . " AND GRADELEVEL_ID IS NOT NULL AND COURSE_PERIOD_ID IS NULL AND EFFECTIVE_ON<='" . $probeDay . "'");
+        foreach ((array) $sections as $section) $scopes[] = ['section', (int) $section['GRADELEVEL_ID']];
+        $general = $db['get']('SELECT ID FROM schoolsafe_attendance_policy WHERE SCHOOL_ID=' . $school . ' AND SYEAR=' . $year
+            . " AND GRADELEVEL_ID IS NULL AND COURSE_PERIOD_ID IS NULL AND EFFECTIVE_ON<='" . $probeDay . "' LIMIT 1");
+        if (is_array($general) && isset($general[1])) $scopes[] = ['school', null];
+        if (!$scopes) { $skipped++; continue; }
+        $policy = SchoolSafeAttendanceResolvePolicy($school, $year, $scopes[0][0] === 'section' ? $scopes[0][1] : null, null, $probeDay, $db);
         $tz = SchoolSafeAttendanceValidateTz((string) ($policy['TIMEZONE'] ?? 'Africa/Kinshasa'));
     } catch (Throwable $e) { $skipped++; continue; }
     try {
         $today = $dateOverride !== '' ? $dateOverride : (new DateTime('now', new DateTimeZone($tz)))->format('Y-m-d');
         $nowTime = $nowOverride !== '' ? $nowOverride : (new DateTime('now', new DateTimeZone($tz)))->format('H:i');
     } catch (Throwable $e) { $skipped++; continue; }
-    // Jour courant : cloture puis detection si dues.
-    try {
-        $c = SchoolSafeAttendanceClosure($school, $year, $today, 'school', null, $nowTime, $db, true);
-        if (($c['status'] ?? '') === 'CLOSED') $closed++;
-    } catch (Throwable $e) { $skipped++; continue; }
-    try {
-        $d = SchoolSafeAttendanceDetection($school, $year, $today, 'school', null, $nowTime, $db, true);
-        if (($d['status'] ?? '') === 'DETECTED') $detected++;
-    } catch (Throwable $e) { $skipped++; continue; }
+    // Jour courant : pour chaque portee, cloture puis detection si dues (heure toleree, heure rouge).
+    foreach ($scopes as [$scopeKind, $scopeRef]) {
+        try {
+            $c = SchoolSafeAttendanceClosure($school, $year, $today, $scopeKind, $scopeRef, $nowTime, $db, true);
+            if (($c['status'] ?? '') === 'CLOSED') $closed++;
+            $d = SchoolSafeAttendanceDetection($school, $year, $today, $scopeKind, $scopeRef, $nowTime, $db, true);
+            if (($d['status'] ?? '') === 'DETECTED') $detected++;
+        } catch (Throwable $e) { $skipped++; }
+    }
     // Rattrapage explicite : jours de cours passes sans passage.
     for ($back = 1; $back <= $catchupDays; $back++) {
         try {
@@ -90,16 +99,19 @@ if (is_array($schools)) foreach ($schools as $s) {
         } catch (Throwable $e) { break; }
         try {
             if (!SchoolSafeAttendanceIsSchoolDay($school, $year, $day, $db)) continue;
-            $have = $db['get']("SELECT ID FROM schoolsafe_attendance_runs WHERE SCHOOL_ID=$school"
-                . " AND SCHOOL_DATE='$day' AND SCOPE_KIND='school' AND SCOPE_REF IS NULL LIMIT 1");
-            if (is_array($have) && isset($have[1])) continue;
-            $cc = SchoolSafeAttendanceClosure($school, $year, $day, 'school', null, '23:59', $db, true);
-            $dd = SchoolSafeAttendanceDetection($school, $year, $day, 'school', null, '23:59', $db, true);
-            if ((($cc['status'] ?? '') === 'CLOSED') || (($dd['status'] ?? '') === 'DETECTED')) {
-                @pg_query($conn, "UPDATE schoolsafe_attendance_runs SET STATUS='catchup'"
-                    . " WHERE SCHOOL_ID=$school AND SCHOOL_DATE='$day' AND SCOPE_KIND='school'"
-                    . " AND SCOPE_REF IS NULL AND STATUS='done'");
-                $caughtUp++;
+            // Rattrapage : registre complete, mais aucune alerte aux parents pour un jour passe.
+            foreach ($scopes as [$scopeKind, $scopeRef]) {
+                $refSql = $scopeRef === null ? 'SCOPE_REF IS NULL' : 'SCOPE_REF=' . (int) $scopeRef;
+                $have = $db['get']("SELECT ID FROM schoolsafe_attendance_runs WHERE SCHOOL_ID=$school"
+                    . " AND SCHOOL_DATE='$day' AND SCOPE_KIND='$scopeKind' AND $refSql AND PHASE='detection' LIMIT 1");
+                if (is_array($have) && isset($have[1])) continue;
+                $cc = SchoolSafeAttendanceClosure($school, $year, $day, $scopeKind, $scopeRef, '23:59', $db, false);
+                $dd = SchoolSafeAttendanceDetection($school, $year, $day, $scopeKind, $scopeRef, '23:59', $db, false);
+                if ((($cc['status'] ?? '') === 'CLOSED') || (($dd['status'] ?? '') === 'DETECTED')) {
+                    @pg_query($conn, "UPDATE schoolsafe_attendance_runs SET STATUS='catchup'"
+                        . " WHERE SCHOOL_ID=$school AND SCHOOL_DATE='$day' AND SCOPE_KIND='$scopeKind' AND $refSql AND STATUS='done'");
+                    $caughtUp++;
+                }
             }
         } catch (Throwable $e) { continue; }
     }

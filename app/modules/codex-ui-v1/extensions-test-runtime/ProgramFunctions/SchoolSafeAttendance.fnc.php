@@ -78,14 +78,22 @@ function SchoolSafeAttendanceIsSchoolDay($school, $year, $dateStr, array $db)
 }
 
 // Inscrits actifs (attendus) au jour donne : periode d'inscription couvrante.
-function SchoolSafeAttendanceExpectedStudents($school, $year, $dateStr, array $db)
+function SchoolSafeAttendanceExpectedStudents($school, $year, $dateStr, array $db, $scopeKind = 'school', $scopeRef = null)
 {
     $school = (int) $school;
     $year = (int) $year;
     $dateStr = SchoolSafeAttendanceValidateDate($dateStr);
+    // Portee (03/11) : niveau ou classe ; la portee ecole exclut les niveaux qui ont leur propre horaire.
+    $scopeSql = '';
+    if ($scopeKind === 'section' && (int) $scopeRef > 0) $scopeSql = ' AND GRADE_ID=' . (int) $scopeRef;
+    elseif ($scopeKind === 'class' && (int) $scopeRef > 0) $scopeSql = ' AND STUDENT_ID IN (SELECT STUDENT_ID FROM schedule WHERE COURSE_PERIOD_ID=' . (int) $scopeRef
+        . " AND START_DATE<='" . $dateStr . "' AND (END_DATE IS NULL OR END_DATE>='" . $dateStr . "'))";
+    elseif ($scopeKind === 'school') $scopeSql = ' AND (GRADE_ID IS NULL OR GRADE_ID NOT IN (SELECT GRADELEVEL_ID FROM schoolsafe_attendance_policy'
+        . ' WHERE SCHOOL_ID=' . $school . ' AND SYEAR=' . $year . ' AND GRADELEVEL_ID IS NOT NULL AND COURSE_PERIOD_ID IS NULL'
+        . " AND EFFECTIVE_ON<='" . $dateStr . "'))";
     $rows = $db['get']('SELECT STUDENT_ID FROM student_enrollment WHERE SCHOOL_ID=' . $school
         . ' AND SYEAR=' . $year . " AND (START_DATE IS NULL OR START_DATE<='" . $dateStr . "')"
-        . " AND (END_DATE IS NULL OR END_DATE>='" . $dateStr . "')");
+        . " AND (END_DATE IS NULL OR END_DATE>='" . $dateStr . "')" . $scopeSql);
     $ids = [];
     if (is_array($rows)) foreach ($rows as $row) {
         if (isset($row['STUDENT_ID'])) $ids[] = (int) $row['STUDENT_ID'];
@@ -101,7 +109,7 @@ function SchoolSafeAttendanceHasPresence($studentId, $dateStr, array $db)
     $dateStr = SchoolSafeAttendanceValidateDate($dateStr);
     $get = $db['get'];
     $scan = $get('SELECT ID FROM entry_exit_student_records WHERE STUDENT_ID=' . $studentId
-        . " AND TYPE='in' AND UNAUTHORIZED IS NULL AND RECORDED_AT::date='" . $dateStr . "' LIMIT 1");
+        . " AND TYPE='in' AND (UNAUTHORIZED IS NULL OR UNAUTHORIZED='N') AND RECORDED_AT::date='" . $dateStr . "' LIMIT 1");
     if (is_array($scan) && isset($scan[1])) return true;
     $day = $get('SELECT STUDENT_ID FROM attendance_day WHERE STUDENT_ID=' . $studentId
         . " AND SCHOOL_DATE='" . $dateStr . "' LIMIT 1");
@@ -197,7 +205,7 @@ function SchoolSafeAttendanceClosure($school, $year, $dateStr, $scopeKind, $scop
         } catch (Throwable $e) { try { $exec('ROLLBACK'); } catch (Throwable $i) { } throw $e; }
         return ['status' => 'NO_SCHOOL_DAY'];
     }
-    $expected = SchoolSafeAttendanceExpectedStudents($school, $year, $dateStr, $db);
+    $expected = SchoolSafeAttendanceExpectedStudents($school, $year, $dateStr, $db, $scopeKind, $scopeRef);
     $arrived = [];
     $pending = [];
     foreach ($expected as $sid) {
@@ -259,7 +267,7 @@ function SchoolSafeAttendanceDetection($school, $year, $dateStr, $scopeKind, $sc
         } catch (Throwable $e) { try { $exec('ROLLBACK'); } catch (Throwable $i) { } throw $e; }
         return ['status' => 'NO_SCHOOL_DAY', 'absent' => []];
     }
-    $expected = SchoolSafeAttendanceExpectedStudents($school, $year, $dateStr, $db);
+    $expected = SchoolSafeAttendanceExpectedStudents($school, $year, $dateStr, $db, $scopeKind, $scopeRef);
     $absent = [];
     foreach ($expected as $sid) {
         if (SchoolSafeAttendanceHasPresence($sid, $dateStr, $db)) continue;
@@ -281,10 +289,19 @@ function SchoolSafeAttendanceDetection($school, $year, $dateStr, $scopeKind, $sc
                 $parents = SchoolSafeNotifyResolveRecipients('absence.detected', $school, $year, $sid, $db);
             } catch (Throwable $e) { $parents = []; }
             $staff = SchoolSafeAttendanceStaffRecipients($school, $year, $db);
+            // Message personnalise (03/11) : prenom, heure rouge, conduite a tenir.
+            $who = $get('SELECT s.FIRST_NAME, sc.TITLE FROM students s JOIN schools sc ON sc.ID=' . $school . ' AND sc.SYEAR=' . $year
+                . ' WHERE s.STUDENT_ID=' . (int) $sid);
+            $first = trim((string) ($who[1]['FIRST_NAME'] ?? '')) ?: 'Votre enfant';
+            $red = substr((string) $policy['DETECTION_TIME'], 0, 5);
+            $message = '⚠️ ' . $first . ' n’est pas arrivé(e) à l’école ce matin (heure limite ' . $red . ' dépassée, aucun passage enregistré).'
+                . "\nSi c’est normal (maladie, absence prévue), prévenez l’école. Sinon, contactez-la rapidement."
+                . "\n— " . (string) ($who[1]['TITLE'] ?? '') . ' · SchoolSafe';
             $out = SchoolSafeAttendanceEmitNotify(['school_id' => $school, 'syear' => $year,
                 'event_type' => 'absence.detected', 'student_id' => $sid,
                 'dedup_key' => "absence:$school:$dateStr:$sid",
-                'payload' => ['school_date' => $dateStr, 'provisional' => true]], array_merge($parents, $staff), $db);
+                'payload' => ['school_date' => $dateStr, 'provisional' => true, 'title' => 'Absence constatée', 'message' => $message]],
+                array_merge($parents, $staff), $db);
             if (is_array($out)) {
                 $exec('BEGIN');
                 try {

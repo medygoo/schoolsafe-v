@@ -1,0 +1,9 @@
+[Unit]
+Description=SchoolSafe - presences automatiques (fermeture de l'appel, detection des absences)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/flock -n /run/schoolsafe-attendance-scheduler.lock /usr/bin/docker exec schoolsafe-rosario php /var/www/html/schoolsafe-attendance-scheduler.php --once --catchup-days=2
+TimeoutStartSec=300
