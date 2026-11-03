@@ -69,15 +69,53 @@ if ( $_REQUEST['modfunc'] === 'delete'
 	&& AllowEdit()
 	&& UserStaffID() )
 {
+	// SchoolSafe A5 : nommer l'eleve concerne et rappeler l'impact avant confirmation.
+	$remove_student_name = '';
+
+	if ( ! empty( $_REQUEST['student_id_remove'] ) )
+	{
+		$remove_student_name = (string) DBGetOne( "SELECT " . DisplayNameSQL( 's' ) . "
+			FROM students s
+			WHERE s.STUDENT_ID='" . (int) $_REQUEST['student_id_remove'] . "'" );
+	}
+
+	echo ErrorMessage( [ SchoolSafeT(
+		'You are about to change the access of: ',
+		'Vous vous apprêtez à modifier l’accès de : '
+	) . AttrEscape( $remove_student_name ) . SchoolSafeT(
+		'. Confirming will decide whether this parent keeps seeing this student and receiving their scan notifications.',
+		'. La confirmation décidera si ce parent continue de voir cet élève et de recevoir ses notifications de scan.'
+	) ], 'note' );
+
 	if ( DeletePrompt( _( 'student from that user' ), _( 'remove access to' ) )
 		&& ! empty( $_REQUEST['student_id_remove'] ) )
 	{
-		DBQuery( "DELETE FROM students_join_users
-			WHERE STUDENT_ID='" . (int) $_REQUEST['student_id_remove'] . "'
-			AND STAFF_ID='" . UserStaffID() . "'" );
+		// SchoolSafe A1 : meme garde ecole que le correctif #376 de l'ajout —
+		// ne pas retirer un eleve hors du perimetre des ecoles du compte.
+		$remove_id = (int) $_REQUEST['student_id_remove'];
 
-		// Hook.
-		do_action( 'Users/AddStudents.php|user_unassign_role' );
+		if ( User( 'SCHOOLS' ) )
+		{
+			$remove_allowed = (bool) DBGetOne( "SELECT 1
+				FROM student_enrollment
+				WHERE SYEAR='" . UserSyear() . "'
+				AND SCHOOL_ID IN(" . mb_substr( str_replace( ',', "','", User( 'SCHOOLS' ) ), 2, -2 ) . ")
+				AND STUDENT_ID='" . $remove_id . "'" );
+		}
+		else
+		{
+			$remove_allowed = true;
+		}
+
+		if ( $remove_allowed )
+		{
+			DBQuery( "DELETE FROM students_join_users
+				WHERE STUDENT_ID='" . $remove_id . "'
+				AND STAFF_ID='" . UserStaffID() . "'" );
+
+			// Hook.
+			do_action( 'Users/AddStudents.php|user_unassign_role' );
+		}
 
 		// Unset modfunc & student ID remove & redirect URL.
 		RedirectURL( [ 'modfunc', 'student_id_remove' ] );
@@ -124,6 +162,25 @@ if ( ! $_REQUEST['modfunc'] )
 
 	if ( UserStaffID() )
 	{
+		// SchoolSafe A2 : rappel visuel du parent selectionne — evite de rattacher au mauvais.
+		$selected_parent = DBGet( "SELECT FIRST_NAME,LAST_NAME,USERNAME
+			FROM staff
+			WHERE STAFF_ID='" . UserStaffID() . "'" );
+
+		if ( $selected_parent )
+		{
+			$selected_parent = $selected_parent[1];
+
+			$parent_role = ! empty( $selected_parent['USERNAME'] ) ?
+				sprintf( SchoolSafeT( 'Main parent (account: %s)', 'Parent principal (compte : %s)' ), $selected_parent['USERNAME'] ) :
+				SchoolSafeT( 'Guardian (no application account)', 'Gardien (sans compte d’application)' );
+
+			echo '<div style="margin:10px 0;padding:10px 14px;border-left:4px solid #176b52;background:#f4faf7;border-radius:4px;">
+				<strong>' . AttrEscape( trim( (string) $selected_parent['FIRST_NAME'] . ' ' . $selected_parent['LAST_NAME'] ) ) . '</strong>
+				<span style="color:#5b6b64;"> — ' . AttrEscape( $parent_role ) . '</span>
+			</div>';
+		}
+
 		if ( $_REQUEST['search_modfunc'] === 'list' )
 		{
 			echo '<form action="' . URLEscape( 'Modules.php?modname=' . $_REQUEST['modname'] . '&modfunc=save' ) . '" method="POST">';

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette — Tableau de bord Parent</title>
+<style>
+:root{--vert:#176b52;--vert2:#0e4a39;--or:#c9a030}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,sans-serif;background:linear-gradient(160deg,var(--vert2),var(--vert) 55%,#2e8b6e);min-height:100vh;padding:14px;color:#fff}
+.pill{display:flex;gap:4px;background:rgba(255,255,255,.14);backdrop-filter:blur(8px);border-radius:99px;padding:4px;overflow-x:auto;margin-bottom:14px}
+.pill a{padding:7px 13px;border-radius:99px;font-size:.8rem;color:rgba(255,255,255,.85);text-decoration:none;white-space:nowrap}
+.pill a.on{background:#fff;color:var(--vert2);font-weight:700}
+.enfant{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(6px);border-radius:18px;padding:12px;margin-bottom:10px}
+.photo{width:56px;height:56px;border-radius:50%;background:#fff url('/FileUploads/StudentPhotos/2026/3.jpg') center/cover;flex:none;border:2px solid rgba(255,255,255,.5)}
+.grande{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(6px);border-radius:18px;padding:16px;text-align:center;margin-bottom:10px}
+.grande .heure{font-size:2rem;font-weight:900;letter-spacing:1px}
+.grande .lb{font-size:.85rem;opacity:.9}
+.badge{display:inline-block;font-size:.68rem;background:#d4efdf;color:#196f3d;border-radius:99px;padding:3px 10px;font-weight:800;margin-top:6px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.glass{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(6px);border-radius:18px;padding:13px;margin-bottom:10px}
+.kpi .nb{font-size:1.4rem;font-weight:800}.kpi .lb{font-size:.68rem;opacity:.8}
+.row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.row:last-child{border:0}
+.t{font-size:.85rem;font-weight:600}.s{font-size:.7rem;opacity:.72}
+.ic{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:1rem;flex:none}
+.carte-ligne{display:flex;gap:10px;align-items:center}
+.carte-visuel{width:92px;height:58px;border-radius:8px;background:linear-gradient(135deg,#0d2f77,#1446aa);display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:800;color:#dbe7fb;flex:none;letter-spacing:.5px}
+button{background:#fff;color:var(--vert2);border:0;border-radius:99px;padding:9px 16px;font-weight:800;font-size:.85rem;width:100%;margin-top:4px}
+.note{font-size:.68rem;opacity:.6;text-align:center;margin-top:10px}
+h1{font-size:1.15rem}
+</style>
+</head>
+<body>
+<nav class="pill">
+<a class="on" href="#">Accueil</a><a href="#">Bulletins</a><a href="#">Devoirs</a><a href="#">Rattrapage</a><a href="#">Carte</a>
+</nav>
+<div class="enfant">
+<div class="photo"></div>
+<div><div style="font-weight:800">Grâce MBALA</div><div class="s">Maternelle · ID 300001 · Mme Lomela</div></div>
+</div>
+<div class="grande">
+<div class="lb">Ce matin, Grâce est arrivée à l'école à</div>
+<div class="heure">07:42</div>
+<span class="badge">✓ présence enregistrée par la machine</span>
+</div>
+<div class="kpis">
+<div class="glass kpi"><div class="nb">96%</div><div class="lb">Assiduité</div></div>
+<div class="glass kpi"><div class="nb">2</div><div class="lb">Nouvelles notes</div></div>
+<div class="glass kpi"><div class="nb">0</div><div class="lb">Rattrapage</div></div>
+</div>
+<div class="glass">
+<b style="font-size:.85rem">📚 Devoirs du jour</b>
+<div class="row"><div class="ic">✏️</div><div style="flex:1"><div class="t">Écriture — les lettres rondes</div><div class="s">Mme Lomela · pour demain</div></div></div>
+<div class="row"><div class="ic">🔢</div><div style="flex:1"><div class="t">Compter de 1 à 20</div><div class="s">Mme Lomela · pour vendredi</div></div></div>
+</div>
+<div class="glass">
+<b style="font-size:.85rem">🏆 Palmarès de la classe</b>
+<div class="row"><div class="ic">🥇</div><div style="flex:1"><div class="t">Grâce est <b>3ᵉ</b> sur 24</div><div class="s">progression : +2 places cette semaine</div></div><span class="badge">↑2</span></div>
+</div>
+<div class="glass">
+<b style="font-size:.85rem">🪪 Sa carte d'élève officielle</b>
+<div class="carte-ligne" style="margin-top:8px">
+<div class="carte-visuel">RDC · LE SAGE</div>
+<div style="flex:1"><div class="t">Carte active</div><div class="s">scan d'entrée/sortie sécurisé</div></div>
+</div>
+<button>Voir le recto et le verso</button>
+</div>
+<p class="note">MAQUETTE — données d'exemple, ton avis avant l'intégration</p>
+</body>
+</html>

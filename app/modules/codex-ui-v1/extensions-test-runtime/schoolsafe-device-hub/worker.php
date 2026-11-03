@@ -4,7 +4,7 @@ require __DIR__.'/../config.inc.php';
 function collectorConnection()
 {
     global $DatabaseName,$DatabaseServer,$DatabasePort,$DatabaseUsername,$DatabasePassword;
-    if($DatabaseName!=='rosario_addons_test'||$DatabaseServer!=='codex-addons-db')throw new RuntimeException('ISOLATED_DATABASE_REQUIRED');
+    if($DatabaseName!=='rosario_addons_test'||$DatabaseServer!==(getenv('SCHOOLSAFE_DB_HOST')?:'codex-addons-db'))throw new RuntimeException('ISOLATED_DATABASE_REQUIRED');
     $quote=static function($v){return "'".str_replace(["\\","'"],["\\\\","\\'"],(string)$v)."'";};
     $connection=@pg_connect('connect_timeout=3 host='.$quote($DatabaseServer).' port='.$quote($DatabasePort).' dbname='.$quote($DatabaseName).' user='.$quote($DatabaseUsername).' password='.$quote($DatabasePassword));
     if(!$connection)throw new RuntimeException('DATABASE_UNAVAILABLE');return $connection;

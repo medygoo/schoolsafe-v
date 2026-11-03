@@ -129,6 +129,57 @@ switch ( User( 'PROFILE' ) )
 DrawHeader( implode( '<br />', $welcome ) );
 echo '</details>';
 
+// SchoolSafe - bande d'actions rapides (menu principal defilant, GO 2026-10-28).
+if ( User( 'PROFILE' ) === 'admin' )
+{
+	$ss_actions = [
+		['🧑‍🎓', 'Enregistrer un élève', 'Students/Student.php&include=General_Info&student_id=new'],
+		['👨‍👩‍👧', 'Associer les parents', 'Students/AddUsers.php'],
+		['📷', 'Scanner une arrivée', 'SchoolSafe/ScanArrival.php'],
+		['✅', 'Valider les familles', 'SchoolSafe/FamilyApprove.php'],
+		['🪪', 'Émettre une carte', 'SchoolSafe/IssueCard.php'],
+		['📋', 'Présences', 'Entry_Exit/Records.php'],
+		['🎯', 'Rattrapage', 'SchoolSafe/RemediationRead.php'],
+		['💰', 'Frais', 'SchoolSafe/FeeModelsRead.php'],
+		['🖥️', 'Équipements', 'SchoolSafe/DevicesManage.php'],
+	];
+}
+elseif ( User( 'PROFILE' ) === 'teacher' )
+{
+	$ss_actions = [
+		["📋", "Faire l'appel", "SchoolSafe/ArrivalAttendance.php"],
+		['✏️', 'Noter', 'Grades/Grades.php'],
+		['📚', 'Mes devoirs', 'Grades/Assignments.php'],
+		['🎯', 'Mon rattrapage', 'SchoolSafe/RemediationFollowup.php'],
+		['📷', 'Scanner', 'SchoolSafe/ScanArrival.php'],
+		['🧒', 'Mes familles', 'SchoolSafe/FamilyRead.php'],
+	];
+}
+elseif ( User( 'PROFILE' ) === 'parent' )
+{
+	$ss_actions = [
+		['🪪', 'Carte de mon enfant', 'SchoolSafe/Studio.php'],
+		['📊', 'Ses notes', 'Grades/StudentGrades.php'],
+		['✏️', 'Ses devoirs', 'Grades/StudentAssignments.php'],
+		['🔔', 'Notifications', 'SchoolSafe/Notifications.php'],
+		['🎯', 'Rattrapage', 'SchoolSafe/RemediationRead.php'],
+		['👨‍👩‍👧', 'Récupération', 'SchoolSafe/FamilyRead.php'],
+	];
+}
+else
+{
+	$ss_actions = [];
+}
+if ( $ss_actions )
+{
+	echo '<div id="ss-actions-rapides"><p class="ss-ar-titre">Actions rapides</p><div class="ss-ar-bande">';
+	foreach ( $ss_actions as $ss_a )
+	{
+		echo '<a class="ss-ar-carte" href="Modules.php?modname=' . $ss_a[2] . '"><span class="ss-ar-icone">' . $ss_a[0] . '</span><span class="ss-ar-libelle">' . $ss_a[1] . '</span></a>';
+	}
+	echo '</div></div>';
+}
+
 if ( Preferences( 'HIDE_ALERTS' ) != 'Y'
 	&& AllowEdit( 'School_Setup/Rollover.php' ) )
 {
@@ -559,7 +610,8 @@ switch ( User( 'PROFILE' ) )
 		WHERE ce.SCHOOL_DATE BETWEEN CURRENT_DATE
 		AND (CURRENT_DATE + INTERVAL " . ( $DatabaseType === 'mysql' ? '11 DAY' : "'11 DAY'" ) . ")
 		AND ce.SYEAR='" . UserSyear() . "'
-		AND position(CONCAT(',', ce.SCHOOL_ID, ',') IN (SELECT SCHOOLS FROM staff WHERE STAFF_ID='" . User( 'STAFF_ID' ) . "'))>0
+		AND ((SELECT SCHOOLS FROM staff WHERE STAFF_ID='" . User( 'STAFF_ID' ) . "') IS NULL
+			OR position(CONCAT(',', ce.SCHOOL_ID, ',') IN (SELECT SCHOOLS FROM staff WHERE STAFF_ID='" . User( 'STAFF_ID' ) . "'))>0)
 		AND s.ID=ce.SCHOOL_ID
 		AND s.SYEAR=ce.SYEAR
 		ORDER BY ce.SCHOOL_DATE,s.TITLE", [

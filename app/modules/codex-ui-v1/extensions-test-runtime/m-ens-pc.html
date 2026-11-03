@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=1280"><title>Enseignant — Ordinateur</title>
+<style>
+:root{--v:#176b52;--v2:#0e4a39}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui;background:linear-gradient(160deg,var(--v2),var(--v) 55%,#2e8b6e);min-height:100vh;color:#fff;display:flex}
+.side{width:220px;background:rgba(0,0,0,.18);padding:18px 14px;flex:none;min-height:100vh}
+.logo{font-weight:900;letter-spacing:1px;margin-bottom:22px;font-size:1rem}
+.side a{display:block;padding:10px 12px;border-radius:12px;color:rgba(255,255,255,.85);text-decoration:none;font-size:.9rem;margin-bottom:4px}
+.side a.on{background:#fff;color:var(--v2);font-weight:700}
+.main{flex:1;padding:22px 26px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+h1{font-size:1.5rem}.sous{font-size:.85rem;opacity:.75}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.glass{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:18px;padding:18px}
+.nb{font-size:2rem;font-weight:800}.lb{font-size:.8rem;opacity:.8}
+.b{display:inline-block;font-size:.75rem;background:#d4efdf;color:#196f3d;border-radius:99px;padding:2px 10px;font-weight:700}
+.b2{background:#fadbd8;color:#943126}.b3{background:#fdf3d1;color:#8a6b15}
+.cols{display:grid;grid-template-columns:1.4fr 1fr;gap:14px}
+.row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.row:last-child{border:0}
+.rond{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;flex:none}
+.bar{height:7px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;background:#7bedaa}
+.pct{font-size:.85rem;font-weight:800;color:#7bedaa;flex:none}
+.t{font-size:.95rem;font-weight:600}.s{font-size:.76rem;opacity:.72}
+button{background:#fff;color:var(--v2);border:0;border-radius:99px;padding:10px 22px;font-weight:800;font-size:.9rem;margin-top:12px;cursor:pointer}
+.note{position:fixed;bottom:10px;right:16px;font-size:.7rem;opacity:.6}
+</style></head><body>
+<nav class="side"><div class="logo">🏫 SchoolSafe</div>
+<a class="on" href="#">🏠 Accueil</a><a href="#">📋 Présence</a><a href="#">✏️ Devoirs</a><a href="#">🎯 Rattrapage</a><a href="#">📷 Scans</a><a href="#">⚙️ Réglages</a></nav>
+<div class="main">
+<div class="top"><div><h1>Bonjour Madame 👋</h1><p class="sous">Mardi · Classe A · 24 élèves · 2026-2027</p></div><div class="sous">Mardi 28 octobre</div></div>
+<div class="kpis">
+<div class="glass"><div class="nb">21</div><div class="lb">Présents</div><span class="b">+2</span></div>
+<div class="glass"><div class="nb">2</div><div class="lb">Absents</div><span class="b b2">-1</span></div>
+<div class="glass"><div class="nb">1</div><div class="lb">Retard</div></div>
+<div class="glass"><div class="nb">3</div><div class="lb">À corriger</div><span class="b b3">devoirs</span></div>
+</div>
+<div class="cols">
+<div class="glass"><b>📈 Arrivées de ce matin</b>
+<svg viewBox="0 0 600 90" width="100%" height="90" style="margin-top:10px"><polyline points="20,80 110,70 200,42 290,25 380,32 470,55 580,78" fill="none" stroke="#7bedaa" stroke-width="3" stroke-linecap="round"/><polyline points="20,80 110,70 200,42 290,25 380,32 470,55 580,78 580,90 20,90" fill="rgba(123,237,170,.15)" stroke="none"/><circle cx="290" cy="25" r="4" fill="#fff"/></svg>
+<p class="s">Pic d'arrivée : 07h30 — tout le monde à 07h50 ✓</p>
+<div style="margin-top:14px"><b style="font-size:.95rem">🧒 Assiduité (ce mois)</b>
+<div class="row"><div class="rond">A1</div><div style="flex:1"><div class="t">Élève Exemple 1</div><div class="bar"><i style="width:96%"></i></div></div><div class="pct">96%</div></div>
+<div class="row"><div class="rond">A2</div><div style="flex:1"><div class="t">Élève Exemple 2</div><div class="bar"><i style="width:91%"></i></div></div><div class="pct">91%</div></div>
+<div class="row"><div class="rond">A3</div><div style="flex:1"><div class="t">Élève Exemple 3</div><div class="bar"><i style="width:88%"></i></div></div><div class="pct">88%</div></div></div>
+</div>
+<div class="glass"><b>🎯 Rattrapage — mes séances</b>
+<div class="row"><div class="rond" style="background:#fdf3d1;color:#8a6b15">2</div><div style="flex:1"><div class="t">Séance à programmer</div><div class="s">2 élèves · dossier validé</div></div></div>
+<div class="row"><div class="rond">✏️</div><div style="flex:1"><div class="t">3 devoirs à corriger</div><div class="s">rendus cette semaine</div></div></div>
+<button>Enregistrer le suivi de séance</button>
+</div>
+</div>
+</div>
+<p class="note">MAQUETTE ordinateur — vue Enseignant</p>
+</body></html>

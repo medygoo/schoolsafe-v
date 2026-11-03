@@ -165,3 +165,63 @@ body.modules #menu-top > a .logo { width: 36px !important; height: 36px !importa
         display: none !important;
     }
 }
+
+/* SchoolSafe JASPE — panneau flottant compact translucide (2026-10-26).
+   JASPE ne doit pas cacher l'application : petit, translucent, repliable. */
+#ss-jaspe-dialog[open] {
+  inset: auto 10px calc(64px + env(safe-area-inset-bottom)) auto !important;
+  width: min(340px, calc(100vw - 20px)) !important;
+  height: min(470px, calc(100dvh - 110px)) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(23, 107, 82, .18) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, .86) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.15) !important;
+  backdrop-filter: blur(14px) saturate(1.15) !important;
+  box-shadow: 0 14px 44px rgba(10, 40, 30, .20) !important;
+  overflow: hidden !important;
+  z-index: 2400;
+}
+#ss-jaspe-dialog[open] iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+#ss-jaspe-dialog .ss-jaspe-close {
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  width: 26px !important;
+  height: 26px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: rgba(23, 107, 82, .10) !important;
+  color: #176b52 !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+  z-index: 3;
+}
+#ss-jaspe-dialog .ss-jaspe-unavailable {
+  font-size: 12px !important;
+}
+#ss-jaspe-dialog[open] iframe {
+  background: #f7fbf9 !important;
+}
+
+/* JASPE grande : le cadre disparait totalement */
+#ss-jaspe-dialog[open] {
+  width: min(480px, calc(100vw - 20px)) !important;
+  height: min(560px, calc(100dvh - 110px)) !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+#ss-jaspe-dialog[open] iframe {
+  background: transparent !important;
+}
+
+#ss-jaspe-dialog .ss-jaspe-close { display: none !important; }

@@ -190,6 +190,7 @@ window.ssBuildBadge=function(s,cl,teacher,year,patB,patStyle){
       <div class="rw"><div class="ic" style="background:#ece5fb;color:#7b5cd6">🛡️</div><div class="grow"><div class="k">Personne autorisée</div><div class="v">${esc(apNm)}</div></div><div><div class="k">Téléphone</div><div class="v">${esc(apPh)}</div></div></div>
       ${addr?`<div class="rw"><div class="ic" style="background:#ffe8d9;color:#e8590c">📍</div><div class="grow"><div class="k">Adresse de l'école</div><div class="v">${esc(addr)}</div></div></div>`:''}
       <div class="rw"><div class="ic" style="background:#dadee2;color:#556777">📞</div><div class="grow"><div class="k">N° Direction</div><div class="v">${esc(phone)}</div></div><div><div class="k">Email</div><div class="v">${esc(email)}</div></div></div>
+      ${s.addr?`<div class="rw"><div class="ic" style="background:#d8f0e0;color:#1d7a4f">📍</div><div class="grow"><div class="k">Adresse de l'élève</div><div class="v">${esc(s.addr)}</div></div></div>`:''}
       ${site?`<div class="rw"><div class="ic" style="background:#fdf3d1;color:#b8860b">🌐</div><div class="grow"><div class="k">Site web</div><div class="v">${esc(site)}</div></div></div>`:''}
     </div>
     ${showVig?`<div style="margin-top:auto">${ssPatEl(patB,40,true)}</div>`:(showFond?`<div style="margin-top:auto">${nmEl}</div>`:'')}
@@ -257,6 +258,7 @@ window.ssBuildCarte=function(s,cl,teacher,year,patC,patStyle){
         <div class="mrw"><div class="ic">👨‍👩‍👧</div><div style="flex:1"><div class="k">Parent / Tuteur</div><div class="v">${esc(parNm)}</div></div><div><div class="k">Tél</div><div class="v">${esc(parPh)}</div></div></div>
         <div class="mrw"><div class="ic">🛡️</div><div style="flex:1"><div class="k">Personne autorisée</div><div class="v">${esc(apNm)}</div></div><div><div class="k">Tél</div><div class="v">${esc(apPh)}</div></div></div>
         <div class="mrw"><div class="ic">📞</div><div style="flex:1"><div class="k">N° Direction</div><div class="v">${esc(phone)}</div></div><div><div class="k">Email</div><div class="v">${esc(email)}</div></div></div>
+        ${s.addr?`<div class="mrw"><div class="ic">📍</div><div style="flex:1"><div class="k">Adresse de l'élève</div><div class="v">${esc(s.addr)}</div></div></div>`:''}
         ${site?`<div class="mrw"><div class="ic">🌐</div><div style="flex:1"><div class="k">Site web</div><div class="v">${esc(site)}</div></div><div><div class="k">Année</div><div class="v">${esc(year)}</div></div></div>`:''}
       </div>
       ${showVig?ssPatEl(patC,40,false):showFond?`<div class="pat" style="margin-top:auto"><span class="nm2">${esc((px+patC.n).toUpperCase())}</span></div>`:''}

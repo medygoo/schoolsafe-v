@@ -1,6 +1,6 @@
 <?php
 /** Match the existing JASPE Worker's canonical JSON and HMAC protocol. */
-function SchoolSafeJaspeCloudflare(string $message, string $sessionKey, string $url, string $secret, ?callable $transport = null): array
+function SchoolSafeJaspeCloudflare(string $message, string $sessionKey, string $url, string $secret, ?callable $transport = null, array $history = []): array
 {
     $parts = parse_url($url);
     if (!$parts || ($parts['scheme'] ?? '') !== 'https' ||
@@ -10,7 +10,20 @@ function SchoolSafeJaspeCloudflare(string $message, string $sessionKey, string $
         strlen($secret) < 32 || $sessionKey === '') {
         throw new RuntimeException('CLOUDFLARE_NOT_CONFIGURED');
     }
-    $body = json_encode(['message'=>$message,'session_key'=>$sessionKey],
+    // Memoire de conversation : derniers echanges (max 8, 1000 caracteres max chacun),
+    // fournis par la session PHP du VPS — le Worker n'en garde jamais aucune trace.
+    $payload = ['message'=>$message,'session_key'=>$sessionKey];
+    if ($history) {
+        $clean = array_values(array_filter($history, static function ($h) {
+            return is_array($h) && isset($h['role'], $h['content'])
+                && in_array($h['role'], ['user','assistant'], true)
+                && is_string($h['content']) && $h['content'] !== '';
+        }));
+        $clean = array_slice($clean, -8);
+        foreach ($clean as $i => $h) { $clean[$i]['content'] = mb_substr($h['content'], 0, 1000); }
+        $payload['history'] = $clean;
+    }
+    $body = json_encode($payload,
         JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS);
     if (!is_string($body)) throw new RuntimeException('INVALID_MESSAGE');
     $timestamp = (string) time();
@@ -23,7 +36,7 @@ function SchoolSafeJaspeCloudflare(string $message, string $sessionKey, string $
             $received = '';
             curl_setopt_array($curl, [
                 CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>$body, CURLOPT_HTTPHEADER=>$headers,
-                CURLOPT_CONNECTTIMEOUT=>5, CURLOPT_TIMEOUT=>40, CURLOPT_FOLLOWLOCATION=>false,
+                CURLOPT_CONNECTTIMEOUT=>5, CURLOPT_TIMEOUT=>60, CURLOPT_FOLLOWLOCATION=>false,
                 CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS, CURLOPT_SSL_VERIFYPEER=>true,
                 CURLOPT_SSL_VERIFYHOST=>2, CURLOPT_PROXY=>'',
                 CURLOPT_WRITEFUNCTION=>static function ($curl, $chunk) use (&$received) {

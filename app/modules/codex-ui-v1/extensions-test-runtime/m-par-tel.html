@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Parent — Téléphone</title>
+<style>
+:root{--v:#176b52;--v2:#0e4a39;--or:#e9c46a}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui;background:linear-gradient(160deg,var(--v2),var(--v) 55%,#2e8b6e);min-height:100vh;padding:14px;color:#fff}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.pill{display:flex;gap:3px;background:rgba(255,255,255,.12);border-radius:99px;padding:3px}
+.pill span{padding:5px 9px;border-radius:99px;font-size:.62rem;color:rgba(255,255,255,.8)}
+.pill span.on{background:#fff;color:var(--v2);font-weight:800}
+.rond{width:36px;height:36px;border-radius:50%;background:var(--or);color:#5a430b;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.75rem}
+h1{font-size:1.2rem}.sous{font-size:.74rem;opacity:.72;margin-bottom:12px}
+.grande{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);border-radius:18px;padding:18px;text-align:center;margin-bottom:12px;position:relative;overflow:hidden}
+.grande:before{content:"";position:absolute;top:-30px;right:-30px;width:110px;height:110px;border-radius:50%;background:rgba(233,196,106,.18)}
+.h{font-size:2.4rem;font-weight:900;letter-spacing:1px}
+.lb{font-size:.85rem;opacity:.9}
+.b{display:inline-block;font-size:.68rem;background:#d4efdf;color:#196f3d;border-radius:99px;padding:3px 10px;font-weight:800;margin-top:8px}
+.ecart{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.k{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:12px}
+.k .lb{font-size:.68rem;opacity:.75}.k .nb{font-size:1.3rem;font-weight:900}
+.sombre{background:rgba(12,20,16,.72);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:13px;margin-bottom:10px}
+.tache{display:flex;gap:9px;align-items:center;padding:7px 0;font-size:.78rem}
+.at{width:18px;height:18px;border-radius:50%;border:2px solid var(--or);flex:none}
+.ok{width:18px;height:18px;border-radius:50%;background:#7bedaa;color:#0e4a39;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;flex:none}
+.k2{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:12px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.row:last-child{border:0}
+.ic{width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:none}
+.t2{font-size:.82rem;font-weight:600}.s{font-size:.68rem;opacity:.72}
+.bar{height:6px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:#7bedaa}
+.med{display:flex;gap:10px;align-items:center;margin-top:8px}
+.cv{width:96px;height:60px;border-radius:8px;background:linear-gradient(135deg,#0d2f77,#1446aa);display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:800;color:#dbe7fb;flex:none}
+</style></head><body>
+<div class="top"><div class="pill"><span class="on">Aujourd'hui</span><span> semaine</span><span>Mois</span></div><div class="rond">JP</div></div>
+<h1>Suivi de mon enfant 💚</h1><p class="sous">Élève Exemple 1 · Maternelle · Mme Lomela</p>
+<div class="grande">
+<div class="lb">Ce matin, mon enfant est arrivé à l'école à</div>
+<div class="h">07:42</div>
+<span class="b">✓ présence enregistrée par la machine — portail principal</span>
+</div>
+<div class="ecart">
+<div class="k"><div class="lb">Assiduité de la semaine</div><div class="nb">96%</div>
+<svg viewBox="0 0 100 26" width="100%" height="26"><rect x="2" y="10" width="12" height="14" rx="2" fill="rgba(255,255,255,.35)"/><rect x="22" y="6" width="12" height="18" rx="2" fill="#7bedaa"/><rect x="42" y="8" width="12" height="16" rx="2" fill="rgba(255,255,255,.35)"/><rect x="62" y="4" width="12" height="20" rx="2" fill="#7bedaa"/><rect x="82" y="9" width="12" height="15" rx="2" fill="rgba(255,255,255,.35)"/></svg></div>
+<div class="k"><div class="lb">Position classe</div><div class="nb">3ᵉ/24</div>
+<span style="font-size:.66rem;background:#fdf3d1;color:#8a6b15;border-radius:99px;padding:2px 8px;font-weight:800">↑2 cette semaine</span></div>
+</div>
+<div class="sombre">
+<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:.85rem">Actions pour mon enfant</b><span style="font-size:.68rem;opacity:.7">1/3</span></div>
+<div class="tache"><span class="ok">✓</span> Devoir d'écriture rendu ce matin</div>
+<div class="tache"><span class="at"></span> 2 devoirs à faire ce soir</div>
+<div class="tache"><span class="at"></span> Frais de cantine — à régler avant vendredi</div>
+</div>
+<div class="k2">
+<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:.85rem">Nouvelles notes</b><span style="font-size:.68rem;opacity:.7">hier</span></div>
+<div class="row"><div class="ic">🎨</div><div style="flex:1"><div class="t2">Dessin — très bien</div><div class="s">9/10 · Mme Lomela</div></div></div>
+<div class="row"><div class="ic">🔢</div><div style="flex:1"><div class="t2">Comptage — bien</div><div class="s">8/10 · Mme Lomela</div></div></div>
+</div>
+<div class="k2">
+<b style="font-size:.85rem">🪪 Sa carte d'élève</b>
+<div class="med"><div class="cv">RDC · ÉCOLE EXEMPLE</div><div style="flex:1"><div class="t2">Carte active</div><div class="s">scan entrée/sortie sécurisé</div></div></div>
+</div>
+<p class="s" style="text-align:center;opacity:.6;margin-top:8px">MAQUETTE téléphone — vue Parent</p>
+</body></html>

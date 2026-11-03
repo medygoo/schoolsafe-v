@@ -3,7 +3,7 @@ function SchoolSafeDashboardTabs(): array
 {
     $tabs=['overview'=>'Vue d\'ensemble'];
     if(User('PROFILE')==='admin'){
-        if(AllowUse('Students/Student.php'))$tabs['students']='Eleves';
+        if(AllowUse('Students/Student.php'))$tabs['students']='Élèves';
         if(AllowUse('Users/User.php'))$tabs['personnel']='Personnel';
         if(AllowUse('Users/User.php')&&AllowUse('Students/Student.php'))$tabs['parents']='Parents';
         if(AllowUse('Student_Billing/DailyTransactions.php')||AllowUse('Accounting/DailyTransactions.php'))$tabs['finance']='Finances';
@@ -11,8 +11,8 @@ function SchoolSafeDashboardTabs(): array
         $tabs['students']=User('PROFILE')==='parent'?'Mes enfants':'Mon suivi';
         if(in_array(User('PROFILE'),['parent','student'],true)&&(AllowUse('Student_Billing/StudentFees.php')||AllowUse('Student_Billing/StudentPayments.php')))$tabs['finance']='Frais scolaires';
     }
-    if(AllowUse('School_Setup/Calendar.php'))$tabs['activities']='Activites et calendrier';
-    $tabs['modules']='Syntheses Rosario';
+    if(AllowUse('School_Setup/Calendar.php'))$tabs['activities']='Activités et calendrier';
+    $tabs['modules']='Synthèses Rosario';
     $requested=$_GET['dashboard_tab']??'overview';
     $active=is_string($requested)&&isset($tabs[$requested])?$requested:'overview';
     $e=static function($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');};

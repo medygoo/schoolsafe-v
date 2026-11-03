@@ -88,7 +88,7 @@ if ( empty( $_REQUEST['bottomfunc'] ) ) : ?>
 
 		global $RosarioLocales;
 
-		echo '<span class="ss-user">' . User( 'NAME' ) . '</span>';
+		echo '<span class="ss-user">' . AttrEscape( User( 'NAME' ) ) . '</span>';
 
 		if ( ! empty( $RosarioLocales ) && count( $RosarioLocales ) > 1 ) :
 			echo '<span class="ss-lang">';

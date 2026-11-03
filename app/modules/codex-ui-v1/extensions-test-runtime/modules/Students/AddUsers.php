@@ -13,21 +13,48 @@ if ( $_REQUEST['modfunc'] === 'save'
 			FROM students_join_users
 			WHERE STUDENT_ID='" . UserStudentID() . "'", [], [ 'STAFF_ID' ] );
 
+		// SchoolSafe - regle metier : 6 parents maximum par eleve (GO 2026-10-28).
+		$ss_max_parents = 6;
+		$ss_lies = count( (array) $current_RET );
+		$ss_ajoutes = 0;
+		$ss_refuses = 0;
+
 		foreach ( (array) $_REQUEST['staff'] as $staff_id )
 		{
 			if ( empty( $current_RET[$staff_id] ) )
 			{
+				if ( $ss_lies + $ss_ajoutes >= $ss_max_parents )
+				{
+					$ss_refuses++;
+					continue;
+				}
+
 				DBInsert(
 					'students_join_users',
 					[ 'STAFF_ID' => (int) $staff_id, 'STUDENT_ID' => UserStudentID() ]
 				);
+
+				$ss_ajoutes++;
 
 				//hook
 				do_action( 'Students/AddUsers.php|user_assign_role' );
 			}
 		}
 
-		$note[] = _( 'The selected user\'s profile now includes access to the selected students.' );
+		if ( $ss_refuses )
+		{
+			$error[] = sprintf(
+				_( 'Limite de %d parents par eleve atteinte : %d parent(s) non associe(s). Retirez d\'abord un parent existant.' ),
+				$ss_max_parents,
+				$ss_refuses
+			);
+		}
+
+		if ( $ss_ajoutes
+			|| ! $ss_refuses )
+		{
+			$note[] = _( 'The selected user\'s profile now includes access to the selected students.' );
+		}
 	}
 	else
 	{
@@ -70,7 +97,7 @@ if ( ! $_REQUEST['modfunc'] )
 		'Associate parents with students',
 		'Associer les parents aux élèves',
 		'This page links a parent user to a student. Choose the student, then the parent. The parent then sees that student.',
-		'Cette page relie un utilisateur parent à un élève. Choisissez l’élève, puis le parent. Le parent voit ensuite cet élève.'
+		'Cette page relie un compte parent à un élève : le parent voit ensuite cet élève dans son application. Maximum 6 parents par élève. La tutelle principale — celle qui reçoit les alertes critiques et valide les changements — se désigne dans SchoolSafe → Familles → « Enregistrer une personne familiale », et se change via « Retirer ou remplacer ».'
 	);
 
 	$extra['SELECT'] = ",(SELECT count(u.STAFF_ID) FROM students_join_users u,staff st WHERE u.STUDENT_ID=s.STUDENT_ID AND st.STAFF_ID=u.STAFF_ID AND st.SYEAR=ssm.SYEAR) AS ASSOCIATED";
@@ -92,8 +119,19 @@ if ( ! $_REQUEST['modfunc'] )
 
 		echo '<table class="center"><tr><td>';
 
+		// SchoolSafe - montrer qui est la tutelle principale (GO 2026-10-28).
+		$ss_primary = (int) DBGetOne( "SELECT STAFF_ID
+			FROM schoolsafe_pickup_guardians
+			WHERE STUDENT_ID='" . UserStudentID() . "'
+			AND IS_PRIMARY AND IS_ACTIVE
+			AND STAFF_ID IS NOT NULL
+			ORDER BY ID LIMIT 1" );
+
 		$current_RET = DBGet( "SELECT u.STAFF_ID,
-			" . DisplayNameSQL( 's' ) . " AS FULL_NAME,s.LAST_LOGIN
+			" . DisplayNameSQL( 's' ) . " AS FULL_NAME,s.LAST_LOGIN,
+			" . ( $ss_primary ?
+				"CASE WHEN s.STAFF_ID='" . $ss_primary . "' THEN '" . _( 'Tutelle principale' ) . "' ELSE '' END" :
+				"NULL" ) . " AS TUTELLE
 			FROM students_join_users u,staff s
 			WHERE s.STAFF_ID=u.STAFF_ID
 			AND u.STUDENT_ID='" . UserStudentID() . "'
@@ -111,7 +149,7 @@ if ( ! $_REQUEST['modfunc'] )
 
 		ListOutput(
 			$current_RET,
-			[ 'FULL_NAME' => _( 'Parents' ), 'LAST_LOGIN' => _( 'Last Login' ) ],
+			[ 'FULL_NAME' => _( 'Parents' ), 'TUTELLE' => _( 'Role famille' ), 'LAST_LOGIN' => _( 'Last Login' ) ],
 			'Associated Parent',
 			'Associated Parents',
 			$link,

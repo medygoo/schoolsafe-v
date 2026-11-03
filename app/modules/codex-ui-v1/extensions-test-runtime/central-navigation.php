@@ -36,10 +36,10 @@ if (SchoolSafeArrivalViewPermission()) {
     $add('pedagogy', 'Pr\u00e9sences', 'Arriv\u00e9es \u00e0 l\u2019\u00e9cole', 'Modules.php?modname=SchoolSafe/ArrivalAttendance.php');
 }
 if (SchoolSafeNativePermission('SchoolSafe/FeeModelsRead.php')) {
-    $add('finance', 'Contr\u00f4les et bar\u00e8mes', 'Contr\u00f4le des frais', 'Modules.php?modname=SchoolSafe/FeeModelsRead.php');
+    $add('finance', 'Frais et mod\u00e8les', 'Contr\u00f4le des frais', 'Modules.php?modname=SchoolSafe/FeeModelsRead.php');
 }
 if (SchoolSafeNativePermission('SchoolSafe/RemediationPaymentsRead.php')) {
-    $add('finance', 'Paiements et encaissements', 'Paiements de rattrapage', 'Modules.php?modname=SchoolSafe/RemediationPaymentsRead.php');
+    $add('finance', 'Rattrapage', 'Paiements de rattrapage', 'Modules.php?modname=SchoolSafe/RemediationPaymentsRead.php');
 }
 if (SchoolSafeNativePermission('SchoolSafe/Notifications.php')) {
     $add('communication', 'Suivi de mon enfant', 'Notifications', 'Modules.php?modname=SchoolSafe/Notifications.php');

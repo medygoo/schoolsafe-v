@@ -143,7 +143,9 @@ if ( $go
 	$identity = [];
 	foreach ( [ 'ADDRESS', 'CITY', 'PHONE', 'WWW_ADDRESS' ] as $field )
 	{
-		$identity[$field] = trim( (string) ( $_POST['school_identity'][$field] ?? '' ) );
+		// E1 : $_POST n'est pas echappe globalement (Warehouse echappe $_REQUEST seul)
+		// et DBUpdate interpole les valeurs brutes -> echappement explicite.
+		$identity[$field] = DBEscapeString( trim( (string) ( $_POST['school_identity'][$field] ?? '' ) ) );
 	}
 	DBUpdate( 'schools', $identity, [ 'ID' => $id, 'SYEAR' => UserSyear() ] );
 	SchoolSafeSaveSchoolEmail( $id, (string) ( $_POST['school_email'] ?? '' ) );

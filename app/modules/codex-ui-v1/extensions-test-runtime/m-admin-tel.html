@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin — Téléphone</title>
+<style>
+:root{--v:#176b52;--v2:#0e4a39;--or:#e9c46a}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui;background:linear-gradient(160deg,var(--v2),var(--v) 55%,#2e8b6e);min-height:100vh;padding:14px;color:#fff}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.pill{display:flex;gap:3px;background:rgba(255,255,255,.12);border-radius:99px;padding:3px}
+.pill span{padding:5px 9px;border-radius:99px;font-size:.62rem;color:rgba(255,255,255,.8)}
+.pill span.on{background:#fff;color:var(--v2);font-weight:800}
+.rond{width:36px;height:36px;border-radius:50%;background:var(--or);color:#5a430b;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.75rem}
+h1{font-size:1.2rem}.sous{font-size:.74rem;opacity:.72;margin-bottom:12px}
+.hero{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.hero .g{flex:1;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:12px}
+.hero .n{font-size:1.7rem;font-weight:900}
+.hero .l{font-size:.66rem;opacity:.75}
+.action{background:#fff;color:var(--v2);border-radius:14px;padding:10px 12px;font-weight:800;font-size:.72rem;display:flex;align-items:center;justify-content:center;flex:none}
+.k{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:12px;margin-bottom:10px}
+.k .t{display:flex;justify-content:space-between;align-items:baseline}
+.k .lb{font-size:.68rem;opacity:.75}
+.k .nb{font-size:1.35rem;font-weight:900}
+.ecart{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.sombre{background:rgba(12,20,16,.72);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:13px;margin-bottom:10px}
+.tache{display:flex;gap:9px;align-items:center;padding:7px 0;font-size:.78rem}
+.ok{width:18px;height:18px;border-radius:50%;background:#7bedaa;color:#0e4a39;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;flex:none}
+.at{width:18px;height:18px;border-radius:50%;border:2px solid var(--or);flex:none}
+.ev{display:flex;gap:8px;overflow-x:auto;margin-bottom:10px}
+.evt{flex:none;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:9px 11px;min-width:130px}
+.evt .j{font-size:.62rem;opacity:.7}.evt .q{font-size:.76rem;font-weight:700;margin-top:2px}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.row:last-child{border:0}
+.bar{height:6px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:#7bedaa}
+.pct{font-size:.72rem;font-weight:800;color:#7bedaa;flex:none}
+.t2{font-size:.82rem;font-weight:600}.s{font-size:.68rem;opacity:.72}
+.chips{display:flex;gap:6px;margin-bottom:8px}
+.chip{font-size:.62rem;background:rgba(255,255,255,.14);border-radius:99px;padding:4px 10px}
+.chip.on{background:#fff;color:var(--v2);font-weight:800}
+</style></head><body>
+<div class="top"><div class="pill"><span class="on">Aujourd'hui</span><span>Semaine</span><span>Mois</span></div><div class="rond">LS</div></div>
+<h1>Bonjour Directeur 👋</h1><p class="sous">Complexe le Sage · mardi 28 octobre 2026</p>
+<div class="hero">
+<div class="g"><div class="n">92%</div><div class="l">présence globale ce matin</div></div>
+<div class="action">+ Nouveau pointage</div>
+</div>
+<div class="ecart">
+<div class="k"><div class="t"><span class="lb">Élèves présents</span></div><div class="nb">418/455</div>
+<svg viewBox="0 0 100 26" width="100%" height="26"><rect x="2" y="14" width="10" height="10" rx="2" fill="rgba(255,255,255,.35)"/><rect x="18" y="10" width="10" height="14" rx="2" fill="rgba(255,255,255,.35)"/><rect x="34" y="6" width="10" height="18" rx="2" fill="rgba(255,255,255,.35)"/><rect x="50" y="2" width="10" height="22" rx="2" fill="#e9c46a"/><rect x="66" y="8" width="10" height="16" rx="2" fill="rgba(255,255,255,.35)"/><rect x="82" y="12" width="10" height="12" rx="2" fill="rgba(255,255,255,.35)"/></svg></div>
+<div class="k"><div class="t"><span class="lb">Frais du mois</span></div><div class="nb">68%</div>
+<svg viewBox="0 0 100 40" width="100%" height="40"><circle cx="50" cy="20" r="15" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="6"/><circle cx="50" cy="20" r="15" fill="none" stroke="#e9c46a" stroke-width="6" stroke-dasharray="64 95" stroke-linecap="round" transform="rotate(-90 50 20)"/><text x="50" y="24" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">68%</text></svg></div>
+</div>
+<div class="sombre">
+<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:.85rem">À valider aujourd'hui</b><span style="font-size:.68rem;opacity:.7">2/5</span></div>
+<div class="tache"><span class="ok">✓</span> 2 familles à valider (photos reçues)</div>
+<div class="tache"><span class="at"></span> Carte officielle à émettre — Élève 12</div>
+<div class="tache"><span class="at"></span> Programmer la séance de rattrapage</div>
+</div>
+<div class="ev">
+<div class="evt"><div class="j">AUJOURD'HUI 14:00</div><div class="q">Séance de rattrapage maths</div></div>
+<div class="evt"><div class="j">DEMAIN 05:05</div><div class="q">Palmarès quotidien</div></div>
+<div class="evt"><div class="j">VENDREDI</div><div class="q">Conseil des enseignants</div></div>
+</div>
+<div class="k">
+<div class="chips"><span class="chip on">Par classe</span><span class="chip">Global</span></div>
+<div class="row"><div style="flex:1"><div class="t2">Maternelle</div><div class="bar"><i style="width:97%"></i></div></div><div class="pct">97%</div></div>
+<div class="row"><div style="flex:1"><div class="t2">1ère Primaire</div><div class="bar"><i style="width:93%"></i></div></div><div class="pct">93%</div></div>
+<div class="row"><div style="flex:1"><div class="t2">3ème Primaire</div><div class="bar"><i style="width:89%"></i></div></div><div class="pct">89%</div></div>
+</div>
+<p class="s" style="text-align:center;opacity:.6;margin-top:8px">MAQUETTE téléphone — vue Admin</p>
+</body></html>

@@ -3,21 +3,68 @@ require_once 'ProgramFunctions/Theme.fnc.php';
 
 DrawHeader( ProgramTitle() );
 
+if ( empty( $_REQUEST['tab'] )
+	|| User( 'PROFILE' ) === 'student' )
+{
+	$_REQUEST['tab'] = 'password';
+}
+
+// SchoolSafe : explication contextuelle concrete PAR onglet (demande du
+// propriétaire) — le texte du haut decrit l'onglet choisi, avec repli sur
+// le texte general. Motif existant : bandeau theme verrouille (onglet Affichage).
+$ss_tab_explanations = [
+	'password' => [
+		'Changes your account password. It is updated for every school year of your username: your next sign-in, here and in every other school where you are registered, will use the new password. The current password is required to confirm your identity.',
+		'Change le mot de passe de votre compte. Il est mis à jour pour toutes les années scolaires de votre nom d’utilisateur : votre prochaine connexion, ici comme dans les autres écoles où vous êtes inscrit, utilisera le nouveau mot de passe. L’ancien mot de passe est demandé pour confirmer votre identité.',
+	],
+	'display_options' => [
+		'Sets what YOU see on screen, with no effect on other users: the highlight color of list rows, the format of every displayed date, and the option to hide the last sign-in reminder. The theme is locked by SchoolSafe: the presentation is unique and identical for everyone.',
+		'Règle ce que VOUS voyez à l’écran, sans effet pour les autres utilisateurs : la couleur de surbrillance des lignes des listes, le format de toutes les dates affichées, et la possibilité de masquer le rappel de dernière connexion. Le thème est verrouillé par SchoolSafe : la présentation est unique et identique pour tous.',
+	],
+	'print_options' => [
+		'Sets the PDF documents you print: paper size, the header band color of printed lists, and the envelope window side for mailing labels. These settings apply to you only.',
+		'Règle les documents PDF que vous imprimez : format du papier, couleur de la bande d’en-tête des listes, et côté de la fenêtre des enveloppes pour les étiquettes postales. Ces réglages ne concernent que vous.',
+	],
+	'student_listing' => [
+		'Sets your student lists: the default sort order, the downloaded file format (and its dates), and whether the search screen shows before each list.',
+		'Règle vos listes d’élèves : l’ordre de tri par défaut, le format du fichier exporté (et de ses dates), et l’affichage de l’écran de recherche avant chaque liste.',
+	],
+	'student_fields' => [
+		'Choose the student information YOU see: Search column = criteria offered in the search screen; Detail View = blocks shown on the student page. Unchecking hides the field for you only — other users are not affected. The Addresses category chooses the displayed address: none, residence, mailing, bus pickup or bus drop-off.',
+		'Choisissez les informations d’élève que VOUS voyez : colonne Recherche = critères proposés dans l’écran de recherche ; Vue détaillée = blocs affichés sur la fiche élève. Décocher vous masque le champ à vous seul — les autres utilisateurs ne sont pas affectés. La catégorie Adresses choisit l’adresse affichée : aucune, résidence, courrier, montée ou descente du bus.',
+	],
+	'widgets' => [
+		'Each checked widget adds ONE criteria line to your student search screen: calendar, next year, course, request, days absent, GPA, rank, letter grade, eligibility, activity, cafeteria balance/status/barcode, discipline (reporter, date, fields), billing balance. No other effect: check only what you use.',
+		'Chaque widget coché ajoute UNE ligne de critère dans votre écran de recherche d’élèves : calendrier, année suivante, cours, demande, jours d’absence, moyenne, rang, note, éligibilité, activité, solde/statut/code-barres cafeteria, discipline (rapporteur, date, champs), solde de facturation. Aucun autre effet : ne cochez que ce que vous utilisez.',
+	],
+	'staff_fields' => [
+		'Same as student fields, but for USER records (staff, parents): Search = criteria of the user search screen; Detail View = blocks of the user page.',
+		'Identique aux champs élève, mais pour les fiches UTILISATEURS (personnel, parents) : Recherche = critères de l’écran de recherche des utilisateurs ; Vue détaillée = blocs de la fiche utilisateur.',
+	],
+	'staff_widgets' => [
+		'Each checked widget adds a criteria to your user search: Permissions (rights filter), staff cafeteria balance/status/barcode, payroll balance.',
+		'Chaque widget coché ajoute un critère dans votre recherche d’utilisateurs : Permissions (filtre par droits), solde/statut/code-barres cafeteria du personnel, solde de paie.',
+	],
+];
+
+$ss_generic_explanation = [
+	'This page sets the display, the printing, the password and the list columns for the signed-in user.',
+	'Cette page règle l’affichage, l’impression, le mot de passe et les colonnes des listes pour l’utilisateur connecté.',
+];
+
+$ss_explanation = isset( $ss_tab_explanations[ $_REQUEST['tab'] ] ) ?
+	$ss_tab_explanations[ $_REQUEST['tab'] ] :
+	$ss_generic_explanation;
+
 SchoolSafeCard(
 	'settings',
 	'Settings',
 	'Réglages',
 	'My preferences',
 	'Mes préférences',
-	'This page sets the display, the printing, the password and the list columns for the signed-in user.',
-	'Cette page règle l’affichage, l’impression, le mot de passe et les colonnes des listes pour l’utilisateur connecté.'
+	$ss_explanation[0],
+	$ss_explanation[1]
 );
-
-if ( empty( $_REQUEST['tab'] )
-	|| User( 'PROFILE' ) === 'student' )
-{
-	$_REQUEST['tab'] = 'password';
-}
 
 if ( $_REQUEST['tab'] === 'print_options' )
 {
@@ -125,6 +172,53 @@ if ( $_REQUEST['modfunc'] === 'save'
 		{
 			// Security fix selected page size does not exist
 			unset( $_REQUEST['values']['Preferences']['PAGE_SIZE'] );
+		}
+
+		// SchoolSafe B2 : tout decocher doit pouvoir tout effacer. Les cases
+		// decochees ne postent rien et ProgramUserConfig n'efface jamais :
+		// sans cles array pour un programme de l'onglet courant, on purge
+		// ses lignes (celles de l'utilisateur connecte uniquement).
+		$ss_tab_programs = [
+			'student_fields' => [ 'StudentFieldsSearch', 'StudentFieldsView' ],
+			'widgets' => [ 'WidgetsSearch' ],
+			'staff_fields' => [ 'StaffFieldsSearch', 'StaffFieldsView' ],
+			'staff_widgets' => [ 'StaffWidgetsSearch' ],
+		];
+
+		if ( isset( $ss_tab_programs[ $_REQUEST['tab'] ] ) )
+		{
+			foreach ( $ss_tab_programs[ $_REQUEST['tab'] ] as $ss_program )
+			{
+				if ( ! isset( $_REQUEST['values'][ $ss_program ] )
+					|| ! is_array( $_REQUEST['values'][ $ss_program ] ) )
+				{
+					DBQuery( "DELETE FROM program_user_config
+						WHERE PROGRAM='" . $ss_program . "'
+						AND USER_ID='" . (int) User( 'STAFF_ID' ) . "'" );
+				}
+			}
+		}
+
+		// SchoolSafe B3 : valeurs de preferences validees — couleurs en hex
+		// (#rrggbb) et longueur plafonnee, comme le controle PAGE_SIZE ci-dessus.
+		if ( isset( $_REQUEST['values']['Preferences'] ) && is_array( $_REQUEST['values']['Preferences'] ) )
+		{
+			foreach ( [ 'HIGHLIGHT', 'HEADER' ] as $ss_color_key )
+			{
+				if ( isset( $_REQUEST['values']['Preferences'][ $ss_color_key ] )
+					&& ! preg_match( '/^#[0-9a-fA-F]{6}$/', (string) $_REQUEST['values']['Preferences'][ $ss_color_key ] ) )
+				{
+					unset( $_REQUEST['values']['Preferences'][ $ss_color_key ] );
+				}
+			}
+
+			foreach ( $_REQUEST['values']['Preferences'] as $ss_key => $ss_value )
+			{
+				if ( ! is_string( $ss_value ) || mb_strlen( $ss_value ) > 100 )
+				{
+					unset( $_REQUEST['values']['Preferences'][ $ss_key ] );
+				}
+			}
 		}
 
 		foreach ( (array) $_REQUEST['values'] as $program => $values )
@@ -521,6 +615,10 @@ if ( ! $_REQUEST['modfunc'] )
 
 	if ( $_REQUEST['tab'] === 'student_fields' )
 	{
+		// SchoolSafe B2 : hidden indispensable — si toutes les cases Recherche sont
+		// decochees, aucune cle values[StudentFieldsSearch] n'est postee sinon.
+		echo '<input type="hidden" name="values[StudentFieldsSearch]" />';
+
 		$custom_fields_sql = "SELECT sfc.TITLE AS CATEGORY,cf.ID,cf.TITLE,cf.TYPE,
 				'' AS SEARCH,'' AS DISPLAY
 			FROM custom_fields cf,student_field_categories sfc
@@ -679,7 +777,8 @@ if ( ! $_REQUEST['modfunc'] )
 
 	// Widgets tab.
 
-	if ( $_REQUEST['tab'] === 'widgets' )
+	if ( $_REQUEST['tab'] === 'widgets'
+		&& in_array( User( 'PROFILE' ), [ 'admin', 'teacher' ], true ) )
 	{
 		$widgets = [];
 

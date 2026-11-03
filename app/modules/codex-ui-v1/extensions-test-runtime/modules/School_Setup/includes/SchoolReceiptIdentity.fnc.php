@@ -50,6 +50,10 @@ function SchoolSafeSaveSchoolIdentitySetting( $school_id, $key, $value )
         return false;
     }
     $school_id = (int) $school_id;
+    // E2 : DBUpdate/DBInsert interpolent $value tel quel (valeurs echappees a la
+    // charge de l'appelant) et $_POST n'est pas couvert par l'echappement global
+    // de Warehouse (limite a $_REQUEST) -> echappement explicite au point unique.
+    $value = DBEscapeString( (string) $value );
     $where = [ 'SCHOOL_ID' => $school_id, 'TITLE' => $key ];
     $exists = DBGetOne( "SELECT 1 FROM config WHERE SCHOOL_ID='" . $school_id .
         "' AND TITLE='" . $key . "'" );

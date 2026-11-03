@@ -84,24 +84,30 @@ if ( $_REQUEST['modfunc'] === 'delete'
 
 		if ( $go )
 		{
-			$delete_sql = "DELETE FROM user_profiles
-				WHERE ID='" . (int) $_REQUEST['profile_id'] . "';";
-
-			$delete_sql .= "DELETE FROM staff_exceptions
+			// SchoolSafe : conserver les permissions comme set custom AVANT toute
+			// suppression, puis liberer les membres (PROFILE_ID=NULL), sinon ils
+			// restent lies a un profil supprime sans voie de reparation.
+			$delete_sql = "DELETE FROM staff_exceptions
 				WHERE USER_ID IN (SELECT STAFF_ID
 					FROM staff
 					WHERE PROFILE_ID='" . (int) $_REQUEST['profile_id'] . "');";
+
+			$delete_sql .= "INSERT INTO staff_exceptions (USER_ID,MODNAME,CAN_USE,CAN_EDIT)
+				SELECT s.STAFF_ID,e.MODNAME,e.CAN_USE,e.CAN_EDIT
+				FROM staff s,profile_exceptions e
+				WHERE s.PROFILE_ID='" . (int) $_REQUEST['profile_id'] . "'
+				AND s.PROFILE_ID=e.PROFILE_ID;";
+
+			$delete_sql .= "UPDATE staff SET PROFILE_ID=NULL
+				WHERE PROFILE_ID='" . (int) $_REQUEST['profile_id'] . "';";
 
 			$delete_sql .= "DELETE FROM profile_exceptions
 				WHERE PROFILE_ID='" . (int) $_REQUEST['profile_id'] . "';";
 
 			DBQuery( $delete_sql );
 
-			DBQuery( "INSERT INTO staff_exceptions (USER_ID,MODNAME,CAN_USE,CAN_EDIT)
-				SELECT s.STAFF_ID,e.MODNAME,e.CAN_USE,e.CAN_EDIT
-				FROM staff s,profile_exceptions e
-				WHERE s.PROFILE_ID='" . (int) $_REQUEST['profile_id'] . "'
-				AND s.PROFILE_ID=e.PROFILE_ID" );
+			DBQuery( "DELETE FROM user_profiles
+				WHERE ID='" . (int) $_REQUEST['profile_id'] . "';" );
 
 			// Unset modfunc & profile ID & redirect URL.
 			RedirectURL( [ 'modfunc', 'profile_id' ] );

@@ -760,6 +760,7 @@ function Warehouse( $mode )
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="token" content="<?php echo AttrEscape( $_SESSION['token'] ); ?>">
 	<link rel="stylesheet" href="<?php echo $stylesheet_css; ?>?<?php echo $stylesheet_css_hash; ?>">
+	<style>:root{--logo-ecole:url('<?php if ( ! function_exists( 'SchoolSafeSchoolLogoPath' ) ) require_once 'ProgramFunctions/SchoolSafeSchoolLogo.fnc.php'; if ( function_exists( 'SchoolSafeSchoolLogoPath' ) ) echo URLEscape( SchoolSafeSchoolLogoPath( (int) UserSchool() ) ); ?>')}</style>
 	<style>.highlight,.highlight-hover:hover{background-color:<?php echo Preferences( 'HIGHLIGHT' ); ?> !important;}</style>
 	<?php
 
@@ -772,22 +773,17 @@ function Warehouse( $mode )
 				WarehouseHeaderJS();
 			}
 
-			/**
-			 * Hook.
-			 *
-			 * Add your extra module/plugin JS and/or CSS (dependencies) to HTML head here.
-			 *
-			 * @since 3.8
-			 *
-			 * @since 4.5.1 Move Header head action hook outisde page condition.
-			 */
-			do_action( 'Warehouse.php|header_head' );
-		?>
-	<link rel="manifest" href="/schoolsafe.webmanifest">
-	<script src="/pwa-client.js" defer></script>
-	<noscript>
-		<meta http-equiv="REFRESH" content="0; url=index.php?modfunc=logout&reason=javascript">
-	</noscript>
+	/**
+	 * Hook.
+	 *
+	 * Add your extra module/plugin JS and/or CSS (dependencies) to HTML head here.
+	 *
+	 * @since 3.8
+	 *
+	 * @since 4.5.1 Move Header head action hook outisde page condition.
+	 */
+	do_action( 'Warehouse.php|header_head' );
+	?>
 </head>
 <body class="<?php echo AttrEscape( $_ROSARIO['page'] ); ?>">
 <?php

@@ -13,7 +13,7 @@ echo '<table class="general-info width-100p valign-top fixed-col"><tr class="st"
 if ( AllowEdit()
 	&& ! isset( $_REQUEST['_ROSARIO_PDF'] ) ):
 ?>
-	<details><summary><?php echo _( 'Student Photo' ); ?></summary>
+	<details open><summary><?php echo _( 'Student Photo' ); ?></summary>
 	<div class="user-photo-form"><?php
 	echo FileInput(
 		'photo',
@@ -146,6 +146,16 @@ echo TextInput(
 	'autocomplete="off" size=22',
 	empty( $_REQUEST['moodle_create_student'] )
 );
+	// SchoolSafe - l'adresse de l'eleve collectee des la creation (GO 2026-10-28).
+	if ( $_REQUEST['student_id'] === 'new' )
+	{
+		echo '<tr class="st"><td colspan="2"><table class="col1-align-left" style="width:100%"><tr><td>' . TextInput( '', 'adr_no', _( 'No et avenue' ), 'maxlength=100' ) . '</td>';
+		echo '<td>' . TextInput( '', 'adr_street', _( 'Avenue / Quartier' ), 'maxlength=30' ) . '</td></tr>';
+		echo '<tr><td>' . TextInput( '', 'adr_city', _( 'Ville' ), 'maxlength=30' ) . '</td>';
+		echo '<td>' . TextInput( '', 'adr_phone', _( 'Telephone' ), 'maxlength=30' ) . '</td></tr>';
+		echo '<tr><td colspan="2"><p style="font-size:.75rem;color:#516176">' . _( 'Cette adresse figurera sur la carte de l eleve.' ) . '</p></td></tr></table></td></tr>';
+	}
+	// SchoolSafe - le message visible quand les champs obligatoires manquent (GO 2026-10-28).
 
 echo '</td><td>';
 
@@ -274,3 +284,40 @@ else
 		PopTable( 'footer' );
 	}
 }
+
+// SchoolSafe - le bandeau des champs obligatoires (hors table, GO 2026-10-28).
+	echo '<script>
+
+	(function() {
+		var f = document.getElementById("student");
+		f.setAttribute("novalidate", "novalidate");
+		if (!f) return;
+		f.addEventListener("submit", function(e) {
+			var invalids = f.querySelectorAll(":invalid");
+			if (!invalids.length) { var b = document.getElementById("ss-obligatoire"); if (b) b.remove(); return; }
+			e.preventDefault();
+			var b = document.getElementById("ss-obligatoire");
+			if (!b) { b = document.createElement("div"); b.id = "ss-obligatoire"; f.prepend(b); }
+			b.style.cssText = "background:#fadbd8;color:#943126;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-weight:800";
+			b.textContent = "⚠️ " + invalids.length + " champ(s) obligatoire(s) à remplir — ils sont marqués en rouge";
+			invalids[0].style.cssText = "outline:2px solid #e74c3c";
+			invalids[0].scrollIntoView({ behavior: "smooth", block: "center" });
+		});
+	})();
+	</script>';
+
+// SchoolSafe - les cellules-enveloppes ne doivent pas avaler les touchers (le bug telephone, GO 2026-10-28).
+echo '<script>
+(function() {
+	var chasse = function() {
+		document.querySelectorAll("td").forEach(function(td) {
+			if (getComputedStyle(td).position === "relative" && td.getBoundingClientRect().height > 300) {
+				td.style.pointerEvents = "none";
+				td.querySelectorAll("input,select,textarea,button,a,label").forEach(function(i) { i.style.pointerEvents = "auto"; });
+			}
+		});
+	};
+	chasse();
+	setTimeout(chasse, 800);
+})();
+</script>';

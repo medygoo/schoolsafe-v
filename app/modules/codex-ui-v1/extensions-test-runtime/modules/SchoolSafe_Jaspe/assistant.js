@@ -16,19 +16,26 @@
     var requestNumber = 0;
     var activeRequest = null;
     var log = document.getElementById('jaspe-log');
+    var champ = document.getElementById('jaspe-question');
+
+    // La conversation monte pendant l'ecriture — sans jamais defiler.
+    function monterPendantEcriture() { if (log) log.classList.add('jaspe-ecriture'); }
+    function redescendre() { if (log) log.classList.remove('jaspe-ecriture'); }
+    if (champ) {
+        champ.addEventListener('focus', monterPendantEcriture);
+        champ.addEventListener('input', monterPendantEcriture);
+        champ.addEventListener('blur', redescendre);
+    }
+
     function message(speaker, text) {
         if (!log) return;
-        var bubble = document.createElement('p');
-        bubble.dataset.speaker = speaker; bubble.textContent = text;
-        if (speaker === 'user') log.replaceChildren(bubble);
-        else {
-            Array.from(log.children).forEach(function (item) {
-                if (item.dataset.speaker === 'jaspe') log.removeChild(item);
-            });
-            log.appendChild(bubble);
-        }
-        log.scrollTop = log.scrollHeight;
+        redescendre();
+        var bulle = document.createElement('p');
+        bulle.dataset.speaker = speaker;
+        bulle.appendChild(document.createTextNode(text));
+        log.appendChild(bulle);
     }
+
     function show(items) {
         nav.replaceChildren();
         nav.hidden = items.length === 0;
@@ -41,32 +48,51 @@
         });
     }
     show([]);
+
+    // Suggestions rapides : une ligne horizontale qui defile, entierement visibles.
+    if (document.querySelector('.jaspe-suggestions')) return;
+    var chips = document.createElement('div');
+    chips.className = 'jaspe-suggestions';
+    ['Ou sont mes bulletins ?', 'Motiver un eleve avant un examen', 'Aide-moi a organiser ma journee'].forEach(function (texte) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = texte;
+        b.addEventListener('click', function () {
+            champ.value = texte;
+            document.getElementById('jaspe-search').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+        });
+        chips.appendChild(b);
+    });
+    var formulaire = document.getElementById('jaspe-search');
+    if (formulaire && formulaire.parentElement) formulaire.parentElement.insertBefore(chips, formulaire);
+
     host.addEventListener('jaspe-reset', function () {
         ++requestNumber;
         if (activeRequest) activeRequest.abort();
         activeRequest = null;
-        document.getElementById('jaspe-question').value = '';
+        champ.value = '';
         status.textContent = '';
+        redescendre();
         if (log) log.replaceChildren();
         message('jaspe', 'Bonjour, je suis JASPE, votre assistante personnalisée SchoolSafe.');
         show([]);
         if (presenter) presenter.setState('IDLE');
     });
+
     document.getElementById('jaspe-search').addEventListener('submit', async function (event) {
         event.preventDefault();
         if (event.stopPropagation) event.stopPropagation();
-        var question = document.getElementById('jaspe-question').value.trim();
+        var question = champ.value.trim();
         if (!question) return;
         if (window.SchoolSafeJaspeVoice) window.SchoolSafeJaspeVoice.stop();
         var currentRequest = ++requestNumber;
         if (activeRequest) activeRequest.abort();
         var controller = new AbortController();
         activeRequest = controller;
-        var timeout = setTimeout(function () { controller.abort(); }, 45000);
+        var timeout = setTimeout(function () { controller.abort(); }, 65000);
         message('user', question);
-        document.getElementById('jaspe-question').value = '';
-        status.textContent = 'Jaspe prepare sa reponse...';
-        if (presenter) presenter.setState('THINKING');
+        champ.value = '';
+        monterPendantEcriture();
         show([]);
         try {
             var response = await fetch('jaspe-chat.php', {
@@ -90,7 +116,6 @@
             message('jaspe', result.reply);
             if (log) status.textContent = '';
             if (presenter) presenter.setState(result.state);
-            // Emotion or gesture chosen by the conversation rules, played by the v12 engine.
             var motion = typeof result.gesture === 'string' && result.gesture ? result.gesture
                 : (typeof result.emotion === 'string' ? result.emotion : '');
             if (motion) host.dispatchEvent(new CustomEvent('jaspe-motion', {detail:{kind: motion}}));
@@ -105,6 +130,7 @@
         } catch (_) {
             if (currentRequest !== requestNumber) return;
             show([]);
+            redescendre();
             status.textContent = controller.signal.aborted
                 ? 'La demande a pris trop de temps. Vous pouvez reessayer.'
                 : 'Acces indisponible. Rechargez la page.';
@@ -115,6 +141,7 @@
             if (currentRequest === requestNumber) activeRequest = null;
         }
     });
+
     var title = document.getElementById('jaspe-title');
     if (!title) return;
     var content = document.getElementById('jaspe-content');

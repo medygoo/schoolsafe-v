@@ -25,11 +25,15 @@ foreach ($schools as $school) {
         $settings=$pdo->prepare('SELECT title,config_value FROM config WHERE school_id=?'); $settings->execute([$id]);
         $flags=$settings->fetchAll(PDO::FETCH_KEY_PAIR);
         if (($flags['SCHOOLSAFE_BIRTHDAYS']??'')==='Y') {
-            $insert=$pdo->prepare('INSERT INTO schoolsafe_birthday_alerts(school_id,syear,student_id,birthday_date,notice_date,school_open)
-                VALUES(?,?,?,?,CAST(? AS date)-7,?) ON CONFLICT DO NOTHING');
-            foreach (SchoolSafeBirthdayRows($id,$year) as $row) {
-                $b=$row['BIRTHDAY'];
-                $insert->execute([$id,$year,$row['STUDENT_ID'],$b['date'],$b['date'],$b['school_open']?'true':'false']);
+            try {
+                $insert=$pdo->prepare('INSERT INTO schoolsafe_birthday_alerts(school_id,syear,student_id,birthday_date,notice_date,school_open)
+                    VALUES(?,?,?,?,CAST(? AS date)-7,?) ON CONFLICT DO NOTHING');
+                foreach (SchoolSafeBirthdayRows($id,$year) as $row) {
+                    $b=$row['BIRTHDAY'];
+                    $insert->execute([$id,$year,$row['STUDENT_ID'],$b['date'],$b['date'],$b['school_open']?'true':'false']);
+                }
+            } catch (RuntimeException $scopeTooLarge) {
+                // Plus de 200 anniversaires sur 8 jours : on saute le bloc, le job continue.
             }
         }
         if (($flags['SCHOOLSAFE_PALMARES']??'')==='Y') {

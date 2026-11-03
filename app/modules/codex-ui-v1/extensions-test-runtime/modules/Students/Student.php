@@ -434,6 +434,50 @@ if ( $_REQUEST['modfunc'] === 'update'
 
 				// Hook.
 				do_action( 'Students/Student.php|create_student' );
+
+				// SchoolSafe - l'adresse et l'ID universel des la creation (GO 2026-10-28).
+				if ( ! empty( $_POST['adr_street'] ) || ! empty( $_POST['adr_city'] ) || ! empty( $_POST['adr_no'] ) )
+				{
+					$ss_adresse = mb_substr( trim( (string) ( $_POST['adr_no'] ?? '' ) ) . ', ' . trim( (string) ( $_POST['adr_street'] ?? '' ) ) . ', ' . trim( (string) ( $_POST['adr_city'] ?? '' ) ), 0, 120 );
+					$ss_address_id = DBSeqNextID( 'address_address_id_seq' );
+					DBInsert( 'address', [
+						'ADDRESS_ID' => $ss_address_id,
+						'HOUSE_NO' => mb_substr( trim( (string) ( $_POST['adr_no'] ?? '' ) ), 0, 100 ),
+						'STREET' => mb_substr( trim( (string) ( $_POST['adr_street'] ?? '' ) ), 0, 30 ),
+						'CITY' => mb_substr( trim( (string) ( $_POST['adr_city'] ?? '' ) ), 0, 30 ),
+						'PHONE' => mb_substr( trim( (string) ( $_POST['adr_phone'] ?? '' ) ), 0, 30 ),
+						'ADDRESS' => $ss_adresse,
+					] );
+					DBInsert( 'students_join_address', [
+						'STUDENT_ID' => $student_id,
+						'ADDRESS_ID' => $ss_address_id,
+						'RESIDENCE' => 'Y',
+						'MAILING' => 'Y',
+						'PRIMARY_RESIDENCE' => 'Y',
+						'GETS_MAIL' => 'Y',
+					] );
+				}
+				$ss_used = [];
+				foreach ( (array) DBGet( "SELECT ID6 FROM schoolsafe_person_ids WHERE SCHOOL_ID='" . UserSchool() . "' AND PERSON_TYPE='student' AND ID6 LIKE '3%'" ) as $ss_r )
+				{
+					$ss_used[] = (int) $ss_r['ID6'];
+				}
+				for ( $ss_n = 300001; $ss_n <= 399999; $ss_n++ )
+				{
+					if ( ! in_array( $ss_n, $ss_used, true ) ) break;
+				}
+				if ( $ss_n <= 399999 )
+				{
+					DBInsert( 'schoolsafe_person_ids', [
+						'SCHOOL_ID' => UserSchool(),
+						'SYEAR' => UserSyear(),
+						'PERSON_TYPE' => 'student',
+						'PERSON_ID' => $student_id,
+						'ID6' => (string) $ss_n,
+						'CREATED_BY' => User( 'STAFF_ID' ),
+					] );
+					echo '<div style="background:#d4efdf;color:#196f3d;border-radius:12px;padding:12px 14px;margin:8px 0">🎓 ' . _( 'ID universel de eleve' ) . ' : <b style="font-size:1.5rem;letter-spacing:3px">' . $ss_n . '</b> — ' . _( 'numero employe sur la machine et code de secours.' ) . '</div>';
+				}
 			}
 		}
 

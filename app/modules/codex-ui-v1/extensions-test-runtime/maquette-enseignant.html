@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette — Tableau de bord Enseignant</title>
+<style>
+:root{--vert:#176b52;--vert2:#0e4a39;--or:#c9a030}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,sans-serif;background:linear-gradient(160deg,var(--vert2),var(--vert) 55%,#2e8b6e);min-height:100vh;padding:14px;color:#fff}
+.pill{display:flex;gap:4px;background:rgba(255,255,255,.14);backdrop-filter:blur(8px);border-radius:99px;padding:4px;overflow-x:auto;margin-bottom:14px}
+.pill a{padding:7px 13px;border-radius:99px;font-size:.8rem;color:rgba(255,255,255,.85);text-decoration:none;white-space:nowrap}
+.pill a.on{background:#fff;color:var(--vert2);font-weight:700}
+h1{font-size:1.15rem;margin:2px 0 2px}
+.sous{font-size:.78rem;opacity:.75;margin-bottom:12px}
+.glass{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(6px);border-radius:18px;padding:13px;margin-bottom:10px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.kpi .nb{font-size:1.5rem;font-weight:800}
+.kpi .lb{font-size:.68rem;opacity:.8}
+.badge{display:inline-block;font-size:.68rem;background:#d4efdf;color:#196f3d;border-radius:99px;padding:2px 8px;font-weight:700}
+.badge.rouge{background:#fadbd8;color:#943126}.badge.or{background:#fdf3d1;color:#8a6b15}
+.row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.row:last-child{border:0}
+.rond{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;flex:none}
+.barre{height:6px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;margin-top:4px}
+.barre i{display:block;height:100%;background:#7bedaa;border-radius:99px}
+.pct{font-size:.72rem;font-weight:800;color:#7bedaa;flex:none}
+.t{font-size:.85rem;font-weight:600}.s{font-size:.7rem;opacity:.72}
+.graphe{margin-top:6px}
+button{background:#fff;color:var(--vert2);border:0;border-radius:99px;padding:9px 16px;font-weight:800;font-size:.85rem;width:100%;margin-top:4px}
+.note{font-size:.68rem;opacity:.6;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<nav class="pill">
+<a class="on" href="#">Accueil</a><a href="#">Présence</a><a href="#">Devoirs</a><a href="#">Rattrapage</a><a href="#">Scans</a>
+</nav>
+<h1>Bonjour Mme Lomela 👋</h1>
+<p class="s">Mardi 28 octobre 2026 · 1ère Primaire · 24 élèves</p>
+<div class="kpis">
+<div class="glass kpi"><div class="nb">21</div><div class="lb">Présents</div><span class="badge">+2</span></div>
+<div class="glass kpi"><div class="nb">2</div><div class="lb">Absents</div><span class="badge rouge">-1</span></div>
+<div class="glass kpi"><div class="nb">1</div><div class="lb">Retard</div></div>
+<div class="glass kpi"><div class="nb">3</div><div class="lb">À corriger</div><span class="badge or">devoirs</span></div>
+</div>
+<div class="glass">
+<b style="font-size:.85rem">📈 Arrivées de ce matin</b>
+<svg class="graphe" viewBox="0 0 320 70" width="100%" height="70">
+<polyline points="10,60 60,52 110,30 160,18 210,25 260,40 310,55" fill="none" stroke="#7bedaa" stroke-width="2.5" stroke-linecap="round"/>
+<polyline points="10,60 60,52 110,30 160,18 210,25 260,40 310,55 310,70 10,70" fill="rgba(123,237,170,.15)" stroke="none"/>
+<circle cx="160" cy="18" r="3.5" fill="#fff"/>
+</svg>
+<p class="s">Pic d'arrivée : 07h30 — tout le monde est là à 07h50 ✓</p>
+</div>
+<div class="glass">
+<b style="font-size:.85rem">🧒 Assiduité de la classe (ce mois)</b>
+<div class="row"><div class="rond">GM</div><div style="flex:1"><div class="t">Grâce MBALA</div><div class="barre"><i style="width:96%"></i></div></div><div class="pct">96%</div></div>
+<div class="row"><div class="rond">KJ</div><div style="flex:1"><div class="t">Josué KABEYA</div><div class="barre"><i style="width:91%"></i></div></div><div class="pct">91%</div></div>
+<div class="row"><div class="rond">EI</div><div style="flex:1"><div class="t">Espérance ILUNGA</div><div class="barre"><i style="width:88%"></i></div></div><div class="pct">88%</div></div>
+<div class="row"><div class="rond">+21</div><div style="flex:1"><div class="s">voir les 21 autres élèves…</div></div></div>
+</div>
+<div class="glass">
+<b style="font-size:.85rem">🎯 Rattrapage — mes séances</b>
+<div class="row"><div class="rond" style="background:#fdf3d1;color:#8a6b15">2</div><div style="flex:1"><div class="t">Séance de maths à programmer</div><div class="s">2 élèves concernés · dossier validé par la direction</div></div></div>
+<button>Enregistrer le suivi de séance</button>
+</div>
+<p class="note">MAQUETTE — données d'exemple, ton avis avant l'intégration</p>
+</body>
+</html>

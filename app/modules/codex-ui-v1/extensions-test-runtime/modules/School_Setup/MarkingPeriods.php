@@ -306,7 +306,18 @@ if ( $_REQUEST['modfunc'] === 'delete'
 
 	if ( DeletePrompt( $name ) )
 	{
-		DBQuery( MarkingPeriodDeleteSQL( $_REQUEST['marking_period_id'], $_REQUEST['mp_term'] ) );
+		// SchoolSafe E4 : verifier que la periode appartient a l'ecole et l'annee
+		// courantes avant suppression (miroir du controle de rendu plus bas).
+		$marking_period_own_RET = DBGet( "SELECT MARKING_PERIOD_ID
+			FROM school_marking_periods
+			WHERE SCHOOL_ID='" . UserSchool() . "'
+			AND SYEAR='" . UserSyear() . "'
+			AND MARKING_PERIOD_ID='" . (int) $_REQUEST['marking_period_id'] . "'" );
+
+		if ( $marking_period_own_RET )
+		{
+			DBQuery( MarkingPeriodDeleteSQL( $_REQUEST['marking_period_id'], $_REQUEST['mp_term'] ) );
+		}
 
 		if ( $_REQUEST['marking_period_id'] == UserMP() )
 		{

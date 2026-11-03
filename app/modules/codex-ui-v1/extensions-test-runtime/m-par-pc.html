@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=1280"><title>Parent — Ordinateur</title>
+<style>
+:root{--v:#176b52;--v2:#0e4a39}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui;background:linear-gradient(160deg,var(--v2),var(--v) 55%,#2e8b6e);min-height:100vh;color:#fff;display:flex}
+.side{width:220px;background:rgba(0,0,0,.18);padding:18px 14px;flex:none;min-height:100vh}
+.logo{font-weight:900;letter-spacing:1px;margin-bottom:22px}
+.side a{display:block;padding:10px 12px;border-radius:12px;color:rgba(255,255,255,.85);text-decoration:none;font-size:.9rem;margin-bottom:4px}
+.side a.on{background:#fff;color:var(--v2);font-weight:700}
+.main{flex:1;padding:22px 26px}
+h1{font-size:1.5rem}.sous{font-size:.85rem;opacity:.75}
+.cols{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-top:16px}
+.grande{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);border-radius:18px;padding:26px;text-align:center}
+.h{font-size:3rem;font-weight:900}
+.glass{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:18px;padding:18px;margin-bottom:14px}
+.b{display:inline-block;font-size:.75rem;background:#d4efdf;color:#196f3d;border-radius:99px;padding:3px 12px;font-weight:800;margin-top:8px}
+.row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.row:last-child{border:0}
+.t{font-size:.95rem;font-weight:600}.s{font-size:.76rem;opacity:.72}
+.ic{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:none}
+.enfant{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.rond{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.nb{font-size:2rem;font-weight:800}.lb{font-size:.8rem;opacity:.8}
+.cv{width:120px;height:74px;border-radius:10px;background:linear-gradient(135deg,#0d2f77,#1446aa);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:#dbe7fb;flex:none}
+.note{position:fixed;bottom:10px;right:16px;font-size:.7rem;opacity:.6}
+</style></head><body>
+<nav class="side"><div class="logo">🏫 SchoolSafe</div>
+<a class="on" href="#">🏠 Accueil</a><a href="#">📊 Bulletins</a><a href="#">✏️ Devoirs</a><a href="#">🎯 Rattrapage</a><a href="#">🪪 Carte</a><a href="#">⚙️ Mon compte</a></nav>
+<div class="main">
+<div class="enfant"><div class="rond">E1</div><div><h1>Mon enfant (Élève Exemple 1)</h1><p class="sous">Classe A · Enseignant Exemple · année 2026-2027</p></div></div>
+<div class="cols">
+<div class="grande"><div class="lb" style="font-size:1rem">Ce matin, mon enfant est arrivé à l'école à</div><div class="h">07:42</div><span class="b">✓ présence enregistrée par la machine</span>
+<div class="kpis"><div class="glass" style="margin:0"><div class="nb">96%</div><div class="lb">Assiduité</div></div><div class="glass" style="margin:0"><div class="nb">2</div><div class="lb">Nouvelles notes</div></div><div class="glass" style="margin:0"><div class="nb">0</div><div class="lb">Rattrapage</div></div></div>
+</div>
+<div>
+<div class="glass"><b>📚 Devoirs du jour</b>
+<div class="row"><div class="ic">✏️</div><div style="flex:1"><div class="t">Devoir exemple 1</div><div class="s">pour demain</div></div></div>
+<div class="row"><div class="ic">🔢</div><div style="flex:1"><div class="t">Devoir exemple 2</div><div class="s">pour vendredi</div></div></div></div>
+<div class="glass"><b>🏆 Palmarès de la classe</b>
+<div class="row"><div class="ic">🥇</div><div style="flex:1"><div class="t"><b>3ᵉ</b> sur 24</div><div class="s">+2 places cette semaine</div></div><span class="b">↑2</span></div></div>
+<div class="glass"><b>🪪 Carte d'élève officielle</b>
+<div class="row" style="margin-top:8px"><div class="cv">RDC · ÉCOLE</div><div style="flex:1"><div class="t">Carte active</div><div class="s">scan sécurisé</div></div></div></div>
+</div>
+</div>
+</div>
+<p class="note">MAQUETTE ordinateur — vue Parent</p>
+</body></html>

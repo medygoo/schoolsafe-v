@@ -49,15 +49,35 @@ try {
         $hits[] = $now;
         $_SESSION['jaspe_ai_hits'] = $hits;
         try {
-            $secret = getenv('JASPE_WORKER_HMAC_SECRET') ?: '';
+            // SchoolSafe : repli sur la table config si la variable d'environnement est absente.
+            $secret = getenv('JASPE_WORKER_HMAC_SECRET') ?: (string) Config('JASPE_WORKER_SECRET');
             $sessionKey = hash_hmac('sha256', implode(':', [
                 (string) User('STAFF_ID'), (string) UserStudentID(),
                 (string) UserSchool(), (string) User('PROFILE_ID'),
             ]), $secret);
+            // Memoire de session : les derniers echanges donnent le contexte a l IA.
+            // Elle vit dans $_SESSION (effacee a la deconnexion), jamais en base.
+            $history = isset($_SESSION['jaspe_memory']) && is_array($_SESSION['jaspe_memory'])
+                ? array_slice($_SESSION['jaspe_memory'], -8) : [];
             session_write_close();
+            $workerUrl = getenv('JASPE_WORKER_URL') ?: (string) Config('JASPE_WORKER_URL');
             $result = SchoolSafeJaspeCloudflare($payload['message'], $sessionKey,
-                getenv('JASPE_WORKER_URL') ?: '', $secret);
+                $workerUrl, $secret, null, $history);
+            if (($result['mode'] ?? '') === 'cloudflare' && isset($result['reply'])) {
+                session_start();
+                $memory = $history;
+                $memory[] = ['role' => 'user', 'content' => mb_substr($payload['message'], 0, 500)];
+                $memory[] = ['role' => 'assistant', 'content' => mb_substr((string) $result['reply'], 0, 500)];
+                $_SESSION['jaspe_memory'] = array_slice($memory, -8);
+                session_write_close();
+            }
         } catch (RuntimeException $error) {
+            require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeFallbackLLM.fnc.php';
+            $fallback = SchoolSafeJaspeFallbackLLM((string) $payload['message'], is_array($history ?? null) ? $history : []);
+            if ($fallback !== null) {
+                error_log('JASPE fallback LLM used.');
+                $result = $fallback;
+            } else {
             $messages = [
                 'CLOUDFLARE_NOT_CONFIGURED'=>'La conversation Cloudflare n\'est pas configuree dans SchoolSafe local.',
                 'CLOUDFLARE_TIMEOUT'=>'Cloudflare met trop de temps a repondre. Vous pouvez reessayer.',
@@ -67,6 +87,7 @@ try {
             error_log('JASPE provider failure: ' . $error->getMessage());
             $result = ['reply'=>$messages[$error->getMessage()] ?? 'Le service IA Cloudflare est momentanement indisponible.',
                 'actions'=>[], 'state'=>'OFFLINE', 'mode'=>'local'];
+            }
         }
     }
 } catch (InvalidArgumentException $error) {

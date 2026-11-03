@@ -62,6 +62,7 @@ else
 		if ( ! empty( $category_include ) )
 		{
 			$include = $category_include[1]['INCLUDE'];
+			$category_id = (string) (int) $_REQUEST['category_id']; // Sanitise : meme valeur que le lookup (int) ci-dessus.
 
 			if ( empty( $include ) )
 			{
@@ -415,12 +416,12 @@ if ( $_REQUEST['modfunc'] === 'update'
 			// Check username uniqueness (case-insensitive).
 			$existing_username = DBGet( "SELECT 'exists'
 				FROM staff
-				WHERE UPPER(USERNAME)=UPPER('" . $_REQUEST['staff']['USERNAME'] . "')
+				WHERE UPPER(USERNAME)=UPPER('" . DBEscapeString( $_REQUEST['staff']['USERNAME'] ) . "')
 				AND SYEAR='" . UserSyear() . "'
 				AND STAFF_ID!='" . (int) UserStaffID() . "'
 				UNION SELECT 'exists'
 				FROM students
-				WHERE UPPER(USERNAME)=UPPER('" . $_REQUEST['staff']['USERNAME'] . "')" );
+				WHERE UPPER(USERNAME)=UPPER('" . DBEscapeString( $_REQUEST['staff']['USERNAME'] ) . "')" );
 
 			if ( ! empty( $existing_username ) )
 			{
@@ -438,6 +439,7 @@ if ( $_REQUEST['modfunc'] === 'update'
 				WHERE STAFF_ID='" . UserStaffID() . "'" );
 
 			if ( isset( $_REQUEST['staff']['PROFILE'] )
+				&& $_REQUEST['staff']['PROFILE'] != $profile_RET[1]['PROFILE']
 				&& $_REQUEST['staff']['PROFILE'] != $profile_RET[1]['PROFILE_ID'] )
 			{
 				if ( $_REQUEST['staff']['PROFILE'] == 'admin' )
@@ -816,7 +818,9 @@ if ( $_REQUEST['modfunc'] === 'delete'
 	&& basename( $_SERVER['PHP_SELF'] ) !== 'index.php'
 	&& UserStaffID() !== User( 'STAFF_ID' )
 	&& User( 'PROFILE' ) === 'admin'
-	&& AllowEdit() )
+	&& AllowEdit()
+	&& ( ! function_exists( 'SchoolSafeAccountBlocksWrite' ) || ! SchoolSafeAccountBlocksWrite() )
+	&& ( ( function_exists( 'SchoolSafeGlobalAdmin' ) && SchoolSafeGlobalAdmin() ) || SchoolSafeStaffWithinScope( (int) $_REQUEST['staff_id'] ) ) )
 {
 	if ( DeletePrompt( _( 'User' ) ) )
 	{

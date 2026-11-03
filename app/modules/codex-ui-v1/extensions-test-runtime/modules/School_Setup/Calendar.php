@@ -370,8 +370,11 @@ if ( $_REQUEST['modfunc'] === 'create'
 
 			if ( ! empty( $_REQUEST['calendar_id'] ) )
 			{
+				// SchoolSafe E4 : garde ecole+annee (miroir des suppressions voisines).
 				DBQuery( "DELETE FROM attendance_calendar
-					WHERE CALENDAR_ID='" . (int) $calendar_id . "'" );
+					WHERE CALENDAR_ID='" . (int) $calendar_id . "'
+					AND SCHOOL_ID='" . UserSchool() . "'
+					AND SYEAR='" . UserSyear() . "'" );
 			}
 
 			// Insert Days.
@@ -412,11 +415,16 @@ if ( $_REQUEST['modfunc'] === 'delete_calendar'
 {
 	if ( DeletePrompt( _( 'Calendar' ) ) )
 	{
+		// SchoolSafe E4 : suppression limitee a l'ecole et l'annee courantes.
 		$delete_sql = "DELETE FROM attendance_calendar
-			WHERE CALENDAR_ID='" . (int) $_REQUEST['calendar_id'] . "';";
+			WHERE CALENDAR_ID='" . (int) $_REQUEST['calendar_id'] . "'
+			AND SCHOOL_ID='" . UserSchool() . "'
+			AND SYEAR='" . UserSyear() . "';";
 
 		$delete_sql .= "DELETE FROM attendance_calendars
-			WHERE CALENDAR_ID='" . (int) $_REQUEST['calendar_id'] . "';";
+			WHERE CALENDAR_ID='" . (int) $_REQUEST['calendar_id'] . "'
+			AND SCHOOL_ID='" . UserSchool() . "'
+			AND SYEAR='" . UserSyear() . "';";
 
 		DBQuery( $delete_sql );
 
@@ -577,8 +585,11 @@ if ( $_REQUEST['modfunc'] === 'detail_delete'
 {
 	if ( DeletePrompt( _( 'Event' ) ) )
 	{
+		// SchoolSafe E4 : suppression limitee a l'ecole et l'annee courantes.
 		DBQuery( "DELETE FROM calendar_events
-			WHERE ID='" . (int) $_REQUEST['event_id'] . "'" );
+			WHERE ID='" . (int) $_REQUEST['event_id'] . "'
+			AND SYEAR='" . UserSyear() . "'
+			AND SCHOOL_ID='" . UserSchool() . "'" );
 
 		//hook
 		do_action( 'School_Setup/Calendar.php|delete_calendar_event' );
@@ -596,9 +607,13 @@ if ( $_REQUEST['modfunc'] === 'detail' )
 	{
 		if ( $_REQUEST['event_id'] !== 'new' )
 		{
+			// SchoolSafe E5 (BOLA) : lecture limitee a l'ecole et l'annee courantes
+			// (miroir du correctif #379 sur les devoirs).
 			$RET = DBGet( "SELECT TITLE,DESCRIPTION,SCHOOL_DATE
 				FROM calendar_events
-				WHERE ID='" . (int) $_REQUEST['event_id'] . "'" );
+				WHERE ID='" . (int) $_REQUEST['event_id'] . "'
+				AND SYEAR='" . UserSyear() . "'
+				AND SCHOOL_ID='" . UserSchool() . "'" );
 
 			$title = $RET[1]['TITLE'];
 		}

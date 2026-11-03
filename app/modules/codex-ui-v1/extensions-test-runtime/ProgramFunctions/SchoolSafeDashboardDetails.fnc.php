@@ -78,21 +78,21 @@ function SchoolSafeDashboardDetails(array $data, array $feed): string
     try {
         $_GET['dashboard_tab'] = $_GET['details_tab'] ?? 'students';
         [$active, $unused] = SchoolSafeDashboardTabs();
-        $choices = ['students'=>User('PROFILE')==='parent'?'Mes enfants':'Eleves'];
+        $choices = ['students'=>User('PROFILE')==='parent'?'Mes enfants':'Élèves'];
         if (User('PROFILE')==='admin') {
             if (!AllowUse('Students/Student.php')) unset($choices['students']);
             if (AllowUse('Users/User.php')) $choices['personnel']='Personnel';
             if (AllowUse('Users/User.php') && AllowUse('Students/Student.php')) $choices['parents']='Parents';
         }
-        if (SchoolSafeArrivalViewPermission() || (User('PROFILE')==='admin' && AllowUse('Attendance/DailySummary.php'))) $choices['presence']='Scans et presences';
+        if (SchoolSafeArrivalViewPermission() || (User('PROFILE')==='admin' && AllowUse('Attendance/DailySummary.php'))) $choices['presence']='Scans et présences';
         if (AllowUse('Student_Billing/DailyTransactions.php') || AllowUse('Accounting/DailyTransactions.php') || (in_array(User('PROFILE'),['parent','student'],true) && (AllowUse('Student_Billing/StudentFees.php') || AllowUse('Student_Billing/StudentPayments.php')))) $choices['finance']='Finances';
-        if (AllowUse('School_Setup/Calendar.php')) $choices['activities']='Activites et calendrier';
-        $choices['modules']='Syntheses SchoolSafe';
+        if (AllowUse('School_Setup/Calendar.php')) $choices['activities']='Activités et calendrier';
+        $choices['modules']='Synthèses SchoolSafe';
         $requested = $saved['details_tab'] ?? 'students';
         $active = is_string($requested) && isset($choices[$requested]) ? $requested : array_key_first($choices);
         $_GET['dashboard_tab'] = $active;
         $e = static fn($v) => htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
-        $html = '<link rel="stylesheet" href="assets/css/schoolsafe-dashboard-details.css?v=1"><section id="ss-dashboard-details" class="ss-dashboard-details"><header><h2>Informations detaillees</h2><p>Donnees natives actualisees a chaque consultation, selon vos droits et votre ecole.</p></header><nav aria-label="Rubriques detaillees du tableau de bord">';
+        $html = '<link rel="stylesheet" href="assets/css/schoolsafe-dashboard-details.css?v=1"><section id="ss-dashboard-details" class="ss-dashboard-details"><header><h2>Informations detaillees</h2><p>Données natives actualisées à chaque consultation, selon vos droits et votre école.</p></header><nav aria-label="Rubriques detaillees du tableau de bord">';
         foreach ($choices as $key=>$label) $html .= '<a href="Modules.php?'.$e(http_build_query(['modname'=>'misc/Portal.php','dashboard_tab'=>'overview','details_tab'=>$key])).'#ss-dashboard-details"'.($active===$key?' aria-current="page"':'').'>'.$e($label).'</a>';
         $html .= '</nav><div class="ss-detail-panel"><h3>'.$e($choices[$active]).'</h3>';
         $body = '';
@@ -104,7 +104,7 @@ function SchoolSafeDashboardDetails(array $data, array $feed): string
                     if ((int)($row['IS_TOTAL'] ?? 0)!==1) continue;
                     $total=max(1,(int)$row['TOTAL']);
                     $chart='<h3>Effectifs des inscriptions actives</h3><div class="ss-detail-bars">';
-                    foreach (['Filles'=>(int)$row['GIRLS'],'Garcons'=>(int)$row['BOYS'],'Non renseigne'=>max(0,(int)$row['TOTAL']-(int)$row['GIRLS']-(int)$row['BOYS'])] as $label=>$value) {
+                    foreach (['Filles'=>(int)$row['GIRLS'],'Garçons'=>(int)$row['BOYS'],'Non renseigné'=>max(0,(int)$row['TOTAL']-(int)$row['GIRLS']-(int)$row['BOYS'])] as $label=>$value) {
                         $chart.='<div><span>'.$label.'</span><strong>'.$value.'</strong><meter min="0" max="'.$total.'" value="'.$value.'">'.$value.'</meter></div>';
                     }
                     $body=$chart.'</div>'.$body;

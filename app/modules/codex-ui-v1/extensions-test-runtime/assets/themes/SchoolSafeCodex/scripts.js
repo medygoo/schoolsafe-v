@@ -32,10 +32,10 @@
 	];
 	function destination(path) {
 		if (/^Users\//.test(path) && path !== 'Users/TeacherPrograms.php') return 'users';
+		if (/^SchoolSafe\/.*(Fee|Payment)/.test(path)) return 'finance';
 		if (/^SchoolSafe\/Remediation/.test(path)) return 'pedagogy';
 		if (/^SchoolSafe\/Notifications/.test(path)) return 'communication';
 		if (/^SchoolSafe\/(Studio|IssueCard|PrintRequest|Family)/.test(path)) return 'school';
-		if (/^SchoolSafe\/.*(Fee|Payment)/.test(path)) return 'finance';
 		if (/^SchoolSafe\//.test(path)) return 'security';
 		if (/^(Dashboards)\//.test(path)) return 'pilotage';
 		if (/^(Audit|Email_Log)\//.test(path)) return 'security';
@@ -52,8 +52,9 @@
 		if (/^School_Setup\/(Configuration|SchoolFields|CopySchool|Rollover)\.php$/.test(path) || /^Users\/(Profiles|Exceptions|UserFields|Preferences)\.php$/.test(path)) return 'administration';
 		if (path === 'School_Setup/AccessLog.php' || /^(Attendance|Discipline)\//.test(path)) return 'security';
 		if (/^(Scheduling|Grades|Eligibility)\//.test(path) || path === 'Users/TeacherPrograms.php') return 'pedagogy';
-		if (/^Accounting\//.test(path)) return 'accounting';
+		if (/^Accounting\//.test(path)) return 'finance';
 		if (/^Student_Billing\//.test(path)) return 'finance';
+		if (/^Food_Service\/(TransactionsReport|Transactions|Accounts|Statements)\.php/.test(path)) return 'finance';
 		if (/^Food_Service\//.test(path)) return 'care';
 		if (/^Resources\//.test(path)) return 'inventory';
 		if (/^Users\//.test(path)) return 'people';
@@ -92,15 +93,20 @@
 		}
 		if (branch === 'pedagogy' && /^Grades\//.test(path)) return '\u00c9valuation';
 		if (branch === 'pedagogy' && /^Eligibility\//.test(path)) return 'Accompagnement';
-		if (branch === 'finance' && /^Student_Billing\/(StudentPayments|MassAssignPayments)\.php$/.test(path)) return 'Paiements et encaissements';
-		if (branch === 'finance' && /^Student_Billing\/(StudentFees|MassAssignFees)\.php$/.test(path)) return 'Frais scolaires et prestations';
+		if (branch === 'finance') {
+			if (/^Food_Service\//.test(path)) return 'Cantine';
+	if (/^SchoolSafe\/.*Payment/.test(path)) return 'Rattrapage';
+	if (/^SchoolSafe\//.test(path)) return 'Frais et mod\u00e8les';
+	if (/^Accounting\/(Salaries|StaffPayments|StaffBalances|Statements)\.php/.test(path)) return 'Salaires et dettes';
+	if (/^Accounting\//.test(path)) return 'Tr\u00e9sorerie \u00e9cole';
+	if (/^Student_Billing\/(StudentPayments|MassAssignPayments|DailyTransactions|Statements)\.php/.test(path)) return 'Encaissements \u00e9l\u00e8ves';
+	return 'Frais et soldes \u00e9l\u00e8ves';
+}
 		if (branch === 'security' && path === 'School_Setup/AccessLog.php') return 'Historique';
 		if (branch === 'security' && /AttendanceCodes|DisciplineForm/.test(path)) return 'Autorisation et suivi';
-		if (branch === 'accounting' && /Categories/.test(path)) return 'R\u00e9f\u00e9rentiel';
 		if (branch === 'communication' && /^School_Setup\//.test(path)) return 'Publication';
 		if (branch === 'care' && /ServeMenus|Kiosk/.test(path)) return 'Action imm\u00e9diate';
 		if (branch === 'care' && /DailyMenus|MenuItems|Menus/.test(path)) return 'Organisation';
-		if (branch === 'care' && /Accounts|Statements|Transactions/.test(path)) return 'Finance cantine';
 		if (branch === 'administration' && /Profiles|Exceptions|UserFields|CopySchool|Rollover/.test(path)) return 'Administration';
 		return groups[branch] || 'Fonctions disponibles';
 	}
@@ -119,7 +125,8 @@
 				if (!link) return;
 				var path = new URL(link.href, window.location.href).searchParams.get('modname') || '';
 				if (hiddenMenuPath(path)) { item.remove(); return; }
-				var branch = /^(reports|rapports)$/i.test(section) ? 'reports' : destination(path);
+				var forced = destination(path);
+				var branch = /^(reports|rapports)$/i.test(section) && forced !== 'finance' ? 'reports' : forced;
 				if (path === 'Users/TeacherPrograms.php') {
 					if (!groups.users) groups.users = [];
 					var shortcut = item.cloneNode(true);
@@ -209,7 +216,9 @@
 					});
 				});
 			}
+			if (definition[0] === 'finance') { var financeOrder = ['Encaissements \u00e9l\u00e8ves', 'Frais et soldes \u00e9l\u00e8ves', 'Frais et mod\u00e8les', 'Rattrapage', 'Salaires et dettes', 'Tr\u00e9sorerie \u00e9cole', 'Cantine']; order.sort(function (a, b) { var ai = financeOrder.indexOf(a), bi = financeOrder.indexOf(b); return (ai < 0 ? financeOrder.length : ai) - (bi < 0 ? financeOrder.length : bi); }); }
 			entries = order.flatMap(function (heading) { return buckets[heading]; });
+			if (definition[0] === 'finance') { var feesEntry = entries.find(function (e) { var a = e.item.querySelector('a'); return a && new URL(a.href, location.href).searchParams.get('modname') === 'Student_Billing/StudentFees.php'; }); if (feesEntry) top.href = feesEntry.item.querySelector('a').getAttribute('href'); }
 			var previous = '';
 			entries.forEach(function (entry) {
 				if (entry.heading !== previous) {
@@ -440,6 +449,22 @@
 		if (body.dataset.ssPage === 'Email_Log/EmailLog' && new URL(location.href).searchParams.get('tab') === 'config') {
 			pageHelp['Email_Log/EmailLog'] = 'Définissez la durée de conservation du journal en jours. Les entrées plus anciennes sont supprimées automatiquement lors de la consultation du journal. L’option de notifications inclut les emails automatiques de Rosario dans ce journal ; elle ne déclenche pas leur envoi.';
 			body.querySelectorAll('form > .postbox-wrapper').forEach(function (panel) { panel.classList.add('ss-help-settings'); });
+		}
+		// SchoolSafe : explication concrete PAR onglet de Mes preferences
+		if (body.dataset.ssPage === 'Users/Preferences') {
+			var ssTabExplanations = {
+				password: 'Change le mot de passe de votre compte. Il est mis à jour pour toutes les années scolaires de votre nom d’utilisateur : votre prochaine connexion utilisera le nouveau mot de passe. L’ancien mot de passe est demandé pour confirmer votre identité.',
+				display_options: 'Règle ce que VOUS voyez à l’écran, sans effet pour les autres : la couleur de surbrillance des listes, le format des dates affichées, et l’option de masquer le rappel de dernière connexion. Le thème est verrouillé par SchoolSafe : la présentation est unique et identique pour tous.',
+				print_options: 'Règle les documents PDF que vous imprimez : format du papier, couleur de la bande d’en-tête des listes, et côté de la fenêtre des enveloppes pour les étiquettes postales. Ces réglages ne concernent que vous.',
+				student_listing: 'Règle vos listes d’élèves : l’ordre de tri par défaut, le format du fichier exporté (et de ses dates), et l’affichage de l’écran de recherche avant chaque liste.',
+				student_fields: 'Choisissez les informations d’élève que VOUS voyez : Recherche = critères proposés dans l’écran de recherche ; Vue détaillée = blocs affichés sur la fiche élève. Décocher vous masque le champ à vous seul. La catégorie Adresses choisit l’adresse affichée : aucune, résidence, courrier, montée ou descente du bus.',
+				widgets: 'Chaque widget coché ajoute UNE ligne de critère dans votre recherche d’élèves : calendrier, année suivante, cours, absences, moyenne, rang, note, éligibilité, activité, cantine, discipline, facturation. Aucun autre effet : ne cochez que ce que vous utilisez.',
+				staff_fields: 'Identique aux champs élève, mais pour les fiches UTILISATEURS (personnel, parents) : Recherche = critères de recherche ; Vue détaillée = blocs de la fiche utilisateur.',
+				staff_widgets: 'Chaque widget coché ajoute un critère dans votre recherche d’utilisateurs : Permissions (filtre par droits), solde/statut/code-barres cafeteria du personnel, solde de paie.'
+			};
+			var ssTab = new URL(location.href).searchParams.get('tab');
+			if (!ssTab) ssTab = 'password'; // le serveur force password par defaut
+			if (ssTabExplanations[ssTab]) pageHelp['Users/Preferences'] = ssTabExplanations[ssTab];
 		}
 		var heading = body.querySelector('.ss-page-heading');
 		if (body.dataset.ssSection && !pageHelp[body.dataset.ssPage]) {
@@ -741,7 +766,7 @@
 			if (!dialog) {
 				var dialogStyles = document.createElement('link');
 				dialogStyles.rel = 'stylesheet';
-				dialogStyles.href = 'assets/themes/SchoolSafeCodex/mobile-navigation.css?v=19';
+				dialogStyles.href = 'assets/themes/SchoolSafeCodex/mobile-navigation.css?v=20';
 				document.head.appendChild(dialogStyles);
 				dialog = document.createElement('dialog');
 				dialog.id = 'ss-jaspe-dialog'; dialog.setAttribute('aria-label', 'JASPE, assistante SchoolSafe');
@@ -1171,4 +1196,113 @@
         }
     }
     window.addEventListener('load', setupAssistantLink, { once: true });
+})();
+
+/* SchoolSafe - l'ambiance: le logo de l'ecole en fond floute (le JS inline gagne toutes les cascades, GO 2026-10-28) */
+(function() {
+	function ssAmbiance() {
+		try {
+			document.documentElement.style.background = '#0c382b';
+			document.body.style.setProperty('background', 'transparent', 'important');
+			if (!document.getElementById('ss-ambiance-fond')) {
+				var fond = document.createElement('div');
+				fond.id = 'ss-ambiance-fond';
+				fond.style.cssText = 'position:fixed;inset:-10%;z-index:-2;background-image:url(\'assets/school-logos/school_logo_3.jpg\');background-size:cover;background-position:center;filter:blur(60px) saturate(140%);animation:ss-respiration 12s ease-in-out infinite alternate;pointer-events:none;will-change:transform,opacity;';
+				var voile = document.createElement('div');
+				voile.id = 'ss-ambiance-voile';
+				voile.style.cssText = 'position:fixed;inset:0;z-index:-1;background:rgba(14,74,57,.85);pointer-events:none;';
+				document.body.prepend(voile);
+				document.body.prepend(fond);
+			}
+		} catch (e) {}
+	}
+	if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ssAmbiance); } else { ssAmbiance(); }
+})();
+
+/* SchoolSafe - l'extinction du ::before du theme (la texture SchoolSafeCodex) au profit du logo */
+(function() {
+	function ssPatchCascade() {
+		try {
+			if (!document.getElementById('ss-style-ambiance')) {
+				var st = document.createElement('style');
+				st.id = 'ss-style-ambiance';
+				st.textContent = 'body::before{display:none!important;background:none!important} body{background:transparent!important}';
+				document.head.appendChild(st);
+			}
+		} catch (e) {}
+	}
+	if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ssPatchCascade); } else { ssPatchCascade(); }
+})();
+
+/* SchoolSafe - les conteneurs RosarioSIS laissent voir l'ambiance (v2) */
+(function() {
+	function ssPatchConteneurs() {
+		try {
+			if (!document.getElementById('ss-style-ambiance-2')) {
+				var st2 = document.createElement('style');
+				st2.id = 'ss-style-ambiance-2';
+				st2.textContent = '#wrap,#body,div.mod{background:transparent!important} body.modules{background:transparent!important}';
+				document.head.appendChild(st2);
+			}
+		} catch (e) {}
+	}
+	if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ssPatchConteneurs); } else { ssPatchConteneurs(); }
+})();
+
+/* SchoolSafe - LA GUERRE DES CASCADES GAGNEE: le style re-affirme chaque seconde (GO 2026-10-28) */
+(function() {
+	function ssGuerre() {
+		var st = document.getElementById('ss-style-ambiance-2');
+		if (!st) {
+			st = document.createElement('style');
+			st.id = 'ss-style-ambiance-2';
+			st.textContent = '#wrap,#body,div.mod{background:transparent!important} body.modules{background:transparent!important} body::before{display:none!important;background:none!important}';
+			document.head.appendChild(st);
+		} else {
+			document.head.appendChild(st);
+		}
+	}
+	ssGuerre();
+	setInterval(ssGuerre, 1000);
+})();
+
+/* SchoolSafe - L'ARME ABSOLUE: l'inline important sur les conteneurs (rien ne gagne dessus) */
+(function() {
+	function ssInline() {
+		try {
+			var b = document.getElementById('body');
+			if (b) b.style.setProperty('background', 'transparent', 'important');
+			var w = document.getElementById('wrap');
+			if (w) w.style.setProperty('background', 'transparent', 'important');
+			var m = document.querySelector('main');
+			if (m) m.style.setProperty('background', 'transparent', 'important');
+		} catch (e) {}
+	}
+	ssInline();
+	setTimeout(ssInline, 1500);
+	setInterval(ssInline, 2000);
+})();
+
+/* SchoolSafe - LA METEO FIXE dans le coin de l'ecran (les vraies donnees via le proxy, GO 2026-10-28) */
+(function() {
+	function ssMeteo() {
+		if (document.getElementById('ss-meteo-fixe')) return;
+		if (!document.getElementById('ss-ambiance-fond')) return;
+		var chip = document.createElement('div');
+		chip.id = 'ss-meteo-fixe';
+		chip.style.cssText = 'position:fixed;top:64px;right:10px;z-index:80;background:rgba(255,255,255,.14);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.25);border-radius:16px 20px 18px 22px;padding:7px 12px;color:#fff;font-family:system-ui;font-size:.78rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2)';
+		chip.textContent = '🌤️ —';
+		document.body.appendChild(chip);
+		chip.addEventListener('click', function() { location.href = 'liquid-outils.html'; });
+		var maj = function() {
+			fetch('/ss-proxy-weather.php?lat=-4.32&lon=15.31', { credentials: 'same-origin' }).then(function(r) { return r.json(); }).then(function(d) {
+				if (d.main) chip.textContent = '🌤️ ' + Math.round(d.main.temp) + '°C ' + (d.weather[0].description || '').slice(0, 18);
+				else if (d.error === 'CLE_METEO_MANQUANTE') chip.textContent = '🌤️ météo à configurer';
+				else chip.textContent = '🌤️ —';
+			}).catch(function() { chip.textContent = '🌤️ hors ligne'; });
+		};
+		maj();
+		setInterval(maj, 600000);
+	}
+	if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ssMeteo); } else { ssMeteo(); }
 })();

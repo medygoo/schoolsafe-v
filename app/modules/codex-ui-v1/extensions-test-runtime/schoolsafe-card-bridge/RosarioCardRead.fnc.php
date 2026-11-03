@@ -111,17 +111,57 @@ function SchoolSafeReadNativeCardInput( $student_id )
         'enrollment' => $context,
         'verified' => [ 'photoUrl' => $photo, 'logoUrl' => $logo, 'academicYearLabel' => $year_label,
             'schoolEmail' => SchoolSafeReadNativeSchoolEmail( $context ),
-            'matricule' => function_exists( 'SchoolSafeMatriculeLookup' ) ? SchoolSafeMatriculeLookup( $data['student']['STUDENT_ID'] ) : null ],
+            'matricule' => function_exists( 'SchoolSafeMatriculeLookup' ) ? SchoolSafeMatriculeLookup( $data['student']['STUDENT_ID'] ) : null,
+            'studentAddress' => SchoolSafeReadNativeStudentAddress( $context ) ],
         'schoolingSource' => SchoolSafeReadNativeCardSchooling( $data ),
     ];
 }
 
+function SchoolSafeReadNativeStudentAddress( $context )
+{
+	// Adresse de residence principale de l'eleve (ligne complete) ; vide si aucune.
+	if ( ! function_exists( 'DBGet' ) ) { return ''; }
+	$rows = DBGet( 'SELECT a.HOUSE_NO,a.STREET,a.CITY,a.STATE,a.ADDRESS FROM students_join_address ja'
+		. ' JOIN address a ON a.ADDRESS_ID=ja.ADDRESS_ID'
+		. ' WHERE ja.STUDENT_ID=' . (int) $context['STUDENT_ID']
+		. " ORDER BY (ja.PRIMARY_RESIDENCE='Y') DESC, ja.ADDRESS_ID ASC LIMIT 1" );
+	foreach ( (array) $rows as $row )
+	{
+		$line = trim( (string) ( $row['ADDRESS'] ?? '' ) );
+		if ( $line === '' )
+		{
+			$parts = array_filter( [ trim( (string) ( $row['HOUSE_NO'] ?? '' ) ),
+				trim( (string) ( $row['STREET'] ?? '' ) ), trim( (string) ( $row['CITY'] ?? '' ) ) ],
+				static function ( $p ) { return $p !== ''; } );
+			$line = implode( ', ', $parts );
+		}
+		return mb_substr( $line, 0, 120 );
+	}
+	return '';
+}
+
 function SchoolSafeReadNativeSchoolEmail( $context )
 {
-    $path = '/var/lib/schoolsafe-card-bridge/school-fields.json';
-    if ( ! is_file( $path ) ) { return ''; }
-    $config = json_decode( file_get_contents( $path ), true, 8, JSON_THROW_ON_ERROR );
-    return SchoolSafeReadConfiguredSchoolEmail( $context, $config['school_email_field_id'] ?? null );
+	// Priorite : email enregistre a l onboarding (config), puis mapping legacy.
+	$email = '';
+	if ( function_exists( 'DBGet' ) )
+	{
+		$rows = DBGet( "SELECT CONFIG_VALUE FROM config WHERE TITLE='SCHOOLSAFE_SCHOOL_EMAIL' AND SCHOOL_ID=" . (int) $context['SCHOOL_ID'] );
+		foreach ( (array) $rows as $row )
+		{
+			$email = trim( (string) ( $row['CONFIG_VALUE'] ?? '' ) );
+			if ( $email !== '' ) break;
+		}
+	}
+	if ( $email !== '' )
+	{
+		if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) { throw new RuntimeException( 'INVALID_SCHOOL_EMAIL' ); }
+		return $email;
+	}
+	$path = '/var/lib/schoolsafe-card-bridge/school-fields.json';
+	if ( ! is_file( $path ) ) { return ''; }
+	$config = json_decode( file_get_contents( $path ), true, 8, JSON_THROW_ON_ERROR );
+	return SchoolSafeReadConfiguredSchoolEmail( $context, $config['school_email_field_id'] ?? null );
 }
 
 function SchoolSafeReadConfiguredSchoolEmail( $context, $field_id )
