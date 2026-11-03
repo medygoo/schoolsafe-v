@@ -80,8 +80,10 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
                 'reason'=>$financial['state']==='unavailable'?'FEE_CONTROL_UNAVAILABLE':'FEE_CONTROL_DENIED',
                 'financial'=>$financial,'financial_consult_id'=>$consultId]+$verify;
         }
-        $late = SchoolSafeEntryIsLate($school, $year, $clock, $get, (int) $verify['student_id'], date('Y-m-d', $now));
-        $comment = 'Entrée ' . substr($clock, 0, 5) . ($late ? ' (retard)' : '') . ' — staff #' . $user;
+        $lateLevel = SchoolSafeEntryLateLevel($school, $year, $clock, $get, (int) $verify['student_id'], date('Y-m-d', $now));
+        $late = $lateLevel !== '';
+        $tags = ['tolere' => ' (retard toléré)', 'retard' => ' (retard)', 'grave' => ' (retard grave)'];
+        $comment = 'Entrée ' . substr($clock, 0, 5) . ($tags[$lateLevel] ?? '') . ' — staff #' . $user;
         $commentSql = "'" . str_replace("'", "''", $comment) . "'";
         $inserted = $get("INSERT INTO entry_exit_student_records(STUDENT_ID, CHECKPOINT_ID, TYPE, COMMENTS, RECORDED_AT, SCHOOLSAFE_SCAN_SCHOOL_ID, SCHOOLSAFE_SCAN_SYEAR)"
             . ' VALUES(' . (int) $verify['student_id'] . ',' . $checkpoint['id'] . ",'in'," . $commentSql . ',CURRENT_TIMESTAMP,' . $school . ',' . $year . ')'
@@ -101,6 +103,12 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
 
 function SchoolSafeEntryIsLate($school, $year, $clock, callable $get, $studentId = 0, $day = null)
 {
+    return SchoolSafeEntryLateLevel($school, $year, $clock, $get, $studentId, $day) !== '';
+}
+
+// '' a l'heure, 'tolere' avant l'heure toleree, 'retard' avant l'heure rouge, 'grave' au-dela.
+function SchoolSafeEntryLateLevel($school, $year, $clock, callable $get, $studentId = 0, $day = null)
+{
     // Horaire de l'ecole (03/11) : en retard apres l'heure d'arrivee de la classe, du niveau ou de l'ecole.
     if ((int) $studentId > 0 && is_string($day) && preg_match('/^\d{4}-\d{2}-\d{2}$/D', $day)) {
         require_once __DIR__ . '/SchoolSafeAttendance.fnc.php';
@@ -111,17 +119,24 @@ function SchoolSafeEntryIsLate($school, $year, $clock, callable $get, $studentId
         $class = is_array($classes) && count($classes) === 1 ? (int) $classes[1]['COURSE_PERIOD_ID'] : null;
         try {
             $policy = SchoolSafeAttendanceResolvePolicy($school, $year, isset($grade[1]['GRADE_ID']) ? (int) $grade[1]['GRADE_ID'] : null, $class, $day, ['get' => $get]);
-            if (preg_match('/^([0-9]{2}):([0-9]{2})/', (string) ($policy['ARRIVAL_TIME'] ?? ''), $p)) return strcmp($clock, $p[1] . ':' . $p[2] . ':59') > 0;
+            $limits = [];
+            foreach (['ARRIVAL_TIME', 'CLOSURE_TIME', 'DETECTION_TIME'] as $key)
+                if (preg_match('/^([0-9]{2}):([0-9]{2})/', (string) ($policy[$key] ?? ''), $p)) $limits[] = $p[1] . ':' . $p[2] . ':59';
+            if (count($limits) === 3) {
+                if (strcmp($clock, $limits[0]) <= 0) return '';
+                if (strcmp($clock, $limits[1]) <= 0) return 'tolere';
+                return strcmp($clock, $limits[2]) <= 0 ? 'retard' : 'grave';
+            }
         } catch (Throwable $noPolicy) {}
     }
     $first = $get('SELECT START_TIME FROM school_periods WHERE SCHOOL_ID=' . (int) $school
         . ' AND SYEAR=' . (int) $year . ' AND START_TIME IS NOT NULL'
         . ' ORDER BY SORT_ORDER NULLS LAST, START_TIME LIMIT 1');
-    if (!is_array($first) || !isset($first[1]['START_TIME'])) return false;
-    if (!preg_match('/^([0-9]{1,2}):([0-9]{2})/', $first[1]['START_TIME'], $m)) return false;
+    if (!is_array($first) || !isset($first[1]['START_TIME'])) return '';
+    if (!preg_match('/^([0-9]{1,2}):([0-9]{2})/', $first[1]['START_TIME'], $m)) return '';
     $limit = sprintf('%02d:%02d:00', (int) $m[1], (int) $m[2] + 15);
     if ((int) $m[2] + 15 >= 60) {
         $limit = sprintf('%02d:%02d:00', ((int) $m[1] + 1) % 24, ((int) $m[2] + 15) % 60);
     }
-    return strcmp($clock, $limit) > 0;
+    return strcmp($clock, $limit) > 0 ? 'retard' : '';
 }

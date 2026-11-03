@@ -60,12 +60,17 @@ function SchoolSafeScanNotifyRecord(string $type,int $id,array $identity,array $
         // Message personnalisé (03/11) : prénom de l'enfant, heure, retard, personne venue, école.
         $first=preg_split('/\s+/u',trim($identity['student_name']))[0];
         $hour=substr((string)$row['RECORDED_AT'],11,5);
-        $late=$type==='security.entry'&&strpos((string)($row['COMMENTS']??''),'(retard)')!==false;
-        $title=$type==='security.entry'?($late?'Arrivée en retard':'Arrivée à l’école'):'Sortie de l’école';
+        // Niveau de retard (03/11) selon les horaires du cycle : toléré, retard, grave.
+        $comments=(string)($row['COMMENTS']??'');
+        $lateLevel=$type!=='security.entry'?'':(strpos($comments,'(retard grave)')!==false?'grave'
+            :(strpos($comments,'(retard toléré)')!==false?'tolere':(strpos($comments,'(retard)')!==false?'retard':'')));
+        $late=$lateLevel!=='';
+        $title=$type==='security.entry'?[''=>'Arrivée à l’école','tolere'=>'Arrivée avec un léger retard','retard'=>'Arrivée en retard','grave'=>'Arrivée très en retard'][$lateLevel]:'Sortie de l’école';
         $message=$type==='security.entry'
-            ?($late?'⏰ '.$first.' est arrivé(e) à l’école à '.$hour.', en retard.'
-                ."\nSi vous connaissiez ce retard, vous pouvez le signaler à l’école."
-                :'✅ '.$first.' est bien arrivé(e) à l’école à '.$hour.'.')
+            ?[''=>'✅ '.$first.' est bien arrivé(e) à l’école à '.$hour.'.',
+              'tolere'=>'🟡 '.$first.' est arrivé(e) à l’école à '.$hour.', avec un léger retard toléré.',
+              'retard'=>'⏰ '.$first.' est arrivé(e) à l’école à '.$hour.', en retard.'."\nSi vous connaissiez ce retard, vous pouvez le signaler à l’école.",
+              'grave'=>'🔴 '.$first.' est arrivé(e) à l’école à '.$hour.', très en retard.'."\nMerci de contacter l’école pour expliquer ce retard."][$lateLevel]
             :'🏠 '.$first.' a quitté l’école à '.$hour.'.';
         if($type==='student.pickup'){
             $proof=$db['get']('SELECT ID FROM schoolsafe_pickup_proofs WHERE RECORD_ID='.$id.' AND SCHOOL_ID='.$school
@@ -81,6 +86,12 @@ function SchoolSafeScanNotifyRecord(string $type,int $id,array $identity,array $
         $dedup=($type==='security.entry'?'entry:record:':'pickup:record:').$id;
     }
     $recipients=SchoolSafeNotifyResolveRecipients($type,$school,$year,$student,$db);
+    // Retard grave : la direction de l'ecole est prevenue dans son fil.
+    if(($lateLevel??'')==='grave'){
+        $admins=$db['get']("SELECT STAFF_ID,SCHOOLS FROM staff WHERE PROFILE='admin' AND SYEAR=".$year);
+        foreach((array)$admins as$admin)if(preg_match('/(^|,)'.$school.'(,|$)/',trim((string)($admin['SCHOOLS']??''),',')))
+            $recipients[]=['audience'=>'direction','staff_id'=>(int)$admin['STAFF_ID'],'channel'=>'feed'];
+    }
     $out=SchoolSafeNotifyEmit(['school_id'=>$school,'syear'=>$year,'student_id'=>$student,'actor_staff_id'=>$actor?:null,
         'event_type'=>$type,'dedup_key'=>$dedup,'payload'=>$payload],$recipients,$db,$ownTransaction);
     if(!is_array($out))throw new RuntimeException('NOTIFY_UNAVAILABLE');
