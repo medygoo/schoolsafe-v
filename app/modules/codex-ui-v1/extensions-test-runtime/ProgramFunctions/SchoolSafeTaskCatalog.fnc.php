@@ -213,3 +213,94 @@ function SchoolSafeTaskRows( array $mods, callable $use_checked, callable $edit_
 
 	return $html;
 }
+
+// Aperçu : ce que verra un détenteur du profil (tâches accordées, groupées).
+function SchoolSafeTaskPreview( array $rights )
+{
+	$esc = function( $value ) { return htmlspecialchars( (string) $value, ENT_QUOTES, 'UTF-8' ); };
+	$grouped = [];
+
+	foreach ( $rights as $mod => $row )
+	{
+		$use = is_array( $row ) && isset( $row[1]['CAN_USE'] ) ? $row[1]['CAN_USE'] === 'Y' : ! empty( $row );
+		$edit = is_array( $row ) && isset( $row[1]['CAN_EDIT'] ) && $row[1]['CAN_EDIT'] === 'Y';
+
+		if ( SchoolSafeTaskIsReal( $mod ) && $use )
+		{
+			$grouped[ SchoolSafeTaskGroup( $mod ) ][] = SchoolSafeTaskLabel( $mod ) . ( $edit ? '' : ' (consultation)' );
+		}
+	}
+
+	if ( ! $grouped )
+	{
+		return '<p><small>Aperçu : ce profil ne donne encore accès à aucune tâche.</small></p>';
+	}
+
+	$html = '<details class="ss-preview"><summary>Aperçu : ce que verra une personne avec ce profil</summary>';
+
+	foreach ( $grouped as $group => $tasks )
+	{
+		sort( $tasks );
+		$html .= '<p><strong>' . $esc( $group ) . '</strong> — ' . $esc( implode( ' · ', $tasks ) ) . '</p>';
+	}
+
+	return $html . '</details>';
+}
+
+// Journal : attributions d'accès et modifications de profils de cette école (20 derniers).
+function SchoolSafeTaskJournal( $school_id, array $profile_ids )
+{
+	$esc = function( $value ) { return htmlspecialchars( (string) $value, ENT_QUOTES, 'UTF-8' ); };
+	$events = [];
+
+	foreach ( (array) DBGet( "SELECT to_char(created_at,'DD/MM/YYYY HH24:MI') AS AT, created_at AS SORT_AT, action, actor, reason
+		FROM schoolsafe_account_audit WHERE school_id='" . (int) $school_id . "' AND action LIKE 'access_%'
+		ORDER BY created_at DESC LIMIT 20" ) as $row )
+	{
+		$detail = json_decode( (string) $row['REASON'], true );
+		$who = '';
+
+		if ( is_array( $detail ) && ! empty( $detail['staff_id'] ) )
+		{
+			$who = DBGetOne( "SELECT " . DisplayNameSQL( 's' ) . " FROM staff s WHERE s.STAFF_ID='" . (int) $detail['staff_id'] . "' LIMIT 1" );
+		}
+
+		$events[] = [ $row['SORT_AT'], $row['AT'], $row['ACTOR'], 'Accès attribué' . ( $who ? ' à ' . $who : '' ) ];
+	}
+
+	if ( $profile_ids )
+	{
+		$labels = [ 'school_profile_create' => 'Profil créé', 'school_profile_rights' => 'Tâches du profil modifiées',
+			'school_profile_delete' => 'Profil supprimé' ];
+
+		foreach ( (array) DBGet( "SELECT to_char(a.created_at,'DD/MM/YYYY HH24:MI') AS AT, a.created_at AS SORT_AT, a.action, a.result,
+			s.USERNAME AS ACTOR, p.TITLE AS PROFILE
+			FROM schoolsafe_identity_audit a
+			LEFT JOIN staff s ON s.STAFF_ID=a.actor_staff_id
+			LEFT JOIN user_profiles p ON p.ID=a.target_staff_id
+			WHERE a.action LIKE 'school_profile_%' AND a.target_staff_id IN (" . implode( ',', array_map( 'intval', $profile_ids ) ) . ")
+			ORDER BY a.created_at DESC LIMIT 20" ) as $row )
+		{
+			$events[] = [ $row['SORT_AT'], $row['AT'], $row['ACTOR'],
+				( $labels[ $row['ACTION'] ] ?? $row['ACTION'] ) . ( $row['PROFILE'] ? ' : ' . $row['PROFILE'] : '' )
+				. ( $row['RESULT'] !== 'success' ? ' (refusé)' : '' ) ];
+		}
+	}
+
+	usort( $events, function( $a, $b ) { return strcmp( (string) $b[0], (string) $a[0] ); } );
+	$events = array_slice( $events, 0, 20 );
+
+	if ( ! $events )
+	{
+		return '<p><small>Aucune attribution enregistrée pour l’instant.</small></p>';
+	}
+
+	$html = '<table><thead><tr><th>Date</th><th>Par</th><th>Action</th></tr></thead><tbody>';
+
+	foreach ( $events as $event )
+	{
+		$html .= '<tr><td>' . $esc( $event[1] ) . '</td><td>' . $esc( $event[2] ) . '</td><td>' . $esc( $event[3] ) . '</td></tr>';
+	}
+
+	return $html . '</tbody></table>';
+}

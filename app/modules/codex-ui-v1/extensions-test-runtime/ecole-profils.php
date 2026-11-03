@@ -338,6 +338,7 @@ small{color:#456}
 .badge{display:inline-block;padding:.1rem .5rem;border-radius:1rem;background:#e8eef7;font-size:.8rem}
 .badge.ok{background:#e8f5e9}
 .badge.no{background:#fdecea}
+.ss-preview{margin:.5rem 0;padding:.5rem .75rem;background:#f6f9fc;border-radius:.5rem}.ss-preview summary{cursor:pointer;color:#0b3b7a}
 tr.ss-task-group th{background:#eef3f9;color:#0b3b7a;font-size:.85rem;text-transform:uppercase;letter-spacing:.03em}
 </style>
 </head>
@@ -420,6 +421,7 @@ sort( $actor_mods );
 <?php $ep_holders = DBGet( "SELECT USERNAME,SCHOOLS FROM staff WHERE PROFILE_ID='" . (int) $ep['ID'] . "' AND SYEAR='" . (int) UserSyear() . "' ORDER BY USERNAME" ); ?>
 <h3><?php echo htmlspecialchars( $ep['TITLE'], ENT_QUOTES, 'UTF-8' ); ?> <small>(base <?php echo $ep['PROFILE'] === 'admin' ? 'Administration' : 'Enseignant'; ?>)</small></h3>
 <p><small>Détenteurs : <?php echo $ep_holders ? htmlspecialchars( implode( ', ', array_map( function ( $h ) { return $h['USERNAME'] . ' ' . ( $h['SCHOOLS'] ?? '' ); }, (array) $ep_holders ) ), ENT_QUOTES, 'UTF-8' ) : 'aucun'; ?></small></p>
+<?php echo SchoolSafeTaskPreview( (array) $ep_rights ); ?>
 <form method="post" action="/ecoles/<?php echo $school_id; ?>/profils">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( (string) ( $_SESSION['token'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="ecole_profil_action" value="droits">
@@ -461,6 +463,12 @@ sort( $actor_mods );
 </table>
 <p><input type="submit" class="button-primary" value="Créer le profil"> <small>Cochez les tâches de ce profil ; vous pourrez les modifier ensuite.</small></p>
 </form>
+</section>
+
+<section class="card" aria-labelledby="t-journal">
+<h2 id="t-journal">Journal des attributions</h2>
+<p><small>Qui a attribué quoi, et quand (20 derniers).</small></p>
+<?php echo SchoolSafeTaskJournal( $school_id, array_map( function ( $ep ) { return (int) $ep['ID']; }, (array) DBGet( "SELECT ID FROM user_profiles WHERE SCHOOL_ID='" . $school_id . "'" ) ) ); ?>
 </section>
 
 <section class="card" aria-labelledby="t-exc">
