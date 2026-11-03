@@ -205,8 +205,8 @@
     const css = Array.from(document.styleSheets).map(sheet => {
       try {return Array.from(sheet.cssRules).map(rule=>rule.cssText).join('\n');} catch (_) {return '';}
     }).join('\n');
-    popup.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><base href="${escape(new URL('.',location.href).href)}"><title>Atelier local - cartes de démonstration</title><style>${css}
-      body{margin:16px;background:white}.ss-print-sheet{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;break-inside:avoid;margin:20px 0}.ss-print-sheet .ss-card-studio{flex:none}.ss-print-tools{font:14px sans-serif;margin-bottom:20px}@media print{.ss-print-tools{display:none}.ss-print-sheet{break-after:page}@page{margin:8mm}}</style></head><body><div class="ss-print-tools">ATELIER LOCAL — cartes fictives, non officielles <button onclick="window.print()">Imprimer / PDF</button></div>${sheets.join('')}</body></html>`);
+    popup.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><base href="${escape(new URL('.',location.href).href)}"><title>Cartes officielles SchoolSafe</title><style>${css}
+      body{margin:16px;background:white}.ss-print-sheet{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;break-inside:avoid;margin:20px 0}.ss-print-sheet .ss-card-studio{flex:none}.ss-print-tools{font:14px sans-serif;margin-bottom:20px}@media print{.ss-print-tools{display:none}.ss-print-sheet{break-after:page}@page{margin:8mm}}</style></head><body><div class="ss-print-tools">Cartes officielles SchoolSafe <button onclick="window.print()">Imprimer / PDF</button></div>${sheets.join('')}</body></html>`);
     popup.document.close();
     popup.document.querySelectorAll('[data-print-qr]').forEach(el => {
       if (window.QRCode) new window.QRCode(el,{text:el.dataset.printQr,width:76,height:76});

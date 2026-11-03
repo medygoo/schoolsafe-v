@@ -8,12 +8,23 @@
   .ss-studio-harmonized > main { max-width:1200px; margin:auto; padding:24px; }
   .ss-studio-harmonized #native-lookup { padding-bottom:16px; border-bottom:1px solid #a9beb5; }
   .ss-studio-harmonized #PC { display:flex; flex-direction:column; gap:20px; min-width:0; }
-  #PC > [data-studio-group="models"] { order:10; }
-  #PC > [data-studio-group="catalogue"] { order:20; }
-  #PC > [data-studio-group="preview"] { order:30; }
-  #PC > [data-studio-group="personalization"] { order:40; }
-  #PC > [data-studio-group="layout"] { order:50; }
-  #PC > [data-studio-group="production"] { order:60; }
+  #PC > [data-studio-group="selector"] { order:10; }
+  #PC > [data-studio-group="preview"] { order:20; }
+  #PC > [data-studio-group="production"] { order:30; }
+  #PC > [data-studio-group="designbar"] { order:40; }
+  #PC > [data-studio-group="models"] { order:50; }
+  #PC > [data-studio-group="catalogue"] { order:60; }
+  #PC > [data-studio-group="personalization"] { order:70; }
+  #PC > [data-studio-group="layout"] { order:80; }
+  body.ss-design-closed #PC > :is([data-studio-group="models"],[data-studio-group="catalogue"],[data-studio-group="personalization"],[data-studio-group="layout"]) { display:none!important; }
+  #ss-design-toggle { width:100%; text-align:left; font-weight:700; color:#08766b; background:#edf6f3; border:1px solid #a9beb5; }
+  #PC > [data-studio-group="production"] { display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end; padding:12px; border:1px solid #08766b; border-radius:6px; background:#f4fbf8; }
+  #PC > [data-studio-group="production"] button { background:#08766b; color:#fff; border-color:#08766b; }
+  #ss-roster-status { margin:8px 0 0; padding:10px 12px; border-left:4px solid #08766b; background:#f4fbf8; font-size:14px; }
+  #ss-roster-status p { margin:0 0 6px; }
+  #ss-roster-status li { margin:4px 0; }
+  #ss-studio-advanced { margin-top:24px; padding:8px 12px; border:1px dashed #a9beb5; border-radius:6px; }
+  #ss-studio-advanced summary { cursor:pointer; font-weight:700; color:#556777; }
   .ss-studio-harmonized #PC > fieldset,
   .ss-studio-harmonized #ss-model-manager { box-sizing:border-box; width:100%; min-width:0; margin:0!important; padding:16px!important; border:1px solid #a9beb5!important; border-radius:6px; background:#fff; }
   .ss-studio-harmonized #PC > fieldset { display:flex!important; flex-wrap:wrap; align-items:flex-end; gap:16px!important; }
@@ -45,5 +56,10 @@
     .ss-studio-harmonized #PC > fieldset > label { flex-basis:140px; }
     .ss-studio-harmonized #native-lookup { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .ss-studio-harmonized #native-lookup p { flex-basis:100%; }
+    .ss-studio-harmonized #native-lookup button { flex:1 1 100%; }
+    #PC > [data-studio-group="production"] > * { flex:1 1 100%; }
+    #PC > [data-studio-group="production"] select { width:100%; }
+    #PC > [data-studio-group="selector"] label { flex:1 1 100%; }
+    #PC > [data-studio-group="selector"] select { width:100%; }
   }
 }

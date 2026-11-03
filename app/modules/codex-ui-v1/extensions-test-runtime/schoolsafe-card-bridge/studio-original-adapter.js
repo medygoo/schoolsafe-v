@@ -75,6 +75,7 @@ function adaptRosarioCard(input) {
       mat: record.matricule || "",
       dob: record.date_of_birth || "",
       photo: record.photo_path || "",
+      addr: record.student_address || "",
       parent_name: primary ? primary.full_name : "",
       parent_phone: phoneFor(primary),
       authorized_name: "",

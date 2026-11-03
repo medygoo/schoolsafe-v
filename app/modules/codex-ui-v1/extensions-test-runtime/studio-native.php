@@ -56,9 +56,9 @@ foreach (['data-file', 'photo-file', 'export-png'] as $id) {
     if ($control) $control->setAttribute('disabled', 'disabled');
 }
 $form = $doc->createDocumentFragment();
-$form->appendXML('<form id="native-lookup"><label for="native-student">Identifiant scolaire</label> <input id="native-student" required="required" inputmode="numeric" pattern="[1-9][0-9]{0,18}"/> <button>Consulter</button><button id="native-issue" type="button" disabled="disabled">Emettre la carte officielle</button><input id="native-issue-csrf" type="hidden" value="'.htmlspecialchars($_SESSION['schoolsafe_card_issue_csrf'], ENT_QUOTES, 'UTF-8').'"/><p>Informations scolaires. Reglages visuels locaux par ecole et utilisateur. Emission soumise aux controles serveur. Demande d impression soumise aux controles serveur. Recto et verso disponibles uniquement apres verification du dossier et des assets. Impression navigateur possible sous ces controles ; impression physique non certifiee.</p></form>');
+$form->appendXML('<form id="native-lookup"><label for="native-student">Identifiant scolaire</label> <input id="native-student" required="required" inputmode="numeric" pattern="[1-9][0-9]{0,18}"/> <button>Consulter</button><button id="native-issue" type="button" disabled="disabled">Émettre la carte officielle</button><input id="native-issue-csrf" type="hidden" value="'.htmlspecialchars($_SESSION['schoolsafe_card_issue_csrf'], ENT_QUOTES, 'UTF-8').'"/><p>Les cartes se préparent seules à partir des fiches Rosario complètes ; le QR officiel est relié automatiquement. Choisissez un élève ou une classe, réglez le design, puis téléchargez le dossier des cartes (recto et verso en PNG).</p></form>');
 $main = $doc->getElementsByTagName('main')->item(0); $main->insertBefore($form, $main->firstChild);
-$print = $doc->createElement('button', 'Demander l impression officielle');
+$print = $doc->createElement('button', 'Imprimer la carte officielle');
 $print->setAttribute('id', 'native-print');
 $print->setAttribute('type', 'button');
 $print->setAttribute('disabled', 'disabled');
@@ -75,9 +75,9 @@ foreach (['studio-original-adapter.js', 'studio-native-client.js', 'restored-stu
 }
 $presentation = $doc->createElement('link');
 $presentation->setAttribute('rel', 'stylesheet');
-$presentation->setAttribute('href', '/schoolsafe-card-bridge/studio-harmony.css?v=1');
+$presentation->setAttribute('href', '/schoolsafe-card-bridge/studio-harmony.css?v=' . substr(hash_file('sha256', __DIR__ . '/schoolsafe-card-bridge/studio-harmony.css'), 0, 16));
 $head->appendChild($presentation);
 $presentationScript = $doc->createElement('script');
-$presentationScript->setAttribute('src', '/schoolsafe-card-bridge/studio-harmony.js?v=1');
+$presentationScript->setAttribute('src', '/schoolsafe-card-bridge/studio-harmony.js?v=' . substr(hash_file('sha256', __DIR__ . '/schoolsafe-card-bridge/studio-harmony.js'), 0, 16));
 $doc->getElementsByTagName('body')->item(0)->appendChild($presentationScript);
 echo $doc->saveHTML();

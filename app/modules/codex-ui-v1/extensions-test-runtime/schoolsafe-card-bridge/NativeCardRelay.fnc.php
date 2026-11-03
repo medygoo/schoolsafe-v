@@ -1,5 +1,28 @@
 <?php
 
+// Eleves de l'ecole et de l'annee de la session (inscription active), par le filtre natif GetStuList.
+function SchoolSafeCardRosterIds(): array
+{
+    // GetStuList recoit $extra par reference : une variable, jamais un tableau litteral.
+    $extra = [ 'WHERE' => ' AND ssm.SCHOOL_ID=' . (int) UserSchool() . ' AND ssm.SYEAR=' . (int) UserSyear() ];
+    $rows = GetStuList( $extra );
+    $ids = [];
+    foreach ( (array) $rows as $row ) { $ids[ (int) $row['STUDENT_ID'] ] = true; }
+    return array_slice( array_keys( $ids ), 0, 1000 );
+}
+
+// Toutes les cartes de l'ecole pour le Studio : donnees de carte ou informations manquantes, par eleve.
+function SchoolSafeCardRoster(): array
+{
+    $cards = [];
+    foreach ( SchoolSafeCardRosterIds() as $student )
+    {
+        try { $cards[] = SchoolSafePrepareNativeCard( $student, 'studio-input' )['data']; }
+        catch ( Throwable $error ) { $cards[] = [ 'nativeReference' => [ 'studentId' => (string) $student ], 'missing' => [ 'student.unreadable' ] ]; }
+    }
+    return [ 'data' => [ 'cards' => $cards, 'schoolId' => (string) UserSchool(), 'year' => (string) UserSyear() ], 'operationPerformed' => false ];
+}
+
 // Called only after native Rosario bootstrap, never with client-selected identity.
 function SchoolSafePrepareNativeCard( $student_id, $resource = 'prepare' )
 {

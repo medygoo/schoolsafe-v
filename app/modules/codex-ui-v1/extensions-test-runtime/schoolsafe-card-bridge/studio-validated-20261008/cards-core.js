@@ -160,6 +160,7 @@ window.ssBuildBadge=function(s,cl,teacher,year,patB,patStyle){
         <div class="frw"><div class="ic" style="background:#d5f2f5;color:#0f7f8f">👤</div><div style="flex:1;min-width:0"><div class="k">Nom</div><div class="v">${esc(n1)}</div></div></div>
         <div class="frw"><div class="ic" style="background:#ffe8d9;color:#e8590c">👤</div><div style="flex:1;min-width:0"><div class="k">Post-nom</div><div class="v">${esc(n2||'—')}</div></div></div>
         <div class="frw"><div class="ic" style="background:#ece5fb;color:#7b5cd6">👤</div><div style="flex:1;min-width:0"><div class="k">Prénom</div><div class="v">${esc(n3||'—')}</div></div></div>
+        <div class="frw"><div class="ic" style="background:#d8f0e0;color:#1d7a4f">📍</div><div style="flex:1;min-width:0"><div class="k">Adresse</div><div class="v ss-addr">${esc(s.addr||'—')}</div></div></div>
         <div class="frw"><div class="ic" style="background:#dadee2;color:#556777">🎫</div><div style="flex:1;min-width:0"><div class="k">Matricule</div><div class="v">${esc(s.mat||'—')}</div></div></div>
         <div class="frw"><div class="ic" style="background:#fdf3d1;color:#b8860b">🏫</div><div style="flex:1;min-width:0"><div class="k">Classe</div><div class="v">${esc(clNm)}</div></div></div>
         <div class="frw"><div class="ic" style="background:#fce4f1;color:#d63384">🎂</div><div style="flex:1;min-width:0"><div class="k">Date de naissance</div><div class="v">${esc(dob)}</div></div></div>
@@ -183,14 +184,12 @@ window.ssBuildBadge=function(s,cl,teacher,year,patB,patStyle){
   </div>
   <div class="bodyz">
     ${showFond?ssVeil(patB,true):''}
-    <div class="qr-big" id="ss-qr-bv"></div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px"><div class="qr-big" id="ss-qr-bv" style="margin:0 0 6px"></div><img class="ss-qr-logo" src="logo-schoolsafe.png" alt="SchoolSafe" style="width:72px;height:72px;object-fit:contain"></div>
     <div class="qr-cap">Scan entrée / sortie · Matricule <b>${esc(s.mat||'—')}</b></div>
     <div class="rows">
       <div class="rw"><div class="ic" style="background:#d5f2f5;color:#0f7f8f">👨‍👩‍👧</div><div class="grow"><div class="k">Parent / Tuteur</div><div class="v">${esc(parNm)}</div></div><div><div class="k">Téléphone</div><div class="v">${esc(parPh)}</div></div></div>
-      <div class="rw"><div class="ic" style="background:#ece5fb;color:#7b5cd6">🛡️</div><div class="grow"><div class="k">Personne autorisée</div><div class="v">${esc(apNm)}</div></div><div><div class="k">Téléphone</div><div class="v">${esc(apPh)}</div></div></div>
       ${addr?`<div class="rw"><div class="ic" style="background:#ffe8d9;color:#e8590c">📍</div><div class="grow"><div class="k">Adresse de l'école</div><div class="v">${esc(addr)}</div></div></div>`:''}
       <div class="rw"><div class="ic" style="background:#dadee2;color:#556777">📞</div><div class="grow"><div class="k">N° Direction</div><div class="v">${esc(phone)}</div></div><div><div class="k">Email</div><div class="v">${esc(email)}</div></div></div>
-      ${s.addr?`<div class="rw"><div class="ic" style="background:#d8f0e0;color:#1d7a4f">📍</div><div class="grow"><div class="k">Adresse de l'élève</div><div class="v">${esc(s.addr)}</div></div></div>`:''}
       ${site?`<div class="rw"><div class="ic" style="background:#fdf3d1;color:#b8860b">🌐</div><div class="grow"><div class="k">Site web</div><div class="v">${esc(site)}</div></div></div>`:''}
     </div>
     ${showVig?`<div style="margin-top:auto">${ssPatEl(patB,40,true)}</div>`:(showFond?`<div style="margin-top:auto">${nmEl}</div>`:'')}
@@ -233,6 +232,7 @@ window.ssBuildCarte=function(s,cl,teacher,year,patC,patStyle){
     </div>
     <div class="info">
       <div class="sname"><div class="n1">${esc(dispNm)}</div>${fn?`<div class="n2">${esc(fn)}</div>`:''}</div>
+      <div class="cell" style="margin:2px 0 4px"><div class="k">Adresse</div><div class="v" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.addr||'—')}</div></div>
       <div class="grid">
         <div class="cell"><div class="k">Matricule</div><div class="v">${esc(s.mat||'—')}</div></div>
         <div class="cell"><div class="k">Né(e) le</div><div class="v">${esc(dob)}</div></div>
@@ -256,16 +256,14 @@ window.ssBuildCarte=function(s,cl,teacher,year,patC,patStyle){
     <div class="vleft">
       <div class="mini-rows">
         <div class="mrw"><div class="ic">👨‍👩‍👧</div><div style="flex:1"><div class="k">Parent / Tuteur</div><div class="v">${esc(parNm)}</div></div><div><div class="k">Tél</div><div class="v">${esc(parPh)}</div></div></div>
-        <div class="mrw"><div class="ic">🛡️</div><div style="flex:1"><div class="k">Personne autorisée</div><div class="v">${esc(apNm)}</div></div><div><div class="k">Tél</div><div class="v">${esc(apPh)}</div></div></div>
         <div class="mrw"><div class="ic">📞</div><div style="flex:1"><div class="k">N° Direction</div><div class="v">${esc(phone)}</div></div><div><div class="k">Email</div><div class="v">${esc(email)}</div></div></div>
-        ${s.addr?`<div class="mrw"><div class="ic">📍</div><div style="flex:1"><div class="k">Adresse de l'élève</div><div class="v">${esc(s.addr)}</div></div></div>`:''}
         ${site?`<div class="mrw"><div class="ic">🌐</div><div style="flex:1"><div class="k">Site web</div><div class="v">${esc(site)}</div></div><div><div class="k">Année</div><div class="v">${esc(year)}</div></div></div>`:''}
       </div>
       ${showVig?ssPatEl(patC,40,false):showFond?`<div class="pat" style="margin-top:auto"><span class="nm2">${esc((px+patC.n).toUpperCase())}</span></div>`:''}
       <div class="sec-note" style="margin-top:auto"><b>🛡️ Note de sécurité :</b> accès contrôlé par scan SchoolSafe.</div>
     </div>
     <div class="vright">
-      <div class="qr-box" style="width:110px;height:110px" id="ss-qr-cv"></div>
+      <div style="display:flex;align-items:center;gap:8px"><div class="qr-box" style="width:110px;height:110px" id="ss-qr-cv"></div><img class="ss-qr-logo" src="logo-schoolsafe.png" alt="SchoolSafe" style="width:58px;height:58px;object-fit:contain"></div>
       <b style="font-size:7.5px;color:#5d6784;letter-spacing:.8px;font-weight:900">VÉRIFICATION SCHOOLSAFE</b>
       <div class="stamp">SCEAU<br>DE<br>L'ÉCOLE</div>
     </div>

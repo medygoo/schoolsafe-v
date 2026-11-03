@@ -24,7 +24,7 @@ function SchoolSafePrepareRegistryCard(int $student,string $resource,array $db):
         'matricule'=>$required('student.matricule',$verified['matricule']??null),
         'date_of_birth'=>(string)($record['CUSTOM_200000004']??''),
         'photo_path'=>$required('student.photo',$verified['photoUrl']??null),
-        'student_address'=>(string)($verified['studentAddress']??'')],
+        'student_address'=>$required('student.address',$verified['studentAddress']??null)],
         'schoolSettings'=>['identity'=>['name'=>$required('school.name',$school['TITLE']??null)],
             'brand'=>['logo_path'=>$required('school.logo',$verified['logoUrl']??null)],
             'contact'=>['address'=>$required('school.address',$school['ADDRESS']??null),'city'=>(string)($school['CITY']??''),
@@ -56,8 +56,18 @@ function SchoolSafePrepareRegistryCard(int $student,string $resource,array $db):
     if(is_array($primary)&&count($primary)===1&&trim((string)$primary[1]['FULL_NAME'])!==''){
         $person=$primary[1];$phone=trim((string)($person['PHONE']?:$person['STAFF_PHONE']));
         $input['family']=[['id'=>'g'.$person['ID'],'full_name'=>trim((string)$person['FULL_NAME']),'is_primary'=>true,'is_active'=>true,
-            'guardian_type'=>(string)$person['GUARDIAN_TYPE'],'phone'=>$phone,'is_authorized_pickup'=>true]];
+            'guardian_type'=>(string)$person['GUARDIAN_TYPE'],'phone'=>$phone,'is_authorized_pickup'=>false]];
         if($phone!=='')$input['guardianPhones']=[['id'=>'g'.$person['ID'],'phone'=>$phone]];
+        // Personne autorisee imprimee au verso = accreditation active place 1 (onglet Famille), facultative.
+        $accredited=$db['get']('SELECT g.ID,g.FULL_NAME,g.GUARDIAN_TYPE,g.PHONE FROM schoolsafe_pickup_authorizations a'
+            .' JOIN schoolsafe_pickup_guardians g ON g.ID=a.GUARDIAN_ID AND g.STUDENT_ID=a.STUDENT_ID AND g.SCHOOL_ID=a.SCHOOL_ID'
+            .' WHERE a.STUDENT_ID='.(int)$id.' AND a.SCHOOL_ID='.(int)$schoolId." AND a.STATUS='active' AND a.SLOT_NO=1 AND g.IS_ACTIVE='t'"
+            .' AND (a.ENDS_ON IS NULL OR a.ENDS_ON>=CURRENT_DATE) ORDER BY a.ID LIMIT 1');
+        if(is_array($accredited)&&isset($accredited[1])&&trim((string)$accredited[1]['FULL_NAME'])!==''){
+            $other=$accredited[1];
+            $input['family'][]=['id'=>'g'.$other['ID'],'full_name'=>trim((string)$other['FULL_NAME']),'is_primary'=>false,'is_active'=>true,
+                'guardian_type'=>(string)$other['GUARDIAN_TYPE'],'phone'=>trim((string)$other['PHONE']),'is_authorized_pickup'=>true];
+        }
     }else $missing[]='family.primary_contact';
     if(!$credential)$missing[]='card.official_qr';
     if(!$keyReady)$missing[]='card.signing_configuration';

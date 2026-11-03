@@ -224,6 +224,9 @@
           if (signatures) {seal.remove();brand.append(seal,slogan);signatures.replaceWith(brand);}
           else {seal.replaceWith(brand);brand.append(seal,slogan);}
         }
+        // Sceau SchoolSafe a cote du QR (03/11) ; le slogan reste en bas : le verso tient sans coupure.
+        const qrSlot = card.querySelector('.ss-qr-logo'), movedSeal = card.querySelector('.ss-verso-brand .ss-schoolsafe-seal');
+        if (qrSlot && movedSeal) { movedSeal.style.cssText = qrSlot.style.cssText; qrSlot.replaceWith(movedSeal); }
         card.querySelectorAll('.sign-row,.foot').forEach(el => el.remove());
         card.querySelectorAll('.rw').forEach(row => {
           if ([...row.querySelectorAll('.k')].some(el => ['N° Direction','Email','Site web',"Adresse de l'école"].includes(el.textContent.trim()))) row.classList.add('ss-school-contact');
@@ -328,6 +331,9 @@
       .ss-configurable.verso .ss-school-contact>div:last-child:not(.grow):not(.ic) {flex-basis:100%;padding-left:28px}
       .ss-configurable.verso .rows {gap:4px}
       .ss-configurable.verso .sign-row {margin-top:8px}
+      .ss-configurable.badge .fcol {gap:2px!important}
+      .ss-configurable.badge .frw {padding-top:2px!important;padding-bottom:2px!important}
+      .ss-configurable .v.ss-addr {font-size:9.5px!important;line-height:1.15!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal!important}
       .ss-configurable.verso .ss-verso-brand {display:flex;align-items:center;justify-content:center;gap:12px;margin-top:auto;padding:8px 0 10px;flex:none}
       .ss-configurable.verso .ss-verso-brand .ss-schoolsafe-seal {width:76px;height:76px}
       .ss-configurable.verso .ss-verso-slogan {font-size:11px;font-weight:800;line-height:1.35;max-width:150px;color:#263d50;overflow-wrap:anywhere}

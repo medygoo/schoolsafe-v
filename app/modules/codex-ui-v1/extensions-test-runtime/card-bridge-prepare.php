@@ -19,11 +19,12 @@ if ( array_diff( array_keys( $_GET ), [ 'student_id', 'resource' ] ) || ! empty(
 {
     SchoolSafePrepareReply( 400, [ 'error' => 'INVALID_QUERY' ] );
 }
-$student_id = filter_var( $_GET['student_id'] ?? null, FILTER_VALIDATE_INT,
+$resource = $_GET['resource'] ?? 'prepare';
+// roster = toutes les cartes de l'ecole et de l'annee de la session (aucun identifiant client).
+$student_id = $resource === 'roster' && ! isset( $_GET['student_id'] ) ? 0 : filter_var( $_GET['student_id'] ?? null, FILTER_VALIDATE_INT,
     [ 'options' => [ 'min_range' => 1 ] ] );
 if ( $student_id === false ) { SchoolSafePrepareReply( 400, [ 'error' => 'INVALID_STUDENT_ID' ] ); }
-$resource = $_GET['resource'] ?? 'prepare';
-if ( ! in_array( $resource, [ 'prepare', 'metadata', 'studio-input', 'issuance-check' ], true ) )
+if ( ! in_array( $resource, [ 'prepare', 'metadata', 'studio-input', 'issuance-check', 'roster' ], true ) )
 {
     SchoolSafePrepareReply( 400, [ 'error' => 'INVALID_CARD_RESOURCE' ] );
 }
@@ -45,7 +46,7 @@ try
     }
     require_once __DIR__ . '/schoolsafe-card-bridge/RosarioCardRead.fnc.php';
     require_once __DIR__ . '/schoolsafe-card-bridge/NativeCardRelay.fnc.php';
-    $result = SchoolSafePrepareNativeCard( $student_id, $resource );
+    $result = $resource === 'roster' ? SchoolSafeCardRoster() : SchoolSafePrepareNativeCard( $student_id, $resource );
     while ( ob_get_level() > $level ) { ob_end_clean(); }
     SchoolSafePrepareReply( 200, $result );
 }
