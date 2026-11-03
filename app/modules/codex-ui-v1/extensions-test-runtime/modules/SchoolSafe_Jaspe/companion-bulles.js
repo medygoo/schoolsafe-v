@@ -155,11 +155,26 @@
     setInterval(place, 700);
     place();
 
+    // Reactions pendant l'ecriture (03/11) : gestes existants du moteur v12, joues une fois.
+    function act(name) {
+        try {
+            var live = host.jaspeV12 && host.jaspeV12.getLive && host.jaspeV12.getLive();
+            if (live && live.availableActions().indexOf(name) >= 0) live.play(name, {intensity: .55});
+        } catch (_) { /* moteur absent : aucune reaction */ }
+    }
+    var nodTimer = 0, nodded = false;
+    input.addEventListener('input', function () {
+        clearTimeout(nodTimer);
+        if (nodded || input.value.trim().length < 8) return;
+        nodTimer = setTimeout(function () { nodded = true; act('yes'); }, 900);
+    });
+
     // Ouverture / fermeture des bulles.
     var hideTimer = 0, lastReply = '';
     function openWrite() {
         clearTimeout(hideTimer); reply.hidden = true;
         write.hidden = false; hint.textContent = '';
+        nodded = false; act('attentive');
         place();
         setTimeout(function () { input.focus(); }, 30);
     }
@@ -183,6 +198,7 @@
         closeWrite();
         clearTimeout(hideTimer);
         replyText.textContent = 'JASPE réfléchit…';
+        clearTimeout(nodTimer); act('think');
         reply.classList.add('jaspe-bulle-attente');
         rListen.hidden = true;
         reply.hidden = false;

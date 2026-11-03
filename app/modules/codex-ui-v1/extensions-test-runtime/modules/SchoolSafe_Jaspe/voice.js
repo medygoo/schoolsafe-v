@@ -17,6 +17,10 @@
     var audio = null;
     var audioUrl = null;
     var finishAudio = null;
+    // 03/11 : la voix serveur n'est pas installee en production ; apres un echec, la voix du
+    // navigateur parle directement pendant toute la session (plus d'attente ni de message).
+    var serverVoiceOff = false;
+    try { serverVoiceOff = sessionStorage.getItem('jaspeServerVoice') === 'off'; } catch (_) {}
     async function voiceRequest(options, timeout, format) {
         var request = new AbortController();
         var parent = options.signal;
@@ -89,6 +93,7 @@
         var current = generation;
         var spoken = text.replace(/\bRosario(?:SIS)?(?: Student Information System)?\b/gi, 'SchoolSafe').replace(/[*#`]/g, '');
         var chunks = spoken.match(/.{1,180}(?:\s|$)|.{1,180}/gs) || [];
+        if (serverVoiceOff) { speakSystem(spoken, current); return; }
         controller = new AbortController();
         var signal = controller.signal;
         var headers = {'X-Jaspe-Token': document.getElementById('jaspe-token').value};
@@ -130,7 +135,8 @@
             if(audio){audio.pause();audio=null;}if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null;}
             finishAudio=null;controller=null;
             state('IDLE');
-            status.textContent='Voix de référence indisponible : voix du navigateur utilisée.';
+            serverVoiceOff = true;
+            try { sessionStorage.setItem('jaspeServerVoice', 'off'); } catch (_) {}
             speakSystem(chunks.slice(index).join(' '),current);
         }
     }
