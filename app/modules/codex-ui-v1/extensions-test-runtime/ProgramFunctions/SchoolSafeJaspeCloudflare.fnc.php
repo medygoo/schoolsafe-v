@@ -10,19 +10,10 @@ function SchoolSafeJaspeCloudflare(string $message, string $sessionKey, string $
         strlen($secret) < 32 || $sessionKey === '') {
         throw new RuntimeException('CLOUDFLARE_NOT_CONFIGURED');
     }
-    // Memoire de conversation : derniers echanges (max 8, 1000 caracteres max chacun),
-    // fournis par la session PHP du VPS — le Worker n'en garde jamais aucune trace.
-    $payload = ['message'=>$message,'session_key'=>$sessionKey];
-    if ($history) {
-        $clean = array_values(array_filter($history, static function ($h) {
-            return is_array($h) && isset($h['role'], $h['content'])
-                && in_array($h['role'], ['user','assistant'], true)
-                && is_string($h['content']) && $h['content'] !== '';
-        }));
-        $clean = array_slice($clean, -8);
-        foreach ($clean as $i => $h) { $clean[$i]['content'] = mb_substr($h['content'], 0, 1000); }
-        $payload['history'] = $clean;
-    }
+    // Memoire de conversation (03/11) : le Worker en service ne lit pas `history` ; les derniers
+    // echanges de la session PHP sont donc places en tete du message, sans modifier le Worker.
+    // Le Worker n'en garde jamais aucune trace.
+    $payload = ['message'=>SchoolSafeJaspeContextMessage($message, $history),'session_key'=>$sessionKey];
     $body = json_encode($payload,
         JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS);
     if (!is_string($body)) throw new RuntimeException('INVALID_MESSAGE');
@@ -64,4 +55,39 @@ function SchoolSafeJaspeCloudflare(string $message, string $sessionKey, string $
         throw new RuntimeException('INVALID_PROVIDER_REPLY');
     }
     return ['reply'=>trim($text),'actions'=>[],'state'=>'SPEAKING','mode'=>'cloudflare'];
+}
+
+/** Derniers echanges valides de la memoire de session (au plus 8 entrees de 500 caracteres). */
+function SchoolSafeJaspeCleanHistory(array $history): array
+{
+    $clean = array_values(array_filter($history, static function ($h) {
+        return is_array($h) && isset($h['role'], $h['content'])
+            && in_array($h['role'], ['user','assistant'], true)
+            && is_string($h['content']) && trim($h['content']) !== '';
+    }));
+    $clean = array_slice($clean, -8);
+    foreach ($clean as $i => $h) { $clean[$i]['content'] = mb_substr(trim($h['content']), 0, 500); }
+    return $clean;
+}
+
+/** Message envoye au modele : echanges precedents puis nouveau message (inchange sans memoire). */
+function SchoolSafeJaspeContextMessage(string $message, array $history): string
+{
+    $clean = SchoolSafeJaspeCleanHistory($history);
+    if (!$clean) return $message;
+    $lines = [];
+    foreach ($clean as $h) $lines[] = ($h['role'] === 'user' ? 'Utilisateur' : 'JASPE') . ' : ' . $h['content'];
+    return "Échanges précédents de cette conversation (du plus ancien au plus récent) :\n"
+        . implode("\n", $lines)
+        . "\n\nNouveau message de l'utilisateur (réponds à celui-ci en tenant compte des échanges précédents) :\n"
+        . $message;
+}
+
+/** Ajoute un echange a la memoire de session ; l'interface (bulles) ne l'efface jamais. */
+function SchoolSafeJaspeRemember(array $memory, string $message, string $reply): array
+{
+    $memory = SchoolSafeJaspeCleanHistory($memory);
+    if (trim($message) !== '') $memory[] = ['role' => 'user', 'content' => mb_substr(trim($message), 0, 500)];
+    if (trim($reply) !== '') $memory[] = ['role' => 'assistant', 'content' => mb_substr(trim($reply), 0, 500)];
+    return array_slice($memory, -8);
 }

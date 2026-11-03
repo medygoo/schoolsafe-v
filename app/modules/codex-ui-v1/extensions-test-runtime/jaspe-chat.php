@@ -37,10 +37,13 @@ if (!is_string($token) || empty($_SESSION['schoolsafe_jaspe_token']) ||
 require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeActions.fnc.php';
 require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeConversation.fnc.php';
 require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeMotion.fnc.php';
+require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeCloudflare.fnc.php';
+// Memoire de session : les derniers echanges donnent le contexte a l IA (Cloudflare et secours).
+// Elle vit dans $_SESSION (effacee a la deconnexion), jamais en base ; l'interface ne l'efface pas.
+$history = SchoolSafeJaspeCleanHistory(is_array($_SESSION['jaspe_memory'] ?? null) ? $_SESSION['jaspe_memory'] : []);
 try {
     $result = SchoolSafeJaspeConversation($payload['message'], 'AllowUse', 'SchoolSafeJaspeCanEditDestination');
     if ($result['state'] === 'IDLE' && strpos($result['reply'], 'conversation IA libre') !== false) {
-        require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeCloudflare.fnc.php';
         $now = time();
         $hits = array_values(array_filter($_SESSION['jaspe_ai_hits'] ?? [], static function ($hit) use ($now) {
             return is_int($hit) && $now - $hit < 60;
@@ -55,25 +58,13 @@ try {
                 (string) User('STAFF_ID'), (string) UserStudentID(),
                 (string) UserSchool(), (string) User('PROFILE_ID'),
             ]), $secret);
-            // Memoire de session : les derniers echanges donnent le contexte a l IA.
-            // Elle vit dans $_SESSION (effacee a la deconnexion), jamais en base.
-            $history = isset($_SESSION['jaspe_memory']) && is_array($_SESSION['jaspe_memory'])
-                ? array_slice($_SESSION['jaspe_memory'], -8) : [];
             session_write_close();
             $workerUrl = getenv('JASPE_WORKER_URL') ?: (string) Config('JASPE_WORKER_URL');
             $result = SchoolSafeJaspeCloudflare($payload['message'], $sessionKey,
                 $workerUrl, $secret, null, $history);
-            if (($result['mode'] ?? '') === 'cloudflare' && isset($result['reply'])) {
-                session_start();
-                $memory = $history;
-                $memory[] = ['role' => 'user', 'content' => mb_substr($payload['message'], 0, 500)];
-                $memory[] = ['role' => 'assistant', 'content' => mb_substr((string) $result['reply'], 0, 500)];
-                $_SESSION['jaspe_memory'] = array_slice($memory, -8);
-                session_write_close();
-            }
         } catch (RuntimeException $error) {
             require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeFallbackLLM.fnc.php';
-            $fallback = SchoolSafeJaspeFallbackLLM((string) $payload['message'], is_array($history ?? null) ? $history : []);
+            $fallback = SchoolSafeJaspeFallbackLLM((string) $payload['message'], $history);
             if ($fallback !== null) {
                 error_log('JASPE fallback LLM used.');
                 $result = $fallback;
@@ -92,6 +83,14 @@ try {
     }
 } catch (InvalidArgumentException $error) {
     SchoolSafeJaspeChatFail(400, 'INVALID_MESSAGE');
+}
+// Memoire (03/11) : tout echange abouti (reponse locale, IA ou de secours) entre dans le contexte ;
+// seules les pannes (OFFLINE) n'y entrent pas.
+if (($result['state'] ?? '') !== 'OFFLINE' && is_string($result['reply'] ?? null)) {
+    if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+    $_SESSION['jaspe_memory'] = SchoolSafeJaspeRemember(
+        is_array($_SESSION['jaspe_memory'] ?? null) ? $_SESSION['jaspe_memory'] : [], (string) $payload['message'], $result['reply']);
+    session_write_close();
 }
 // SchoolSafe display and speech branding, 2026-10-14; technical route identifiers stay native.
 $result['reply'] = SchoolSafeBrandText($result['reply']);
