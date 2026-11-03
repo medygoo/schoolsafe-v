@@ -96,3 +96,13 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, {once: true});
     else start();
 })();
+// SchoolSafe — barre de recherche unique (lot R, 03/11/2026) : remplace visuellement
+// « Trouver un élève / un utilisateur » ; le moteur de recherche natif est inchangé.
+(() => {
+    if (window.SchoolSafeUnifiedSearch || document.querySelector('script[data-ssus]')) return;
+    const script = document.createElement('script');
+    script.src = 'assets/js/schoolsafe-unified-search.js?v=r2';
+    script.defer = true;
+    script.dataset.ssus = '1';
+    document.head.append(script);
+})();

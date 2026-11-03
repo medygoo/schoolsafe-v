@@ -1,0 +1,19 @@
+/* Barre de recherche unique (remplace visuellement « Trouver un élève / un utilisateur »). */
+.ssus-hidden { display: none !important; }
+.ssus-box { position: relative; max-width: 720px; margin: 8px 0 16px; }
+.ssus-input { box-sizing: border-box; width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 12px;
+  font-size: 16px; background: #fff; box-shadow: 0 1px 2px rgba(15, 23, 42, .06); }
+.ssus-input:focus { outline: 2px solid #0f766e; outline-offset: 1px; }
+.ssus-list { position: absolute; z-index: 50; left: 0; right: 0; margin: 4px 0 0; padding: 4px; list-style: none;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 24px rgba(15, 23, 42, .12);
+  max-height: 340px; overflow: auto; }
+.ssus-item { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
+.ssus-item:hover, .ssus-active { background: #f0fdfa; }
+.ssus-name { font-weight: 600; color: #0f172a; }
+.ssus-detail { color: #64748b; font-size: 13px; white-space: nowrap; }
+.ssus-empty { padding: 10px 12px; color: #64748b; }
+.ssus-tools { display: flex; flex-wrap: wrap; gap: 16px; margin: 8px 2px 0; }
+.ssus-link { padding: 0; border: 0; background: none; color: #0f766e; font-size: 14px; cursor: pointer; text-decoration: underline; }
+.ssus-dashboard, .ssus-dashboard * { overflow: visible !important; }
+.ssus-dashboard { position: relative; }
+.ssus-dashboard .ssus-list { top: 100%; }
