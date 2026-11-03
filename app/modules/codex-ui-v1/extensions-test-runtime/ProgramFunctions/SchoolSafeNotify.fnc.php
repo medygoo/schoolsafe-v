@@ -17,7 +17,7 @@ function SchoolSafeNotifyEventTypes()
     return ['security.entry', 'student.pickup', 'payment.receipt',
         'school.announcement', 'remediation.update',
         'attendance.closure', 'absence.detected', 'case.updated',
-        'security.p1', 'financial.control'];
+        'security.p1', 'financial.control', 'fee.reminder'];
 }
 
 function SchoolSafeNotifyValidateEvent(array $event)

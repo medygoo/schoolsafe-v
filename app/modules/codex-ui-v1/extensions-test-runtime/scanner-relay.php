@@ -136,6 +136,10 @@ try {
        ['user'=>$user,'school'=>$school,'year'=>$year,'detail'=>AllowUse('Food_Service/Accounts.php')===true],
        ['get'=>function($sql){return DBGet(DBQuery($sql));}]);
      if(!is_array($data))throw new RuntimeException('NATIVE_CANTEEN_UNAVAILABLE');
+     // Seuils de cantine (03/11) : couleur et alerte en rouge ; le repas est toujours servi.
+     if((int)($data['student_id']??$data['nativeStudentId']??0)>0){try{require_once __DIR__.'/ProgramFunctions/SchoolSafeFeeTypes.fnc.php';
+       $color=SchoolSafeCanteenAlert((int)($data['student_id']??$data['nativeStudentId']),$school,$year,$user,['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}]);
+       if($color!==null)$data['canteen_color']=$color;}catch(Throwable $feeFailure){error_log('SchoolSafe canteen color unavailable: '.$feeFailure->getMessage());}}
      while(ob_get_level()>$level)ob_end_clean();SchoolSafeScanReply(200,['data'=>$enrichPortrait($data)]);
    }
    if($operation==='scan'&&($input->mode??'')==='pickup') {
@@ -243,6 +247,11 @@ try {
      $done=SchoolSafeFeeScan($input->qr_payload,$feeSecret,
        ['user'=>$user,'school'=>$school,'year'=>$year,'detail'=>$detail,'request_key'=>$input->request_key],$db);
      if($done===null) throw new RuntimeException('CONFIG_REQUIRED');
+     // Frais par type (03/11) : couleur de chaque type ; montants seulement avec le droit de facturation.
+     if(($done['result']??'')==='FEE_STATUS'&&(int)($done['student_id']??0)>0){try{require_once __DIR__.'/ProgramFunctions/SchoolSafeFeeTypes.fnc.php';
+       $feeTypes=SchoolSafeFeeTypesStatus((int)$done['student_id'],$school,$year,function($sql){return DBGet(DBQuery($sql));},date('Y-m-d'));
+       if($feeTypes!==null){$done['fee_types']=SchoolSafeFeeTypesSummary($feeTypes,$detail===true);$done['fee_types_color']=$feeTypes['color'];}
+     }catch(Throwable $feeFailure){error_log('SchoolSafe fee types unavailable: '.$feeFailure->getMessage());}}
      $data=$enrichPortrait($done);
      while(ob_get_level()>$level)ob_end_clean();
      SchoolSafeScanReply(200,['data'=>$data]);
@@ -260,6 +269,13 @@ try {
      $done=SchoolSafeEntryScan($input->qr_payload,$input->location_id,$entrySecret,
        ['user'=>$user,'school'=>$school,'year'=>$year,'request_key'=>$input->request_key],$db);
      if($done===null) throw new RuntimeException('CONFIG_REQUIRED');
+     // Frais par type (03/11) : l'enfant entre toujours ; rappels au parent, alerte a l'economat en rouge.
+     if(($done['result']??'')==='PRESENT'&&(int)($done['student_id']??0)>0){try{require_once __DIR__.'/ProgramFunctions/SchoolSafeFeeTypes.fnc.php';
+       $feeDb=['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}];
+       $feeTypes=SchoolSafeFeeTypesStatus((int)$done['student_id'],$school,$year,$feeDb['get'],date('Y-m-d'));
+       if($feeTypes!==null){$done['fee_types']=SchoolSafeFeeTypesSummary($feeTypes,false);$done['fee_types_color']=$feeTypes['color'];
+         SchoolSafeFeeTypesAlert((int)$done['student_id'],$school,$year,$feeTypes,$user,$feeDb);}
+     }catch(Throwable $feeFailure){error_log('SchoolSafe fee types unavailable: '.$feeFailure->getMessage());}}
      $data=$enrichPortrait($done);
      while(ob_get_level()>$level)ob_end_clean();
      SchoolSafeScanReply(200,['data'=>$data]);

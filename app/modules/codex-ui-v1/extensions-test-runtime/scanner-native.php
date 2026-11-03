@@ -12,7 +12,7 @@ $canManageLocations=User('PROFILE')==='admin'&&AllowEdit('School_Setup/Configura
 ?>
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Présence &amp; Scan QR | SchoolSafe</title><script src="schoolsafe-card-bridge/scanner-theme.js?v=1"></script><link rel="stylesheet" href="schoolsafe-card-bridge/parent-notifications.css">
-<link rel="stylesheet" href="schoolsafe-card-bridge/fee-colors.css"><link rel="stylesheet" href="schoolsafe-card-bridge/scanner-native.css?v=scan-theme-1"><script defer src="assets/themes/SchoolSafeCodex/brand-presentation.js?v=scan-1"></script><script defer src="schoolsafe-card-bridge/scanner-native.js?v=native-entry-operation-4"></script></head>
+<link rel="stylesheet" href="schoolsafe-card-bridge/fee-colors.css"><link rel="stylesheet" href="schoolsafe-card-bridge/scanner-native.css?v=scan-theme-1"><script defer src="assets/themes/SchoolSafeCodex/brand-presentation.js?v=scan-1"></script><script defer src="schoolsafe-card-bridge/scanner-native.js?v=fee-types-20261103"></script></head>
 <body><a class="skip-link" href="#scanner">Aller au scanner</a><header class="scan-header"><a class="scan-back" href="Modules.php?modname=misc/Portal.php" aria-label="Retour au tableau de bord">←</a><strong><img src="/schoolsafe-logo.png" alt="" width="56" height="56">SchoolSafe</strong><span class="scan-header-space" aria-hidden="true"></span></header>
 <main id="scanner"><div class="scan-heading"><p class="scan-eyebrow">Contrôle par carte · SchoolSafe</p><h1>Présence &amp; Scan QR</h1><p>Choisissez une tâche, puis présentez le QR de la carte devant la caméra.</p></div>
 <nav id="modes" aria-label="Type de scan"></nav>

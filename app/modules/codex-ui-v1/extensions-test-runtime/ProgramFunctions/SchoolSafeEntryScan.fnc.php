@@ -76,7 +76,8 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
             $snapshot=SchoolSafeFeeControlSnapshot($verify,$feeCtx,$ledger,$model,$financial,SchoolSafeFeeControlMetadata($feeCtx,$get),'entry');
             $snapshot['checkpoint']=$checkpoint;
             $consultId=SchoolSafeFeeConsultRecord((int)$verify['student_id'],$feeCtx,$ledger,$db,$snapshot);
-            if(!$financial['entry_allowed'])return ['result'=>'DENIED','decision'=>'denied',
+            // 03/11 : un enfant n'est jamais refuse a l'entree pour des frais ; l'economat est alerte.
+            if(false&&!$financial['entry_allowed'])return ['result'=>'DENIED','decision'=>'denied',
                 'reason'=>$financial['state']==='unavailable'?'FEE_CONTROL_UNAVAILABLE':'FEE_CONTROL_DENIED',
                 'financial'=>$financial,'financial_consult_id'=>$consultId]+$verify;
         }

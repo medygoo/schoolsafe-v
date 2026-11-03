@@ -40,6 +40,10 @@
    else if(financial?.state==='active')result.textContent+=' '+({blue:'Contrôle bleu — en ordre.',yellow:'Contrôle jaune — tolérance autorisée, complément à prévoir.',red:'Contrôle rouge — validation du responsable requise.'}[financial.color]||'Contrôle à vérifier.');
    else if(financial?.state==='inactive')result.textContent+=' Aucun contrôle financier actif.';
    else if(financial?.state==='unavailable')result.textContent+=' Contrôle financier indisponible — aucune autorisation financière.';
+   // Frais par type et cantine (03/11) : l'enfant entre toujours, le repas est toujours servi.
+   const dot={green:'🟢',yellow:'🟡',red:'🔴'};
+   if(Array.isArray(data.fee_types)&&data.fee_types.length)result.textContent+=' Frais : '+data.fee_types.map(t=>String(t.label)+' '+(dot[t.color]||'')+(typeof t.remaining==='string'&&t.color!=='green'?' (reste '+t.remaining+')':'')+(t.block_service?' — service suspendu':'')).join(' · ')+'.';
+   if(['green','yellow','red'].includes(data.canteen_color))result.textContent+=' Cantine '+dot[data.canteen_color]+(data.canteen_color==='red'?' — repas servi, économat prévenu.':'.');
    if(data.idempotent===true&&mode==='fees')result.textContent+=' Opération déjà enregistrée — aucun nouveau contrôle.';
    if(data.idempotent===true&&mode==='entry'&&data.result==='DENIED')result.textContent+=' Résultat de la demande précédente — aucune nouvelle arrivée ni nouveau contrôle.';
    if(typeof data.photo_url==='string'&&data.photo_url){
