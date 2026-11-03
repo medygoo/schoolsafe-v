@@ -51,7 +51,7 @@ if (!$jaspeCompanion && !empty($RosarioPlugins['Setup_Assistant']) && AllowUse('
 <script src="modules/SchoolSafe_Jaspe/voice.js?v=9"></script>
 <?php if ($jaspeCompanion) : ?>
 <link rel="stylesheet" href="modules/SchoolSafe_Jaspe/companion-bulles.css?v=4">
-<script src="modules/SchoolSafe_Jaspe/companion-bulles.js?v=7"></script>
+<script src="modules/SchoolSafe_Jaspe/companion-bulles.js?v=8"></script>
 <?php endif; ?>
 <?php if ($jaspeDraft && !$jaspeCompanion) : ?>
 <script type="application/json" id="jaspe-resources"><?php echo json_encode(json_decode(file_get_contents(__DIR__ . '/resources.json'), true), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?></script>

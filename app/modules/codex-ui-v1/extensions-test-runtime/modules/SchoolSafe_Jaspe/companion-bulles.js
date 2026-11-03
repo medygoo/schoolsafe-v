@@ -108,7 +108,7 @@
             left = Math.max(8, Math.min(jx, pw - w - 8)); sx = jx - left;
         } else if (open) {
             w = Math.min(pw - 16, 380); left = Math.round((pw - w) / 2);
-            top = Math.max(8, jy - 210); hh = h + (jy - top);
+            top = Math.max(8, jy - 300); hh = h + (jy - top);
             sx = Math.round((w - jw) / 2); sy = jy - top;
         }
         inner = {w: w, h: hh};
@@ -122,11 +122,14 @@
         if (!f) return;
         var cx = f.x + f.w * 0.46, vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
         if (narrow) {
+            // Telephone : la bulle colle au-dessus de la tete de JASPE et grandit vers le haut (03/11).
+            var head = Math.round(f.y + f.h * 0.06);
             [write, reply].forEach(function (bubble) {
                 bubble.style.left = '8px';
-                bubble.style.top = '8px';
+                bubble.style.top = 'auto';
+                bubble.style.bottom = Math.max(8, vh - head + 6) + 'px';
                 bubble.style.width = Math.max(200, vw - 16) + 'px';
-                bubble.style.maxHeight = Math.max(160, Math.round(f.y + f.h * 0.35)) + 'px';
+                bubble.style.maxHeight = Math.max(120, head - 14) + 'px';
             });
         }
         touch.style.left = Math.round(f.x + f.w * 0.22) + 'px';
@@ -141,6 +144,7 @@
         [write, reply].forEach(function (bubble) {
             bubble.style.left = left + 'px';
             bubble.style.top = top + 'px';
+            bubble.style.bottom = 'auto';
             bubble.style.width = Math.max(200, Math.min(300, vw - left - 10)) + 'px';
             bubble.style.maxHeight = Math.max(160, vh - top - 16) + 'px';
         });
