@@ -52,7 +52,7 @@ function SchoolSafeNotifyDispatchRecipient($connection,array $row): array
             ||($payload['observation']['syear']??null)!==$year||($payload['observation']['student']['id']??null)!==$student))throw new RuntimeException('RECIPIENT_FORBIDDEN');
     }
     if(($row['audience']??null)==='parent'&&!SchoolSafeNotifyParentCurrent($parent,$school,$year,$student,$db))throw new RuntimeException('RECIPIENT_FORBIDDEN');
-    $staff=$query('SELECT STAFF_ID,PROFILE,SCHOOLS,USERNAME,EMAIL'.($row['channel']==='whatsapp'?',CUSTOM_200000001':'').' FROM staff WHERE STAFF_ID='.$parent.' AND SYEAR='.$year);
+    $staff=$query('SELECT STAFF_ID,PROFILE,SCHOOLS,USERNAME,EMAIL,FIRST_NAME,LAST_NAME'.($row['channel']==='whatsapp'?',CUSTOM_200000001':'').' FROM staff WHERE STAFF_ID='.$parent.' AND SYEAR='.$year);
     if(count($staff)!==1)throw new RuntimeException('RECIPIENT_FORBIDDEN');
     $staff=$staff[1];
     if(($row['audience']??null)==='parent'&&($staff['PROFILE']??null)!=='parent')throw new RuntimeException('RECIPIENT_FORBIDDEN');

@@ -49,7 +49,7 @@ function SchoolSafeScanNotifyRecord(string $type,int $id,array $identity,array $
             'title'=>$safe['policy']['label']??'Consultation financière','message'=>SchoolSafeScanFinancialNotice($safe)];
         $dedup='fee:consult:'.$id;
     }else{
-        $rows=$db['get']('SELECT r.ID,r.STUDENT_ID,r.CHECKPOINT_ID,r.TYPE,r.RECORDED_AT,c.TITLE AS CHECKPOINT_TITLE,s.TITLE AS SCHOOL_TITLE'
+        $rows=$db['get']('SELECT r.ID,r.STUDENT_ID,r.CHECKPOINT_ID,r.TYPE,r.RECORDED_AT,r.COMMENTS,c.TITLE AS CHECKPOINT_TITLE,s.TITLE AS SCHOOL_TITLE'
             .' FROM entry_exit_student_records r JOIN entry_exit_checkpoints c ON c.ID=r.CHECKPOINT_ID'
             .' JOIN schools s ON s.ID=r.SCHOOLSAFE_SCAN_SCHOOL_ID AND s.SYEAR=r.SCHOOLSAFE_SCAN_SYEAR'
             .' WHERE r.ID='.$id.' AND r.SCHOOLSAFE_SCAN_SCHOOL_ID='.$school.' AND r.SCHOOLSAFE_SCAN_SYEAR='.$year
@@ -57,19 +57,27 @@ function SchoolSafeScanNotifyRecord(string $type,int $id,array $identity,array $
         if(!is_array($rows)||count($rows)!==1||!isset($rows[1]['STUDENT_ID'],$rows[1]['RECORDED_AT'],$rows[1]['SCHOOL_TITLE']))throw new RuntimeException('NOTIFY_CONTEXT_UNAVAILABLE');
         $row=$rows[1];$student=(int)$row['STUDENT_ID'];$actor=(int)($ctx['user']??0);
         if((int)($identity['student_id']??0)!==$student||!is_string($identity['student_name']??null)||trim($identity['student_name'])==='')throw new RuntimeException('NOTIFY_CONTEXT_UNAVAILABLE');
-        $message=($type==='security.entry'?'Arrivée physique enregistrée':'Sortie et remise confirmées')."\nÉcole : ".$row['SCHOOL_TITLE']
-            ."\nÉlève : ".$identity['student_name']."\nClasse : ".($identity['class_name']??'non renseignée')
-            ."\nAnnée scolaire : ".$year."\nDate/heure du passage : ".$row['RECORDED_AT']
-            ."\nPoint de passage : ".$row['CHECKPOINT_TITLE'];
+        // Message personnalisé (03/11) : prénom de l'enfant, heure, retard, personne venue, école.
+        $first=preg_split('/\s+/u',trim($identity['student_name']))[0];
+        $hour=substr((string)$row['RECORDED_AT'],11,5);
+        $late=$type==='security.entry'&&strpos((string)($row['COMMENTS']??''),'(retard)')!==false;
+        $title=$type==='security.entry'?($late?'Arrivée en retard':'Arrivée à l’école'):'Sortie de l’école';
+        $message=$type==='security.entry'
+            ?($late?'⏰ '.$first.' est arrivé(e) à l’école à '.$hour.', en retard.'
+                ."\nSi vous connaissiez ce retard, vous pouvez le signaler à l’école."
+                :'✅ '.$first.' est bien arrivé(e) à l’école à '.$hour.'.')
+            :'🏠 '.$first.' a quitté l’école à '.$hour.'.';
         if($type==='student.pickup'){
             $proof=$db['get']('SELECT ID FROM schoolsafe_pickup_proofs WHERE RECORD_ID='.$id.' AND SCHOOL_ID='.$school
                 .' AND SYEAR='.$year.' AND STUDENT_ID='.$student.' AND USED_AT IS NOT NULL');
             if(!is_array($proof)||count($proof)!==1||!is_string($identity['person_name']??null)||trim($identity['person_name'])==='')throw new RuntimeException('NOTIFY_CONTEXT_UNAVAILABLE');
-            $message.="\nPersonne venue : ".$identity['person_name']."\nQualité : ".($identity['person_role']??'non renseignée');
+            $message='🏠 '.$first.' a été remis(e) à '.$identity['person_name']
+                .(!empty($identity['person_role'])?' ('.mb_strtolower($identity['person_role']).')':'').' à '.$hour.'.';
         }
-        $message.="\nCe passage ne vaut pas présence pédagogique en classe. Aucun paiement n’est enregistré par cette notification.";
+        $message.="\nPoint de passage : ".$row['CHECKPOINT_TITLE'].(($identity['class_name']??'')!==''?' · Classe : '.$identity['class_name']:'')
+            ."\n— ".$row['SCHOOL_TITLE'].' · SchoolSafe';
         if(($identity['recovered']??false)===true)$message.="\nReprise du passage conservé, pas de nouvelle arrivée ou remise. Identité du dossier relue au moment de cette reprise.";
-        $payload=['version'=>1,'source'=>'native_scan','record_id'=>$id,'message'=>$message];
+        $payload=['version'=>1,'source'=>'native_scan','record_id'=>$id,'title'=>$title,'message'=>$message];
         $dedup=($type==='security.entry'?'entry:record:':'pickup:record:').$id;
     }
     $recipients=SchoolSafeNotifyResolveRecipients($type,$school,$year,$student,$db);

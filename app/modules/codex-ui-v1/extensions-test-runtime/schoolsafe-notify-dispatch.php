@@ -82,6 +82,10 @@ for($i=0;$i<$limit;$i++){
             if(!SchoolSafeWaConsented((int)$row['school_id'],(int)$row['recipient_staff_id'],$to))throw new RuntimeException('CONSENT_REQUIRED');
             if(!SchoolSafeWaActiveSession('waha',$transports['status']??null))throw new RuntimeException('NO_WA_SESSION');
             $copy=$payload['message']??('SchoolSafe — '.$row['event_type'].' — '.$row['school_title']);
+            // Salutation personnalisée du destinataire (03/11).
+            $greet=trim((string)($staff['FIRST_NAME']??'').' '.(string)($staff['LAST_NAME']??''));
+            if(is_string($copy)&&$greet!=='')$copy='Bonjour '.$greet.",
+".$copy;
             if(!is_string($copy)||mb_strlen(trim($copy))>2000||!SchoolSafeWaSanitize($copy))throw new RuntimeException('WA_COPY_UNAVAILABLE');
             $authorize=function()use($conn,$row,$to){
                 $live=SchoolSafeNotifyDispatchRecipient($conn,$row);
