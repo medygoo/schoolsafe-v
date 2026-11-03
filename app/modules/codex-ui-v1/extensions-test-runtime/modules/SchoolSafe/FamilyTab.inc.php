@@ -379,4 +379,33 @@ for ( $ss_ft_i = 1; $ss_ft_i <= 2; $ss_ft_i++ )
 			. ( $ss_ft_row ? 'Modifier dans Adresses et contacts' : 'Ajouter dans Adresses et contacts' ) . '</a></p>' ) . '</div></article>';
 }
 
-echo '</div><div class="ssft-panel" id="ssft-panel" hidden></div><p class="ssft-status" id="ssft-status" role="status"></p></section>';
+echo '</div>';
+
+if ( ! $ss_ft_is_parent )
+{
+	$ss_ft_refusals = DBGet( "SELECT to_char(f.CREATED_AT,'DD/MM/YYYY HH24:MI') AS AT, f.REASON, g.FULL_NAME AS GUARDIAN,
+		" . DisplayNameSQL( 's' ) . " AS BY_NAME
+		FROM schoolsafe_pickup_refusals f
+		LEFT JOIN schoolsafe_pickup_guardians g ON g.ID=f.GUARDIAN_ID
+		LEFT JOIN staff s ON s.STAFF_ID=f.STAFF_ID AND s.SYEAR=f.SYEAR
+		WHERE f.STUDENT_ID='" . $ss_ft_student . "' AND f.SCHOOL_ID='" . $ss_ft_school . "'
+		ORDER BY f.CREATED_AT DESC LIMIT 5" );
+	$ss_ft_reasons = [ 'NOT_AUTHORIZED' => 'personne non habilitée', 'UNKNOWN_PERSON' => 'personne inconnue',
+		'NOT_IN_LIST' => 'personne absente de la liste', 'OTHER' => 'autre motif' ];
+
+	if ( $ss_ft_refusals && ! empty( $ss_ft_refusals[1]['AT'] ) )
+	{
+		echo '<h3 class="ssft-heading">Derniers refus de sortie</h3><ul class="ssft-refusals">';
+
+		foreach ( $ss_ft_refusals as $ss_ft_row )
+		{
+			echo '<li>' . $ss_ft_esc( $ss_ft_row['AT'] ) . ' — ' . $ss_ft_esc( $ss_ft_reasons[ $ss_ft_row['REASON'] ] ?? $ss_ft_row['REASON'] )
+				. ( $ss_ft_row['GUARDIAN'] ? ' (' . $ss_ft_esc( $ss_ft_row['GUARDIAN'] ) . ')' : '' )
+				. ( $ss_ft_row['BY_NAME'] ? ' — gardien : ' . $ss_ft_esc( $ss_ft_row['BY_NAME'] ) : '' ) . '</li>';
+		}
+
+		echo '</ul>';
+	}
+}
+
+echo '<div class="ssft-panel" id="ssft-panel" hidden></div><p class="ssft-status" id="ssft-status" role="status"></p></section>';

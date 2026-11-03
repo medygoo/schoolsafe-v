@@ -49,7 +49,8 @@
     }
    }
    proof=null;if(data.result!=='NEED_HUMAN_CONFIRMATION')people.replaceChildren();byId('human-confirm').checked=false;
-   if(data.result==='PICKUP_CHOICE'&&Array.isArray(data.people))renderPeople(data.people,input);
+   if(data.result==='PICKUP_CHOICE'&&Array.isArray(data.people)){renderRestrictions(data.restrictions);renderPeople(data.people,input);renderRefusal(input);}
+   if(data.result==='DENIED'&&data.reason==='REFUSED_BY_GUARD')result.textContent='Sortie refusée et enregistrée. L’enfant reste à l’école ; prévenez la direction.';
    if(data.result==='NEED_HUMAN_CONFIRMATION'&&typeof data.proof_token==='string'){
     proof={...input,proof_token:data.proof_token,human_confirmed:true};confirm.hidden=false;
    }
@@ -57,6 +58,14 @@
   finally{busy=false;result.setAttribute('aria-busy','false');form.querySelectorAll('button,input,select').forEach(button=>button.disabled=false);}
  }
  function enlargePhoto(src,alt){const overlay=document.createElement('div');overlay.className='scan-photo-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-label',alt||'Photo agrandie');overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:9999';const big=document.createElement('img');big.src=src;big.alt=alt||'';big.style.cssText='max-width:92vw;max-height:92vh;object-fit:contain';overlay.append(big);overlay.addEventListener('click',()=>overlay.remove());document.body.append(overlay);}
+ function renderRestrictions(rows){if(!Array.isArray(rows))return;for(const r of rows){if(!r||typeof r.name!=='string')continue;
+  const alert=document.createElement('p');alert.className='scan-restriction';alert.setAttribute('role','alert');
+  alert.style.cssText='margin:8px 0;padding:10px 12px;border-radius:10px;background:#fdecec;color:#8a1c1c;border:1px solid #f1b3b3;font-weight:600';
+  alert.textContent='Interdiction de récupération : '+r.name+(r.source?' ('+r.source+')':'')+'. Ne pas remettre l’enfant à cette personne.';people.append(alert);}}
+ function renderRefusal(input){const box=document.createElement('div');box.className='scan-refusal';box.style.cssText='margin-top:12px';
+  const why=document.createElement('select');for(const [v,t] of [['NOT_IN_LIST','Personne absente de la liste'],['UNKNOWN_PERSON','Personne inconnue ou non reconnue'],['OTHER','Autre motif']]){const o=document.createElement('option');o.value=v;o.textContent=t;why.append(o);}
+  const refuse=document.createElement('button');refuse.type='button';refuse.textContent='Refuser la sortie';refuse.style.cssText='margin-left:8px;background:#b91c1c;color:#fff;border:0;border-radius:8px;padding:8px 12px';
+  refuse.addEventListener('click',()=>{if(!busy){people.replaceChildren();scan({...input,refusal:why.value});}});box.append(why,refuse);people.append(box);}
  function renderPeople(rows,input){for(const person of rows){
   const article=document.createElement('article');article.className='scan-person';
   const title=document.createElement('strong');title.textContent=person.name||'Personne';article.append(title);

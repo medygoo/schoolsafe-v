@@ -47,6 +47,15 @@ function SchoolSafePickupScan($qr, $locationId, $secretHex, array $ctx, array $d
     $checkpoint = ['id' => (string) $cp[1]['ID'], 'label' => $cp[1]['TITLE']];
     $studentId = (int) $verify['student_id'];
 
+    $refusal = $input['refusal'] ?? null;
+    if (is_string($refusal) && $refusal !== '') {
+        if (!in_array($refusal, ['UNKNOWN_PERSON', 'NOT_IN_LIST', 'OTHER'], true)) {
+            return ['result' => 'DENIED', 'signature_valid' => true, 'reason' => 'INVALID_REFUSAL'] + $verify;
+        }
+        SchoolSafePickupLogRefusal($school, $year, $studentId, (int) $locationId, null, $refusal, $user, $db);
+        return ['result' => 'DENIED', 'signature_valid' => true, 'reason' => 'REFUSED_BY_GUARD', 'checkpoint' => $checkpoint] + $verify;
+    }
+
     $personRef = $input['authorized_person_id'] ?? null;
     $proofToken = $input['proof_token'] ?? null;
     $human = $input['human_confirmed'] ?? null;
@@ -71,6 +80,9 @@ function SchoolSafePickupScan($qr, $locationId, $secretHex, array $ctx, array $d
             if ($candidate['id'] === $personRef) { $picked = $candidate; break; }
         }
         if ($picked === null) {
+            $refused = preg_match('/^[ga]:([1-9][0-9]{0,9})$/D', $personRef, $ref) ? $ref : null;
+            SchoolSafePickupLogRefusal($school, $year, $studentId, (int) $locationId,
+                $refused && $refused[0][0] === 'g' ? (int) $refused[1] : null, 'NOT_AUTHORIZED', $user, $db);
             return ['result' => 'DENIED', 'signature_valid' => true, 'reason' => 'NOT_DELEGATED'] + $verify;
         }
         return SchoolSafePickupStudentTransaction($studentId, $ctx, $db, function() use ($studentId, $school, $year, $locationId, $user, $now, $db, $get, $picked, $checkpoint, $verify) {
@@ -94,8 +106,9 @@ function SchoolSafePickupScan($qr, $locationId, $secretHex, array $ctx, array $d
     }
 
     // Lecture simple : élève + personnes habilitées, aucune écriture.
+    $restrictions = SchoolSafePickupRestrictions($school, $studentId, $day, $db);
     return ['result' => 'PICKUP_CHOICE', 'decision' => 'choose_person',
-        'people' => $candidates, 'checkpoint' => $checkpoint] + $verify;
+        'people' => $candidates, 'restrictions' => $restrictions['notices'], 'checkpoint' => $checkpoint] + $verify;
 }
 
 // Personnes habilitées à cet instant : principaux natifs + externes autorisés.
@@ -157,7 +170,47 @@ function SchoolSafePickupCandidates($school, $studentId, $day, array $db)
             'pickup_ready' => true,
         ];
     }
+    $restricted = SchoolSafePickupRestrictions($school, $studentId, $day, $db)['guardian_ids'];
+    if ($restricted) {
+        $people = array_values(array_filter($people, function ($person) use ($restricted) {
+            return !isset($restricted[(int) $person['guardian_id']]);
+        }));
+    }
     return $people;
+}
+
+// Spec v1.1 § 4 : interdictions de récupération (justice ou école) en vigueur ce jour.
+// Visent un responsable (guardian_id), une personne enregistrée (person_id, toutes
+// ses fiches) ou un nom seul (alerte au gardien). Aucune ligne -> aucune restriction.
+function SchoolSafePickupRestrictions($school, $studentId, $day, array $db): array
+{
+    $safeDay = "'" . str_replace("'", "''", (string) $day) . "'";
+    $rows = $db['get']('SELECT g.ID AS GUARDIAN_ID, COALESCE(NULLIF(r.FULL_NAME,' . "''" . '), g.FULL_NAME, p.FULL_NAME) AS NAME, r.REASON, r.SOURCE'
+        . ' FROM schoolsafe_pickup_restrictions r'
+        . ' LEFT JOIN schoolsafe_pickup_persons p ON p.ID=r.PERSON_ID'
+        . ' LEFT JOIN schoolsafe_pickup_guardians g ON g.STUDENT_ID=r.STUDENT_ID AND g.SCHOOL_ID=r.SCHOOL_ID'
+        . ' AND (g.ID=r.GUARDIAN_ID OR (r.PERSON_ID IS NOT NULL AND g.PERSON_ID=r.PERSON_ID))'
+        . ' WHERE r.SCHOOL_ID=' . (int) $school . ' AND r.STUDENT_ID=' . (int) $studentId . ' AND r.IS_ACTIVE'
+        . ' AND r.STARTS_ON<=' . $safeDay . ' AND (r.ENDS_ON IS NULL OR r.ENDS_ON>=' . $safeDay . ')');
+    $ids = [];
+    $notices = [];
+    if (is_array($rows)) foreach ($rows as $row) {
+        if (!empty($row['GUARDIAN_ID'])) $ids[(int) $row['GUARDIAN_ID']] = true;
+        $name = trim((string) ($row['NAME'] ?? ''));
+        if ($name !== '') $notices[$name . '|' . ($row['SOURCE'] ?? '')] = ['name' => $name,
+            'source' => ($row['SOURCE'] ?? '') === 'justice' ? 'décision de justice' : 'décision de l’école',
+            'reason' => (string) ($row['REASON'] ?? '')];
+    }
+    return ['guardian_ids' => $ids, 'notices' => array_values($notices)];
+}
+
+// Spec v1.1 § 5 : tout refus de sortie est tracé (qui, quand, où, motif).
+function SchoolSafePickupLogRefusal($school, $year, $studentId, $locationId, $guardianId, $reason, $user, array $db): void
+{
+    $db['exec']('INSERT INTO schoolsafe_pickup_refusals(school_id, syear, student_id, location_id, guardian_id, reason, staff_id)'
+        . ' VALUES(' . (int) $school . ',' . (int) $year . ',' . (int) $studentId . ',' . ((int) $locationId > 0 ? (int) $locationId : 'NULL')
+        . ',' . ($guardianId ? (int) $guardianId : 'NULL') . ",'" . str_replace("'", "''", (string) $reason) . "',"
+        . ((int) $user > 0 ? (int) $user : 'NULL') . ')');
 }
 
 function SchoolSafePickupRoleLabel($type, $principal)

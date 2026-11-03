@@ -139,13 +139,14 @@ try {
      while(ob_get_level()>$level)ob_end_clean();SchoolSafeScanReply(200,['data'=>$enrichPortrait($data)]);
    }
    if($operation==='scan'&&($input->mode??'')==='pickup') {
-     $allowedPickupKeys=['mode','qr_payload','location_id','authorized_person_id','proof_token','human_confirmed'];
+     $allowedPickupKeys=['mode','qr_payload','location_id','authorized_person_id','proof_token','human_confirmed','refusal'];
      if(!is_string($input->qr_payload??null)||strlen($input->qr_payload)>2000
        ||!is_string($input->location_id??null)
        ||array_diff(array_keys((array)$input),$allowedPickupKeys)) throw new RuntimeException('INVALID_INPUT');
      if(isset($input->authorized_person_id)&&!is_string($input->authorized_person_id)) throw new RuntimeException('INVALID_INPUT');
      if(isset($input->proof_token)&&!is_string($input->proof_token)) throw new RuntimeException('INVALID_INPUT');
      if(isset($input->human_confirmed)&&!is_bool($input->human_confirmed)) throw new RuntimeException('INVALID_INPUT');
+     if(isset($input->refusal)&&(!is_string($input->refusal)||strlen($input->refusal)>32)) throw new RuntimeException('INVALID_INPUT');
      require_once __DIR__.'/ProgramFunctions/SchoolSafePickupScan.fnc.php';
      $pickupSecret=getenv('SCHOOLSAFE_CARD_HMAC_SECRET')?:'';
      require_once __DIR__.'/ProgramFunctions/SchoolSafeScanNotify.fnc.php';
@@ -155,7 +156,8 @@ try {
        ['user'=>$user,'school'=>$school,'year'=>$year],$db,
        ['authorized_person_id'=>$input->authorized_person_id??null,
         'proof_token'=>$input->proof_token??null,
-        'human_confirmed'=>$input->human_confirmed??null]);
+        'human_confirmed'=>$input->human_confirmed??null,
+        'refusal'=>$input->refusal??null]);
      if($done===null) throw new RuntimeException('CONFIG_REQUIRED');
      $data=$enrichPortrait($done);
      while(ob_get_level()>$level)ob_end_clean();
