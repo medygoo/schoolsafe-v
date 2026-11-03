@@ -1,0 +1,11 @@
+[Unit]
+Description=SchoolSafe - distributeur des notifications toutes les 30 secondes
+
+[Timer]
+OnBootSec=60
+OnUnitActiveSec=30
+AccuracySec=5
+Unit=schoolsafe-notify-dispatch.service
+
+[Install]
+WantedBy=timers.target
