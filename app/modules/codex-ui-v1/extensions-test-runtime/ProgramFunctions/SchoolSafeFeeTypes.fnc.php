@@ -268,3 +268,46 @@ function SchoolSafeCanteenColor( int $balanceCents, ?array $canteen ): ?string
     if ( $balanceCents >= SchoolSafeFeeSignedCents( $canteen['validated'] ) ) return 'green';
     return $balanceCents >= SchoolSafeFeeSignedCents( $canteen['tolerated'] ) ? 'yellow' : 'red';
 }
+
+// Tracabilite (03/11) : une ligne par type ajoutee a l'instantane financier existant (version 1 conservee,
+// anciens controles lisibles). Fees : complete la consultation ; entree : complete la consultation liee ou
+// en cree une (sans ancien bareme) rattachee au passage. Ne bloque jamais un scan (appelant en try/catch).
+function SchoolSafeFeeTypesTraceRows( array $status, string $day ): array
+{
+    $rows = [];
+    foreach ( (array) ( $status['types'] ?? [] ) as $type )
+        $rows[] = [ 'id' => $type['id'], 'label' => $type['label'], 'color' => $type['color'], 'percent' => $type['percent'],
+            'due' => SchoolSafeFeeFormatCents( $type['due_cents'] ), 'covered' => SchoolSafeFeeFormatCents( $type['covered_cents'] ),
+            'remaining' => SchoolSafeFeeFormatCents( $type['remaining_cents'] ), 'next_due' => $type['next_due'], 'block_service' => $type['block_service'] ];
+    return [ 'day' => $day, 'color' => $status['color'] ?? null, 'types' => $rows ];
+}
+
+function SchoolSafeFeeTypesTrace( int $consult, int $entry, array $verify, int $school, int $year, int $actor, array $status, string $day ): ?int
+{
+    $student = (int) ( $verify['student_id'] ?? 0 );
+    if ( min( $student, $school, $year, $actor ) < 1 ) return null;
+    $json = json_encode( SchoolSafeFeeTypesTraceRows( $status, $day ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR );
+    $scope = ' AND SCHOOL_ID=' . $school . ' AND SYEAR=' . $year . ' AND STUDENT_ID=' . $student;
+    if ( $consult < 1 && $entry > 0 )
+    {
+        $linked = DBGet( 'SELECT ID FROM schoolsafe_fee_consults WHERE ENTRY_RECORD_ID=' . $entry . $scope );
+        $consult = (int) ( $linked[1]['ID'] ?? 0 );
+    }
+    if ( $consult < 1 && $entry > 0 )
+    {
+        require_once __DIR__ . '/SchoolSafeFeeSnapshot.fnc.php';
+        $get = function( $sql ) { return DBGet( DBQuery( $sql ) ); };
+        $ctx = [ 'school' => $school, 'year' => $year, 'user' => $actor ];
+        $ledger = SchoolSafeFeeLedgerRead( $student, $school, $year, $get, $day );
+        $snapshot = SchoolSafeFeeControlSnapshot( $verify, $ctx, $ledger, null, [ 'state' => 'inactive', 'color' => null, 'reason' => 'no_active_policy' ],
+            SchoolSafeFeeControlMetadata( $ctx, $get ), 'entry' );
+        if ( isset( $verify['checkpoint'] ) ) $snapshot['checkpoint'] = $verify['checkpoint'];
+        $consult = SchoolSafeFeeConsultRecord( $student, $ctx, $ledger, [ 'get' => $get ], $snapshot );
+        DBQuery( 'UPDATE schoolsafe_fee_consults SET ENTRY_RECORD_ID=' . $entry . ' WHERE ID=' . $consult . $scope
+            . " AND OPERATION='entry' AND ENTRY_RECORD_ID IS NULL" );
+    }
+    if ( $consult < 1 ) return null;
+    DBQuery( "UPDATE schoolsafe_fee_consults SET context_snapshot=context_snapshot || jsonb_build_object('fee_types','"
+        . DBEscapeString( $json ) . "'::jsonb) WHERE ID=" . $consult . $scope );
+    return $consult;
+}

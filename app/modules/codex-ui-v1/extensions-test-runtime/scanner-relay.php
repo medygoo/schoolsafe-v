@@ -250,7 +250,8 @@ try {
      // Frais par type (03/11) : couleur de chaque type ; montants seulement avec le droit de facturation.
      if(($done['result']??'')==='FEE_STATUS'&&(int)($done['student_id']??0)>0){try{require_once __DIR__.'/ProgramFunctions/SchoolSafeFeeTypes.fnc.php';
        $feeTypes=SchoolSafeFeeTypesStatus((int)$done['student_id'],$school,$year,function($sql){return DBGet(DBQuery($sql));},date('Y-m-d'));
-       if($feeTypes!==null){$done['fee_types']=SchoolSafeFeeTypesSummary($feeTypes,$detail===true);$done['fee_types_color']=$feeTypes['color'];}
+       if($feeTypes!==null){$done['fee_types']=SchoolSafeFeeTypesSummary($feeTypes,$detail===true);$done['fee_types_color']=$feeTypes['color'];
+         if(empty($done['idempotent']))SchoolSafeFeeTypesTrace((int)($done['consult_id']??0),0,$done,$school,$year,$user,$feeTypes,date('Y-m-d'));}
      }catch(Throwable $feeFailure){error_log('SchoolSafe fee types unavailable: '.$feeFailure->getMessage());}}
      $data=$enrichPortrait($done);
      while(ob_get_level()>$level)ob_end_clean();
@@ -274,7 +275,8 @@ try {
        $feeDb=['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}];
        $feeTypes=SchoolSafeFeeTypesStatus((int)$done['student_id'],$school,$year,$feeDb['get'],date('Y-m-d'));
        if($feeTypes!==null){$done['fee_types']=SchoolSafeFeeTypesSummary($feeTypes,false);$done['fee_types_color']=$feeTypes['color'];
-         SchoolSafeFeeTypesAlert((int)$done['student_id'],$school,$year,$feeTypes,$user,$feeDb);}
+         SchoolSafeFeeTypesAlert((int)$done['student_id'],$school,$year,$feeTypes,$user,$feeDb);
+         SchoolSafeFeeTypesTrace((int)($done['financial_consult_id']??0),(int)($done['record_id']??0),$done,$school,$year,$user,$feeTypes,date('Y-m-d'));}
      }catch(Throwable $feeFailure){error_log('SchoolSafe fee types unavailable: '.$feeFailure->getMessage());}}
      $data=$enrichPortrait($done);
      while(ob_get_level()>$level)ob_end_clean();
