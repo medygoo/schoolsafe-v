@@ -145,7 +145,7 @@ foreach((array)$rows as $row) {
         .($presentation['onboarding']!==''?'<br><small>'.sskcEscape($presentation['onboarding']).'</small>':'').'</td><td><div class="sskc-account-actions">';
     if(SchoolSafeGlobalAdmin() && $row['PROFILE']==='admin' && $id!==(int)User('STAFF_ID')
         && is_array($scope) && count($scope)===1 && isset($schoolNames[$scope[0]])) {
-        echo '<a class="sskc-action button-primary" target="_self" href="/admin-console.php?access_school='.(int)$scope[0].'&amp;access_staff='.$id.'#school-native-access">Gérer les droits — Scan et accès</a>';
+        echo '<span class="sskc-muted">Droits gérés par l’administrateur de l’école</span>';
     }
     if(!SchoolSafeGlobalAdmin())echo '<a class="sskc-action sskc-action-secondary" target="_self" href="/Modules.php?modname=Users/User.php&amp;staff_id='.$id.'">Consulter la fiche</a>';
     $write=sskcCanWrite() && SchoolSafeProfileDelegable((string)$row['PROFILE_ID']) && (int)UserSyear()===(int)Config('SYEAR');

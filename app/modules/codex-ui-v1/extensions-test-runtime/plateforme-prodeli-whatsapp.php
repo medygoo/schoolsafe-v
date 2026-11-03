@@ -157,6 +157,10 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST' )
         }
         elseif ( $action === 'consent_set' )
         {
+            $error = 'L’accord WhatsApp se donne à l’école, dans la fiche du parent. ProDéli ne le saisit plus.';
+        }
+        elseif ( false && $action === 'consent_set' )
+        {
             $school = (int) ( $_POST['school_id'] ?? 0 );
             $staff = (int) ( $_POST['staff_id'] ?? 0 );
             $phone = SchoolSafeWaNormalize( (string) ( $_POST['phone'] ?? '' ) );
@@ -363,16 +367,8 @@ Envoyer un test WhatsApp vers <?php echo htmlspecialchars( $preview['to'], ENT_Q
 </form>
 </section>
 
-<section class="card" aria-labelledby="t-consent"><h2 id="t-consent">Consentement destinataire (opt-in par ecole)</h2>
-<form method="post" action="/plateforme/prodeli/whatsapp#t-consent">
-<input type="hidden" name="token" value="<?php echo htmlspecialchars( $token, ENT_QUOTES, 'UTF-8' ); ?>">
-<input type="hidden" name="wa_action" value="consent_set">
-<label>Ecole (ID) <input name="school_id" inputmode="numeric" required></label>
-<label>Destinataire (staff ID) <input name="staff_id" inputmode="numeric" required></label>
-<label>Numero +243 <input name="phone" placeholder="+243…" required></label>
-<label>Consentement <select name="consented"><option value="Y">Y (accepte)</option><option value="N">N (refuse)</option></select></label>
-<p><button type="submit">Verifier avant d-enregistrer</button></p>
-</form>
+<section class="card" aria-labelledby="t-consent"><h2 id="t-consent">Accords des parents (historique)</h2>
+<p>L’accord WhatsApp d’un parent se donne à son école : case « Accepte les messages WhatsApp » de sa fiche, à côté de son téléphone. ProDéli ne saisit plus d’accord.</p>
 <div class="sskc-table" tabindex="0" role="region" aria-label="Consentements WhatsApp"><table><thead><tr><th>Ecole</th><th>Destinataire</th><th>Numero</th><th>Consentement</th></tr></thead><tbody>
 <?php foreach ( (array) $consents as $row ) : $k = $row; ?>
 <tr><td><?php echo (int) $k['SCHOOL_ID']; ?></td><td><?php echo (int) $k['STAFF_ID']; ?></td>

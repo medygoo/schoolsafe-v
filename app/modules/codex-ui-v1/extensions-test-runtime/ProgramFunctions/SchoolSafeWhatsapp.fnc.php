@@ -167,6 +167,22 @@ function SchoolSafeWaActiveSession( $engine, ?callable $http = null )
  */
 function SchoolSafeWaConsented( $school_id, $staff_id, $phone_e164 )
 {
+    // Accord donne a l'ecole (03/11) : case native « Accepte les messages WhatsApp » de la fiche,
+    // valable pour le numero de la fiche uniquement (un autre numero exige un nouvel accord).
+    $field = DBGet( "SELECT ID FROM staff_fields WHERE TYPE='radio' AND TITLE ILIKE '%WhatsApp%' ORDER BY ID LIMIT 1" );
+    $field_id = (int) ( $field[1]['ID'] ?? 0 );
+    if ( $field_id > 0 && (int) $staff_id > 0 )
+    {
+        $column = DBEscapeIdentifier( 'CUSTOM_' . $field_id );
+        $staff = DBGet( 'SELECT ' . $column . ' AS AGREED,CUSTOM_200000001 AS PHONE,SCHOOLS FROM staff WHERE STAFF_ID=' . (int) $staff_id
+            . ' ORDER BY SYEAR DESC LIMIT 1' );
+        if ( $staff && ( $staff[1]['AGREED'] ?? '' ) === 'Y'
+            && SchoolSafeWaNormalize( (string) ( $staff[1]['PHONE'] ?? '' ) ) === (string) $phone_e164
+            && strpos( ',' . trim( (string) ( $staff[1]['SCHOOLS'] ?? '' ), ',' ) . ',', ',' . (int) $school_id . ',' ) !== false )
+        {
+            return true;
+        }
+    }
     $rows = DBGet( "SELECT ID FROM schoolsafe_wa_consents"
         . " WHERE school_id='" . (int) $school_id . "'"
         . " AND staff_id='" . (int) $staff_id . "'"

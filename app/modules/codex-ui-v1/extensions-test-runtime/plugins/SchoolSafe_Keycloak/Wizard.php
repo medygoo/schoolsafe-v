@@ -63,7 +63,8 @@ function sskcHomePage(): void
         foreach($schools as $id=>$title){
             echo '<li data-school-entry><div><strong data-school-title>'.sskcEscape((string)$title).'</strong><span>'.(SchoolSafeGlobalAdmin()?'Espace réservé à son administrateur scolaire':($id===$current?'École sélectionnée':'Dans votre périmètre autorisé')).'</span></div>';
             if(SchoolSafeGlobalAdmin()) {
-                echo '<a class="sskc-action button-primary" target="_self" href="/admin-console.php?access_school='.(int)$id.'#school-native-access" aria-label="Gérer les droits — Scan et accès : '.sskcEscape((string)$title).'">Gérer les droits — Scan et accès</a>';
+                // Les profils et droits internes sont geres par l'administrateur de l'ecole, jamais par ProDeli (03/11).
+                echo '<span class="sskc-muted">Profils et droits gérés par l’administrateur de l’école</span>';
             } else {
                 echo '<form target="_self" method="post" action="/schoolsafe-administrators.php?home=1">';
                 foreach(['token'=>(string)($_SESSION['token']??''),'action'=>'dashboard_school','school'=>(string)$id] as $key=>$value)sskcWizardHidden($key,$value);
