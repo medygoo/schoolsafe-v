@@ -53,3 +53,9 @@ html.jaspe-bulles #jaspe-native #jaspe-stage .jaspe2d__live-canvas,
 html.jaspe-bulles #jaspe-native #jaspe-stage #jaspe-fallback,
 html.jaspe-bulles #jaspe-native #jaspe-stage .jaspe2d img{position:absolute!important;left:0!important;top:0!important;right:auto!important;width:100%!important;height:100%!important;max-width:none!important;object-fit:contain!important}
 html.jaspe-bulles,html.jaspe-bulles body{overflow:hidden!important}
+/* Reponse sans forme definie (03/11, demande du proprietaire) : texte flottant sur un halo diffus, sans cadre ni pointe. */
+html.jaspe-bulles .jaspe-bulle.jaspe-bulle-libre{background:none;border:0;border-radius:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:4px 2px;color:#10213a;font-size:14.5px;text-shadow:0 0 6px rgba(255,255,255,.95),0 0 2px rgba(255,255,255,.9);animation:jaspeReponseEntree .35s ease-out}
+html.jaspe-bulles .jaspe-bulle.jaspe-bulle-libre::after{content:"";position:absolute;inset:-26px -30px;z-index:-1;width:auto;height:auto;border:0;transform:none;background:radial-gradient(farthest-corner at 50% 50%,rgba(255,255,255,.93) 40%,rgba(255,255,255,.72) 62%,rgba(255,255,255,0) 100%);filter:blur(6px);pointer-events:none}
+html.jaspe-bulles .jaspe-bulle.jaspe-bulle-libre .jaspe-bulle-ecouter{text-shadow:none}
+html.jaspe-bulles .jaspe-bulle.jaspe-bulle-libre .jaspe-bulle-fermer{text-shadow:none;background:rgba(255,255,255,.6)}
+@keyframes jaspeReponseEntree{from{opacity:0;filter:blur(3px)}to{opacity:1;filter:none}}

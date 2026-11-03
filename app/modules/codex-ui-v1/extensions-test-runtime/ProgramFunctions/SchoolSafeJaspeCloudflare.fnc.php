@@ -54,6 +54,11 @@ function SchoolSafeJaspeCloudflare(string $message, string $sessionKey, string $
     if (!is_string($text) || trim($text) === '' || mb_strlen($text, 'UTF-8') > 12000) {
         throw new RuntimeException('INVALID_PROVIDER_REPLY');
     }
+    // 03/11 : le Worker renvoie parfois la reponse technique brute du modele (contenu vide) ;
+    // elle n'est jamais affichee, le secours prend le relais.
+    if (preg_match('/^\s*\{\s*"id"\s*:\s*"chatcmpl/', $text) || strpos($text, '"choices":[') !== false) {
+        throw new RuntimeException('INVALID_PROVIDER_REPLY');
+    }
     return ['reply'=>trim($text),'actions'=>[],'state'=>'SPEAKING','mode'=>'cloudflare'];
 }
 
