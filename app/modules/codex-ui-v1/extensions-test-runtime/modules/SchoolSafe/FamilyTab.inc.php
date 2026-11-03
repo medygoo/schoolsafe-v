@@ -18,6 +18,8 @@ require_once 'modules/SchoolSafe/Gateway.php';
 $ss_ft_student = (int) UserStudentID();
 $ss_ft_school = (int) UserSchool();
 $ss_ft_today = date( 'Y-m-d' );
+$ss_ft_is_parent = User( 'PROFILE' ) === 'parent';
+$ss_ft_user = (int) User( 'STAFF_ID' );
 
 // Actions autorisées pour l'utilisateur courant : même calcul que family-management.php.
 $ss_ft_actions = [];
@@ -38,10 +40,10 @@ $ss_ft_actions = array_values( array_unique( $ss_ft_actions ) );
 
 $ss_ft_rows = DBGet( "SELECT g.ID, g.GUARDIAN_TYPE, g.FULL_NAME, g.PHONE, g.STAFF_ID, g.IS_PRIMARY, g.IS_ACTIVE,
 		g.IS_AUTHORIZED_PICKUP, g.PHOTO_PATH, g.PHOTO_ACCEPTED,
-		a.ID AS AUTH_ID, a.STATUS AS AUTH_STATUS, a.SLOT_NO, a.PHOTO_VERIFIED, a.STARTS_ON, a.ENDS_ON
+		a.ID AS AUTH_ID, a.STATUS AS AUTH_STATUS, a.SLOT_NO, a.PHOTO_VERIFIED, a.STARTS_ON, a.ENDS_ON, a.REQUESTED_BY
 	FROM schoolsafe_pickup_guardians g
 	LEFT JOIN LATERAL (
-		SELECT ID, STATUS, SLOT_NO, PHOTO_VERIFIED, STARTS_ON, ENDS_ON
+		SELECT ID, STATUS, SLOT_NO, PHOTO_VERIFIED, STARTS_ON, ENDS_ON, REQUESTED_BY
 		FROM schoolsafe_pickup_authorizations x
 		WHERE x.GUARDIAN_ID=g.ID AND x.STUDENT_ID=g.STUDENT_ID
 		ORDER BY x.ID DESC LIMIT 1 ) a ON TRUE
@@ -93,6 +95,11 @@ $ss_ft_restrictions = DBGet( "SELECT r.ID, COALESCE(NULLIF(r.FULL_NAME,''), g.FU
 	WHERE r.STUDENT_ID='" . $ss_ft_student . "' AND r.SCHOOL_ID='" . $ss_ft_school . "' AND r.IS_ACTIVE
 	AND r.STARTS_ON<='" . $ss_ft_today . "' AND (r.ENDS_ON IS NULL OR r.ENDS_ON>='" . $ss_ft_today . "')
 	ORDER BY r.ID" );
+
+if ( $ss_ft_is_parent )
+{
+	$ss_ft_restrictions = [];
+}
 
 // Contacts d'urgence : contacts natifs Rosario marqués « urgence » (onglet Adresses et contacts).
 $ss_ft_emergency = DBGet( "SELECT p.PERSON_ID, " . DisplayNameSQL( 'p' ) . " AS FULL_NAME, sjp.STUDENT_RELATION,
@@ -162,7 +169,7 @@ $ss_ft_button = function( $action, $label, array $data ) use ( $ss_ft_actions, $
 		. $ss_ft_esc( $label ) . '</button>';
 };
 
-$ss_ft_person_card = function( $row, $title, $kind ) use ( $ss_ft_esc, $ss_ft_photo, $ss_ft_badge, $ss_ft_button, $ss_ft_flag, $ss_ft_today, $ss_ft_account_list )
+$ss_ft_person_card = function( $row, $title, $kind ) use ( $ss_ft_esc, $ss_ft_photo, $ss_ft_badge, $ss_ft_button, $ss_ft_flag, $ss_ft_today, $ss_ft_account_list, $ss_ft_is_parent, $ss_ft_user, &$ss_ft_viewer_is_primary )
 {
 	$guardian = [ 'guardian' => $row['ID'] ];
 	$has_photo = trim( (string) $row['PHOTO_PATH'] ) !== '';
@@ -235,6 +242,23 @@ $ss_ft_person_card = function( $row, $title, $kind ) use ( $ss_ft_esc, $ss_ft_ph
 		$html .= $ss_ft_button( 'link-account', 'Lier le compte parent', $guardian );
 	}
 
+	if ( $ss_ft_is_parent )
+	{
+		if ( $kind === 'external' && $ss_ft_viewer_is_primary && $row['AUTH_ID'] && (int) $row['REQUESTED_BY'] === $ss_ft_user )
+		{
+			if ( $row['AUTH_STATUS'] === 'active' )
+			{
+				$html .= $ss_ft_button( 'parent-suspend', 'Suspendre', [ 'authorization' => $row['AUTH_ID'] ] );
+			}
+			elseif ( $row['AUTH_STATUS'] === 'suspended' )
+			{
+				$html .= $ss_ft_button( 'parent-activate', 'Réactiver', [ 'authorization' => $row['AUTH_ID'] ] );
+			}
+		}
+
+		return $html . '</p></div></article>';
+	}
+
 	if ( $kind === 'external' && $row['AUTH_STATUS'] === 'pending' && $photo_ok && $row['AUTH_ID'] )
 	{
 		$html .= $ss_ft_button( 'validate-authorization', 'Valider l’accréditation', [ 'authorization' => $row['AUTH_ID'] ] );
@@ -255,23 +279,40 @@ $ss_ft_empty_card = function( $title, $action, $label, array $data ) use ( $ss_f
 		. '<p class="ssft-actions">' . $ss_ft_button( $action, $label, $data ) . '</p></div></article>';
 };
 
+$ss_ft_viewer_is_primary = false;
 $ss_ft_has_primary = false;
 
 foreach ( $ss_ft_family as $ss_ft_row )
 {
 	$ss_ft_has_primary = $ss_ft_has_primary || ( $ss_ft_row && $ss_ft_flag( $ss_ft_row['IS_PRIMARY'] ) );
+
+	if ( $ss_ft_row && $ss_ft_flag( $ss_ft_row['IS_PRIMARY'] ) && $ss_ft_is_parent && (int) $ss_ft_row['STAFF_ID'] === $ss_ft_user )
+	{
+		$ss_ft_viewer_is_primary = true;
+	}
 }
 
 echo '<link rel="stylesheet" href="schoolsafe-card-bridge/family-tab.css?v=f2-2">';
-echo '<script defer src="schoolsafe-card-bridge/family-tab.js?v=f2-2"></script>';
+echo '<script defer src="schoolsafe-card-bridge/family-tab.js?v=f3-1"></script>';
 echo '<section class="ssft" id="ssft" data-student="' . $ss_ft_student . '" data-has-primary="' . ( $ss_ft_has_primary ? '1' : '0' ) . '"'
 	. ' data-actions="' . $ss_ft_esc( json_encode( $ss_ft_actions ) ) . '"'
 	. ' data-accounts="' . $ss_ft_esc( json_encode( $ss_ft_account_list, JSON_UNESCAPED_UNICODE ) ) . '">';
 
-echo '<p class="ssft-intro">Toute personne est enregistrée <strong>à l’école</strong>, en sa présence : pièce d’identité vérifiée et photo prise sur place. '
-	. 'Le responsable principal peut suspendre un accrédité depuis son profil.</p>';
+if ( $ss_ft_is_parent )
+{
+	echo '<p class="ssft-intro">' . ( $ss_ft_viewer_is_primary
+		? 'Vous êtes le <strong>responsable principal</strong> : vous pouvez suspendre ou réactiver vos personnes accréditées, avec effet immédiat à la sortie. '
+			. 'Pour ajouter, retirer ou modifier une personne, présentez-vous à l’école.'
+		: 'Consultation des personnes autorisées à récupérer l’enfant. Seul le responsable principal peut suspendre une personne accréditée ; '
+			. 'toute autre modification se fait à l’école.' ) . '</p>';
+}
+else
+{
+	echo '<p class="ssft-intro">Toute personne est enregistrée <strong>à l’école</strong>, en sa présence : pièce d’identité vérifiée et photo prise sur place. '
+		. 'Le responsable principal peut suspendre un accrédité depuis son profil.</p>';
+}
 
-if ( ! $ss_ft_has_primary )
+if ( ! $ss_ft_has_primary && ! $ss_ft_is_parent )
 {
 	echo '<p class="ssft-alert">Aucun responsable principal : enregistrez d’abord le père, la mère ou le tuteur qui sera principal.</p>';
 }
@@ -334,8 +375,8 @@ for ( $ss_ft_i = 1; $ss_ft_i <= 2; $ss_ft_i++ )
 			? '<p class="ssft-name">' . $ss_ft_esc( $ss_ft_row['FULL_NAME'] ) . '</p><p class="ssft-meta">'
 				. $ss_ft_esc( trim( $ss_ft_row['STUDENT_RELATION'] . ' ' . $ss_ft_row['CONTACT'] ) ) . '</p>'
 			: '<p class="ssft-meta">Non renseigné</p>' )
-		. '<p class="ssft-actions"><a href="Modules.php?modname=Students/Student.php&amp;category_id=3&amp;student_id=' . $ss_ft_student . '">'
-		. ( $ss_ft_row ? 'Modifier dans Adresses et contacts' : 'Ajouter dans Adresses et contacts' ) . '</a></p></div></article>';
+		. ( $ss_ft_is_parent ? '' : '<p class="ssft-actions"><a href="Modules.php?modname=Students/Student.php&amp;category_id=3&amp;student_id=' . $ss_ft_student . '">'
+			. ( $ss_ft_row ? 'Modifier dans Adresses et contacts' : 'Ajouter dans Adresses et contacts' ) . '</a></p>' ) . '</div></article>';
 }
 
 echo '</div><div class="ssft-panel" id="ssft-panel" hidden></div><p class="ssft-status" id="ssft-status" role="status"></p></section>';

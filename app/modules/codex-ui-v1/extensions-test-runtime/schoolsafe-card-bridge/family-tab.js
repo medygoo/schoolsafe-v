@@ -38,6 +38,10 @@
    ['reason', 'Pièce d’identité vérifiée (type et numéro)', 'text', true],
    ['consent', 'Demande du responsable (date)', 'text', true]]},
   'validate-authorization': {title: 'Valider l’accréditation', fields: []},
+  'parent-suspend': {title: 'Suspendre cette personne (effet immédiat à la sortie)', fields: [
+   ['reason', 'Motif de la suspension', 'text', true]]},
+  'parent-activate': {title: 'Réactiver cette personne', fields: [
+   ['reason', 'Motif de la réactivation', 'text', true]]},
   'school-retire': {title: 'Retirer cette personne', fields: [
    ['reason', 'Motif du retrait', 'text', true],
    ['consent', 'Demande reçue de (nom, date)', 'text', true]]}
