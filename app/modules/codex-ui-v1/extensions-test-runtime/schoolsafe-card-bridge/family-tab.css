@@ -1,0 +1,39 @@
+/* Onglet « Famille et récupération » (fiche élève). */
+.ssft { display: block; max-width: 1100px; margin: 8px 0 24px; font-size: 14px; color: #1f2937; }
+.ssft-intro { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: #eef6ff; color: #1e3a5f; }
+.ssft-alert { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: #fff7e6; color: #7a4b00; border: 1px solid #f3d38b; }
+.ssft-restriction { background: #fdecec; color: #8a1c1c; border-color: #f1b3b3; }
+.ssft-heading { margin: 20px 0 10px; font-size: 16px; font-weight: 700; }
+.ssft-heading small { margin-left: 8px; font-size: 12px; font-weight: 400; color: #6b7280; }
+.ssft-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.ssft-card { display: flex; gap: 12px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; }
+.ssft-empty { border-style: dashed; background: #fafafa; }
+.ssft-photo { flex: 0 0 72px; width: 72px; height: 88px; object-fit: cover; border-radius: 10px; background: #e5e7eb; }
+.ssft-photo-empty { display: flex; align-items: center; justify-content: center; font-size: 26px; color: #9ca3af; }
+.ssft-photo-pending { outline: 3px solid #f3d38b; }
+.ssft-body { min-width: 0; flex: 1; }
+.ssft-body p { margin: 0 0 4px; }
+.ssft-role { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; }
+.ssft-name { font-weight: 700; word-break: break-word; }
+.ssft-meta { color: #4b5563; font-size: 13px; }
+.ssft-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.ssft-badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; background: #f3f4f6; color: #374151; }
+.ssft-primary { background: #e0e7ff; color: #3730a3; }
+.ssft-ok { background: #dcfce7; color: #166534; }
+.ssft-warn { background: #fef3c7; color: #92400e; }
+.ssft-muted { background: #f3f4f6; color: #6b7280; }
+.ssft-neutral { background: #e0f2fe; color: #075985; }
+.ssft-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.ssft-action { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; cursor: pointer; font-size: 13px; }
+.ssft-action:hover { background: #f1f5f9; }
+.ssft-confirm { background: #0f766e; border-color: #0f766e; color: #fff; }
+.ssft-confirm:hover { background: #115e59; }
+.ssft-panel { margin: 16px 0; padding: 14px; border: 1px solid #cbd5e1; border-radius: 12px; background: #f8fafc; }
+.ssft-panel h4 { margin: 0 0 10px; font-size: 15px; }
+.ssft-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.ssft-field input, .ssft-field select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
+.ssft-check { flex-direction: row; align-items: center; gap: 8px; }
+.ssft-status { min-height: 1.2em; margin: 8px 0 0; }
+.ssft-status.ssft-ok { color: #166534; }
+.ssft-status.ssft-warn { color: #92400e; }
+@media (max-width: 600px) { .ssft-grid { grid-template-columns: 1fr; } }
