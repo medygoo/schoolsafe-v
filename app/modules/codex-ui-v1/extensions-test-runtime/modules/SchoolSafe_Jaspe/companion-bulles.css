@@ -39,3 +39,8 @@ html.jaspe-bulles .jaspe-bulle #jaspe-destinations{position:static!important;dis
 html.jaspe-bulles .jaspe-bulle #jaspe-destinations[hidden]{display:none}
 html.jaspe-bulles .jaspe-bulle #jaspe-destinations a{padding:6px 10px;border-radius:14px;background:#e7eef8;color:#0b5cd5;text-decoration:none;font-size:14px}
 @media (prefers-reduced-motion:reduce){html.jaspe-bulles .jaspe-bulle{animation:none}}
+/* JASPE au milieu de l'ecran (03/11) : le canvas remplit exactement sa scene (taille fixee par companion-bulles.js). */
+html.jaspe-bulles #jaspe-native #jaspe-stage .jaspe2d__live-canvas,
+html.jaspe-bulles #jaspe-native #jaspe-stage #jaspe-fallback,
+html.jaspe-bulles #jaspe-native #jaspe-stage .jaspe2d img{position:absolute!important;left:0!important;top:0!important;right:auto!important;width:100%!important;height:100%!important;max-width:none!important;object-fit:contain!important}
+html.jaspe-bulles,html.jaspe-bulles body{overflow:hidden!important}
