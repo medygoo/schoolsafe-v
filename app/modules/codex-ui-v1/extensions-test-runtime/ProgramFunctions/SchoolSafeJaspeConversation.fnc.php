@@ -60,25 +60,39 @@ function SchoolSafeJaspeConversation($message, callable $canUse, callable $canEd
             if (mb_strlen($title, 'UTF-8') >= 4 && mb_stripos($message, $title, 0, 'UTF-8') !== false) $matches[] = $action['id'];
         }
     }
-    if (count($matches) === 1) {
-        foreach ($actions as $action) {
-            if ($action['id'] === $matches[0]) {
-                if ($action['id'] === 'teacher_register') {
-                    return ['reply'=>'Dans Ajouter un utilisateur, renseignez l\'identite et le nom d\'utilisateur, choisissez le profil Enseignant, puis verifiez l\'ecole et enregistrez. SchoolSafe controle les profils disponibles et valide la creation.',
-                        'actions'=>[$action], 'navigate'=>'teacher_register', 'state'=>'SPEAKING', 'mode'=>'local'];
-                }
-                return ['reply'=>'Ouvrez ' . $action['title'] . ' pour continuer dans SchoolSafe.',
-                    'actions'=>[$action], 'navigate'=>$action['id'], 'state'=>'SPEAKING', 'mode'=>'local'];
-            }
+    // 03/11 (valide par le proprietaire) : une page n'est proposee que sur une demande explicite
+    // (« ouvre », « ou est », « affiche »..., inscription/creation, ou message reduit au nom de la page).
+    // Tout le reste part a l'IA. La page ne s'ouvre jamais d'elle-meme : un bouton est propose.
+    $words = preg_split('/\s+/', trim($query));
+    $explicit = preg_match('/\b(ouvr\w*|affich\w*|montr\w*|emmen\w*|acced\w*|consult\w*|va (?:a|au|aux|vers|sur|dans)|aller (?:a|au|aux|vers|sur|dans)|ou (?:est|sont|se trouve\w*|trouver|voir)|je (?:veux|voudrais|souhaite) (?:voir|consulter|ouvrir)|voir (?:le|la|les|mes|mon|ma)|la page|lien)\b/', $query)
+        || array_intersect($matches, ['teacher_register', 'student_register'])
+        || count($words) <= 3;
+    if ($matches && $explicit) {
+        $found = [];
+        foreach ($matches as $id) {
+            foreach ($actions as $action) if ($action['id'] === $id) { $found[] = $action; break; }
         }
-        return ['reply'=>'Votre profil n\'a pas acces a cette page dans SchoolSafe.',
-            'actions'=>[], 'state'=>'ERROR', 'mode'=>'local'];
+        if (!$found) {
+            return ['reply'=>'Votre profil n\'a pas accès à cette page dans SchoolSafe.',
+                'actions'=>[], 'state'=>'ERROR', 'mode'=>'local'];
+        }
+        if (count($found) === 1) {
+            $action = $found[0];
+            if ($action['id'] === 'teacher_register') {
+                return ['reply'=>'Dans « Ajouter un utilisateur », renseignez l\'identité et le nom d\'utilisateur, choisissez le profil Enseignant, puis vérifiez l\'école et enregistrez. Appuyez sur le bouton pour ouvrir la page.',
+                    'actions'=>[$action], 'navigate'=>'teacher_register', 'state'=>'SPEAKING', 'mode'=>'local'];
+            }
+            return ['reply'=>'Voici la page « ' . $action['title'] . ' ». Appuyez sur le bouton pour l\'ouvrir.',
+                'actions'=>[$action], 'navigate'=>$action['id'], 'state'=>'SPEAKING', 'mode'=>'local'];
+        }
+        $found = array_slice($found, 0, 3);
+        return ['reply'=>'Plusieurs pages correspondent. Choisissez celle qui vous intéresse.',
+            'actions'=>$found, 'choices'=>array_column($found, 'id'), 'state'=>'SPEAKING', 'mode'=>'local'];
     }
-    if (!$matches && preg_match('/\b(bonjour|salut|aide|bonjour jaspe)\b/', $query)) {
-        return ['reply'=>'Bonjour, je suis JASPE, votre assistante personnalisée SchoolSafe.',
-            'actions'=>$actions, 'state'=>'SPEAKING', 'mode'=>'local'];
+    if (count($words) <= 3 && preg_match('/^(bonjour|salut|bonsoir|coucou|hello)\b/', $query)) {
+        return ['reply'=>'Bonjour, je suis JASPE, votre assistante personnalisée SchoolSafe. Que puis-je faire pour vous ?',
+            'actions'=>[], 'state'=>'SPEAKING', 'mode'=>'local'];
     }
-    return ['reply'=>count($matches) > 1 ? 'Precisez une seule destination.' :
-        'Je peux vous orienter dans SchoolSafe. La conversation IA libre est indisponible.',
+    return ['reply'=>'Je peux vous orienter dans SchoolSafe. La conversation IA libre est indisponible.',
         'actions'=>[], 'state'=>'IDLE', 'mode'=>'local'];
 }

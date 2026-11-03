@@ -98,7 +98,8 @@
         var navH = nav && nav.offsetHeight && window.parent.getComputedStyle(nav).display !== 'none' ? nav.offsetHeight : 0;
         var avail = Math.max(260, ph - navH - 16);
         var h = Math.round(Math.min(380, avail * 0.86)), jw = Math.round(h * 1023 / 1537);
-        var jx = Math.round((pw - jw) / 2), jy = Math.round(Math.max(8, (ph - navH - h) / 2));
+        // Centree horizontalement, posee en bas juste au-dessus de la barre de navigation (03/11).
+        var jx = Math.round((pw - jw) / 2), jy = Math.round(Math.max(8, ph - navH - h - 12));
         var open = !write.hidden || !reply.hidden;
         narrow = pw < 640;
         var left = jx, top = jy, w = jw, hh = h, sx = 0, sy = 0;

@@ -99,13 +99,13 @@
             for (; index < chunks.length; index++) {
                 if (current !== generation) return;
                 state('THINKING');
-                status.textContent = 'Preparation de la voix de JASPE...';
+                status.textContent = 'Préparation de la voix de JASPE...';
                 var response;
                 for (var attempt = 0; attempt < 3; attempt++) {
                     response = await voiceRequest({method:'POST',credentials:'same-origin',cache:'no-store',signal:signal,
                         headers:Object.assign({'Content-Type':'application/json'},headers),body:JSON.stringify({text:chunks[index].trim()})}, 90000, 'blob');
                     if (response.status !== 429 || attempt === 2) break;
-                    status.textContent = 'La voix de JASPE est occupee, un instant...';
+                    status.textContent = 'La voix de JASPE est occupée, un instant...';
                     await waitRetry(1500 * (attempt + 1), signal);
                 }
                 if (!response.ok) throw new Error('VOICE_UNAVAILABLE');
@@ -130,7 +130,7 @@
             if(audio){audio.pause();audio=null;}if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null;}
             finishAudio=null;controller=null;
             state('IDLE');
-            status.textContent='Voix de reference indisponible : voix du navigateur utilisee.';
+            status.textContent='Voix de référence indisponible : voix du navigateur utilisée.';
             speakSystem(chunks.slice(index).join(' '),current);
         }
     }
@@ -160,7 +160,7 @@
         session.onstart = function () {
             if (current !== generation) return;
             mic.setAttribute('aria-pressed', 'true');
-            status.textContent = "Je vous ecoute..."; state('LISTENING');
+            status.textContent = "Je vous écoute..."; state('LISTENING');
         };
         session.onresult = function (event) {
             if (current !== generation) return;
@@ -172,14 +172,14 @@
             if (current !== generation) return;
             recognition = null; mic.setAttribute('aria-pressed', 'false');
             status.textContent = event.error === 'not-allowed'
-                ? 'Microphone non autorise. Vous pouvez ecrire votre demande.'
-                : 'Ecoute indisponible. Vous pouvez ecrire votre demande.';
+                ? 'Microphone non autorisé. Vous pouvez écrire votre demande.'
+                : 'Écoute indisponible. Vous pouvez écrire votre demande.';
             state('IDLE');
         };
         session.onend = function () {
             if (current !== generation) return;
             recognition = null; mic.setAttribute('aria-pressed', 'false');
-            if (status.textContent === 'Je vous ecoute...') { status.textContent = ''; state('IDLE'); }
+            if (status.textContent === 'Je vous écoute...') { status.textContent = ''; state('IDLE'); }
         };
         try { session.start(); } catch (_) {
             recognition = null; mic.setAttribute('aria-pressed', 'false'); state('IDLE'); status.textContent = 'Microphone indisponible.';

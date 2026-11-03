@@ -53,7 +53,7 @@
     if (document.querySelector('.jaspe-suggestions')) return;
     var chips = document.createElement('div');
     chips.className = 'jaspe-suggestions';
-    ['Ou sont mes bulletins ?', 'Motiver un eleve avant un examen', 'Aide-moi a organiser ma journee'].forEach(function (texte) {
+    ['Où sont mes bulletins ?', 'Motiver un élève avant un examen', 'Aide-moi à organiser ma journée'].forEach(function (texte) {
         var b = document.createElement('button');
         b.type = 'button';
         b.textContent = texte;
@@ -107,11 +107,13 @@
             var result = await response.json();
             if (currentRequest !== requestNumber) return;
             if (!Array.isArray(result.actions) || typeof result.reply !== 'string') throw new Error('INVALID_RESPONSE');
-            show(result.mode === 'local' && typeof result.navigate === 'string'
-                ? result.actions.filter(function (action) {
-                    return action.id === result.navigate && action.kind === 'navigation' &&
-                        /^Modules\.php\?modname=[A-Za-z0-9_]+\/[A-Za-z0-9_]+\.php(?:&staff_id=new|&include=General_Info&student_id=new)?$/.test(action.url);
-                }).slice(0, 1) : []);
+            // 03/11 : la page proposee s'affiche en bouton (jusqu'a trois choix) ; rien ne s'ouvre seul.
+            var wanted = result.mode !== 'local' ? [] : (Array.isArray(result.choices) ? result.choices
+                : (typeof result.navigate === 'string' ? [result.navigate] : []));
+            show(result.actions.filter(function (action) {
+                return wanted.indexOf(action.id) >= 0 && action.kind === 'navigation' &&
+                    /^Modules\.php\?modname=[A-Za-z0-9_]+\/[A-Za-z0-9_]+\.php(?:&staff_id=new|&include=General_Info&student_id=new)?$/.test(action.url);
+            }).slice(0, 3));
             status.textContent = result.reply;
             message('jaspe', result.reply);
             if (log) status.textContent = '';
@@ -120,20 +122,13 @@
                 : (typeof result.emotion === 'string' ? result.emotion : '');
             if (motion) host.dispatchEvent(new CustomEvent('jaspe-motion', {detail:{kind: motion}}));
             if (window.SchoolSafeJaspeVoice) window.SchoolSafeJaspeVoice.reply(result.reply);
-            if (result.mode === 'local' && typeof result.navigate === 'string') {
-                var destination = result.actions.find(function (action) {
-                    return action.id === result.navigate && action.kind === 'navigation' &&
-                        /^Modules\.php\?modname=[A-Za-z0-9_]+\/[A-Za-z0-9_]+\.php(?:&staff_id=new|&include=General_Info&student_id=new)?$/.test(action.url);
-                });
-                if (destination) (window.parent !== window ? window.parent : window).location.assign(destination.url);
-            }
         } catch (_) {
             if (currentRequest !== requestNumber) return;
             show([]);
             redescendre();
             status.textContent = controller.signal.aborted
-                ? 'La demande a pris trop de temps. Vous pouvez reessayer.'
-                : 'Acces indisponible. Rechargez la page.';
+                ? 'La demande a pris trop de temps. Vous pouvez réessayer.'
+                : 'Accès indisponible. Rechargez la page.';
             message('jaspe', status.textContent);
             if (presenter) presenter.setState('ERROR');
         } finally {
@@ -157,7 +152,7 @@
             var draft = window.SchoolSafeJaspeDraft.compose(title.value, content.value);
             if (!draft.text) { status.textContent = 'Le brouillon est vide.'; return; }
             await navigator.clipboard.writeText(draft.text);
-            status.textContent = 'Brouillon copie.';
+            status.textContent = 'Brouillon copié.';
         } catch (_) { status.textContent = 'Copie indisponible.'; }
     });
     var picture = document.getElementById('jaspe-picture');
