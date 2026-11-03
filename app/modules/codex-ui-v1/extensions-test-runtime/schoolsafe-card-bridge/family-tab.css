@@ -37,3 +37,10 @@
 .ssft-status.ssft-ok { color: #166534; }
 .ssft-status.ssft-warn { color: #92400e; }
 @media (max-width: 600px) { .ssft-grid { grid-template-columns: 1fr; } }
+/* Recadrage de la photo (cadre 3:4, guide tête / épaules / bras jusqu'à la taille). */
+.ssft-crop { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 4px 0 12px; }
+.ssft-crop-canvas { width: 300px; max-width: 100%; aspect-ratio: 3 / 4; border-radius: 12px; touch-action: none; cursor: grab;
+  box-shadow: 0 0 0 1px #cbd5e1; background: #e5e7eb; }
+.ssft-crop-canvas:active { cursor: grabbing; }
+.ssft-crop-zoom { width: 300px; max-width: 100%; }
+.ssft-crop-hint { margin: 0; max-width: 300px; font-size: 12px; color: #4b5563; }

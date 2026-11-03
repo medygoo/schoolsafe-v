@@ -99,6 +99,19 @@ function SchoolSafePickupPrimaryParent($studentId, array $ctx, array $db): int
     return SchoolSafePickupParentAccount($rows[1]['STAFF_ID'],$studentId,$ctx,$db);
 }
 
+// Spec v1.1 (03/11/2026) : comptes facultatifs. Le principal présent au guichet
+// désigne l'accrédité sans compte : l'accréditation n'a alors pas de demandeur
+// (NULL). Retourne le compte du principal, ou null s'il n'en a pas ; exige
+// toujours un principal actif unique.
+function SchoolSafePickupPrimaryRequester($studentId, array $ctx, array $db): ?int
+{
+    $rows=$db['get']('SELECT ID, STAFF_ID FROM schoolsafe_pickup_guardians WHERE STUDENT_ID='.(int)$studentId
+        .' AND SCHOOL_ID='.$ctx['school']." AND GUARDIAN_TYPE IN ('pere','mere','tuteur')"
+        .' AND IS_PRIMARY AND IS_ACTIVE ORDER BY ID LIMIT 2 FOR SHARE');
+    if (!is_array($rows)||count($rows)!==1) throw new RuntimeException('PRIMARY_SELECTION_REQUIRED');
+    return empty($rows[1]['STAFF_ID']) ? null : SchoolSafePickupParentAccount($rows[1]['STAFF_ID'],$studentId,$ctx,$db);
+}
+
 function SchoolSafePickupRequireCurrentParent($studentId, array $ctx, array $db): void
 {
     if (($ctx['profile']??'')!=='parent'||($ctx['parent']??false)!==true
@@ -265,7 +278,7 @@ function SchoolSafePickupRegisterExternalLocked($studentId, array $fields, array
     $phone = substr(trim((string) ($fields['phone'] ?? '')), 0, 64);
     $evidence=$reason.' — '.$consent;
     if (preg_match('/^.{1,500}$/usD',$evidence)!==1) throw new RuntimeException('INVALID_INPUT');
-    $requester=SchoolSafePickupPrimaryParent($studentId,$ctx,$db);
+    $requester=SchoolSafePickupPrimaryRequester($studentId,$ctx,$db);
     $q = $db['quote'];
     $g = $db['get']('INSERT INTO schoolsafe_pickup_guardians(school_id, student_id, guardian_type,'
         . ' full_name, phone, is_primary, is_active, is_authorized_pickup)'
@@ -275,7 +288,7 @@ function SchoolSafePickupRegisterExternalLocked($studentId, array $fields, array
     $gid = (int) $g[1]['ID'];
     $a = $db['get']('INSERT INTO schoolsafe_pickup_authorizations(guardian_id, student_id, school_id,'
         . " status, photo_verified, requested_by, reason) VALUES(" . $gid . ',' . $studentId . ','
-        . $ctx['school'] . ",'pending',FALSE," . $requester . ',' . $q($evidence) . ') RETURNING ID');
+        . $ctx['school'] . ",'pending',FALSE," . ($requester === null ? 'NULL' : $requester) . ',' . $q($evidence) . ') RETURNING ID');
     if (!is_array($a) || !isset($a[1])) throw new RuntimeException('WRITE_FAILED');
     return ['guardian_id' => (string) $gid, 'authorization_id' => (string) $a[1]['ID'], 'status' => 'pending'];
 }
@@ -294,6 +307,9 @@ function SchoolSafePickupApproveFamily($studentId, $guardianId, $reason, $consen
             if (!empty($g['STAFF_ID'])&&(int)$g['STAFF_ID']!==$parent) throw new RuntimeException('PRIMARY_TRANSFER_REQUIRED');
             $result=SchoolSafePickupApproveFamily($studentId,$guardianId,$reason,$consent,$ctx,$db);
             $db['exec']('UPDATE schoolsafe_pickup_guardians SET STAFF_ID='.$parent.',UPDATED_AT=CURRENT_TIMESTAMP WHERE ID='.(int)$g['ID']);
+            if (!empty($g['IS_PRIMARY'])) $db['exec']('UPDATE schoolsafe_pickup_authorizations SET REQUESTED_BY='.$parent
+                .',UPDATED_AT=CURRENT_TIMESTAMP WHERE STUDENT_ID='.(int)$studentId.' AND SCHOOL_ID='.$ctx['school']
+                ." AND REQUESTED_BY IS NULL AND STATUS<>'revoked'");
             return $result+['parent_staff_id'=>(string)$parent];
         });
     }
@@ -376,7 +392,7 @@ function SchoolSafePickupValidateAuthorizationLocked($studentId, $authorizationI
     if (!is_array($rows) || !isset($rows[1]) || (int) $rows[1]['GUARDIAN_ID'] !== $guardianId) throw new RuntimeException('INVALID_STATE');
     $a = SchoolSafePickupDatabaseFlags($rows[1]);
     if ($asParent && (int) ($a['REQUESTED_BY'] ?? 0) !== $ctx['user']) throw new RuntimeException('FORBIDDEN');
-    if (!$asParent && (int)($a['REQUESTED_BY']??0)!==SchoolSafePickupPrimaryParent($studentId,$ctx,$db)) throw new RuntimeException('FORBIDDEN');
+    if (!$asParent && (int)($a['REQUESTED_BY']??0)!==(int)(SchoolSafePickupPrimaryRequester($studentId,$ctx,$db)??0)) throw new RuntimeException('FORBIDDEN');
     if (($a['STATUS'] ?? '') !== ($asParent ? 'suspended' : 'pending')) throw new RuntimeException('INVALID_STATE');
     if (empty($g['IS_ACTIVE']) || ($g['GUARDIAN_TYPE'] ?? '') !== 'externe') throw new RuntimeException('INVALID_PERSON');
     if (empty($a['PHOTO_VERIFIED']) || empty($g['PHOTO_ACCEPTED']) || empty($g['PHOTO_PATH'])) throw new RuntimeException('PHOTO_NOT_VALIDATED');

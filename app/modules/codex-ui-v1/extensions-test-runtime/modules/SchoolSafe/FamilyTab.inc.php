@@ -73,7 +73,7 @@ foreach ( (array) $ss_ft_rows as $ss_ft_row )
 	}
 	elseif ( $ss_ft_row['GUARDIAN_TYPE'] === 'externe' )
 	{
-		if ( $ss_ft_row['AUTH_STATUS'] === 'active' && isset( $ss_ft_slots[ (int) $ss_ft_row['SLOT_NO'] ] )
+		if ( $ss_ft_row['AUTH_STATUS'] === 'active' && array_key_exists( (int) $ss_ft_row['SLOT_NO'], $ss_ft_slots )
 			&& ! $ss_ft_slots[ (int) $ss_ft_row['SLOT_NO'] ] )
 		{
 			$ss_ft_slots[ (int) $ss_ft_row['SLOT_NO'] ] = $ss_ft_row;
@@ -100,6 +100,22 @@ $ss_ft_emergency = DBGet( "SELECT p.PERSON_ID, " . DisplayNameSQL( 'p' ) . " AS 
 	FROM students_join_people sjp JOIN people p ON p.PERSON_ID=sjp.PERSON_ID
 	WHERE sjp.STUDENT_ID='" . $ss_ft_student . "' AND sjp.EMERGENCY='Y'
 	ORDER BY sjp.ID LIMIT 2" );
+
+$ss_ft_accounts = DBGet( "SELECT s.STAFF_ID, " . DisplayNameSQL( 's' ) . " AS FULL_NAME
+	FROM students_join_users j JOIN staff s ON s.STAFF_ID=j.STAFF_ID AND s.SYEAR='" . UserSyear() . "' AND s.PROFILE='parent'
+	WHERE j.STUDENT_ID='" . $ss_ft_student . "'
+	AND NOT EXISTS (SELECT 1 FROM schoolsafe_pickup_guardians g WHERE g.STUDENT_ID=j.STUDENT_ID AND g.STAFF_ID=s.STAFF_ID)
+	ORDER BY FULL_NAME" );
+
+$ss_ft_account_list = [];
+
+foreach ( (array) $ss_ft_accounts as $ss_ft_account )
+{
+	if ( ! empty( $ss_ft_account['STAFF_ID'] ) )
+	{
+		$ss_ft_account_list[] = [ 'id' => (int) $ss_ft_account['STAFF_ID'], 'name' => $ss_ft_account['FULL_NAME'] ];
+	}
+}
 
 $ss_ft_esc = function( $value )
 {
@@ -128,7 +144,7 @@ $ss_ft_badge = function( $text, $tone ) use ( $ss_ft_esc )
 
 $ss_ft_button = function( $action, $label, array $data ) use ( $ss_ft_actions, $ss_ft_esc )
 {
-	$api = $action === 'photo-upload' ? 'photo-set' : $action;
+	$api = [ 'photo-upload' => 'photo-set', 'link-account' => 'school-family-approve' ][ $action ] ?? $action;
 
 	if ( ! in_array( $api, $ss_ft_actions, true ) )
 	{
@@ -146,7 +162,7 @@ $ss_ft_button = function( $action, $label, array $data ) use ( $ss_ft_actions, $
 		. $ss_ft_esc( $label ) . '</button>';
 };
 
-$ss_ft_person_card = function( $row, $title, $kind ) use ( $ss_ft_esc, $ss_ft_photo, $ss_ft_badge, $ss_ft_button, $ss_ft_flag, $ss_ft_today )
+$ss_ft_person_card = function( $row, $title, $kind ) use ( $ss_ft_esc, $ss_ft_photo, $ss_ft_badge, $ss_ft_button, $ss_ft_flag, $ss_ft_today, $ss_ft_account_list )
 {
 	$guardian = [ 'guardian' => $row['ID'] ];
 	$has_photo = trim( (string) $row['PHOTO_PATH'] ) !== '';
@@ -214,6 +230,11 @@ $ss_ft_person_card = function( $row, $title, $kind ) use ( $ss_ft_esc, $ss_ft_ph
 		$html .= $ss_ft_button( 'school-family-approve', 'Autoriser la récupération', $guardian );
 	}
 
+	if ( $kind === 'family' && $photo_ok && empty( $row['STAFF_ID'] ) && $ss_ft_account_list && User( 'PROFILE' ) === 'admin' )
+	{
+		$html .= $ss_ft_button( 'link-account', 'Lier le compte parent', $guardian );
+	}
+
 	if ( $kind === 'external' && $row['AUTH_STATUS'] === 'pending' && $photo_ok && $row['AUTH_ID'] )
 	{
 		$html .= $ss_ft_button( 'validate-authorization', 'Valider l’accréditation', [ 'authorization' => $row['AUTH_ID'] ] );
@@ -241,10 +262,11 @@ foreach ( $ss_ft_family as $ss_ft_row )
 	$ss_ft_has_primary = $ss_ft_has_primary || ( $ss_ft_row && $ss_ft_flag( $ss_ft_row['IS_PRIMARY'] ) );
 }
 
-echo '<link rel="stylesheet" href="schoolsafe-card-bridge/family-tab.css?v=f2-1">';
-echo '<script defer src="schoolsafe-card-bridge/family-tab.js?v=f2-1"></script>';
+echo '<link rel="stylesheet" href="schoolsafe-card-bridge/family-tab.css?v=f2-2">';
+echo '<script defer src="schoolsafe-card-bridge/family-tab.js?v=f2-2"></script>';
 echo '<section class="ssft" id="ssft" data-student="' . $ss_ft_student . '" data-has-primary="' . ( $ss_ft_has_primary ? '1' : '0' ) . '"'
-	. ' data-actions="' . $ss_ft_esc( json_encode( $ss_ft_actions ) ) . '">';
+	. ' data-actions="' . $ss_ft_esc( json_encode( $ss_ft_actions ) ) . '"'
+	. ' data-accounts="' . $ss_ft_esc( json_encode( $ss_ft_account_list, JSON_UNESCAPED_UNICODE ) ) . '">';
 
 echo '<p class="ssft-intro">Toute personne est enregistrée <strong>à l’école</strong>, en sa présence : pièce d’identité vérifiée et photo prise sur place. '
 	. 'Le responsable principal peut suspendre un accrédité depuis son profil.</p>';
