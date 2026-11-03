@@ -210,7 +210,8 @@ function SchoolSafeWaConsented( $school_id, $staff_id, $phone_e164 )
     $field_id = (int) ( $field[1]['ID'] ?? 0 );
     if ( $field_id > 0 && (int) $staff_id > 0 )
     {
-        $column = DBEscapeIdentifier( 'CUSTOM_' . $field_id );
+        // Identifiant entier : nom de colonne sur sans DBEscapeIdentifier (absent du contexte CLI du dispatcher).
+        $column = 'CUSTOM_' . $field_id;
         $staff = DBGet( 'SELECT ' . $column . ' AS AGREED,CUSTOM_200000001 AS PHONE,SCHOOLS FROM staff WHERE STAFF_ID=' . (int) $staff_id
             . ' ORDER BY SYEAR DESC LIMIT 1' );
         if ( $staff && ( $staff[1]['AGREED'] ?? '' ) === 'Y'
