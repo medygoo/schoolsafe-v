@@ -4,6 +4,7 @@
 if(PHP_SAPI!=='cli'){http_response_code(403);exit;}
 require_once __DIR__.'/ProgramFunctions/SchoolSafeMailTemplate.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeBrevo.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeSmtpMail.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeWebPush.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeSms.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeWhatsapp.fnc.php';
@@ -62,13 +63,16 @@ for($i=0;$i<$limit;$i++){
         }elseif($row['channel']==='email'){
             $email=trim((string)$staff['EMAIL']);
             if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('NO_RECIPIENT_EMAIL');
-            $config=SchoolSafeBrevoConfig();if($config===null)throw new RuntimeException('NO_EMAIL_PROVIDER');
+            // API Brevo si sa clé est installée, sinon le SMTP Brevo déjà configuré pour l'école.
+            $config=SchoolSafeBrevoConfig();$smtp=$config===null?SchoolSafeSmtpConfig($conn,(int)$row['school_id']):null;
+            if($config===null&&$smtp===null)throw new RuntimeException('NO_EMAIL_PROVIDER');
             $assets=rtrim(trim((string)getenv('SCHOOLSAFE_ASSETS_BASE_URL'))?:'https://app.shoolsafe.tech','/');
             $mail=SchoolSafeMailBuild(['event_type'=>$row['event_type'],'payload'=>$payload],
                 ['school_name'=>$row['school_title'],'locale'=>'fr','brand_logo_url'=>$assets.'/assets/themes/SchoolSafe/logo.png','jaspe_url'=>$assets.'/assets/jaspe2d/pack1/wave.webp']);
             $current=SchoolSafeNotifyDispatchRecipient($conn,$row);
             if(trim((string)$current['EMAIL'])!==$email)throw new RuntimeException('RECIPIENT_CHANGED');
-            $attempted=true;$out=SchoolSafeBrevoSend($email,$mail,$config,$transports['email']??null);
+            if($smtp!==null){$mailer=SchoolSafeSmtpOpen($smtp);$attempted=true;$out=SchoolSafeSmtpSend($mailer,$email,$mail,$smtp);}
+            else{$attempted=true;$out=SchoolSafeBrevoSend($email,$mail,$config,$transports['email']??null);}
             if(!is_string($out['provider_msg_id']??null)||$out['provider_msg_id']==='')throw new RuntimeException('ACCEPTANCE_UNKNOWN');
             $provider=$out['provider_msg_id'];$status='accepted';
         }elseif($row['channel']==='whatsapp'){
@@ -114,7 +118,7 @@ for($i=0;$i<$limit;$i++){
         if($attempted){$status='pending';$uncertain=true;$error='ACCEPTANCE_UNKNOWN';}
         else{
             $known=['FORCED_FAILURE','RECIPIENT_FORBIDDEN','RECIPIENT_UNAVAILABLE','NO_RECIPIENT_EMAIL','NO_EMAIL_PROVIDER',
-                'RECIPIENT_CHANGED','NO_RECIPIENT_PHONE','SIMULATION_ONLY','CONSENT_REQUIRED','NO_WA_SESSION','WA_COPY_UNAVAILABLE','WA_BLOCKED','PUSH_UNAVAILABLE','NO_PUSH_PROVIDER','SUBSCRIPTION_EXPIRED'];
+                'RECIPIENT_CHANGED','SMTP_UNAVAILABLE','NO_RECIPIENT_PHONE','SIMULATION_ONLY','CONSENT_REQUIRED','NO_WA_SESSION','WA_COPY_UNAVAILABLE','WA_BLOCKED','PUSH_UNAVAILABLE','NO_PUSH_PROVIDER','SUBSCRIPTION_EXPIRED'];
             $code=in_array($failure->getMessage(),$known,true)?$failure->getMessage():'CONTEXT_UNAVAILABLE';
             $error='PRE_SEND:'.$code;$status='failed';
         }
