@@ -64,6 +64,9 @@ function SchoolSafeNotifyResolveRecipients($eventType, $school, $year, $studentI
         if ($parent < 1) continue;
         $recipients[] = ['audience' => 'parent', 'staff_id' => $parent, 'channel' => 'feed'];
         $recipients[] = ['audience' => 'parent', 'staff_id' => $parent, 'channel' => 'email'];
+        // WhatsApp direct (03/11) : un parent sans e-mail est prevenu quand meme.
+        if (in_array($eventType, SchoolSafeNotifyWaEventTypes(), true))
+            $recipients[] = ['audience' => 'parent', 'staff_id' => $parent, 'channel' => 'whatsapp'];
     }
     // Dedup strict cote emetteur (par cle audience/staff/canal).
     $seen = [];

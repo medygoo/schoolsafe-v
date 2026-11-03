@@ -45,11 +45,8 @@ function SchoolSafeWaSimulate()
  */
 function SchoolSafeWaEligible( $event_type )
 {
-    return in_array( (string) $event_type,
-        [ 'security.entry', 'student.pickup', 'payment.receipt',
-            'school.announcement', 'remediation.update',
-            'attendance.closure', 'absence.detected', 'case.updated',
-            'security.p1' ], true );
+    require_once __DIR__ . '/SchoolSafeNotifyRecipient.fnc.php';
+    return in_array( (string) $event_type, SchoolSafeNotifyWaEventTypes(), true );
 }
 
 /**
@@ -155,7 +152,8 @@ function SchoolSafeWaActiveSession( $engine, ?callable $http = null )
 {
     $rows = DBGet( "SELECT * FROM schoolsafe_wa_sessions"
         . " WHERE engine='" . DBEscapeString( $engine ) . "'"
-        . " AND status='active' AND conn_state='online' AND conn_checked_at IS NOT NULL"
+        // Toute session active est re-sondee : un echec passe (offline/error) ne l'exclut plus a vie.
+        . " AND status='active'"
         . " ORDER BY id LIMIT 1" );
     if(!$rows)return false;
     $probe=SchoolSafeWaSessionProbe($rows[1],$http);
@@ -193,7 +191,10 @@ function SchoolSafeWaProviderMessageId(array $res): ?string
     if(!in_array($res['http_code']??null,[200,201,202],true)||!empty($res['network_error']))return null;
     $body=is_string($res['body']??null)?json_decode($res['body'],true):null;
     if(!is_array($body))return null;
-    $id=$body['id']??$body['key']['id']??$body['messageId']??null;
+    // WAHA WEBJS renvoie id={fromMe,remote,id,_serialized} ; NOWEB une chaine ; Evolution key.id.
+    $raw=$body['id']??null;
+    $id=is_array($raw)?($raw['_serialized']??$raw['id']??null):$raw;
+    $id=$id??$body['key']['id']??$body['messageId']??null;
     return is_string($id)&&preg_match('/^[^\\x00-\\x20\\x7f]{1,128}$/uD',$id)===1?$id:null;
 }
 
@@ -379,6 +380,29 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
 
     $waha_session = SchoolSafeWaActiveSession( 'waha', $opts['http_status'] ?? null );
 
+    // WAHA indisponible avant tout envoi : le secours Evolution prend le message (une seule voie).
+    $direct_evo = $waha_session === false ? SchoolSafeWaActiveSession( 'evolution', $opts['http_status'] ?? null ) : false;
+    if ( $waha_session === false && is_array( $direct_evo ) )
+    {
+        if($retry_id>0){
+            $claimed=DBGet(DBQuery("UPDATE schoolsafe_wa_outbox SET status='queued',engine='evolution',error_code='',updated_at=CURRENT_TIMESTAMP"
+                ." WHERE id=".$retry_id." AND status='blocked' AND school_id=".$school_id
+                ." AND recipient_e164='".DBEscapeString($to)."' AND message_text='".DBEscapeString($text)."'"
+                ." AND error_code IN ('CONSENT_REQUIRED','NO_WA_SESSION','AUTHORITY_CHANGED') RETURNING ID"));
+            $outbox_id=is_array($claimed)&&isset($claimed[1]['ID'])?(int)$claimed[1]['ID']:0;
+        }else{
+            $outbox_id = SchoolSafeWaOutboxInsert([
+                'idempotency_key' => $dedup, 'school_id' => $school_id,
+                'recipient_e164' => $to, 'message_text' => $text,
+                'engine' => 'evolution', 'status' => 'queued', 'created_by' => $actor,
+            ]);
+        }
+        if(!$outbox_id)return ['outbox_id'=>0,'status'=>'failed','error'=>'WA_OUTBOX_WRITE_FAILED'];
+        SchoolSafeWaAudit( $actor, 'fallback', (int) $direct_evo['ID'],
+            'outbox=' . $outbox_id . ' waha=indisponible secours=evolution motif=' . $purpose );
+        return SchoolSafeWaSendEvolution( $outbox_id, $direct_evo, $to, $text, $opts, 'evolution-direct' );
+    }
+
     if ( $waha_session === false )
     {
         $blocked_id = $retry_id ?: SchoolSafeWaOutboxInsert([
@@ -506,6 +530,15 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
             'error' => 'WAHA_FAILED_NO_FALLBACK' ];
     }
 
+    SchoolSafeWaAudit( $actor, 'fallback', (int) $evo_session['ID'],
+        'outbox=' . $outbox_id . ' waha=' . $code . ' secours=evolution' );
+
+    return SchoolSafeWaSendEvolution( $outbox_id, $evo_session, $to, $text, $opts, 'evolution-fallback' );
+}
+
+/** Envoi par Evolution d'un message deja inscrit en outbox (secours ou voie directe). */
+function SchoolSafeWaSendEvolution( $outbox_id, array $evo_session, $to, $text, array $opts, $via )
+{
     $evo_creds = SchoolSafeWaCredentials( 'evolution' );
 
     if ( $evo_creds === null )
@@ -517,9 +550,6 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
         return [ 'outbox_id' => $outbox_id, 'status' => 'failed',
             'error' => 'NO_EVO_CREDENTIALS' ];
     }
-
-    SchoolSafeWaAudit( $actor, 'fallback', (int) $evo_session['ID'],
-        'outbox=' . $outbox_id . ' waha=' . $code . ' secours=evolution' );
 
     $evo_payload = json_encode( [
         'number' => preg_replace( '/[^0-9]/', '', $to ),
@@ -560,7 +590,7 @@ function SchoolSafeWaSend( $to, $text, $opts = [] )
             . "updated_at=CURRENT_TIMESTAMP WHERE id='" . $outbox_id . "'" );
 
         return [ 'outbox_id' => $outbox_id, 'status' => 'accepted',
-            'via' => 'evolution-fallback' ];
+            'via' => $via ];
     }
 
     if (!SchoolSafeWaConfirmedFailure($res2) && SchoolSafeWaAcceptanceUnknown($res2)) {

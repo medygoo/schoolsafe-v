@@ -11,12 +11,13 @@ require_once __DIR__.'/ProgramFunctions/SchoolSafeWhatsapp.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeNotifyDispatch.fnc.php';
 require_once __DIR__.'/schoolsafe-notify-cli.php';
 $once=in_array('--once',$argv,true);$limit=50;$channel='all';$retryFailed=in_array('--retry-failed',$argv,true);
+$retryBounded=in_array('--retry-bounded',$argv,true);$releaseStale=in_array('--release-stale',$argv,true);
 foreach($argv as$arg){
     if(str_starts_with($arg,'--limit='))$limit=max(1,min(500,(int)substr($arg,8)));
     if(str_starts_with($arg,'--channel='))$channel=substr($arg,10);
 }
 if(!$once||!in_array($channel,['all','feed','email','push','whatsapp'],true)){
-    fwrite(STDERR,"Usage: php schoolsafe-notify-dispatch.php --once [--limit=50] [--channel=all|feed|email|push|whatsapp] [--retry-failed]\n");exit(2);
+    fwrite(STDERR,"Usage: php schoolsafe-notify-dispatch.php --once [--limit=50] [--channel=all|feed|email|push|whatsapp] [--retry-failed] [--retry-bounded] [--release-stale]\n");exit(2);
 }
 $host=getenv('SCHOOLSAFE_DB_HOST')?:'db';$port=getenv('SCHOOLSAFE_DB_PORT')?:'5432';
 $user=getenv('POSTGRES_USER')?:'schoolsafe';$pass=getenv('POSTGRES_PASSWORD')?:'';$dbname=getenv('POSTGRES_DB')?:'schoolsafe';
@@ -31,6 +32,25 @@ if($retryFailed){
         ." WHERE status='failed' AND dispatch_claim_token IS NULL AND last_error LIKE 'PRE_SEND:%' AND ($1='all' OR channel=$1)",[$channel]);
     if($retry===false){fwrite(STDERR,"RETRY_UNAVAILABLE\n");exit(1);}
 }
+// Service planifie : rejeu des echecs avant envoi, espace (5 min), borne (12 essais, 6 h).
+if($retryBounded){
+    $retry=pg_query_params($conn,"UPDATE schoolsafe_notify_deliveries SET status='pending',updated_at=CURRENT_TIMESTAMP"
+        ." WHERE status='failed' AND dispatch_claim_token IS NULL AND last_error LIKE 'PRE_SEND:%'"
+        ." AND last_error NOT IN ('PRE_SEND:RECIPIENT_FORBIDDEN','PRE_SEND:WA_COPY_UNAVAILABLE','PRE_SEND:SIMULATION_ONLY')"
+        ." AND attempts<12 AND updated_at<CURRENT_TIMESTAMP-interval '5 minutes' AND created_at>CURRENT_TIMESTAMP-interval '6 hours'"
+        ." AND ($1='all' OR channel=$1)",[$channel]);
+    if($retry===false){fwrite(STDERR,"RETRY_UNAVAILABLE\n");exit(1);}
+}
+// Reservation orpheline (travailleur interrompu avant tout resultat) : seulement feed et WhatsApp,
+// rejouables sans doublon (le WhatsApp passe par la cle d'idempotence de l'outbox). Jamais l'e-mail.
+if($releaseStale){
+    $stale=pg_query_params($conn,"UPDATE schoolsafe_notify_deliveries SET dispatch_claim_token=NULL,dispatch_claimed_at=NULL,updated_at=CURRENT_TIMESTAMP"
+        ." WHERE status='pending' AND dispatch_claim_token IS NOT NULL AND coalesce(last_error,'')=''"
+        ." AND dispatch_claimed_at<CURRENT_TIMESTAMP-interval '15 minutes' AND channel IN ('feed','whatsapp')"
+        ." AND ($1='all' OR channel=$1) RETURNING id",[$channel]);
+    if($stale===false){fwrite(STDERR,"RELEASE_UNAVAILABLE\n");exit(1);}
+    if(pg_num_rows($stale)>0)fwrite(STDERR,'RELEASED_STALE='.pg_num_rows($stale)."\n");
+}
 // Original deliveries only; no newly linked parent is resolved by this mirror.
 if($channel==='all'||$channel==='whatsapp'){
     $mirror=pg_query($conn,"INSERT INTO schoolsafe_notify_deliveries(event_id,school_id,syear,audience,recipient_staff_id,channel)"
@@ -38,7 +58,7 @@ if($channel==='all'||$channel==='whatsapp'){
         .' FROM schoolsafe_notify_deliveries d JOIN schoolsafe_notify_events e ON e.id=d.event_id'
         .' AND e.school_id=d.school_id AND e.syear=d.syear'
         ." WHERE d.channel IN ('email','push') AND d.status IN ('pending','accepted','sent')"
-        ." AND e.event_type IN ('security.entry','student.pickup','financial.control','payment.receipt','school.announcement','remediation.update','attendance.closure','absence.detected','case.updated','security.p1')"
+        ." AND e.event_type IN ('".implode("','",SchoolSafeNotifyWaEventTypes())."')"
         .' ON CONFLICT(event_id,audience,recipient_staff_id,channel) DO NOTHING');
     if($mirror===false){fwrite(STDERR,"WA_MIRROR_UNAVAILABLE\n");exit(1);}
 }
@@ -80,7 +100,6 @@ for($i=0;$i<$limit;$i++){
             if($to===false)throw new RuntimeException('NO_RECIPIENT_PHONE');
             if(SchoolSafeWaSimulate())throw new RuntimeException('SIMULATION_ONLY');
             if(!SchoolSafeWaConsented((int)$row['school_id'],(int)$row['recipient_staff_id'],$to))throw new RuntimeException('CONSENT_REQUIRED');
-            if(!SchoolSafeWaActiveSession('waha',$transports['status']??null))throw new RuntimeException('NO_WA_SESSION');
             $copy=$payload['message']??('SchoolSafe — '.$row['event_type'].' — '.$row['school_title']);
             // Salutation personnalisée du destinataire (03/11).
             $greet=trim((string)($staff['FIRST_NAME']??'').' '.(string)($staff['LAST_NAME']??''));
@@ -95,7 +114,9 @@ for($i=0;$i<$limit;$i++){
             $out=SchoolSafeWaSend($to,$copy,['school_id'=>(int)$row['school_id'],'staff_id'=>(int)$row['recipient_staff_id'],
                 'purpose'=>'notify','actor'=>'native-notify-dispatch','dedup_key'=>'notify:delivery:'.$row['id'],'authorize'=>$authorize,'retry_blocked'=>true,
                 'http_waha'=>$transports['waha']??null,'http_evo'=>$transports['evolution']??null,'http_status'=>$transports['status']??null]);
-            if(($out['status']??'')==='blocked'){$attempted=false;throw new RuntimeException('WA_BLOCKED');}
+            if(($out['status']??'')==='blocked'){$attempted=false;
+                throw new RuntimeException(in_array($out['error']??'',['CONSENT_REQUIRED','NO_WA_SESSION'],true)?$out['error']:'WA_BLOCKED');}
+            if(($out['status']??'')==='failed'){$attempted=false;throw new RuntimeException('WA_FAILED');}
             if(($out['status']??'')==='accepted'){
                 $receipt=pg_query_params($conn,'SELECT engine,provider_msg_id FROM schoolsafe_wa_outbox WHERE id=$1',[(int)($out['outbox_id']??0)]);
                 $proof=$receipt===false?false:pg_fetch_assoc($receipt);
@@ -122,7 +143,7 @@ for($i=0;$i<$limit;$i++){
         if($attempted){$status='pending';$uncertain=true;$error='ACCEPTANCE_UNKNOWN';}
         else{
             $known=['FORCED_FAILURE','RECIPIENT_FORBIDDEN','RECIPIENT_UNAVAILABLE','NO_RECIPIENT_EMAIL','NO_EMAIL_PROVIDER',
-                'RECIPIENT_CHANGED','SMTP_UNAVAILABLE','NO_RECIPIENT_PHONE','SIMULATION_ONLY','CONSENT_REQUIRED','NO_WA_SESSION','WA_COPY_UNAVAILABLE','WA_BLOCKED','PUSH_UNAVAILABLE','NO_PUSH_PROVIDER','SUBSCRIPTION_EXPIRED'];
+                'RECIPIENT_CHANGED','SMTP_UNAVAILABLE','NO_RECIPIENT_PHONE','SIMULATION_ONLY','CONSENT_REQUIRED','NO_WA_SESSION','WA_COPY_UNAVAILABLE','WA_BLOCKED','WA_FAILED','PUSH_UNAVAILABLE','NO_PUSH_PROVIDER','SUBSCRIPTION_EXPIRED'];
             $code=in_array($failure->getMessage(),$known,true)?$failure->getMessage():'CONTEXT_UNAVAILABLE';
             $error='PRE_SEND:'.$code;$status='failed';
         }

@@ -4,6 +4,14 @@
 require_once __DIR__.'/SchoolSafeAccountState.fnc.php';
 require_once __DIR__.'/SchoolSafeSchoolState.fnc.php';
 
+// Evenements copies sur WhatsApp : une seule liste (destinataires, distributeur, hub).
+// Jamais de controle financier ni de recu de paiement sur WhatsApp.
+function SchoolSafeNotifyWaEventTypes(): array
+{
+    return ['security.entry','student.pickup','school.announcement','remediation.update',
+        'attendance.closure','absence.detected','case.updated','security.p1'];
+}
+
 function SchoolSafeNotifyAccountReadable($username,int $school,array $db): bool
 {
     if($school<1)throw new RuntimeException('INVALID_CONTEXT');
