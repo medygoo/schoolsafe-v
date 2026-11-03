@@ -126,7 +126,7 @@ window.ssBuildBadge=function(s,cl,teacher,year,patB,patStyle){
   const ap=(DB.aps||[]).filter(a=>a.sid===s.id&&a.active)[0];
   const apNm=ap?ap.name:'—', apPh=ap?ap.phone||'—':'—';
   const mat=s.mat||s.id||'000';
-  const pts=Array.isArray(s.parts)?s.parts:(s.name||'').trim().split(/\s+/);
+  const pts=(Array.isArray(s.parts)?s.parts:(s.name||'').trim().split(/\s+/)).map(x=>String(x||'').toLocaleUpperCase('fr'));
   const n1=pts[0]||'—', n2=pts[1]||'', n3=pts.slice(2).join(' ')||'';
   const sz=snm.length>32?'11px':snm.length>22?'13px':'15.5px';
   const logoH=logo?`<div class="logo-slot" style="border:none;background:transparent;padding:0"><img src="${logo}" alt=""></div>`:'<div class="logo-slot"><span style="font-size:15px">🏫</span><span>LOGO<br>ÉCOLE</span></div>';
@@ -214,7 +214,7 @@ window.ssBuildCarte=function(s,cl,teacher,year,patC,patStyle){
   const parNm=par?par.name:(s.nom_papa||s.nom_maman||'—'), parPh=par?par.phone||'—':'—';
   const ap=(DB.aps||[]).filter(a=>a.sid===s.id&&a.active)[0];
   const apNm=ap?ap.name:'—', apPh=ap?ap.phone||'—':'—';
-  const pts=Array.isArray(s.parts)?s.parts:(s.name||'').trim().split(/\s+/);
+  const pts=(Array.isArray(s.parts)?s.parts:(s.name||'').trim().split(/\s+/)).map(x=>String(x||'').toLocaleUpperCase('fr'));
   const dispNm=pts.slice(0,2).filter(Boolean).join(' '), fn=pts.slice(2).join(' ')||'';
   const sz=snm.length>32?'11px':snm.length>22?'13px':'17px';
   const logoH=logo?`<div class="logo-slot" style="border:none;background:transparent;padding:0"><img src="${logo}" alt=""></div>`:'<div class="logo-slot"><span style="font-size:15px">🏫</span><span>LOGO<br>ÉCOLE</span></div>';

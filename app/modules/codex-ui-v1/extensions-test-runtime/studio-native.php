@@ -47,7 +47,10 @@ foreach ($xpath->query('//script[@src]') as $script) {
     if ($src === 'host-adapter.js') {
         $init = $doc->createElement('script');
         $scope = json_encode('codex-addons-local:' . UserSchool() . ':' . UserSyear() . ':' . User('STAFF_ID'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-        $init->appendChild($doc->createTextNode("window.SchoolSafeNativeSchool=" . json_encode((string) UserSchool()) . ";window.SchoolSafeNativeYear=" . json_encode((string) UserSyear()) . ";window.DB={settings:{school:{},year:''},students:[],classes:[],users:[],aps:[]};window.SchoolSafeStudioStorage={getItem:k=>localStorage.getItem($scope+':'+k),setItem:(k,v)=>localStorage.setItem($scope+':'+k,v),removeItem:k=>localStorage.removeItem($scope+':'+k)};"));
+        require_once __DIR__ . '/ProgramFunctions/SchoolSafeCardIssue.fnc.php';
+        $design_state = SchoolSafeCardDesignRead((int) UserSchool(), (int) UserSyear(), ['get' => function ($sql) { return DBGet(DBQuery($sql)); }]);
+        $design_json = json_encode(['design' => (object) $design_state['design'], 'locked' => $design_state['locked']], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        $init->appendChild($doc->createTextNode("window.SchoolSafeSchoolDesign=" . $design_json . ";window.SchoolSafeNativeSchool=" . json_encode((string) UserSchool()) . ";window.SchoolSafeNativeYear=" . json_encode((string) UserSyear()) . ";window.DB={settings:{school:{},year:''},students:[],classes:[],users:[],aps:[]};window.SchoolSafeStudioStorage={getItem:k=>Object.prototype.hasOwnProperty.call(window.SchoolSafeSchoolDesign.design,k)?window.SchoolSafeSchoolDesign.design[k]:null,setItem:(k,v)=>{if(window.SchoolSafeSchoolDesign.locked)throw new Error('DESIGN_LOCKED');window.SchoolSafeSchoolDesign.design[k]=String(v);window.SchoolSafeDesignChanged&&window.SchoolSafeDesignChanged();},removeItem:k=>{if(window.SchoolSafeSchoolDesign.locked)throw new Error('DESIGN_LOCKED');delete window.SchoolSafeSchoolDesign.design[k];window.SchoolSafeDesignChanged&&window.SchoolSafeDesignChanged();}};"));
         $script->parentNode->insertBefore($init, $script->nextSibling);
     }
 }

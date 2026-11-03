@@ -265,7 +265,7 @@ rosterStatus.id = 'ss-roster-status';
 rosterStatus.setAttribute('aria-live', 'polite');
 form.after(rosterStatus);
 
-function selectRoster(id) {
+let selectRoster = function (id) {
   const result = rosterById.get(String(id || ''));
   if (!result) return;
   studentInput.value = result.nativeReference.studentId;
@@ -280,7 +280,7 @@ document.addEventListener('change', event => {
   if (event.target && event.target.id === 'ss-student-sel' && rosterReady) selectRoster(event.target.value);
 });
 
-function renderRosterStatus(readyCount, incomplete) {
+let renderRosterStatus = function (readyCount, incomplete) {
   rosterStatus.replaceChildren();
   const title = document.createElement('p');
   title.innerHTML = '<b>' + readyCount + '</b> carte(s) prête(s) · <b>' + incomplete.length + '</b> fiche(s) à compléter';
@@ -463,4 +463,127 @@ if (printButton) printButton.addEventListener('click', event => {
     else if (Date.now() - started > 8000) clearInterval(wait);
   }, 200);
 }, true);
+
+// ---------------------------------------------------------------------------
+// Design de l'ecole (03/11) : enregistre en base pour tous les utilisateurs, verrouillable.
+const schoolDesign = window.SchoolSafeSchoolDesign || { design: {}, locked: false };
+const csrfValue = () => document.getElementById('native-issue-csrf').value;
+const postIssue = async fields => {
+  const response = await fetch('/card-bridge-issue.php', { method: 'POST', credentials: 'same-origin', cache: 'no-store',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+    body: new URLSearchParams({ ...fields, expected_school: window.SchoolSafeNativeSchool,
+      expected_year: window.SchoolSafeNativeYear, csrf: csrfValue() }) });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || 'REQUEST_REJECTED');
+  return body;
+};
+let designTimer = null;
+window.SchoolSafeDesignChanged = () => {
+  clearTimeout(designTimer);
+  designTimer = setTimeout(async () => {
+    try { await postIssue({ design: JSON.stringify(schoolDesign.design) }); window.toast('Design enregistré pour toute l’école.'); }
+    catch (error) { window.toast(error.message === 'CARD_DESIGN_LOCKED' ? 'Design verrouillé : aucune modification enregistrée.'
+      : 'Design non enregistré (droit d’émission requis).'); }
+  }, 800);
+};
+const DESIGN_GROUPS = '#PC > [data-studio-group="models"], #PC > [data-studio-group="catalogue"], #PC > [data-studio-group="personalization"], #PC > [data-studio-group="layout"]';
+function applyDesignLock() {
+  document.querySelectorAll(DESIGN_GROUPS).forEach(group => {
+    group.querySelectorAll('input,select,button,textarea').forEach(control => {
+      if (schoolDesign.locked) { control.dataset.ssLocked = '1'; control.disabled = true; }
+      else if (control.dataset.ssLocked) { delete control.dataset.ssLocked; control.disabled = false; }
+    });
+  });
+  lockButton.textContent = schoolDesign.locked ? '🔒 Design verrouillé — déverrouiller' : '🔓 Verrouiller le design de l’école';
+  lockButton.setAttribute('aria-pressed', schoolDesign.locked ? 'true' : 'false');
+}
+const lockButton = document.createElement('button');
+lockButton.type = 'button'; lockButton.id = 'ss-design-lock';
+lockButton.addEventListener('click', async () => {
+  const next = !schoolDesign.locked;
+  if (!window.confirm(next ? 'Verrouiller le design ? Toutes les cartes de l’école suivront ce modèle et plus personne ne pourra le modifier.'
+    : 'Déverrouiller le design ? Il pourra de nouveau être modifié.')) return;
+  try {
+    clearTimeout(designTimer);
+    if (next) await postIssue({ design: JSON.stringify(schoolDesign.design) });
+    const result = await postIssue({ design_lock: next ? 'Y' : 'N' });
+    schoolDesign.locked = result.locked === true;
+    applyDesignLock();
+    window.toast(schoolDesign.locked ? 'Design verrouillé : les cartes sont produites automatiquement avec ce modèle.' : 'Design déverrouillé.');
+  } catch { window.toast('Verrou non modifié (droit d’émission requis).'); }
+});
+rosterStatus.before(lockButton);
+const previousRender = window.render;
+window.render = function () { previousRender(); setTimeout(applyDesignLock, 0); };
+applyDesignLock();
+// Premiere ouverture : le design deja regle dans ce navigateur devient celui de l'ecole (une seule fois).
+(function importBrowserDesign() {
+  if (schoolDesign.locked || Object.keys(schoolDesign.design).length) return;
+  const prefix = 'codex-addons-local:' + window.SchoolSafeNativeSchool + ':' + window.SchoolSafeNativeYear + ':';
+  const found = {};
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(prefix)) continue;
+      const name = key.slice(prefix.length).replace(/^[0-9]+:/, '');
+      if (/^[a-z0-9:_-]{1,120}$/i.test(name)) found[name] = localStorage.getItem(key);
+    }
+  } catch { return; }
+  if (!Object.keys(found).length) return;
+  postIssue({ design: JSON.stringify(found) }).then(() => { window.toast('Design repris pour toute l’école.'); location.reload(); }).catch(() => {});
+})();
+
+// ---------------------------------------------------------------------------
+// Duplicata et annulation (carte perdue, volee, abimee) ; l'ancienne carte est refusee au portail.
+const changePanel = document.createElement('div');
+changePanel.id = 'ss-card-change'; changePanel.hidden = true;
+changePanel.innerHTML = '<label>Motif <select id="ss-card-change-reason">'
+  + '<option value="lost">Carte perdue — faire un duplicata</option>'
+  + '<option value="stolen">Carte volée — faire un duplicata</option>'
+  + '<option value="damaged">Carte abîmée — faire un duplicata</option>'
+  + '<option value="cancel">Annuler la carte (sans duplicata)</option></select></label>'
+  + '<label><input type="checkbox" id="ss-card-change-confirm"> Je confirme : l’ancienne carte sera refusée au portail.</label>'
+  + '<button type="button" id="ss-card-change-go">Valider</button> <button type="button" id="ss-card-change-cancel">Fermer</button>';
+issueButton.after(changePanel);
+issueButton.addEventListener('click', event => {
+  if (!rosterReady) return;
+  event.stopImmediatePropagation();
+  if (!loadedStudentId || !rosterById.has(String(loadedStudentId))) return;
+  changePanel.hidden = !changePanel.hidden;
+}, true);
+changePanel.querySelector('#ss-card-change-cancel').addEventListener('click', () => { changePanel.hidden = true; });
+changePanel.querySelector('#ss-card-change-go').addEventListener('click', async () => {
+  const reason = changePanel.querySelector('#ss-card-change-reason').value;
+  if (!changePanel.querySelector('#ss-card-change-confirm').checked) { window.toast('Cochez la confirmation avant de valider.'); return; }
+  try {
+    await postIssue({ student_id: String(loadedStudentId), card_change: reason });
+    changePanel.hidden = true; changePanel.querySelector('#ss-card-change-confirm').checked = false;
+    window.toast(reason === 'cancel' ? 'Carte annulée : elle est refusée au portail.'
+      : 'Duplicata émis : l’ancienne carte est refusée au portail, la nouvelle est prête.');
+    rosterById.clear(); await loadRoster();
+  } catch { window.toast('Opération non confirmée. Aucune carte modifiée.'); }
+});
+// Eleve dont la carte a ete annulee : bouton pour emettre une nouvelle carte, dans la liste a completer.
+async function reissue(id) {
+  try { await postIssue({ student_id: String(id), card_change: 'reissue' }); }
+  catch { await postIssue({ student_id: String(id) }); }
+  rosterById.clear(); await loadRoster();
+}
+const previousStatus = renderRosterStatus;
+renderRosterStatus = function (readyCount, incomplete) {
+  previousStatus(readyCount, incomplete);
+  rosterStatus.querySelectorAll('li').forEach((item, index) => {
+    const card = incomplete[index];
+    if (!card || JSON.stringify(card.missing) !== JSON.stringify(['card.official_qr'])) return;
+    const button = document.createElement('button');
+    button.type = 'button'; button.textContent = 'Émettre une nouvelle carte';
+    button.addEventListener('click', () => reissue(card.nativeReference.studentId).catch(() => window.toast('Émission non confirmée.')));
+    item.append(' ', button);
+  });
+};
+const previousSelect = selectRoster;
+selectRoster = function (id) {
+  previousSelect(id);
+  if (rosterById.has(String(id || ''))) { issueButton.textContent = 'Carte perdue, volée ou abîmée…'; issueButton.disabled = false; }
+};
 loadRoster();
