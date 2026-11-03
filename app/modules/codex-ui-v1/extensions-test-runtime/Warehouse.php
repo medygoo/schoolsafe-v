@@ -909,7 +909,7 @@ function WarehouseHeaderJS()
 	}
 	if ( isset( $_REQUEST['ss_companion'] ) && $_REQUEST['ss_companion'] === '1'
 		&& isset( $_REQUEST['modname'] ) && $_REQUEST['modname'] === 'SchoolSafe_Jaspe/Assistant.php' ) {
-        echo '<link rel="stylesheet" href="modules/SchoolSafe_Jaspe/companion-modern.css?v=9">';
+        echo '<link rel="stylesheet" href="modules/SchoolSafe_Jaspe/companion-modern.css?v=11">';
 	}
 	if ( in_array( $_ROSARIO['page'] ?? '', ['login', 'first-login', 'password-reset'], true ) ) {
 		echo '<link rel="stylesheet" href="assets/themes/SchoolSafeCodex/login-mobile.css?v=1">';

@@ -93,3 +93,8 @@ html body #jaspe-native #jaspe-question { caret-color:var(--jaspe-accent); borde
     html body #jaspe-native .jaspe-heading h2 { font-size: 18px; }
     html body #jaspe-native #jaspe-log p { padding: 4px 0; font-size: 14px; }
 }
+
+/* 03/11 : JASPE flotte sans fond — pas d'ambiance (logo d'école + voile vert) dans sa fenêtre. */
+#ss-ambiance-fond,#ss-ambiance-voile{display:none!important}
+html,body{background:transparent!important;background-image:none!important}
+body::before,body::after{content:none!important;display:none!important;background:none!important}

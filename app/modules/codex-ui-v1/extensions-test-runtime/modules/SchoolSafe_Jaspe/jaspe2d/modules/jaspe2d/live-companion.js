@@ -4,6 +4,7 @@ import {createPhotoRenderer} from './v12/photo-renderer.js';
 import {createBodyRenderer, deformBodyPoint} from './v12/body-renderer-v9.js';
 import {poseRegistration} from './v12/pose-registration.js';
 import {createEyeRenderer} from './v12/face-renderer.js';
+const FACE_OVERLAYS=false;
 import {alignPortrait} from './v12/face-alignment.js';
 import {smooth} from './v12/motion.js';
 import {displayMatte} from './display-matte.js';
@@ -170,14 +171,16 @@ export async function mountLiveCompanion(box,host,{
       context.setTransform(1,0,0,1,0,0);context.clearRect(0,0,W,H);context.drawImage(source,0,0);
       context.save();context.translate(face[0],face[1]);context.rotate(pose.faceAngle||0);context.scale(scale,scale);context.translate(-515,-310);
       context.globalCompositeOperation='source-atop';
-      if(!pose.nativeFace&&!pose.nativeExpression) {
+      // 03/11 : calques de visage (patch sourire/joie et paupières collées) retirés à la demande du
+      // propriétaire : mal alignés sur certaines poses. Chaque pose garde son visage photo d'origine.
+      if(FACE_OVERLAYS&&!pose.nativeFace&&!pose.nativeExpression) {
         faceContext.clearRect(0,0,208,180);faceContext.globalCompositeOperation='lighter';
         faceContext.globalAlpha=1-faceBlend;faceContext.drawImage(faces.smile.image,0,0);
         faceContext.globalAlpha=faceBlend;faceContext.drawImage(faces.joy.image,0,0);
         faceContext.globalAlpha=1;context.drawImage(faceLayer,411,220);
         context.globalAlpha=1-faceBlend;const first=faces.smile.eyes;context.drawImage(first.render(state.eyelids,state.gaze),first.x,first.y);
         context.globalAlpha=faceBlend;const second=faces.joy.eyes;context.drawImage(second.render(state.eyelids,state.gaze),second.x,second.y);
-      } else if(nativeEyes[key]) {
+      } else if(FACE_OVERLAYS&&nativeEyes[key]) {
         const eye=nativeEyes[key];context.drawImage(eye.render(state.eyelids,state.gaze),eye.x,eye.y);
       }
       context.restore();context.globalAlpha=1;context.globalCompositeOperation='source-over';

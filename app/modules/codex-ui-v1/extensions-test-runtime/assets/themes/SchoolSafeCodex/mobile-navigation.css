@@ -225,3 +225,6 @@ body.modules #menu-top > a .logo { width: 36px !important; height: 36px !importa
 }
 
 #ss-jaspe-dialog .ss-jaspe-close { display: none !important; }
+
+/* 03/11 : meme mode de couleur que la page JASPE, sinon le navigateur peint un fond opaque derriere elle. */
+#ss-jaspe-dialog iframe{color-scheme:light}

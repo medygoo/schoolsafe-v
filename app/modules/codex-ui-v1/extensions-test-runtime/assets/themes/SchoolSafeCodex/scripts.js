@@ -766,7 +766,7 @@
 			if (!dialog) {
 				var dialogStyles = document.createElement('link');
 				dialogStyles.rel = 'stylesheet';
-				dialogStyles.href = 'assets/themes/SchoolSafeCodex/mobile-navigation.css?v=20';
+				dialogStyles.href = 'assets/themes/SchoolSafeCodex/mobile-navigation.css?v=21';
 				document.head.appendChild(dialogStyles);
 				dialog = document.createElement('dialog');
 				dialog.id = 'ss-jaspe-dialog'; dialog.setAttribute('aria-label', 'JASPE, assistante SchoolSafe');

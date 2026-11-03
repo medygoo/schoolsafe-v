@@ -1,4 +1,4 @@
-import {mountLiveCompanion} from './jaspe2d/modules/jaspe2d/live-companion.js?v=gestes-4';
+import {mountLiveCompanion} from './jaspe2d/modules/jaspe2d/live-companion.js?v=sans-calque-1';
 import {createPresentationController} from './jaspe2d/modules/jaspe2d/presentation-controller.js?v=gestes-4';
 
 const host=document.getElementById('jaspe-native');

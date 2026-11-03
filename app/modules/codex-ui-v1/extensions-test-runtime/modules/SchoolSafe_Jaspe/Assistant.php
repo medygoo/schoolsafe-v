@@ -49,6 +49,10 @@ if (!$jaspeCompanion && !empty($RosarioPlugins['Setup_Assistant']) && AllowUse('
 <script src="modules/SchoolSafe_Jaspe/jaspe2d/modules/jaspe2d/jaspe2d.js"></script>
 <script src="modules/SchoolSafe_Jaspe/assistant.js?v=dialogue-15"></script>
 <script src="modules/SchoolSafe_Jaspe/voice.js?v=6"></script>
+<?php if ($jaspeCompanion) : ?>
+<link rel="stylesheet" href="modules/SchoolSafe_Jaspe/companion-bulles.css?v=3">
+<script src="modules/SchoolSafe_Jaspe/companion-bulles.js?v=3"></script>
+<?php endif; ?>
 <?php if ($jaspeDraft && !$jaspeCompanion) : ?>
 <script type="application/json" id="jaspe-resources"><?php echo json_encode(json_decode(file_get_contents(__DIR__ . '/resources.json'), true), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?></script>
 <script src="modules/SchoolSafe_Jaspe/resources.js"></script>
@@ -296,6 +300,6 @@ html body #jaspe-native #jaspe-log.jaspe-ecriture p[data-speaker] {
   opacity: .30 !important;
 }
 </style>
-    <script type="module" src="modules/SchoolSafe_Jaspe/v12-rosario.js?v=gestes-4"></script>
+    <script type="module" src="modules/SchoolSafe_Jaspe/v12-rosario.js?v=sans-calque-1"></script>
 <?php
 unset($jaspeActions, $jaspeDraft);
