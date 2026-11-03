@@ -23,7 +23,12 @@ if (SchoolSafeNativePermission('SchoolSafe/RemediationRead.php')) {
 }
 // These are entry points, not grants. Each service independently checks its capabilities.
 if (SchoolSafeNativePermission('SchoolSafe/FamilyRead.php')) {
-    $add('school', 'Familles et acc\u00e8s', 'Personnes de r\u00e9cup\u00e9ration', 'Modules.php?modname=SchoolSafe/FamilyRead.php');
+    // Onglet « Famille et récupération » de la fiche élève (catégorie native) ;
+    // repli sur l'ancien formulaire si la catégorie n'existe pas.
+    $familyCategory = (int) DBGetOne("SELECT ID FROM student_field_categories WHERE INCLUDE='SchoolSafe/FamilyTab'");
+    $add('school', 'Familles et acc\u00e8s', 'Personnes de r\u00e9cup\u00e9ration', $familyCategory > 0
+        ? 'Modules.php?modname=Students/Student.php&category_id=' . $familyCategory
+        : 'Modules.php?modname=SchoolSafe/FamilyRead.php');
 }
 foreach (['SchoolSafe/ScanVerify.php', 'SchoolSafe/ScanArrival.php',
     'SchoolSafe/ScanPickup.php', 'SchoolSafe/ScanFees.php'] as $scanProgram) {
