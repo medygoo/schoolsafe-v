@@ -96,7 +96,7 @@ if (($result['state'] ?? '') !== 'OFFLINE' && is_string($result['reply'] ?? null
 $result['reply'] = SchoolSafeBrandText($result['reply']);
 // Deterministic emotion/gesture rules (2026-10-17). The v12 engine already animates these
 // families; without this signal the interface could only reach six coarse states.
-$motion = SchoolSafeJaspeMotionRules($result);
+$motion = SchoolSafeJaspeMotionRules($result, (string) $payload['message']);
 $result['emotion'] = $motion[0];
 $result['gesture'] = $motion[1];
 foreach ($result['actions'] as &$action) {
