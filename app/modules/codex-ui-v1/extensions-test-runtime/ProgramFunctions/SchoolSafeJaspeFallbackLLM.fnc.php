@@ -11,7 +11,7 @@
  * Regle de confidentialite : l'historique de session (generique) + la question
  * seulement. Aucune donnee d'eleve n'est envoyee par ce chemin.
  */
-function SchoolSafeJaspeFallbackLLM(string $message, array $history): ?array
+function SchoolSafeJaspeFallbackLLM(string $message, array $history, string $preamble = ''): ?array
 {
     $dir = '/var/lib/schoolsafe-jaspe';
     $url = is_file($dir.'/fallback-url') ? trim((string) file_get_contents($dir.'/fallback-url')) : '';
@@ -19,7 +19,7 @@ function SchoolSafeJaspeFallbackLLM(string $message, array $history): ?array
     $model = is_file($dir.'/fallback-model') ? trim((string) file_get_contents($dir.'/fallback-model')) : '';
     if ($url === '' || $key === '' || $model === '') { return null; }
     if (!preg_match('#^https://[a-z0-9.-]+/#i', $url)) { return null; }
-    $messages = [['role' => 'system', 'content' => "Tu es JASPE, l'assistante de l'application scolaire SchoolSafe. Reponds en francais, breve et utile. Ne mentionne jamais de donnees personnelles d'eleves."]];
+    $messages = [['role' => 'system', 'content' => "Tu es JASPE, l'assistante de l'application scolaire SchoolSafe. Reponds en francais, breve et utile. Ne mentionne jamais de donnees personnelles d'eleves." . (trim($preamble) !== '' ? "\n" . trim($preamble) : '')]];
     foreach ($history as $echange) {
         if (isset($echange['role'], $echange['content'])
             && in_array($echange['role'], ['user', 'assistant'], true)) {

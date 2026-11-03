@@ -38,6 +38,7 @@ require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeActions.fnc.php';
 require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeConversation.fnc.php';
 require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeMotion.fnc.php';
 require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeCloudflare.fnc.php';
+require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspePrompt.fnc.php';
 // Memoire de session : les derniers echanges donnent le contexte a l IA (Cloudflare et secours).
 // Elle vit dans $_SESSION (effacee a la deconnexion), jamais en base ; l'interface ne l'efface pas.
 $history = SchoolSafeJaspeCleanHistory(is_array($_SESSION['jaspe_memory'] ?? null) ? $_SESSION['jaspe_memory'] : []);
@@ -51,6 +52,12 @@ try {
         if (count($hits) >= 10) SchoolSafeJaspeChatFail(429, 'LOCAL_AI_RATE_LIMITED');
         $hits[] = $now;
         $_SESSION['jaspe_ai_hits'] = $hits;
+        // 03/11 : consignes + contexte (prenom, role, ecole) ; noms d'eleves masques avant tout envoi.
+        $preamble = SchoolSafeJaspeGuidelines(SchoolSafeJaspeWho());
+        $studentNames = SchoolSafeJaspeStudentNames((int) UserSchool(), (int) UserSyear(), static function ($sql) { return DBGet($sql); });
+        $sendMessage = SchoolSafeJaspeMask((string) $payload['message'], $studentNames);
+        $maskedNames = SchoolSafeJaspeMaskedNames((string) $payload['message'], $studentNames);
+        $sendHistory = SchoolSafeJaspeMaskHistory($history, $studentNames);
         try {
             // SchoolSafe : repli sur la table config si la variable d'environnement est absente.
             $secret = getenv('JASPE_WORKER_HMAC_SECRET') ?: (string) Config('JASPE_WORKER_SECRET');
@@ -60,11 +67,11 @@ try {
             ]), $secret);
             session_write_close();
             $workerUrl = getenv('JASPE_WORKER_URL') ?: (string) Config('JASPE_WORKER_URL');
-            $result = SchoolSafeJaspeCloudflare($payload['message'], $sessionKey,
-                $workerUrl, $secret, null, $history);
+            $result = SchoolSafeJaspeCloudflare($sendMessage, $sessionKey,
+                $workerUrl, $secret, null, $sendHistory, $preamble);
         } catch (RuntimeException $error) {
             require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeFallbackLLM.fnc.php';
-            $fallback = SchoolSafeJaspeFallbackLLM((string) $payload['message'], $history);
+            $fallback = SchoolSafeJaspeFallbackLLM($sendMessage, $sendHistory, $preamble);
             if ($fallback !== null) {
                 error_log('JASPE fallback LLM used.');
                 $result = $fallback;
@@ -84,6 +91,8 @@ try {
 } catch (InvalidArgumentException $error) {
     SchoolSafeJaspeChatFail(400, 'INVALID_MESSAGE');
 }
+// Le nom ecrit par l'utilisateur reapparait dans la reponse affichee (jamais envoye au fournisseur).
+if (!empty($maskedNames) && is_string($result['reply'] ?? null)) $result['reply'] = SchoolSafeJaspeUnmaskReply($result['reply'], $maskedNames);
 // Memoire (03/11) : tout echange abouti (reponse locale, IA ou de secours) entre dans le contexte ;
 // seules les pannes (OFFLINE) n'y entrent pas.
 if (($result['state'] ?? '') !== 'OFFLINE' && is_string($result['reply'] ?? null)) {

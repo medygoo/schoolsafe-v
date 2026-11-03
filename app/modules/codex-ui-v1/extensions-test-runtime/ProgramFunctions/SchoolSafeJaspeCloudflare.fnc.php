@@ -1,6 +1,6 @@
 <?php
 /** Match the existing JASPE Worker's canonical JSON and HMAC protocol. */
-function SchoolSafeJaspeCloudflare(string $message, string $sessionKey, string $url, string $secret, ?callable $transport = null, array $history = []): array
+function SchoolSafeJaspeCloudflare(string $message, string $sessionKey, string $url, string $secret, ?callable $transport = null, array $history = [], string $preamble = ''): array
 {
     $parts = parse_url($url);
     if (!$parts || ($parts['scheme'] ?? '') !== 'https' ||
@@ -13,7 +13,7 @@ function SchoolSafeJaspeCloudflare(string $message, string $sessionKey, string $
     // Memoire de conversation (03/11) : le Worker en service ne lit pas `history` ; les derniers
     // echanges de la session PHP sont donc places en tete du message, sans modifier le Worker.
     // Le Worker n'en garde jamais aucune trace.
-    $payload = ['message'=>SchoolSafeJaspeContextMessage($message, $history),'session_key'=>$sessionKey];
+    $payload = ['message'=>SchoolSafeJaspeContextMessage($message, $history, $preamble),'session_key'=>$sessionKey];
     $body = json_encode($payload,
         JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_LINE_TERMINATORS);
     if (!is_string($body)) throw new RuntimeException('INVALID_MESSAGE');
@@ -71,13 +71,14 @@ function SchoolSafeJaspeCleanHistory(array $history): array
 }
 
 /** Message envoye au modele : echanges precedents puis nouveau message (inchange sans memoire). */
-function SchoolSafeJaspeContextMessage(string $message, array $history): string
+function SchoolSafeJaspeContextMessage(string $message, array $history, string $preamble = ''): string
 {
     $clean = SchoolSafeJaspeCleanHistory($history);
-    if (!$clean) return $message;
+    $head = trim($preamble) !== '' ? trim($preamble) . "\n\n" : '';
+    if (!$clean) return $head === '' ? $message : $head . "Message de l'utilisateur :\n" . $message;
     $lines = [];
     foreach ($clean as $h) $lines[] = ($h['role'] === 'user' ? 'Utilisateur' : 'JASPE') . ' : ' . $h['content'];
-    return "Échanges précédents de cette conversation (du plus ancien au plus récent) :\n"
+    return $head . "Échanges précédents de cette conversation (du plus ancien au plus récent) :\n"
         . implode("\n", $lines)
         . "\n\nNouveau message de l'utilisateur (réponds à celui-ci en tenant compte des échanges précédents) :\n"
         . $message;
