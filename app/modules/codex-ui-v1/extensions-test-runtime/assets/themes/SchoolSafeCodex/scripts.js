@@ -69,7 +69,7 @@
 		var extensionGroups = {
 			Dashboards:'Tableaux de bord', Audit:'Audit', Email_Log:'Historique des courriels',
 			Backup:'Sauvegardes', PDF_Archive:'Archives PDF', Semester_Rollover:'Report semestriel',
-			Certificate:'Certificats', Students_Import:'Import des eleves', Student_ID_Card:'Cartes natives Rosario',
+			Certificate:'Certificats', Students_Import:'Import des eleves', Student_ID_Card:'Cartes natives SchoolSafe',
 			Class_Diary:'Journal de classe', Grades_Import:'Import des notes', Lesson_Plan:'Preparation des lecons',
 			Quiz:'Questionnaires', Timetable_Import:'Import des horaires', Attendance_Excel_Sheet:'Export des presences',
 			Entry_Exit:'Entrees et sorties', NFC_QR_Actions:'Actions NFC et QR', Human_Resources:'Qualifications',
@@ -203,7 +203,7 @@
 			});
 			var order = Object.keys(buckets);
 			if (definition[0] === 'school') {
-				var schoolOrder = ['Élèves et inscriptions', 'Familles et accès', 'Cartes et documents', 'Cartes natives Rosario', 'Certificats', 'Organisation scolaire', 'Référentiels élèves', 'Import des eleves'];
+				var schoolOrder = ['Élèves et inscriptions', 'Familles et accès', 'Cartes et documents', 'Cartes natives SchoolSafe', 'Certificats', 'Organisation scolaire', 'Référentiels élèves', 'Import des eleves'];
 				order.sort(function (a, b) {
 					var ai = schoolOrder.indexOf(a), bi = schoolOrder.indexOf(b);
 					return (ai < 0 ? schoolOrder.length : ai) - (bi < 0 ? schoolOrder.length : bi);
@@ -427,7 +427,7 @@
 			'Users/TeacherPrograms': 'Choisissez l’enseignant et le cours concernés pour accéder au programme demandé. Les actions disponibles restent limitées par vos droits Rosario.',
 			'School_Setup/Schools': 'Cette page regroupe les informations de l’établissement. Vérifiez l’école sélectionnée avant de modifier son nom, ses coordonnées ou les autres renseignements.',
 			'School_Setup/Periods': 'Les tranches horaires découpent la journée scolaire. Elles servent à situer les cours et, selon les réglages, à suivre la présence par cours. Vérifiez les horaires et leur ordre avant d’enregistrer.',
-			'Students_Import/StudentsImport': 'L’import crée des dossiers élèves à partir d’un fichier. Préparez le fichier, associez chaque colonne au bon champ Rosario et vérifiez les correspondances avant de lancer l’import.',
+			'Students_Import/StudentsImport': 'L’import crée des dossiers élèves à partir d’un fichier. Préparez le fichier, associez chaque colonne au bon champ SchoolSafe et vérifiez les correspondances avant de lancer l’import.',
 			'Students/AddUsers': 'Associez les parents aux élèves concernés. Ce rattachement détermine quels enfants un parent peut consulter : vérifiez chaque association avant de valider.',
 			'Custom/CreateParents': 'Cette action crée des comptes parents à partir du champ courriel choisi dans les dossiers élèves, puis rattache les parents aux élèves. Vérifiez le champ, la sélection et les adresses avant de lancer la création.',
 			'Custom/RemoveAccess': 'Cette page permet de bloquer ou de rétablir l’accès des élèves sélectionnés et des parents associés. Vérifiez le mode de l’action et la sélection avant de valider ; ce n’est pas une simple consultation.',
@@ -437,13 +437,13 @@
 			'SchoolSafe/FamilyReplace': 'Retirez ou remplacez une personne associée à un élève à partir de la demande reçue à l’école. Vérifiez les identifiants et la personne concernée avant de valider.',
 			'SchoolSafe/Studio': 'Préparez la présentation des cartes dans le studio. La conception du modèle, l’émission d’une carte officielle et sa demande d’impression sont des étapes distinctes.',
 			'Student_ID_Card/StudentIDCard': 'Recherchez et sélectionnez les élèves pour préparer leurs cartes avec le module natif Rosario. Vérifiez les élèves et les options de présentation avant la génération.',
-			'SchoolSafe/PrintRequest': 'Cette action enregistre une demande d’impression de carte pour l’élève indiqué. Vérifiez son identifiant Rosario et choisissez le format avant de valider. Une demande enregistrée ne signifie pas que la carte a déjà été imprimée.',
+			'SchoolSafe/PrintRequest': 'Cette action enregistre une demande d’impression de carte pour l’élève indiqué. Vérifiez son identifiant SchoolSafe et choisissez le format avant de valider. Une demande enregistrée ne signifie pas que la carte a déjà été imprimée.',
 			'SchoolSafe/IssueCard': 'Cette page sert à émettre une carte officielle pour un élève. Vérifiez l’élève concerné avant de valider ; l’émission et la demande d’impression sont deux opérations distinctes.',
 			'School_Setup/Calendar': 'Le calendrier indique les jours scolaires et les événements. Vérifiez le calendrier et le mois sélectionnés avant de consulter une date. La création ou la modification d’un calendrier dépend de vos droits.',
 			'Students/AssignOtherInfo': 'Cette page applique les mêmes informations à plusieurs élèves. Recherchez d’abord les élèves, vérifiez votre sélection, puis renseignez les informations à attribuer avant de valider.',
 			'Students/Student': 'Recherchez d’abord un élève pour ouvrir son dossier. Les onglets regroupent ses différentes informations ; les modifications possibles dépendent de vos droits.',
 			'Certificate/CertificateEnrollment': 'Recherchez et sélectionnez les élèves concernés pour préparer leurs certificats de scolarité. La recherche avancée permet de préciser les critères de sélection.',
-			'Email_Log/EmailLog': 'Ce journal permet de consulter les emails enregistrés par Rosario et les erreurs signalées. Filtrez les dates pour retrouver un envoi. Une entrée du journal ne garantit pas que le destinataire a reçu ou lu le message.',
+			'Email_Log/EmailLog': 'Ce journal permet de consulter les emails enregistrés par SchoolSafe et les erreurs signalées. Filtrez les dates pour retrouver un envoi. Une entrée du journal ne garantit pas que le destinataire a reçu ou lu le message.',
 			'School_Setup/MarkingPeriods': 'Les périodes scolaires organisent l’année, les semestres et les périodes de notation. Sélectionnez le niveau concerné avant de modifier ses dates et ses paramètres ; ces réglages servent aux notes et aux bulletins.'
 		};
 		if (body.dataset.ssPage === 'Email_Log/EmailLog' && new URL(location.href).searchParams.get('tab') === 'config') {
@@ -1183,7 +1183,7 @@
         var links = document.querySelectorAll('#menu a');
         var setup, jaspe;
         Array.prototype.forEach.call(links, function (link) {
-            if (/^Assistant de configuration (Rosario|School Safe)$/.test(link.textContent.trim())) setup = link;
+            if (/^Assistant de configuration (Rosario|School Safe|SchoolSafe)$/.test(link.textContent.trim())) setup = link;
             if (link.getAttribute('href') === 'Modules.php?modname=SchoolSafe_Jaspe/Assistant.php') jaspe = link;
         });
         if (!setup) return;

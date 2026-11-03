@@ -33,7 +33,7 @@
   actions['register-family'][1]=['nativeStudentId','guardianType','fullName','phone','isPrimary'];
   actions['school-family-approve'][1]=['nativeStudentId','guardianId','reason','consent','parentStaffId'];
  }
- const labels={parentStaffId:'Compte parent déjà lié à cet enfant (identifiant, facultatif)',nativeStudentId:'Identifiant élève Rosario',authorizationId:'Référence de l’accréditation',guardianId:'Référence de la personne',profileId:'Référence du profil lié',reason:'Motif',fullName:'Nom complet',phone:'Téléphone',email:'Email',address:'Adresse',consent:'Consentement du parent principal',photoPath:'Photo enregistrée',decision:'Décision',capability:'Tâche',format:'Format',guardianType:'Lien familial',isPrimary:'Désigner comme principal'};
+ const labels={parentStaffId:'Compte parent déjà lié à cet enfant (identifiant, facultatif)',nativeStudentId:'Identifiant élève SchoolSafe',authorizationId:'Référence de l’accréditation',guardianId:'Référence de la personne',profileId:'Référence du profil lié',reason:'Motif',fullName:'Nom complet',phone:'Téléphone',email:'Email',address:'Adresse',consent:'Consentement du parent principal',photoPath:'Photo enregistrée',decision:'Décision',capability:'Tâche',format:'Format',guardianType:'Lien familial',isPrimary:'Désigner comme principal'};
  let csrf='',busy=false;
  const action=byId('management-action'),fields=byId('management-fields'),state=byId('management-state'),output=byId('management-result'),submit=byId('management-submit');
  for(const [key,[label]] of Object.entries(actions)){

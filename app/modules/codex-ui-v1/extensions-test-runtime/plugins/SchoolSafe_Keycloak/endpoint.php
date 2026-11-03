@@ -94,7 +94,7 @@ try {
             'expires'=>time()+(int)$tokens['expires_in'],'checked'=>0]];
     $escape = fn(string $s): string => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
     echo '<!doctype html><html lang="fr"><meta charset="utf-8"><title>SchoolSafe</title>'
-        . '<p>Identité vérifiée. Continuer avec les droits de votre compte Rosario.</p>'
+        . '<p>Identité vérifiée. Continuer avec les droits de votre compte SchoolSafe.</p>'
         . '<form action="../../index.php" method="post">'
         . '<input type="hidden" name="USERNAME" value="' . $escape($link['username']) . '">'
         . '<input type="hidden" name="PASSWORD" value="' . $escape($secret) . '">'

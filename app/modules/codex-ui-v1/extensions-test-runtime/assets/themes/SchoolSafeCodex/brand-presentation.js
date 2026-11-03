@@ -64,11 +64,11 @@
             ['title', 'aria-label', 'alt', 'placeholder'].forEach(function (attribute) {
                 var value = element.getAttribute(attribute);
                 if (value === null) return;
-                var next = value.replace(brand, 'School Safe').replace(premium, '');
+                var next = value.replace(brand, 'SchoolSafe').replace(premium, '');
                 if (next !== value) element.setAttribute(attribute, next);
             });
         });
-        document.title = document.title.replace(brand, 'School Safe');
+        document.title = document.title.replace(brand, 'SchoolSafe');
     }
     function start() {
         var logoStyle = document.querySelector('link[rel="stylesheet"][href*="menu-logo.css"]');

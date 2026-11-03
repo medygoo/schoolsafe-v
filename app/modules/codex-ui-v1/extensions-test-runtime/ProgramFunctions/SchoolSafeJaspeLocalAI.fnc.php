@@ -8,7 +8,7 @@ function SchoolSafeJaspeLocalAI(string $message, string $model, ?callable $trans
     $payload = [
         'model'=>$model, 'stream'=>false, 'keep_alive'=>'5m',
         'messages'=>[
-            ['role'=>'system','content'=>"Tu es JASPE, assistant de Rosario. Reponds en francais. Tu ne disposes d'aucun outil, droit ou acces aux dossiers scolaires. Ne pretends jamais avoir enregistre, publie ou consulte des donnees. Oriente les operations metier vers Rosario."],
+            ['role'=>'system','content'=>"Tu es JASPE, assistant de SchoolSafe. Reponds en francais. Tu ne disposes d'aucun outil, droit ou acces aux dossiers scolaires. Ne pretends jamais avoir enregistre, publie ou consulte des donnees. Oriente les operations metier vers Rosario."],
             ['role'=>'user','content'=>$message],
         ],
         'options'=>['num_predict'=>512],

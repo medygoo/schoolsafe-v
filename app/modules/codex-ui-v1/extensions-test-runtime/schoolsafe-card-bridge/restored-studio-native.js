@@ -8,7 +8,7 @@ const unavailableProduction = () => window.toast('Cartes officielles en cours de
 for (const name of ['ssModelPrint', 'ssPrintCard', 'printClassCards', 'exportSSAllCardsZip']) {
   window[name] = unavailableProduction;
 }
-window.ssSetLocalSchoolText = () => window.toast('Coordonnees gerees dans Rosario.');
+window.ssSetLocalSchoolText = () => window.toast('Coordonnées gérées dans la fiche de l’école.');
 const panel = document.getElementById('PC');
 function protect() {
   if (rosterReady) return;
@@ -87,7 +87,7 @@ form.addEventListener('submit', async event => {
   const button = form.querySelector('button'); button.disabled = true;
   loadedStudentId = ''; issueButton.disabled = true;
   window.SchoolSafeStudio.setData({settings:{school:{},year:''},students:[],classes:[],users:[],aps:[]});
-  window.toast('Chargement Rosario...');
+  window.toast('Chargement…');
   try {
     const result = await window.SchoolSafeStudioNativeBridge.loadNativeStudioCard(studentId, { signal: controller.signal });
     if (!isCurrent(version, studentId)) return;
@@ -96,7 +96,7 @@ form.addEventListener('submit', async event => {
     const nativeRegistry = result.backend === 'native-registry';
     const unmapped = result.missing.includes('class.mapping') || result.missing.includes('class.cycle');
     if (unmapped && !nativeRegistry) {
-      window.toast('Dossier Rosario lu. Classe ou cycle non raccorde : ' + result.missing.join(', ')
+      window.toast('Dossier lu. Classe ou cycle non raccordé : ' + result.missing.join(', ')
         + '. Emission et impression bloquees.');
       return;
     }
@@ -107,7 +107,7 @@ form.addEventListener('submit', async event => {
     issueButton.textContent = nativeRegistry ? 'Enregistrer le QR officiel' : 'Emettre la carte officielle';
     issueButton.disabled = (nativeRegistry ? result.nativeCredentialIssuanceAllowed !== true
       : result.missing.some(key => key !== 'card.official_qr')) || Boolean(result.input.credential?.qr_payload);
-    window.toast('Donnees Rosario chargees. ' + (result.missing.length ? 'Informations manquantes : ' + result.missing.join(', ') : 'Consultation disponible.') + ' Aucune carte emise.');
+    window.toast('Données chargées. ' + (result.missing.length ? 'Informations manquantes : ' + result.missing.join(', ') : 'Consultation disponible.') + ' Aucune carte emise.');
   } catch {
     if (!isCurrent(version, studentId)) return;
     window.toast('Dossier inaccessible ou contexte modifie. Aucune operation effectuee.');
@@ -288,7 +288,7 @@ let renderRosterStatus = function (readyCount, incomplete) {
   if (!incomplete.length) return;
   const details = document.createElement('details');
   const summary = document.createElement('summary');
-  summary.textContent = 'Fiches à compléter dans Rosario';
+  summary.textContent = 'Fiches à compléter';
   details.appendChild(summary);
   const list = document.createElement('ul');
   for (const card of incomplete) {

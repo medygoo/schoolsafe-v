@@ -61,7 +61,7 @@ function SchoolSafeNativeDashboardSources(): string
         $html.='<p><a href="Modules.php?modname='.$escape($route).'">Ouvrir '.$escape($title).'</a></p></details>';
     }
     if(!$html)return '';
-    return '<section class="ss-native-dashboard" aria-label="Synthèses Rosario"><h3>Synthèses Rosario</h3><div class="ss-dashboard-native-totals">'.$html.'</div></section>';
+    return '<section class="ss-native-dashboard" aria-label="Synthèses SchoolSafe"><h3>Synthèses SchoolSafe</h3><div class="ss-dashboard-native-totals">'.$html.'</div></section>';
 }
 
 function SchoolSafePersonalOverview(string $profile, array $feed): void
@@ -161,7 +161,7 @@ function SchoolSafeOverview()
     if(in_array($profile,['parent','teacher','student'],true)) {
         require_once __DIR__.'/SchoolSafeDashboardTabs.fnc.php';
         [$active,$tabs]=SchoolSafeDashboardTabs();
-        echo '<div class="sscx-app ss-connected-dashboard ss-personal-tabbed" data-dashboard-tab="'.$e($active).'" data-dashboard-profile="'.$e($profile).'"><section class="sscx-section sscx-role-overview"><header class="sscx-overview-header"><div><h2>'.$e($title).'</h2><p>'.$e(date('d/m/Y')).' <span class="sscx-badge">'.$e(UserSyear()).' · Rosario</span></p></div><a class="ss-dashboard-refresh" href="Modules.php?modname=misc/Portal.php">Actualiser</a></header>'.$tabs;
+        echo '<div class="sscx-app ss-connected-dashboard ss-personal-tabbed" data-dashboard-tab="'.$e($active).'" data-dashboard-profile="'.$e($profile).'"><section class="sscx-section sscx-role-overview"><header class="sscx-overview-header"><div><h2>'.$e($title).'</h2><p>'.$e(date('d/m/Y')).' <span class="sscx-badge">'.$e(UserSyear()).' · SchoolSafe</span></p></div><a class="ss-dashboard-refresh" href="Modules.php?modname=misc/Portal.php">Actualiser</a></header>'.$tabs;
         require_once __DIR__.'/SchoolSafePersonalDashboardStats.fnc.php';
         echo SchoolSafePersonalDashboardStats($profile);
         require_once __DIR__.'/SchoolSafePersonalDashboardDetails.fnc.php';
@@ -171,8 +171,8 @@ function SchoolSafeOverview()
         echo SchoolSafeDashboardDetails($d,$feed).'</section></div>';
         return;
     }
-    echo '<div class="sscx-app ss-connected-dashboard" data-dashboard-profile="'.$e($profile).'"><section class="sscx-section sscx-role-overview sscx-school-overview"><header class="sscx-overview-header"><div><h2>'.$e($title).'</h2><p>'.$e(date('d/m/Y')).' <span class="sscx-badge">'.$e(UserSyear()).' · Rosario</span></p></div><a class="ss-dashboard-refresh" href="Modules.php?modname=misc/Portal.php" title="Actualiser la synthese" aria-label="Actualiser la synthese">Actualiser</a></header><div class="sscx-overview-summary"><div class="sscx-overview-core"><div class="sscx-metrics sscx-overview-metrics">';
-    $metrics=[['students','Élèves inscrits',$d['total'],'Inscriptions actives'],['classes','Classes',User('PROFILE')==='admin'&&AllowUse('Scheduling/Courses.php')?count($d['classes']):null,'Groupes de cours Rosario'],['presence','Élèves présents',$d['present'],'Relevés journaliers Rosario'],['teachers','Enseignants présents',$feed['staff_present'],'Dernier pointage du jour : entrée']];
+    echo '<div class="sscx-app ss-connected-dashboard" data-dashboard-profile="'.$e($profile).'"><section class="sscx-section sscx-role-overview sscx-school-overview"><header class="sscx-overview-header"><div><h2>'.$e($title).'</h2><p>'.$e(date('d/m/Y')).' <span class="sscx-badge">'.$e(UserSyear()).' · SchoolSafe</span></p></div><a class="ss-dashboard-refresh" href="Modules.php?modname=misc/Portal.php" title="Actualiser la synthese" aria-label="Actualiser la synthese">Actualiser</a></header><div class="sscx-overview-summary"><div class="sscx-overview-core"><div class="sscx-metrics sscx-overview-metrics">';
+    $metrics=[['students','Élèves inscrits',$d['total'],'Inscriptions actives'],['classes','Classes',User('PROFILE')==='admin'&&AllowUse('Scheduling/Courses.php')?count($d['classes']):null,'Groupes de cours'],['presence','Élèves présents',$d['present'],'Relevés journaliers Rosario'],['teachers','Enseignants présents',$feed['staff_present'],'Dernier pointage du jour : entrée']];
     foreach($metrics as $m)echo '<article class="sscx-metric" data-metric-kind="'.$m[0].'"><span><img src="assets/themes/SchoolSafeCodex/navigation-icons/'.$icons[$m[0]].'.svg" width="20" height="20" alt="">'.$m[1].'</span><strong>'.($m[2]===null?'&mdash;':$e($m[2])).'</strong><small>'.$m[3].'</small></article>';
     echo '</div><div class="sscx-overview-insights"><section class="sscx-snapshot"><h3>Presences du jour</h3>';
     if($d['present']!==null&&$d['total']>0){
@@ -212,7 +212,7 @@ function SchoolSafeOverview()
         if(!$d['staff'])echo '<li>Aucun enseignant renseigné.</li>';
         if(count($d['staff'])>100)echo '<li><a href="Modules.php?modname=Users/User.php">Consulter la liste complete</a></li>';
         echo '</ul>';
-        if(AllowUse('Entry_Exit/Records.php'))echo '<a href="Modules.php?modname=Entry_Exit/Records.php">Consulter les pointages Rosario</a><p class="sscx-empty">Les enseignants non pointes ou rattachés à plusieurs écoles restent non vérifiés.</p>';
+        if(AllowUse('Entry_Exit/Records.php'))echo '<a href="Modules.php?modname=Entry_Exit/Records.php">Consulter les pointages</a><p class="sscx-empty">Les enseignants non pointes ou rattachés à plusieurs écoles restent non vérifiés.</p>';
         echo '</section>';
     }
     if(isset($tabs['awards']))echo '<section id="ss-dashboard-awards" role="tabpanel" aria-labelledby="ss-dashboard-tab-awards" hidden>'.SchoolSafeDashboardNativeWidget().'</section>';
@@ -224,6 +224,6 @@ function SchoolSafeOverview()
     foreach($feed['events'] as $item)echo '<li><time>'.$e($item['SCHOOL_DATE']).'</time><strong>'.$e(ParseMLField($item['TITLE'])).'</strong></li>';
     if(!$feed['events'])echo '<li>Aucun evenement accessible dans les 30 prochains jours.</li>';
     echo '</ul>';
-    echo AllowUse('School_Setup/Calendar.php')?'<a href="Modules.php?modname=School_Setup/Calendar.php">Consulter le calendrier Rosario</a>':'<p class="sscx-empty">Calendrier non accessible.</p>';
+    echo AllowUse('School_Setup/Calendar.php')?'<a href="Modules.php?modname=School_Setup/Calendar.php">Consulter le calendrier de l’école</a>':'<p class="sscx-empty">Calendrier non accessible.</p>';
     echo '</section></footer></section></div><script src="assets/js/schoolsafe-dashboard.js?v=1"></script>';
 }

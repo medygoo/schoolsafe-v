@@ -18,13 +18,13 @@ const fieldLabels = {
   'school.name': "Nom de l'ecole", 'school.logo': "Logo de l'ecole",
   'school.address': "Adresse de l'ecole", 'school.phone': "Telephone de l'ecole",
   'school.email': "Adresse e-mail de l'ecole", 'school.website': "Site de l'ecole",
-  'school.year': 'Annee scolaire', 'class.mapping': 'Correspondance classe Rosario / Cartes',
+  'school.year': 'Annee scolaire', 'class.mapping': 'Correspondance classe / cartes',
   'class.cycle': 'Cycle scolaire confirme',
   'class.tutor': 'Titulaire de classe confirme', 'family.primary_contact': 'Coordonnees du parent principal',
   'card.official_qr': 'Carte officielle non emise',
 };
 const messages = {
-  NATIVE_SESSION_REQUIRED: 'Connectez-vous a Rosario pour consulter les cartes.',
+  NATIVE_SESSION_REQUIRED: 'Connectez-vous à SchoolSafe pour consulter les cartes.',
   CARD_BRIDGE_ACCESS_DENIED: 'Votre profil ne peut pas consulter cette carte.',
   NATIVE_ACCESS_DENIED: 'Acces refuse par Rosario.',
   CARD_BRIDGE_UNAVAILABLE: 'Le service Cartes est indisponible. Aucune operation effectuee.',
@@ -64,11 +64,11 @@ form.addEventListener('submit', async (event) => {
     }
     const source = result.schoolingSource;
     schooling.textContent = source
-      ? 'Niveau Rosario : ' + (source.grade?.title || 'Non renseigne') + '. '
+      ? 'Niveau : ' + (source.grade?.title || 'Non renseigne') + '. '
         + (source.scheduleAccess
           ? 'Sections de cours actives : ' + source.courseSections.length + '. Aucun titulaire deduit automatiquement.'
           : 'Consultation des affectations non autorisee pour ce profil.')
-      : 'Affectations Rosario non verifiees.';
+      : 'Affectations non vérifiées.';
     readiness.hidden = false;
     loadedStudentId = result.nativeReference.studentId;
     checkIssuance.disabled = false;

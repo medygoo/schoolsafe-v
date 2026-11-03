@@ -10,7 +10,7 @@ require_once __DIR__ . '/modules/SchoolSafe/Gateway.php';
 $allowed=User('STAFF_ID') && User('PROFILE')==='parent'
     && SchoolSafeEndpointGateway('parent-notifications-view.php', 'GET', '', $_GET) !== 'deny';
 while(ob_get_level()>$level) { ob_end_clean(); }
-if (!$allowed) { http_response_code(403); exit('Connexion avec un compte parent Rosario requise.'); }
+if (!$allowed) { http_response_code(403); exit('Connexion avec un compte parent SchoolSafe requise.'); }
 ?>
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

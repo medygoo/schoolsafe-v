@@ -13,7 +13,7 @@ form.addEventListener('submit', async event => {
   preview.replaceChildren();
   document.getElementById('cardsStudentList').replaceChildren();
   document.getElementById('cardsClassSelect').replaceChildren();
-  status.textContent = 'Chargement Rosario...';
+  status.textContent = 'Chargement…';
   try {
     const result = await window.SchoolSafeStudioNativeBridge.loadNativeStudioCard(document.getElementById('nativeStudent').value);
     const view = result.view;

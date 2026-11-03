@@ -54,5 +54,5 @@ function SchoolSafeReferenceDashboard(array $data,array $feed): void
     foreach($feed['events'] as $row)echo '<li><time>'.$e($row['SCHOOL_DATE']).'</time><strong>'.$e(ParseMLField($row['TITLE'])).'</strong></li>';
     foreach($feed['activities'] as $row)echo '<li><time>'.$e(substr($row['CREATED_AT'],0,10)).'</time><strong>'.$e(ParseMLField($row['TITLE'])).'</strong></li>';
     if(!$feed['events']&&!$feed['activities'])echo '<li>Aucun evenement ou annonce accessible.</li>';
-    echo '</ul></section><section class="ss-reference-alerts"><h3>Alertes et distinctions</h3>'.SchoolSafeDashboardNativeWidget(false).'</section></div>'.SchoolSafeStudentDashboardDetails($data).SchoolSafePersonnelStats().'<details class="ss-reference-school-details"><summary>Syntheses scolaires et modules Rosario</summary>'.SchoolSafeNativeDashboardSources().'</details></section></div>';
+    echo '</ul></section><section class="ss-reference-alerts"><h3>Alertes et distinctions</h3>'.SchoolSafeDashboardNativeWidget(false).'</section></div>'.SchoolSafeStudentDashboardDetails($data).SchoolSafePersonnelStats().'<details class="ss-reference-school-details"><summary>Synthèses scolaires et modules SchoolSafe</summary>'.SchoolSafeNativeDashboardSources().'</details></section></div>';
 }

@@ -58,7 +58,7 @@ function ProgramTitle( $modname = '' )
 		|| strpos( $module, '..' ) !== false )
 	{
 		// Module not found!
-		return 'RosarioSIS';
+		return 'SchoolSafe';
 	}
 
 	if ( in_array( $module, $RosarioCoreModules ) )
@@ -133,5 +133,5 @@ function ProgramTitle( $modname = '' )
 	}
 
 	// Program not found!
-	return 'RosarioSIS';
+	return 'SchoolSafe';
 }

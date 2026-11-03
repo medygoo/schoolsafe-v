@@ -37,7 +37,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
                 }
                 if(!preg_match('/^[a-zA-Z0-9._:-]{1,64}$/D',$employee))throw new RuntimeException('Identite professionnelle invalide. Les eleves et parents sont exclus.');
                 DBQuery("INSERT INTO schoolsafe_device_staff(device_id,employee_id,syear,staff_id) VALUES($deviceId,".$q($employee).",$year,$staff) ON CONFLICT (device_id,staff_id,syear) DO UPDATE SET employee_id=EXCLUDED.employee_id");
-                $notice=($gen?'ID 6 chiffres genere et rattache : '.$employee.'. ':'Employee ID rattache au dossier Rosario existant pour cette annee. ').('La personne pose son doigt sur la machine, puis son premier pointage apparait ci-dessous.');
+                $notice=($gen?'ID 6 chiffres genere et rattache : '.$employee.'. ':'Employee ID rattache au dossier existant pour cette annee. ').('La personne pose son doigt sur la machine, puis son premier pointage apparait ci-dessous.');
             }elseif(in_array($action,['import','sync'],true)){
                 if($action==='import'){
                     $raw=(string)($_POST['events']??'');if(strlen($raw)>1000000)throw new RuntimeException('Lot trop volumineux.');

@@ -47,7 +47,7 @@ if ( $_REQUEST['modfunc'] === 'poll_vote'
 
 if ( ! empty( $_REQUEST['ss_setup'] ) )
 {
-    DrawHeader( 'Assistant de configuration Rosario' );
+    DrawHeader( 'Assistant de configuration SchoolSafe' );
 }
 
 if ( ! empty( $_REQUEST['ss_setup'] ) )
@@ -1155,7 +1155,7 @@ function PHPCheck()
 
 	if ( version_compare( PHP_VERSION, '5.5.9' ) == -1 )
 	{
-		$ret[] = 'RosarioSIS requires PHP 5.5.9 to run, your version is : ' . PHP_VERSION;
+		$ret[] = 'SchoolSafe requires PHP 5.5.9 to run, your version is : ' . PHP_VERSION;
 	}
 
 	return $ret;

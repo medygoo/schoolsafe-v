@@ -6,7 +6,7 @@ foreach (['admin', 'teacher', 'parent'] as $jaspeProfile) {
         'SchoolSafe_Jaspe/Assistant.php'=>'Assistant JASP',
     ];
     if (!empty($RosarioPlugins['Setup_Assistant'])) {
-        $menu['SchoolSafe_Jaspe'][$jaspeProfile]['misc/Portal.php'] = 'Assistant de configuration Rosario';
+        $menu['SchoolSafe_Jaspe'][$jaspeProfile]['misc/Portal.php'] = 'Assistant de configuration SchoolSafe';
     }
 }
 unset($jaspeProfile);

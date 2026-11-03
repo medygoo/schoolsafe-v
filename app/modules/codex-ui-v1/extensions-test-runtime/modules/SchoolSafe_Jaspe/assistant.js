@@ -5,7 +5,7 @@
     host.dataset.ready = 'true';
     var presenter = window.SchoolSafeJaspe2d;
     if (presenter) {
-        var mounted = presenter.mount(document.getElementById('jaspe-stage'), {label: 'JASPE, assistant Rosario'});
+        var mounted = presenter.mount(document.getElementById('jaspe-stage'), {label: 'JASPE, assistant SchoolSafe'});
         if (mounted && mounted.img) mounted.img.addEventListener('load', function () {
             document.getElementById('jaspe-fallback').hidden = true;
         });
