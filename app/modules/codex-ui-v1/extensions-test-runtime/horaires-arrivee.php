@@ -19,11 +19,15 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
     try{
         if(!is_string($_POST['csrf']??null)||!hash_equals($csrf,$_POST['csrf']))throw new RuntimeException('Session expirée : rechargez la page.');
         $cycle=(string)($_POST['cycle']??'');
-        $count=SchoolSafeArrivalSave($school,$year,$cycle,(string)($_POST['arrival']??''),(string)($_POST['tolerated']??''),(string)($_POST['red']??''),$day,$get);
-        $message='Horaires enregistrés pour '.SchoolSafeArrivalCycles()[$cycle].' ('.$count.' niveau(x)), en vigueur dès aujourd’hui.';
+        // Enregistre apres l'heure d'arrivee : en vigueur le lendemain, jamais d'alerte d'absence retroactive le soir meme.
+        $arrival=(string)($_POST['arrival']??'');
+        $effective=strcmp(date('H:i'),$arrival)<0?$day:date('Y-m-d',strtotime('+1 day'));
+        $count=SchoolSafeArrivalSave($school,$year,$cycle,$arrival,(string)($_POST['tolerated']??''),(string)($_POST['red']??''),$effective,$get);
+        $message='Horaires enregistrés pour '.SchoolSafeArrivalCycles()[$cycle].' ('.$count.' niveau(x)), en vigueur '.($effective===$day?'dès aujourd’hui':'à partir de demain').'.';
     }catch(Throwable $failure){$error=$failure instanceof RuntimeException?$failure->getMessage():'Enregistrement impossible.';}
 }
-$cycles=$allowed?SchoolSafeArrivalRead($school,$year,$day,$get):[];
+// Affiche aussi un horaire enregistre ce soir pour demain.
+$cycles=$allowed?SchoolSafeArrivalRead($school,$year,date('Y-m-d',strtotime('+1 day')),$get):[];
 while(ob_get_level()>$level)ob_end_clean();
 if(!$allowed){http_response_code(403);exit('Permission requise : administrateur de l’école.');}
 $e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');

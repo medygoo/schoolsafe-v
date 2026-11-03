@@ -44,7 +44,7 @@ function SchoolSafeArrivalSave( int $school, int $year, string $cycle, string $a
         if ( ! preg_match( '/^([01][0-9]|2[0-3]):[0-5][0-9]$/D', $time ) ) throw new RuntimeException( 'Heure invalide (format HH:MM).' );
     if ( ! ( strcmp( $arrival, $tolerated ) <= 0 && strcmp( $tolerated, $red ) <= 0 ) )
         throw new RuntimeException( 'Les heures doivent se suivre : arrivée ≤ tolérée ≤ rouge.' );
-    $cycles = SchoolSafeArrivalRead( $school, $year, $day, $get );
+    $cycles = SchoolSafeArrivalRead( $school, $year, date( 'Y-m-d' ), $get );
     if ( ! isset( $cycles[ $cycle ] ) ) throw new RuntimeException( 'Cycle inconnu.' );
     $saved = 0;
     foreach ( $cycles[ $cycle ]['grades'] as $grade )
