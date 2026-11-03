@@ -50,7 +50,7 @@
     torso.append(bMic, bListen, bTalk);
 
     // 2. Bulle d'ecriture : le formulaire existant y est deplace (memes ecouteurs, meme envoi).
-    var write = el('div', 'jaspe-bulle jaspe-bulle-ecrire');
+    var write = el('div', 'jaspe-bulle jaspe-bulle-ecrire jaspe-bulle-libre');
     write.hidden = true; write.setAttribute('role', 'dialog'); write.setAttribute('aria-label', 'Écrire à JASPE');
     var writeMic = el('button', 'jaspe-bulle-micro'); writeMic.type = 'button'; writeMic.title = 'Parler au micro';
     writeMic.setAttribute('aria-label', 'Parler au micro'); writeMic.appendChild(icon('mic'));
@@ -101,21 +101,15 @@
         var h = Math.round(Math.min(380, avail * 0.86)), jw = Math.round(h * 1023 / 1537);
         // Centree horizontalement, posee en bas juste au-dessus de la barre de navigation (03/11).
         var jx = Math.round((pw - jw) / 2), jy = Math.round(Math.max(8, ph - navH - h - 12));
-        var writing = !write.hidden, answering = write.hidden && !reply.hidden;
+        // Ecriture et reponse sans forme, a cote de JASPE (03/11) : l'ecriture apparait du cote ou
+        // viendra la reponse ; la fenetre s'elargit des deux cotes, JASPE reste au centre.
+        var side = !write.hidden ? -replySide : replySide;
         narrow = pw < 640;
         var left = jx, top = jy, w = jw, hh = h, sx = 0, sy = 0;
-        if (answering) {
-            // Reponse a cote de JASPE (03/11) : la fenetre s'elargit des deux cotes, JASPE reste au centre.
+        if (!write.hidden || !reply.hidden) {
             w = Math.min(pw - 16, jw + 600); left = Math.round((pw - w) / 2); sx = Math.round((w - jw) / 2);
-            // Petit ecran : JASPE glisse vers le bord oppose pour laisser la place a sa reponse.
-            if (w < jw + 380) sx = replySide > 0 ? -Math.round(jw * 0.22) : Math.round(w - jw + jw * 0.22);
-        } else if (writing && !narrow) {
-            w = Math.round(jw * 0.7) + 320;
-            left = Math.max(8, Math.min(jx, pw - w - 8)); sx = jx - left;
-        } else if (writing) {
-            w = Math.min(pw - 16, 380); left = Math.round((pw - w) / 2);
-            top = Math.max(8, jy - 300); hh = h + (jy - top);
-            sx = Math.round((w - jw) / 2); sy = jy - top;
+            // Petit ecran : JASPE glisse vers le bord oppose pour laisser la place au texte.
+            if (w < jw + 380) sx = side > 0 ? -Math.round(jw * 0.22) : Math.round(w - jw + jw * 0.22);
         }
         inner = {w: w, h: hh};
         important(dialog, {position: 'fixed', inset: 'auto', left: left + 'px', top: top + 'px', width: w + 'px', height: hh + 'px',
@@ -127,34 +121,22 @@
         var f = figure();
         if (!f) return;
         var cx = f.x + f.w * 0.46, vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
-        if (narrow) {
-            // Telephone : la bulle colle au-dessus de la tete de JASPE et grandit vers le haut (03/11).
-            var head = Math.round(f.y + f.h * 0.06), bw = Math.min(260, vw - 16);
-            var bl = Math.round(Math.max(8, Math.min(cx - bw / 2, vw - bw - 8)));
-            [write].forEach(function (bubble) {
-                bubble.classList.add('jaspe-bulle-dessus'); bubble.classList.remove('jaspe-bulle-cote');
-                bubble.style.left = bl + 'px';
-                bubble.style.top = 'auto';
-                bubble.style.bottom = Math.max(8, vh - head + 10) + 'px';
-                bubble.style.width = bw + 'px';
-                bubble.style.maxHeight = 'none';
-                bubble.style.setProperty('--queue-x', Math.round(Math.max(16, Math.min(bw - 16, cx - bl))) + 'px');
-            });
-        }
-        if (!reply.hidden) {
-            // Reponse sans forme, a cote de JASPE (jamais sur sa tete), cote alterne a chaque echange.
+        var shown = !write.hidden ? write : (!reply.hidden ? reply : null);
+        if (shown) {
+            // Texte sans forme, a cote de JASPE (jamais sur sa tete), cote alterne a chaque echange.
+            var side = shown === write ? -replySide : replySide;
             var rw = narrow ? Math.min(190, vw - 12) : 260;
             var ry = Math.round(f.y + f.h * (narrow ? 0.24 : 0.07));
-            var room = replySide > 0 ? vw - Math.round(f.x + f.w * 0.7) - 6 : Math.round(f.x + f.w * 0.3) - 6;
+            var room = side > 0 ? vw - Math.round(f.x + f.w * 0.7) - 6 : Math.round(f.x + f.w * 0.3) - 6;
             if (room >= 170) rw = Math.min(rw === 190 ? 240 : rw, room);
-            var rl = replySide > 0 ? Math.min(vw - rw - 6, Math.round(f.x + f.w * (room >= 170 ? 0.7 : 0.6)))
+            var rl = side > 0 ? Math.min(vw - rw - 6, Math.round(f.x + f.w * (room >= 170 ? 0.7 : 0.6)))
                 : Math.max(6, Math.round(f.x + f.w * (room >= 170 ? 0.3 : 0.34) - rw));
-            reply.style.left = rl + 'px';
-            reply.style.top = ry + 'px';
-            reply.style.bottom = 'auto';
-            reply.style.width = rw + 'px';
-            reply.style.maxHeight = 'none';
-            replyText.style.maxHeight = Math.max(80, Math.min(vh * 0.45, vh - ry - 40)) + 'px';
+            shown.style.left = rl + 'px';
+            shown.style.top = ry + 'px';
+            shown.style.bottom = 'auto';
+            shown.style.width = rw + 'px';
+            shown.style.maxHeight = 'none';
+            if (shown === reply) replyText.style.maxHeight = Math.max(80, Math.min(vh * 0.45, vh - ry - 40)) + 'px';
         }
         touch.style.left = Math.round(f.x + f.w * 0.22) + 'px';
         touch.style.top = Math.round(f.y + f.h * 0.08) + 'px';
@@ -162,17 +144,6 @@
         touch.style.height = Math.round(f.h * 0.86) + 'px';
         torso.style.left = Math.round(cx) + 'px';
         torso.style.top = Math.round(f.y + f.h * 0.43) + 'px';
-        if (narrow) return;
-        var left = Math.round(Math.max(8, Math.min(f.x + f.w * 0.66, vw - 240)));
-        var top = Math.round(Math.max(8, f.y + f.h * 0.06));
-        [write].forEach(function (bubble) {
-            bubble.classList.add('jaspe-bulle-cote'); bubble.classList.remove('jaspe-bulle-dessus');
-            bubble.style.left = left + 'px';
-            bubble.style.top = top + 'px';
-            bubble.style.bottom = 'auto';
-            bubble.style.width = Math.max(200, Math.min(260, vw - left - 10)) + 'px';
-            bubble.style.maxHeight = 'none';
-        });
     }
     var raf = 0;
     function schedule() { if (!raf) raf = requestAnimationFrame(function () { raf = 0; place(); }); }

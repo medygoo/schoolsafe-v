@@ -59,3 +59,8 @@ html.jaspe-bulles .jaspe-bulle.jaspe-bulle-libre::after{content:"";position:abso
 html.jaspe-bulles .jaspe-bulle.jaspe-bulle-libre .jaspe-bulle-ecouter{text-shadow:none}
 html.jaspe-bulles .jaspe-bulle.jaspe-bulle-libre .jaspe-bulle-fermer{text-shadow:none;background:rgba(255,255,255,.6)}
 @keyframes jaspeReponseEntree{from{opacity:0;filter:blur(3px)}to{opacity:1;filter:none}}
+/* Ecriture sans forme (03/11) : la capsule disparait, un simple trait sous le champ, sur le halo. */
+html.jaspe-bulles .jaspe-bulle-ecrire.jaspe-bulle-libre{display:flex;align-items:center;gap:6px;padding:6px 2px}
+html.jaspe-bulles .jaspe-bulle-ecrire.jaspe-bulle-libre #jaspe-question{height:34px!important;padding:0 2px!important;border:0!important;border-bottom:1.5px solid rgba(11,92,213,.55)!important;border-radius:0!important;background:transparent!important;text-shadow:none;font-size:15px!important}
+html.jaspe-bulles .jaspe-bulle-ecrire.jaspe-bulle-libre #jaspe-question:focus{border-bottom-color:#0b5cd5!important}
+html.jaspe-bulles .jaspe-bulle-ecrire.jaspe-bulle-libre .jaspe-bulle-micro{background:rgba(255,255,255,.65)!important}
