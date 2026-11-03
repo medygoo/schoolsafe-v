@@ -20,7 +20,7 @@
     // 03/11 : la voix serveur n'est pas installee en production ; apres un echec, la voix du
     // navigateur parle directement pendant toute la session (plus d'attente ni de message).
     var serverVoiceOff = false;
-    try { serverVoiceOff = sessionStorage.getItem('jaspeServerVoice') === 'off'; } catch (_) {}
+    try { serverVoiceOff = sessionStorage.getItem('jaspeServerVoice2') === 'off'; } catch (_) {}
     async function voiceRequest(options, timeout, format) {
         var request = new AbortController();
         var parent = options.signal;
@@ -136,7 +136,7 @@
             finishAudio=null;controller=null;
             state('IDLE');
             serverVoiceOff = true;
-            try { sessionStorage.setItem('jaspeServerVoice', 'off'); } catch (_) {}
+            try { sessionStorage.setItem('jaspeServerVoice2', 'off'); } catch (_) {}
             speakSystem(chunks.slice(index).join(' '),current);
         }
     }

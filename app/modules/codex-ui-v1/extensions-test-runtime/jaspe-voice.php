@@ -9,7 +9,9 @@ if(!User('STAFF_ID')&&!UserStudentID())SchoolSafeVoiceFail(401,'AUTH_REQUIRED');
 if(empty($RosarioModules['SchoolSafe_Jaspe'])||!AllowUse('SchoolSafe_Jaspe/Assistant.php'))SchoolSafeVoiceFail(403,'VOICE_ACCESS_DENIED');
 $token=$_SERVER['HTTP_X_JASPE_TOKEN']??'';
 if(!is_string($token)||empty($_SESSION['schoolsafe_jaspe_token'])||!hash_equals($_SESSION['schoolsafe_jaspe_token'],$token))SchoolSafeVoiceFail(403,'INVALID_TOKEN');
-$key=@file_get_contents('/var/lib/schoolsafe-voice.token');
+// 03/11 : service vocal Piper (conteneur schoolsafe-voice, reseau interne) ; jeton dans le volume JASPE.
+$key=@file_get_contents('/var/lib/schoolsafe-jaspe/voice-token');
+if(!is_string($key)||trim($key)==='')$key=@file_get_contents('/var/lib/schoolsafe-voice.token');
 if(!is_string($key)||!preg_match('/^[a-f0-9]{64}$/D',trim($key)))SchoolSafeVoiceFail(503,'VOICE_NOT_CONFIGURED');
 $body=null;
 if($method==='POST'){
@@ -21,7 +23,7 @@ if($method==='POST'){
  $body=json_encode(['text'=>SchoolSafeBrandText($input['text'])],JSON_THROW_ON_ERROR);
 }
 session_write_close();
-$curl=curl_init('http://host.docker.internal:18893/'.($method==='GET'?'health':'synthesize'));$output='';
+$curl=curl_init('http://schoolsafe-voice:18893/'.($method==='GET'?'health':'synthesize'));$output='';
 curl_setopt_array($curl,[CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>3,CURLOPT_TIMEOUT=>$method==='GET'?5:120,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP,
  CURLOPT_HTTPHEADER=>['Content-Type: application/json','Authorization: Bearer '.trim($key)],
  CURLOPT_WRITEFUNCTION=>static function($handle,$chunk)use(&$output){if(strlen($output)+strlen($chunk)>8000000)return 0;$output.=$chunk;return strlen($chunk);}]);

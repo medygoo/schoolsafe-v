@@ -48,7 +48,7 @@ if (!$jaspeCompanion && !empty($RosarioPlugins['Setup_Assistant']) && AllowUse('
 <script src="modules/SchoolSafe_Jaspe/draft.js"></script>
 <script src="modules/SchoolSafe_Jaspe/jaspe2d/modules/jaspe2d/jaspe2d.js"></script>
 <script src="modules/SchoolSafe_Jaspe/assistant.js?v=dialogue-16"></script>
-<script src="modules/SchoolSafe_Jaspe/voice.js?v=8"></script>
+<script src="modules/SchoolSafe_Jaspe/voice.js?v=9"></script>
 <?php if ($jaspeCompanion) : ?>
 <link rel="stylesheet" href="modules/SchoolSafe_Jaspe/companion-bulles.css?v=4">
 <script src="modules/SchoolSafe_Jaspe/companion-bulles.js?v=7"></script>
