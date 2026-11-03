@@ -1,0 +1,55 @@
+/* JASPE en bulles (03/11) — fenetre compagnon : JASPE seule, sans panneau ni fond. */
+html.jaspe-bulles #jaspe-log,
+html.jaspe-bulles .jaspe-voice-tools,
+html.jaspe-bulles .jaspe-suggestions,
+html.jaspe-bulles #jaspe-status,
+html.jaspe-bulles .jaspe-heading h2,
+html.jaspe-bulles .jaspe-heading span,
+html.jaspe-bulles #ss-meteo-fixe{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;margin:-1px!important;padding:0!important;border:0!important;opacity:0!important;pointer-events:none!important}
+html.jaspe-bulles .jaspe-bulles-touch{position:fixed;z-index:20;background:transparent;border:0;padding:0;margin:0;cursor:pointer;border-radius:40%;-webkit-tap-highlight-color:transparent}
+html.jaspe-bulles .jaspe-bulles-touch:focus-visible{outline:2px dashed rgba(255,255,255,.7)}
+html.jaspe-bulles .jaspe-bulles-torse{position:fixed;z-index:21;transform:translate(-50%,-50%);display:flex;gap:6px;padding:4px 6px;border-radius:999px;background:rgba(15,32,60,.28);backdrop-filter:blur(2px);opacity:.72;transition:opacity .2s}
+html.jaspe-bulles .jaspe-bulles-torse:hover,html.jaspe-bulles .jaspe-bulles-torse:focus-within{opacity:1}
+html.jaspe-bulles .jaspe-bulles-torse button{width:30px;height:30px;min-width:30px;padding:0;margin:0;border:1px solid rgba(255,255,255,.55);border-radius:50%;background:rgba(255,255,255,.82);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+html.jaspe-bulles .jaspe-bulles-torse button::after{content:"";position:absolute;inset:-7px}
+html.jaspe-bulles .jaspe-bulles-torse button{position:relative}
+html.jaspe-bulles .jaspe-bulles-torse img{width:16px;height:16px;pointer-events:none}
+/* Bulles compactes et modernes (03/11, demande du proprietaire) : verre depoli, 260 px au plus, pointe vers JASPE. */
+html.jaspe-bulles .jaspe-bulle{position:fixed;z-index:30;box-sizing:border-box;width:min(260px,calc(100vw - 16px));overflow:visible;padding:9px 12px;border-radius:16px;background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(12px) saturate(1.2);backdrop-filter:blur(12px) saturate(1.2);border:1px solid rgba(255,255,255,.7);color:#14233a;box-shadow:0 6px 18px rgba(8,24,48,.22);font:400 14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;animation:jaspeBulleEntree .18s ease-out}
+html.jaspe-bulles .jaspe-bulle[hidden]{display:none!important}
+html.jaspe-bulles .jaspe-bulle::after{content:"";position:absolute;width:10px;height:10px;background:inherit;border:inherit;border-top:0;border-left:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+html.jaspe-bulles .jaspe-bulle.jaspe-bulle-dessus::after{bottom:-6px;left:var(--queue-x,50%);transform:translateX(-50%) rotate(45deg)}
+html.jaspe-bulles .jaspe-bulle.jaspe-bulle-cote::after{left:-6px;top:16px;transform:rotate(135deg)}
+@keyframes jaspeBulleEntree{from{opacity:0;transform:translateY(4px) scale(.97)}to{opacity:1;transform:none}}
+html.jaspe-bulles .jaspe-bulle-ecrire{display:flex;align-items:center;gap:4px;padding:4px 4px 4px 12px;border-radius:999px}
+html.jaspe-bulles .jaspe-bulle-ecrire #jaspe-search{flex:1;min-width:0!important;position:static!important;inset:auto!important;width:auto!important;margin:0!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;transform:none!important}
+html.jaspe-bulles .jaspe-bulle-ecrire #jaspe-search label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+html.jaspe-bulles .jaspe-bulle-ecrire .jaspe-query{position:static!important;display:flex!important;gap:4px;align-items:center;width:auto!important;margin:0!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}
+html.jaspe-bulles .jaspe-bulle-ecrire #jaspe-question{position:static!important;flex:1;min-width:0;width:auto!important;height:32px!important;margin:0!important;padding:0 2px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#14233a!important;font-size:15px!important;box-shadow:none!important;outline:none}
+html.jaspe-bulles .jaspe-bulle-ecrire #jaspe-question::placeholder{color:#7a889a}
+html.jaspe-bulles .jaspe-bulle-ecrire .jaspe-query button,html.jaspe-bulles .jaspe-bulle-micro{position:static!important;flex:none;width:32px!important;height:32px!important;min-width:32px;margin:0!important;padding:0!important;border:0!important;border-radius:50%!important;display:flex!important;align-items:center;justify-content:center;cursor:pointer;transition:background-color .15s}
+html.jaspe-bulles .jaspe-bulle-ecrire .jaspe-query button{background:#0b5cd5!important}
+html.jaspe-bulles .jaspe-bulle-ecrire .jaspe-query button img{width:16px;height:16px;filter:invert(1)}
+html.jaspe-bulles .jaspe-bulle-micro{order:-1;background:transparent!important}
+html.jaspe-bulles .jaspe-bulle-micro:hover{background:rgba(11,92,213,.08)!important}
+html.jaspe-bulles .jaspe-bulle-micro img{width:16px;height:16px;opacity:.75}
+html.jaspe-bulles .jaspe-bulle-etat{position:absolute;left:12px;right:12px;top:calc(100% + 8px);margin:0;padding:4px 8px;border-radius:8px;background:rgba(20,35,58,.78);color:#fff;font-size:12px;line-height:1.35}
+html.jaspe-bulles .jaspe-bulle-etat:empty{display:none}
+html.jaspe-bulles .jaspe-bulle-texte{margin:0;white-space:pre-wrap;word-break:break-word;overflow-y:auto;scrollbar-width:thin}
+html.jaspe-bulles .jaspe-bulle-attente .jaspe-bulle-texte{color:#5b6b80;font-style:italic}
+html.jaspe-bulles .jaspe-bulle-outils{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+html.jaspe-bulles .jaspe-bulle-attente .jaspe-bulle-outils{display:none}
+html.jaspe-bulles .jaspe-bulle-ecouter{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border:0;border-radius:13px;background:rgba(11,92,213,.1);color:#0b5cd5;font-size:12.5px;font-weight:600;cursor:pointer}
+html.jaspe-bulles .jaspe-bulle-ecouter img{width:13px;height:13px}
+html.jaspe-bulles .jaspe-bulle-ecouter[hidden]{display:none}
+html.jaspe-bulles .jaspe-bulle-fermer{width:26px;height:26px;padding:0;border:0;border-radius:50%;background:transparent;color:#6b7a8c;font-size:18px;line-height:1;cursor:pointer}
+html.jaspe-bulles .jaspe-bulle-fermer:hover{background:rgba(20,35,58,.06)}
+html.jaspe-bulles .jaspe-bulle #jaspe-destinations{position:static!important;display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+html.jaspe-bulles .jaspe-bulle #jaspe-destinations[hidden]{display:none}
+html.jaspe-bulles .jaspe-bulle #jaspe-destinations a{padding:4px 9px;border-radius:12px;background:#0b5cd5;color:#fff;text-decoration:none;font-size:12.5px;font-weight:600}
+@media (prefers-reduced-motion:reduce){html.jaspe-bulles .jaspe-bulle{animation:none}}
+/* JASPE au milieu de l'ecran (03/11) : le canvas remplit exactement sa scene (taille fixee par companion-bulles.js). */
+html.jaspe-bulles #jaspe-native #jaspe-stage .jaspe2d__live-canvas,
+html.jaspe-bulles #jaspe-native #jaspe-stage #jaspe-fallback,
+html.jaspe-bulles #jaspe-native #jaspe-stage .jaspe2d img{position:absolute!important;left:0!important;top:0!important;right:auto!important;width:100%!important;height:100%!important;max-width:none!important;object-fit:contain!important}
+html.jaspe-bulles,html.jaspe-bulles body{overflow:hidden!important}

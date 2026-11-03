@@ -192,7 +192,9 @@
         }
     });
     function reset() { stop(); lastReply = ''; host.dispatchEvent(new Event('jaspe-reset')); }
-    document.addEventListener('visibilitychange', function () { if (document.hidden) reset(); });
+    // 03/11 : page masquee (changement d'onglet ou d'application) = la voix s'arrete seulement ;
+    // la reponse en cours n'est plus perdue. Fermer JASPE reinitialise toujours les bulles.
+    document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); });
     window.addEventListener('pagehide', stop);
     // Closing the parent dialog must stop audio and discard the current exchange.
     if (window.parent !== window) {

@@ -123,14 +123,18 @@
         var cx = f.x + f.w * 0.46, vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
         if (narrow) {
             // Telephone : la bulle colle au-dessus de la tete de JASPE et grandit vers le haut (03/11).
-            var head = Math.round(f.y + f.h * 0.06);
+            var head = Math.round(f.y + f.h * 0.06), bw = Math.min(260, vw - 16);
+            var bl = Math.round(Math.max(8, Math.min(cx - bw / 2, vw - bw - 8)));
             [write, reply].forEach(function (bubble) {
-                bubble.style.left = '8px';
+                bubble.classList.add('jaspe-bulle-dessus'); bubble.classList.remove('jaspe-bulle-cote');
+                bubble.style.left = bl + 'px';
                 bubble.style.top = 'auto';
-                bubble.style.bottom = Math.max(8, vh - head + 6) + 'px';
-                bubble.style.width = Math.max(200, vw - 16) + 'px';
-                bubble.style.maxHeight = Math.max(120, head - 14) + 'px';
+                bubble.style.bottom = Math.max(8, vh - head + 10) + 'px';
+                bubble.style.width = bw + 'px';
+                bubble.style.maxHeight = 'none';
+                bubble.style.setProperty('--queue-x', Math.round(Math.max(16, Math.min(bw - 16, cx - bl))) + 'px');
             });
+            replyText.style.maxHeight = Math.max(80, head - 70) + 'px';
         }
         touch.style.left = Math.round(f.x + f.w * 0.22) + 'px';
         touch.style.top = Math.round(f.y + f.h * 0.08) + 'px';
@@ -142,12 +146,14 @@
         var left = Math.round(Math.max(8, Math.min(f.x + f.w * 0.66, vw - 240)));
         var top = Math.round(Math.max(8, f.y + f.h * 0.06));
         [write, reply].forEach(function (bubble) {
+            bubble.classList.add('jaspe-bulle-cote'); bubble.classList.remove('jaspe-bulle-dessus');
             bubble.style.left = left + 'px';
             bubble.style.top = top + 'px';
             bubble.style.bottom = 'auto';
-            bubble.style.width = Math.max(200, Math.min(300, vw - left - 10)) + 'px';
-            bubble.style.maxHeight = Math.max(160, vh - top - 16) + 'px';
+            bubble.style.width = Math.max(200, Math.min(260, vw - left - 10)) + 'px';
+            bubble.style.maxHeight = 'none';
         });
+        replyText.style.maxHeight = Math.max(80, vh - top - 70) + 'px';
     }
     var raf = 0;
     function schedule() { if (!raf) raf = requestAnimationFrame(function () { raf = 0; place(); }); }
