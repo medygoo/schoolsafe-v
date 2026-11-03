@@ -80,7 +80,7 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
                 'reason'=>$financial['state']==='unavailable'?'FEE_CONTROL_UNAVAILABLE':'FEE_CONTROL_DENIED',
                 'financial'=>$financial,'financial_consult_id'=>$consultId]+$verify;
         }
-        $late = SchoolSafeEntryIsLate($school, $year, $clock, $get);
+        $late = SchoolSafeEntryIsLate($school, $year, $clock, $get, (int) $verify['student_id'], date('Y-m-d', $now));
         $comment = 'Entrée ' . substr($clock, 0, 5) . ($late ? ' (retard)' : '') . ' — staff #' . $user;
         $commentSql = "'" . str_replace("'", "''", $comment) . "'";
         $inserted = $get("INSERT INTO entry_exit_student_records(STUDENT_ID, CHECKPOINT_ID, TYPE, COMMENTS, RECORDED_AT, SCHOOLSAFE_SCAN_SCHOOL_ID, SCHOOLSAFE_SCAN_SYEAR)"
@@ -99,8 +99,21 @@ function SchoolSafeEntryScan($qr, $locationId, $secretHex, array $ctx, array $db
     });
 }
 
-function SchoolSafeEntryIsLate($school, $year, $clock, callable $get)
+function SchoolSafeEntryIsLate($school, $year, $clock, callable $get, $studentId = 0, $day = null)
 {
+    // Horaire de l'ecole (03/11) : en retard apres l'heure d'arrivee de la classe, du niveau ou de l'ecole.
+    if ((int) $studentId > 0 && is_string($day) && preg_match('/^\d{4}-\d{2}-\d{2}$/D', $day)) {
+        require_once __DIR__ . '/SchoolSafeAttendance.fnc.php';
+        $grade = $get('SELECT GRADE_ID FROM student_enrollment WHERE STUDENT_ID=' . (int) $studentId . ' AND SCHOOL_ID=' . (int) $school
+            . ' AND SYEAR=' . (int) $year . " AND START_DATE<='" . $day . "' AND (END_DATE IS NULL OR END_DATE>='" . $day . "') ORDER BY START_DATE DESC LIMIT 1");
+        $classes = $get('SELECT DISTINCT COURSE_PERIOD_ID FROM schedule WHERE STUDENT_ID=' . (int) $studentId . ' AND SCHOOL_ID=' . (int) $school
+            . ' AND SYEAR=' . (int) $year . " AND START_DATE<='" . $day . "' AND (END_DATE IS NULL OR END_DATE>='" . $day . "')");
+        $class = is_array($classes) && count($classes) === 1 ? (int) $classes[1]['COURSE_PERIOD_ID'] : null;
+        try {
+            $policy = SchoolSafeAttendanceResolvePolicy($school, $year, isset($grade[1]['GRADE_ID']) ? (int) $grade[1]['GRADE_ID'] : null, $class, $day, ['get' => $get]);
+            if (preg_match('/^([0-9]{2}):([0-9]{2})/', (string) ($policy['ARRIVAL_TIME'] ?? ''), $p)) return strcmp($clock, $p[1] . ':' . $p[2] . ':59') > 0;
+        } catch (Throwable $noPolicy) {}
+    }
     $first = $get('SELECT START_TIME FROM school_periods WHERE SCHOOL_ID=' . (int) $school
         . ' AND SYEAR=' . (int) $year . ' AND START_TIME IS NOT NULL'
         . ' ORDER BY SORT_ORDER NULLS LAST, START_TIME LIMIT 1');

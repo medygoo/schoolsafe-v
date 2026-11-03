@@ -388,13 +388,14 @@ Envoyer un test WhatsApp vers <?php echo htmlspecialchars( $preview['to'], ENT_Q
 </section>
 
 <section class="card" aria-labelledby="t-hist"><h2 id="t-hist">Envois (50 derniers, par ecole)</h2>
-<div class="sskc-table" tabindex="0" role="region" aria-label="Historique WhatsApp"><table><thead><tr><th>#</th><th>Date</th><th>Ecole</th><th>Destinataire</th><th>Moteur</th><th>Statut</th><th>Erreur</th></tr></thead><tbody>
+<div class="sskc-table" tabindex="0" role="region" aria-label="Historique WhatsApp"><table><thead><tr><th>#</th><th>Date</th><th>Ecole</th><th>Destinataire</th><th>Moteur</th><th>Statut</th><th>Suivi</th><th>Erreur</th></tr></thead><tbody>
 <?php foreach ( (array) $outbox as $row ) : $o = $row; ?>
 <tr><td><?php echo (int) $o['ID']; ?></td><td><?php echo htmlspecialchars( (string) $o['CREATED_AT'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo (int) $o['SCHOOL_ID']; ?></td>
 <td><?php echo htmlspecialchars( (string) $o['RECIPIENT_E164'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( (string) $o['ENGINE'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( (string) $o['STATUS'], ENT_QUOTES, 'UTF-8' ); ?></td>
+<td><?php echo [ 0 => '—', 1 => 'Envoyé', 2 => 'Remis', 3 => 'Lu', 4 => 'Écouté' ][ (int) ( $o['ACK_LEVEL'] ?? 0 ) ] ?? '—'; ?></td>
 <td><?php echo htmlspecialchars( (string) $o['ERROR_CODE'], ENT_QUOTES, 'UTF-8' ); ?></td></tr>
 <?php endforeach; ?>
 </tbody></table></div>

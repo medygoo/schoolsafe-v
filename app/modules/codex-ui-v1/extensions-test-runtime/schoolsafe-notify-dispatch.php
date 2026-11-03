@@ -66,6 +66,8 @@ $transports=$GLOBALS['schoolsafe_notify_transports']??[];
 if(!is_array($transports)||array_diff(array_keys($transports),['email','push','waha','evolution','status']))throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
 foreach($transports as$transport)if(!is_callable($transport))throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
 $forceFail=getenv('SCHOOLSAFE_NOTIFY_FORCE_FAIL')==='1';$sent=0;$failed=0;$held=0;
+// Anti-blocage WhatsApp (03/11) : au plus 15 messages par passe (30 s), 1,5 a 3,5 s entre deux envois.
+$waRun=0;$waMax=max(1,min(60,(int)(getenv('SCHOOLSAFE_WA_PER_RUN')?:15)));
 for($i=0;$i<$limit;$i++){
     try{$row=SchoolSafeNotifyDispatchClaim($conn,$channel);}catch(Throwable $error){fwrite(STDERR,"DISPATCH_CLAIM_UNAVAILABLE\n");exit(1);}
     if($row===null)break;
@@ -96,6 +98,9 @@ for($i=0;$i<$limit;$i++){
             if(!is_string($out['provider_msg_id']??null)||$out['provider_msg_id']==='')throw new RuntimeException('ACCEPTANCE_UNKNOWN');
             $provider=$out['provider_msg_id'];$status='accepted';
         }elseif($row['channel']==='whatsapp'){
+            if($waRun>=$waMax){SchoolSafeNotifyDispatchFinish($conn,$row,'pending','','',false);break;}
+            if($waRun>0&&!$transports)usleep(random_int(1500000,3500000));
+            $waRun++;
             $to=SchoolSafeWaNormalize($staff['CUSTOM_200000001']??'');
             if($to===false)throw new RuntimeException('NO_RECIPIENT_PHONE');
             if(SchoolSafeWaSimulate())throw new RuntimeException('SIMULATION_ONLY');
@@ -152,4 +157,9 @@ for($i=0;$i<$limit;$i++){
     catch(Throwable $failure){fwrite(STDERR,"DISPATCH_RESULT_UNAVAILABLE\n");exit(1);}
     if($uncertain)$held++;elseif(in_array($status,['sent','accepted'],true))$sent++;else$failed++;
 }
-echo "DISPATCH sent=$sent failed=$failed held=$held channel=$channel\n";
+// Accuses WhatsApp : 1 envoye, 2 remis au telephone, 3 lu (messages acceptes par WAHA depuis 48 h).
+$acks=0;
+if(($channel==='all'||$channel==='whatsapp')&&!$transports){
+    try{$acks=SchoolSafeWaAckPoll($conn,20);}catch(Throwable $ackFailure){fwrite(STDERR,"WA_ACK_UNAVAILABLE\n");}
+}
+echo "DISPATCH sent=$sent failed=$failed held=$held acks=$acks channel=$channel\n";

@@ -165,6 +165,43 @@ function SchoolSafeWaActiveSession( $engine, ?callable $http = null )
  * Consentement explicite du destinataire (opt-in ecole). Vrai si une ligne
  * (ecole, staff, numero) est a 'Y'.
  */
+// Releve des accuses WAHA (lecture seule chez le fournisseur) pour les messages acceptes recents.
+function SchoolSafeWaAckPoll( $conn, int $limit = 20 ): int
+{
+    $creds = SchoolSafeWaCredentials( 'waha' );
+    $session = pg_query( $conn, "SELECT session_name FROM schoolsafe_wa_sessions WHERE engine='waha' AND status='active' ORDER BY id LIMIT 1" );
+    $name = $session ? pg_fetch_result( $session, 0, 0 ) : false;
+    if ( $creds === null || ! is_string( $name ) || $name === '' ) return 0;
+    $rows = pg_query_params( $conn, "SELECT id,provider_msg_id,ack_level FROM schoolsafe_wa_outbox WHERE engine='waha'"
+        . " AND status IN ('accepted','delivered') AND ack_level<3 AND provider_msg_id<>'' AND created_at>CURRENT_TIMESTAMP-interval '48 hours'"
+        . ' ORDER BY id DESC LIMIT $1', [ $limit ] );
+    if ( ! $rows ) return 0;
+    $updated = 0; $chats = [];
+    while ( $row = pg_fetch_assoc( $rows ) )
+    {
+        // Identifiant WEBJS : <true|false>_<chat>_<message>.
+        if ( ! preg_match( '/^(?:true|false)_(.+)_([A-Za-z0-9]+)$/D', (string) $row['provider_msg_id'], $m ) ) continue;
+        $chat = $m[1];
+        if ( ! isset( $chats[ $chat ] ) )
+        {
+            $res = SchoolSafeWaHttp( 'GET', $creds['base_url'] . '/api/' . rawurlencode( $name ) . '/chats/' . rawurlencode( $chat )
+                . '/messages?limit=50&downloadMedia=false', $creds['key'], null );
+            $list = ( $res['http_code'] ?? 0 ) === 200 && is_string( $res['body'] ?? null ) ? json_decode( $res['body'], true ) : null;
+            $chats[ $chat ] = [];
+            foreach ( is_array( $list ) ? $list : [] as $message )
+                if ( is_array( $message ) && is_string( $message['id'] ?? null ) ) $chats[ $chat ][ $message['id'] ] = (int) ( $message['ack'] ?? 0 );
+        }
+        $ack = $chats[ $chat ][ $row['provider_msg_id'] ] ?? null;
+        if ( $ack === null || $ack <= (int) $row['ack_level'] ) continue;
+        $ack = min( 4, max( 0, $ack ) );
+        $done = pg_query_params( $conn, 'UPDATE schoolsafe_wa_outbox SET ack_level=$1,ack_at=CURRENT_TIMESTAMP'
+            . ",status=CASE WHEN $1>=2 AND status='accepted' THEN 'delivered' ELSE status END,updated_at=CURRENT_TIMESTAMP WHERE id=$2 AND ack_level<$1",
+            [ $ack, (int) $row['id'] ] );
+        if ( $done && pg_affected_rows( $done ) === 1 ) $updated++;
+    }
+    return $updated;
+}
+
 function SchoolSafeWaConsented( $school_id, $staff_id, $phone_e164 )
 {
     // Accord donne a l'ecole (03/11) : case native « Accepte les messages WhatsApp » de la fiche,
