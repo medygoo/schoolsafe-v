@@ -40,9 +40,9 @@ function SchoolSafeDashboardScanDetails(array $data): string
     $e = static fn($v) => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
     $html = '';
     if (AllowUse('Attendance/DailySummary.php')) {
-        $html .= '<h3>Presences officielles du jour</h3><p>'.$e(DBDate()).' - Perimetre du profil connecte.</p><div class="ss-detail-bars">';
+        $html .= '<h3>Présences officielles du jour</h3><p>'.$e(DBDate()).' - Perimetre du profil connecte.</p><div class="ss-detail-bars">';
         $total = max(1, (int)($data['total'] ?? 0));
-        foreach (['present'=>'Presents','absent'=>'Absents','partial'=>'Journee partielle','unknown'=>'Non verifies'] as $key=>$label) {
+        foreach (['present'=>'Présents','absent'=>'Absents','partial'=>'Journée partielle','unknown'=>'Non vérifiés'] as $key=>$label) {
             $value = $data[$key] ?? null;
             if ($value === null) continue;
             $html .= '<div><span>'.$label.'</span><strong>'.(int)$value.'</strong><meter min="0" max="'.max($total,(int)$value).'" value="'.(int)$value.'">'.(int)$value.'</meter></div>';
@@ -60,10 +60,10 @@ function SchoolSafeDashboardScanDetails(array $data): string
                 if (!is_array($rows)) throw new RuntimeException('ARRIVAL_READ_UNAVAILABLE');
                 return $rows;
             });
-            $html .= '<h3>Scans d\'arrivee valides</h3><div class="ss-detail-totals"><div><span>Evenements retenus</span><strong>'.(int)$read['summary']['events'].'</strong></div><div><span>Eleves distincts</span><strong>'.(int)$read['summary']['students'].'</strong></div></div>'.SchoolSafeArrivalDashboardRender($read);
+            $html .= '<h3>Scans d\'arrivée valides</h3><div class="ss-detail-totals"><div><span>Événements retenus</span><strong>'.(int)$read['summary']['events'].'</strong></div><div><span>Élèves distincts</span><strong>'.(int)$read['summary']['students'].'</strong></div></div>'.SchoolSafeArrivalDashboardRender($read);
         } catch (Throwable $error) { $html .= '<p>Les preuves de scan ne sont pas disponibles dans ce perimetre.</p>'; }
     }
-    return $html.'<p>Un scan ne remplace pas une presence en cours. Aucun scan manquant n\'est transforme automatiquement en absence. Les evenements retenus ne comptent pas les tentatives refusees ou les doublons techniques.</p>';
+    return $html.'<p>Un scan ne remplace pas une présence en cours. Aucun scan manquant n\'est transformé automatiquement en absence. Les événements retenus ne comptent pas les tentatives refusees ou les doublons techniques.</p>';
 }
 
 function SchoolSafeDashboardDetails(array $data, array $feed): string
@@ -92,7 +92,7 @@ function SchoolSafeDashboardDetails(array $data, array $feed): string
         $active = is_string($requested) && isset($choices[$requested]) ? $requested : array_key_first($choices);
         $_GET['dashboard_tab'] = $active;
         $e = static fn($v) => htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
-        $html = '<link rel="stylesheet" href="assets/css/schoolsafe-dashboard-details.css?v=1"><section id="ss-dashboard-details" class="ss-dashboard-details"><header><h2>Informations detaillees</h2><p>Données natives actualisées à chaque consultation, selon vos droits et votre école.</p></header><nav aria-label="Rubriques detaillees du tableau de bord">';
+        $html = '<link rel="stylesheet" href="assets/css/schoolsafe-dashboard-details.css?v=1"><section id="ss-dashboard-details" class="ss-dashboard-details"><header><h2>Informations détaillées</h2><p>Données natives actualisées à chaque consultation, selon vos droits et votre école.</p></header><nav aria-label="Rubriques detaillees du tableau de bord">';
         foreach ($choices as $key=>$label) $html .= '<a href="Modules.php?'.$e(http_build_query(['modname'=>'misc/Portal.php','dashboard_tab'=>'overview','details_tab'=>$key])).'#ss-dashboard-details"'.($active===$key?' aria-current="page"':'').'>'.$e($label).'</a>';
         $html .= '</nav><div class="ss-detail-panel"><h3>'.$e($choices[$active]).'</h3>';
         $body = '';
@@ -114,7 +114,7 @@ function SchoolSafeDashboardDetails(array $data, array $feed): string
             if ($active==='personnel') $body .= SchoolSafePersonnelStats();
         } elseif ($active==='finance') $body = User('PROFILE')==='admin' ? SchoolSafeFinanceOverview() : SchoolSafePersonalDashboardDetails(User('PROFILE'));
         elseif ($active==='activities') {
-            $body = '<table><thead><tr><th>Date</th><th>Evenement ou annonce</th></tr></thead><tbody>';
+            $body = '<table><thead><tr><th>Date</th><th>Événement ou annonce</th></tr></thead><tbody>';
             foreach ($feed['events'] as $row) $body .= '<tr><td>'.$e($row['SCHOOL_DATE']).'</td><td>'.$e(ParseMLField($row['TITLE'])).'</td></tr>';
             foreach ($feed['activities'] as $row) $body .= '<tr><td>'.$e(substr($row['CREATED_AT'],0,10)).'</td><td>'.$e(ParseMLField($row['TITLE'])).'</td></tr>';
             $body .= '</tbody></table>';

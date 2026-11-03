@@ -10,7 +10,7 @@ function SchoolSafePersonnelPeriod(array $request): array
     $end = $request['personnel_end'] ?? date('Y-m-d');
     if (!$valid($start) || !$valid($end) || $start > $end
         || (new DateTimeImmutable($start))->diff(new DateTimeImmutable($end))->days > 366) {
-        return [date('Y-m-01'), date('Y-m-d'), 'Periode invalide : choisissez au maximum 367 jours.'];
+        return [date('Y-m-01'), date('Y-m-d'), 'Période invalide : choisissez au maximum 367 jours.'];
     }
     return [$start, $end, ''];
 }
@@ -62,18 +62,18 @@ function SchoolSafePersonnelStats(): string
         .'<label>Du <input type="date" name="personnel_start" value="'.$e($start).'" required></label>'
         .'<label>Au <input type="date" name="personnel_end" value="'.$e($end).'" required></label><button type="submit">Actualiser</button></form>';
     if ($error) $html .= '<p role="alert">'.$e($error).'</p>';
-    $html .= '<p><strong>'.count($staff).' personnes</strong> dans l\'ecole selectionnee ; <strong>'.count($ranking)
-        .' personnes avec absence</strong> ; <strong>'.array_sum(array_map('count', $byPerson)).' jours-personnes avec absence enregistree</strong>.</p>'
-        .'<p>Un jour compte une fois par personne, meme avec plusieurs declarations. Une absence partielle compte comme un jour touche, pas comme une journee complete. Aucun pointage manquant n\'est compte comme absence.</p>';
-    if ($ambiguous) $html .= '<p>'.$ambiguous.' rattachements sans attribution unique a cette ecole : absences exclues des statistiques par ecole.</p>';
+    $html .= '<p><strong>'.count($staff).' personnes</strong> dans l\'école sélectionnée ; <strong>'.count($ranking)
+        .' personnes avec absence</strong> ; <strong>'.array_sum(array_map('count', $byPerson)).' jours-personnes avec absence enregistrée</strong>.</p>'
+        .'<p>Un jour compte une fois par personne, même avec plusieurs déclarations. Une absence partielle compte comme un jour touche, pas comme une journée complete. Aucun pointage manquant n\'est compte comme absence.</p>';
+    if ($ambiguous) $html .= '<p>'.$ambiguous.' rattachements sans attribution unique à cette école : absences exclues des statistiques par école.</p>';
     $html .= '<div class="ss-personnel-tables"><div><h4>Effectifs par fonction</h4><table><thead><tr><th>Fonction</th><th>Effectif</th></tr></thead><tbody>';
     foreach ($functions as $title => $count) $html .= '<tr><th scope="row">'.$e($title).'</th><td>'.$count.'</td></tr>';
-    if (!$functions) $html .= '<tr><td colspan="2">Aucun personnel renseigne.</td></tr>';
+    if (!$functions) $html .= '<tr><td colspan="2">Aucun personnel renseigné.</td></tr>';
     $html .= '</tbody></table></div><div><h4>Absences par jour</h4><table><thead><tr><th>Date</th><th>Personnes</th></tr></thead><tbody>';
     foreach ($byDay as $day => $people) $html .= '<tr><th scope="row">'.$e($day).'</th><td>'.count($people).'</td></tr>';
-    if (!$byDay) $html .= '<tr><td colspan="2">Aucune absence enregistree sur cette periode.</td></tr>';
+    if (!$byDay) $html .= '<tr><td colspan="2">Aucune absence enregistrée sur cette période.</td></tr>';
     $html .= '</tbody></table></div></div><h4>Personnel avec le plus de jours touches par une absence</h4><div class="ss-personnel-table-scroll"><table><thead><tr><th>Personne</th><th>Fonction</th><th>Jours</th><th>Dates</th></tr></thead><tbody>';
     foreach ($ranking as $row) $html .= '<tr><th scope="row">'.$e($row[0]).'</th><td>'.$e($row[1]).'</td><td>'.$row[2].'</td><td><details><summary>Voir les dates</summary>'.$e(implode(', ', $row[3])).'</details></td></tr>';
-    if (!$ranking) $html .= '<tr><td colspan="4">Aucune absence attribuable a cette ecole sur cette periode.</td></tr>';
+    if (!$ranking) $html .= '<tr><td colspan="4">Aucune absence attribuable à cette école sur cette période.</td></tr>';
     return $html.'</tbody></table></div></section>';
 }

@@ -17,10 +17,10 @@ function SchoolSafePersonalDashboardDetails(string $profile): string
             ORDER BY cp.title,cp.course_period_id,s.last_name,s.first_name,s.student_id");
         $groups=[];
         foreach ($rows as $row) $groups[(int)$row['COURSE_PERIOD_ID']][]=$row;
-        $html='<section class="ss-personal-details ss-personal-roster"><h3>Eleves de mes groupes</h3>';
+        $html='<section class="ss-personal-details ss-personal-roster"><h3>Élèves de mes groupes</h3>';
         if (!$groups) return $html.'<p class="sscx-empty">Aucune inscription active dans vos groupes.</p></section>';
         foreach ($groups as $id=>$students) {
-            $html.='<details><summary>'.$e(ParseMLField($students[0]['TITLE'])).' · '.count($students).' '.(count($students)===1?'eleve':'eleves').'</summary><div class="ss-personal-table-scroll"><table><thead><tr><th scope="col">Eleve</th><th scope="col">Identifiant</th></tr></thead><tbody>';
+            $html.='<details><summary>'.$e(ParseMLField($students[0]['TITLE'])).' · '.count($students).' '.(count($students)===1?'eleve':'eleves').'</summary><div class="ss-personal-table-scroll"><table><thead><tr><th scope="col">Élève</th><th scope="col">Identifiant</th></tr></thead><tbody>';
             foreach ($students as $row) $html.='<tr><th scope="row">'.$e($row['FIRST_NAME'].' '.$row['LAST_NAME']).'</th><td>'.(int)$row['STUDENT_ID'].'</td></tr>';
             $html.='</tbody></table></div><p><a href="Modules.php?modname=Grades/Grades.php&amp;course_period_id='.$id.'&amp;period='.$id.'">Enregistrer les cotes de ce groupe</a></p></details>';
         }
@@ -49,11 +49,11 @@ function SchoolSafePersonalDashboardDetails(string $profile): string
     }
     $rows=DBGet("SELECT DISTINCT s.student_id,s.first_name,s.last_name$columns FROM students s
         JOIN student_enrollment en ON en.student_id=s.student_id $joins WHERE $active AND $scope ORDER BY s.last_name,s.first_name,s.student_id");
-    $html='<section class="ss-personal-details ss-personal-finance"><h3>'.($profile==='parent'?'Frais de mes enfants':'Mes frais scolaires').'</h3><div class="ss-personal-table-scroll"><table><thead><tr><th scope="col">Eleve</th>';
+    $html='<section class="ss-personal-details ss-personal-finance"><h3>'.($profile==='parent'?'Frais de mes enfants':'Mes frais scolaires').'</h3><div class="ss-personal-table-scroll"><table><thead><tr><th scope="col">Élève</th>';
     if ($fees) $html.='<th scope="col">Facture</th>';
     if ($payments) $html.='<th scope="col">Paye</th>';
     if ($fees && $payments) $html.='<th scope="col">Solde</th>';
-    $html.='<th scope="col">Details</th></tr></thead><tbody>';
+    $html.='<th scope="col">Détails</th></tr></thead><tbody>';
     foreach ($rows as $row) {
         $html.='<tr><th scope="row">'.$e($row['FIRST_NAME'].' '.$row['LAST_NAME']).'</th>';
         $amounts=[];
@@ -64,6 +64,6 @@ function SchoolSafePersonalDashboardDetails(string $profile): string
         $route=$fees?'StudentFees.php':'StudentPayments.php';
         $html.='<td><a href="Modules.php?modname=Student_Billing/'.$route.'&amp;student_id='.(int)$row['STUDENT_ID'].'">Consulter</a></td></tr>';
     }
-    if (!$rows) $html.='<tr><td colspan="'.(2+(int)$fees+(int)$payments+(int)($fees&&$payments)).'">Aucun eleve actif accessible dans cette ecole.</td></tr>';
-    return $html.'</tbody></table></div><p>Montants cumules de l\'annee scolaire selectionnee.</p></section>';
+    if (!$rows) $html.='<tr><td colspan="'.(2+(int)$fees+(int)$payments+(int)($fees&&$payments)).'">Aucun élève actif accessible dans cette école.</td></tr>';
+    return $html.'</tbody></table></div><p>Montants cumulés de l\'année scolaire sélectionnée.</p></section>';
 }

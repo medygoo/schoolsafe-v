@@ -56,7 +56,7 @@
         while ((node = walker.nextNode())) {
             var parent = node.parentElement;
             if (!parent || parent.closest(skip) || legal(parent)) continue;
-            var value = node.nodeValue.replace(brand, 'School Safe').replace(premium, '');
+            var value = node.nodeValue.replace(brand, 'SchoolSafe').replace(premium, '');
             if (value !== node.nodeValue) node.nodeValue = value;
         }
         root.querySelectorAll('[title],[aria-label],img[alt],input[placeholder]').forEach(function (element) {

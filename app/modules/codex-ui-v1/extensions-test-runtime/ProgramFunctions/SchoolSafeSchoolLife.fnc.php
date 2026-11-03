@@ -10,7 +10,7 @@ function SchoolSafeBirthdayVisual(string $title,array $rows,bool $topTen = false
         $today=(new DateTimeImmutable('today',new DateTimeZone('Africa/Kinshasa')))->format('Y-m-d');
         $html.='<li><time datetime="'.$e($row['BIRTHDAY']['date']).'"><b>'.$date->format('d').'</b><small>'.$date->format('m/Y').'</small></time><div><strong>'.$e($row['FIRST_NAME'].' '.$row['LAST_NAME']).'</strong><small>'.$e($row['KIND']??'Élève').' · '.($row['BIRTHDAY']['date']===$today?'Aujourd\'hui':$date->format('d/m/Y')).'</small></div></li>';
     }
-    if(!$rows)$html.='<li class="ss-life-empty">'.($topTen?'Aucune date de naissance renseignée pour les personnes accessibles de cette école.':'Aucun anniversaire renseigne dans les sept prochains jours.').'</li>';
+    if(!$rows)$html.='<li class="ss-life-empty">'.($topTen?'Aucune date de naissance renseignée pour les personnes accessibles de cette école.':'Aucun anniversaire renseigné dans les sept prochains jours.').'</li>';
     return $html.'</ul></details></section>';
 }
 
@@ -19,9 +19,9 @@ function SchoolSafePalmaresVisual(int $school, int $year): string
     if (!in_array(User('PROFILE'),['admin','teacher'],true) || !AllowUse('Grades/GPARankList.php')) return '';
     $e=static function($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');};
     $classes=DBGet("SELECT course_period_id,title FROM course_periods WHERE school_id=$school AND syear=$year ORDER BY title,course_period_id");
-    $html='<section class="ss-school-life ss-palmares-visual"><header><img src="assets/themes/SchoolSafeCodex/navigation-icons/BadgeCheck.svg" width="24" height="24" alt=""><h3>Palmares · Top 10</h3></header>';
-    $html.='<details><summary>Top 10 de toute l\'ecole</summary><div class="ss-palmares-columns">';
-    $scopes=[['TITLE'=>'Toute l\'ecole','ID'=>null]];
+    $html='<section class="ss-school-life ss-palmares-visual"><header><img src="assets/themes/SchoolSafeCodex/navigation-icons/BadgeCheck.svg" width="24" height="24" alt=""><h3>Palmarès · Top 10</h3></header>';
+    $html.='<details><summary>Top 10 de toute l\'école</summary><div class="ss-palmares-columns">';
+    $scopes=[['TITLE'=>'Toute l\'école','ID'=>null]];
     foreach($classes as $class)$scopes[]=['TITLE'=>'Classe · '.ParseMLField($class['TITLE']),'ID'=>(int)$class['COURSE_PERIOD_ID']];
     foreach($scopes as $index=>$scope){
         $title=$scope['TITLE'];$class=$scope['ID'];
@@ -38,7 +38,7 @@ function SchoolSafePalmaresVisual(int $school, int $year): string
             $movement=!$history?'':($delta===null?'Nouveau':($delta===0?'Stable':($delta>0?'Monte de ':'Descend de ').abs($delta)));
             $html.='<li value="'.$rank.'"><span class="ss-rank" data-podium="'.($rank<=3?$rank:0).'">'.$rank.'</span><div><strong>'.$e(SchoolSafePalmaresFullName($row)).'</strong><small>'.$e(ParseMLField($row['PERIOD_TITLE'])).'</small><small>'.$e($movement).'</small></div><b>'.$e(number_format((float)$row['SCORE'],2,',',' ')).'<small> / '.$e($row['SCALE']).'</small></b></li>';
         }
-        if(!$rows)$html.='<li class="ss-life-empty">Aucune moyenne native exploitable pour cette periode.</li>';
+        if(!$rows)$html.='<li class="ss-life-empty">Aucune moyenne native exploitable pour cette période.</li>';
         $html.='</ol></div>';
         if($class!==null)$html.='</details>';
     }

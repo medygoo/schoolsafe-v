@@ -28,17 +28,17 @@ function SchoolSafePersonalDashboardStats(string $profile): string
             AND EXISTS(SELECT 1 FROM student_enrollment en WHERE en.student_id=a.student_id AND en.school_id=$school AND en.syear=$year
                 AND en.start_date<=a.school_date AND (en.end_date IS NULL OR en.end_date>=a.school_date))
             GROUP BY a.student_id,a.school_date) daily GROUP BY status ORDER BY status");
-        $title=$profile==='parent'?'Presences enregistrees de mes enfants':'Mes presences enregistrees';
-        $names=['present'=>'Journees presentes','absent'=>'Journees absentes','partial'=>'Journees partielles','unverified'=>'Journees non verifiees'];
-        foreach($rows as $row)$labels[]=[$names[$row['STATUS']]??'Non verifie',(int)$row['TOTAL']];
+        $title=$profile==='parent'?'Présences enregistrées de mes enfants':'Mes présences enregistrées';
+        $names=['present'=>'Journées présentes','absent'=>'Journées absentes','partial'=>'Journées partielles','unverified'=>'Journées non vérifiées'];
+        foreach($rows as $row)$labels[]=[$names[$row['STATUS']]??'Non vérifié',(int)$row['TOTAL']];
     }else return '';
     $html='<section class="ss-personal-stats"><h3>'.$e($title).'</h3>';
-    if(!$labels)return $html.'<p class="sscx-empty">Aucun releve accessible pour cette annee scolaire.</p></section>';
+    if(!$labels)return $html.'<p class="sscx-empty">Aucun relevé accessible pour cette année scolaire.</p></section>';
     $maximum=max(1,max(array_column($labels,1)));
     $html.='<div class="ss-personal-bars">';
     foreach($labels as $row)$html.='<div><strong>'.$e($row[0]).'</strong><span>'.$row[1].'</span><progress max="'.$maximum.'" value="'.$row[1].'" aria-label="'.$e($row[0]).'"></progress></div>';
     $html.='</div><details><summary>Voir les chiffres</summary><table><thead><tr><th>Rubrique</th><th>Total</th></tr></thead><tbody>';
     foreach($labels as $row)$html.='<tr><th scope="row">'.$e($row[0]).'</th><td>'.$row[1].'</td></tr>';
     $route=$profile==='teacher'?'Grades/Grades.php':'Attendance/StudentSummary.php';
-    return $html.'</tbody></table></details><p><a href="Modules.php?modname='.$route.'">Consulter les releves et leurs details</a></p></section>';
+    return $html.'</tbody></table></details><p><a href="Modules.php?modname='.$route.'">Consulter les relevés et leurs détails</a></p></section>';
 }

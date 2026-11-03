@@ -2,7 +2,7 @@
 function SchoolSafeDashboardLineChart(array $series,array $labels): string
 {
     $e=static function($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');};
-    if(!$series)return '<svg class="ss-native-line-chart ss-chart-empty" viewBox="0 0 560 260" role="img" aria-label="Aucune transaction pour la periode selectionnee"><path d="M65 25V205H540 M65 70H540 M65 115H540 M65 160H540" fill="none" stroke="#deebf8"/><text x="300" y="125" text-anchor="middle">Aucune transaction pour cette periode.</text></svg>';
+    if(!$series)return '<svg class="ss-native-line-chart ss-chart-empty" viewBox="0 0 560 260" role="img" aria-label="Aucune transaction pour la periode selectionnee"><path d="M65 25V205H540 M65 70H540 M65 115H540 M65 160H540" fill="none" stroke="#deebf8"/><text x="300" y="125" text-anchor="middle">Aucune transaction pour cette période.</text></svg>';
     $colors=['fees'=>'#ac49d7','payments'=>'#087bff','income'=>'#087bff','expense'=>'#ac49d7'];
     $min=0;$max=1;
     foreach($series as $values)foreach($values as $v){$min=min($min,$v);$max=max($max,$v);}
@@ -35,9 +35,9 @@ function SchoolSafeDashboardExpenseChart(array $rows): string
     $total=array_sum(array_column(array_values($rows),'TOTAL'));
     if($total<=0)return '<div class="ss-expense-breakdown"><svg viewBox="0 0 200 200" role="img" aria-label="Aucune dépense positive enregistrée"><circle cx="100" cy="100" r="70" fill="none" stroke="#e6eff9" stroke-width="28"/><text x="100" y="104" text-anchor="middle">Sans données</text></svg><p class="sscx-empty">Aucune dépense positive enregistrée.</p></div>';
     $palette=['#087bff','#00bda5','#ffb400','#ed583e','#ac49d7','#2584a6'];$offset=0;$i=0;
-    $html='<div class="ss-expense-breakdown"><svg viewBox="0 0 200 200" role="img" aria-label="Repartition des depenses positives"><title>Repartition des depenses positives</title>';
+    $html='<div class="ss-expense-breakdown"><svg viewBox="0 0 200 200" role="img" aria-label="Repartition des depenses positives"><title>Répartition des dépenses positives</title>';
     foreach($rows as $row){$share=(float)$row['TOTAL']/$total*100;$color=$palette[$i++%count($palette)];$html.='<circle cx="100" cy="100" r="70" fill="none" stroke="'.$color.'" stroke-width="28" pathLength="100" stroke-dasharray="'.$share.' '.(100-$share).'" stroke-dashoffset="'.(-$offset).'" transform="rotate(-90 100 100)"><title>'.$e($row['TITLE'].' : '.html_entity_decode(strip_tags(Currency($row['TOTAL'])),ENT_QUOTES,'UTF-8')).'</title></circle>';$offset+=$share;}
-    $html.='<text x="100" y="100" text-anchor="middle">'.round($total,2).'</text><text x="100" y="122" text-anchor="middle">Depenses</text></svg><ul>';
+    $html.='<text x="100" y="100" text-anchor="middle">'.round($total,2).'</text><text x="100" y="122" text-anchor="middle">Dépenses</text></svg><ul>';
     foreach($rows as $row)$html.='<li><strong>'.$e(ParseMLField($row['TITLE'])).'</strong><span>'.round((float)$row['TOTAL']/$total*100,1).'%</span><small>'.$e(html_entity_decode(strip_tags(Currency($row['TOTAL'])),ENT_QUOTES,'UTF-8')).'</small></li>';
     return $html.'</ul></div>';
 }

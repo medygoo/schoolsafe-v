@@ -13,7 +13,7 @@ function SchoolSafeDashboardDirectory(string $kind,bool $matrix=false): string
     $active="en.school_id=$school AND en.syear=$year AND en.start_date<=CURRENT_DATE AND (en.end_date IS NULL OR en.end_date>=CURRENT_DATE)";
     if($kind==='students'){
         $courses=AllowUse('Scheduling/Courses.php');
-        $group=$courses?"COALESCE(cp.title,'Sans cours affecte')":"COALESCE(g.title,'Niveau non renseigné')";
+        $group=$courses?"COALESCE(cp.title,'Sans cours affecté')":"COALESCE(g.title,'Niveau non renseigné')";
         $joins=$courses?"LEFT JOIN (schedule sc JOIN course_periods cp ON cp.course_period_id=sc.course_period_id AND cp.school_id=$school AND cp.syear=$year)
             ON sc.student_id=s.student_id AND sc.school_id=$school AND sc.syear=$year AND sc.start_date<=CURRENT_DATE AND (sc.end_date IS NULL OR sc.end_date>=CURRENT_DATE)":'';
         $sql="SELECT DISTINCT $group AS group_title,".($courses?'cp.course_period_id':'g.id')." AS group_id,s.student_id AS person_id,s.first_name,s.last_name,
@@ -22,7 +22,7 @@ function SchoolSafeDashboardDirectory(string $kind,bool $matrix=false): string
             LEFT JOIN school_gradelevels g ON g.id=en.grade_id AND g.school_id=en.school_id $joins
             WHERE $active AND position('$needle' IN LOWER(CONCAT(s.last_name,' ',s.first_name,' ',s.student_id)))>0
             ";
-        $title='Liste des eleves par '.($courses?'groupe de cours':'niveau');
+        $title='Liste des élèves par '.($courses?'groupe de cours':'niveau');
         $headers=['Élève','Identifiant','Niveau','Sexe'];
     }elseif($kind==='personnel'){
         $sql="SELECT COALESCE(p.title,s.profile) AS group_title,s.profile_id AS group_id,s.staff_id AS person_id,s.first_name,s.last_name,s.profile AS detail
@@ -31,7 +31,7 @@ function SchoolSafeDashboardDirectory(string $kind,bool $matrix=false): string
             AND (s.current_school_id=$school OR position(',$school,' IN s.schools)>0)
             AND position('$needle' IN LOWER(CONCAT(s.last_name,' ',s.first_name,' ',s.staff_id)))>0
             ";
-        $title='Repertoire du personnel par fonction';$headers=['Personne','Identifiant','Profil natif'];
+        $title='Répertoire du personnel par fonction';$headers=['Personne','Identifiant','Profil natif'];
     }else{
         $sql="SELECT DISTINCT COALESCE(g.title,'Niveau non renseigné') AS group_title,g.id AS group_id,p.staff_id AS person_id,p.first_name,p.last_name,
             CONCAT(s.first_name,' ',s.last_name) AS detail,s.student_id AS child_id
@@ -41,7 +41,7 @@ function SchoolSafeDashboardDirectory(string $kind,bool $matrix=false): string
             AND (p.schools IS NULL OR position(',$school,' IN p.schools)>0)
             AND position('$needle' IN LOWER(CONCAT(p.last_name,' ',p.first_name,' ',s.last_name,' ',s.first_name)))>0
             ";
-        $title='Parents et enfants rattaches';$headers=['Parent','Identifiant','Enfant'];
+        $title='Parents et enfants rattachés';$headers=['Parent','Identifiant','Enfant'];
     }
     $e=static function($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');};
     $groups=DBGet("SELECT group_title,group_id,COUNT(*) AS total FROM ($sql) directory GROUP BY group_title,group_id ORDER BY group_title,group_id");
@@ -96,11 +96,11 @@ function SchoolSafeDashboardDirectory(string $kind,bool $matrix=false): string
     if($matrix&&$kind==='students'&&$selected!==''&&$selected!=='none'&&AllowUse('Scheduling/Courses.php')&&AllowUse('Users/User.php')){
         $teachers=DBGet("SELECT s.first_name,s.last_name FROM course_periods cp JOIN staff s ON s.staff_id=cp.teacher_id AND s.syear=cp.syear WHERE cp.course_period_id=".(int)$selected." AND cp.school_id=$school AND cp.syear=$year AND (s.current_school_id=$school OR position(',$school,' IN s.schools)>0)");
         $names=array_map(static fn($r)=>$r['FIRST_NAME'].' '.$r['LAST_NAME'],$teachers);
-        $html.='<p>Enseignant affecte au groupe : '.$e($names?implode(', ',$names):'Non renseigné').'.</p>';
+        $html.='<p>Enseignant affecté au groupe : '.$e($names?implode(', ',$names):'Non renseigné').'.</p>';
     }
-    if($matrix&&$kind==='personnel')$html.='<p>Pointages et absences : mois en cours. Paie : annee scolaire. Le solde comptable ne declenche aucune deduction. Un pointage manquant ne prouve pas une absence.</p>';
+    if($matrix&&$kind==='personnel')$html.='<p>Pointages et absences : mois en cours. Paie : année scolaire. Le solde comptable ne declenche aucune deduction. Un pointage manquant ne prouve pas une absence.</p>';
     if($kind==='students')$html.='<p>Inscriptions actives. Un élève peut figurer dans plusieurs groupes de cours.</p>';
-    if($kind==='parents')$html.='<p>Une ligne par lien parent-enfant actif dans cette ecole.</p>';
+    if($kind==='parents')$html.='<p>Une ligne par lien parent-enfant actif dans cette école.</p>';
     $html.='<div class="ss-directory-scroll"><table><thead><tr>';
     foreach($headers as $label)$html.='<th scope="col">'.$label.'</th>';
     $html.='</tr></thead><tbody>';$last=null;
@@ -114,7 +114,7 @@ function SchoolSafeDashboardDirectory(string $kind,bool $matrix=false): string
         $html.='</td>';
         if($kind==='students'){
             $sex=mb_strtolower(trim((string)$row['GENDER']));
-            $label=in_array($sex,['female','f','feminin','fille'],true)?'Fille':(in_array($sex,['male','m','masculin','garcon'],true)?'Garcon':'Non renseigne / autre');
+            $label=in_array($sex,['female','f','feminin','fille'],true)?'Fille':(in_array($sex,['male','m','masculin','garcon'],true)?'Garçon':'Non renseigné / autre');
             $html.='<td>'.$label.'</td>';
         }
         if($showPayments){
@@ -122,14 +122,14 @@ function SchoolSafeDashboardDirectory(string $kind,bool $matrix=false): string
             foreach([$balance['FEES'],$balance['PAID'],(float)$balance['FEES']-(float)$balance['PAID']] as $amount)$html.='<td>'.$e(html_entity_decode(strip_tags(Currency($amount)),ENT_QUOTES,'UTF-8')).'</td>';
         }
         if($showAttendance){
-            $day=$attendance[$id]??null;$status='Non verifie';
+            $day=$attendance[$id]??null;$status='Non vérifié';
             if($day&&$day['LO']!==null&&$day['LO']===$day['HI']){
-                $value=(float)$day['LO'];$status=$value>=1?'Present':($value===0.0?'Absent':'Journee partielle');
+                $value=(float)$day['LO'];$status=$value>=1?'Présent':($value===0.0?'Absent':'Journée partielle');
             }
             $html.='<td>'.$status.'</td>';
         }
         if($kind==='students'){
-            $html.='<td><a href="Modules.php?modname=Students/Student.php&amp;student_id='.$id.'">Dossier complet</a>';
+            $html.='<td><a href="Modules.php?modname=Students/Student.php&amp;student_id='.$id.'">Ouvrir le dossier</a>';
             foreach(['Grades/StudentGrades.php'=>'Cotes','Grades/ReportCards.php'=>'Bulletins','Student_Billing/StudentFees.php'=>'Paiements'] as $route=>$label)if(AllowUse($route))$html.='<br><a href="Modules.php?modname='.$route.'&amp;student_id='.$id.'">'.$label.'</a>';
             $html.='</td>';
         }

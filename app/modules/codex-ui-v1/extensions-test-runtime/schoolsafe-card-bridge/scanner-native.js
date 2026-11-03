@@ -112,7 +112,7 @@
    const requestedMode=location.hash.slice(1);
    const requestedButton=Array.from(byId('modes').querySelectorAll('button')).find(button=>button.dataset.mode===requestedMode&&!button.disabled);
    setMode(requestedButton?requestedMode:first);form.hidden=false;byId('camera').disabled=false;state.textContent='Mode prêt — présentez la carte ou ouvrez la caméra.';
-  }catch(error){state.textContent=['401','403'].includes(error.message)?'Connexion ou autorisation School Safe requise.':'Service de scan School Safe indisponible. Réessayez ou contactez l’administration.';byId('scanner-retry').hidden=false;}
+  }catch(error){state.textContent=['401','403'].includes(error.message)?'Connexion ou autorisation SchoolSafe requise.':'Service de scan SchoolSafe indisponible. Réessayez ou contactez l’administration.';byId('scanner-retry').hidden=false;}
  }
  form.addEventListener('submit',event=>{event.preventDefault();clearPickup();const input={mode,qr_payload:byId('scan-qr').value.trim()};
   if(['entry','pickup'].includes(mode))input.location_id=byId('scan-location').value;scan(input);

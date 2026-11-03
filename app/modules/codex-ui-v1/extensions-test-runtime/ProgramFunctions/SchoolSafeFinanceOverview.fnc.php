@@ -18,8 +18,8 @@ function SchoolSafeFinanceOverview(): string
     }
     $series=[];$totals=[];
     $sources=[];
-    if($billing){$sources['fees']=['billing_fees','assigned_date','Frais factures'];$sources['payments']=['billing_payments','payment_date','Frais encaisses'];}
-    if($accounting){$sources['income']=['accounting_incomes','assigned_date','Autres revenus'];$sources['expense']=['accounting_payments','payment_date','Depenses et personnel'];}
+    if($billing){$sources['fees']=['billing_fees','assigned_date','Frais facturés'];$sources['payments']=['billing_payments','payment_date','Frais encaissés'];}
+    if($accounting){$sources['income']=['accounting_incomes','assigned_date','Autres revenus'];$sources['expense']=['accounting_payments','payment_date','Dépenses et personnel'];}
     foreach($sources as $kind=>$source){
         $range=$start!==''?" AND ".$source[1].">=DATE '$start' AND ".$source[1]."<DATE '$end'+INTERVAL '1 day'":'';
         $rows=DBGet("SELECT CAST(".$source[1]." AS char(7)) AS month,SUM(amount) AS total FROM ".$source[0]." WHERE school_id=$school AND syear=$year$range GROUP BY month ORDER BY month");
@@ -27,19 +27,19 @@ function SchoolSafeFinanceOverview(): string
         foreach($rows as $row){$series[$row['MONTH']][$kind]=(float)$row['TOTAL'];$totals[$kind]+=(float)$row['TOTAL'];}
     }
     ksort($series);
-    $html='<section class="ss-finance-overview"><h3>Finances et operations</h3><div class="ss-finance-metrics">';
+    $html='<section class="ss-finance-overview"><h3>Finances et opérations</h3><div class="ss-finance-metrics">';
     foreach($sources as $kind=>$source){
         $route=in_array($kind,['fees','payments'],true)?'Student_Billing/DailyTransactions.php':'Accounting/DailyTransactions.php';
-        $html.='<article data-finance-kind="'.$kind.'"><span>'.$source[2].'</span><strong>'.$escape($money($totals[$kind])).'</strong><small>'.($start!==''?$escape($start.' au '.$end):'Année scolaire selectionnee').'</small><details class="ss-finance-indicator-detail"><summary>Detail mensuel</summary><table><thead><tr><th>Mois</th><th>Montant</th></tr></thead><tbody>';
+        $html.='<article data-finance-kind="'.$kind.'"><span>'.$source[2].'</span><strong>'.$escape($money($totals[$kind])).'</strong><small>'.($start!==''?$escape($start.' au '.$end):'Année scolaire sélectionnée').'</small><details class="ss-finance-indicator-detail"><summary>Détail mensuel</summary><table><thead><tr><th>Mois</th><th>Montant</th></tr></thead><tbody>';
         $hasRows=false;
         foreach($series as $month=>$values)if(array_key_exists($kind,$values)){$hasRows=true;$html.='<tr><th scope="row">'.$escape($month).'</th><td>'.$escape($money($values[$kind])).'</td></tr>';}
-        if(!$hasRows)$html.='<tr><td colspan="2">Aucune transaction enregistree.</td></tr>';
-        $html.='</tbody></table><a href="Modules.php?modname='.$route.'">Consulter les operations</a></details><a class="ss-finance-metric-link" href="Modules.php?modname=misc/Portal.php&amp;dashboard_tab=finance&amp;finance_kind='.$kind.'">Details</a></article>';
+        if(!$hasRows)$html.='<tr><td colspan="2">Aucune transaction enregistrée.</td></tr>';
+        $html.='</tbody></table><a href="Modules.php?modname='.$route.'">Consulter les operations</a></details><a class="ss-finance-metric-link" href="Modules.php?modname=misc/Portal.php&amp;dashboard_tab=finance&amp;finance_kind='.$kind.'">Détails</a></article>';
     }
     $html.='</div><div class="ss-finance-analysis"><section><header class="ss-chart-heading"><h3>Encaissements et dépenses</h3><a href="Modules.php?modname=misc/Portal.php&amp;dashboard_tab=finance">Periode</a></header>';
     $cashSeries=[];$labels=[];
     if($billing||$accounting)$labels['income']='Encaissements';
-    if($accounting)$labels['expense']='Depenses';
+    if($accounting)$labels['expense']='Dépenses';
     foreach($series as $month=>$values){
         // Invoices are not cash receipts. Keep them out of the treasury curve.
         if(isset($values['payments'])||isset($values['income'])||isset($values['expense']))$cashSeries[$month]=['income'=>($values['payments']??0)+($values['income']??0),'expense'=>$values['expense']??0];
@@ -47,10 +47,10 @@ function SchoolSafeFinanceOverview(): string
     $html.=SchoolSafeDashboardLineChart($cashSeries,$labels).'</section>';
     if($accounting){
         $range=$start!==''?" AND p.payment_date>=DATE '$start' AND p.payment_date<DATE '$end'+INTERVAL '1 day'":'';
-        $categories=DBGet("SELECT COALESCE(c.title,'Sans categorie') AS title,SUM(p.amount) AS total FROM accounting_payments p LEFT JOIN accounting_categories c ON c.id=p.category_id WHERE p.school_id=$school AND p.syear=$year AND p.amount>0$range GROUP BY c.title ORDER BY total DESC");
-        $html.='<section><h3>Repartition des depenses</h3>'.SchoolSafeDashboardExpenseChart($categories).'</section>';
+        $categories=DBGet("SELECT COALESCE(c.title,'Sans catégorie') AS title,SUM(p.amount) AS total FROM accounting_payments p LEFT JOIN accounting_categories c ON c.id=p.category_id WHERE p.school_id=$school AND p.syear=$year AND p.amount>0$range GROUP BY c.title ORDER BY total DESC");
+        $html.='<section><h3>Répartition des dépenses</h3>'.SchoolSafeDashboardExpenseChart($categories).'</section>';
     }
-    $html.='<section><h3>Volumes enregistres</h3><div class="ss-native-volume-bars">';
+    $html.='<section><h3>Volumes enregistrés</h3><div class="ss-native-volume-bars">';
     $maximum=max(1,max(array_map('abs',array_values($totals))));
     foreach($sources as $kind=>$source)$html.='<div data-finance-kind="'.$kind.'"><strong>'.$escape($source[2]).'</strong><span>'.$escape($money($totals[$kind])).'</span><progress max="'.$maximum.'" value="'.abs($totals[$kind]).'" aria-label="'.$escape($source[2]).'"></progress></div>';
     $html.='</div><ul class="sscx-teacher-list">';
@@ -65,15 +65,15 @@ function SchoolSafeFinanceOverview(): string
             WHERE COALESCE(f.total,0)>COALESCE(p.total,0) ORDER BY balance DESC,s.last_name,s.first_name LIMIT 10");
         $html.='<section class="ss-finance-balances"><header class="ss-chart-heading"><h3>Soldes scolaires a regler</h3><a href="Modules.php?modname=misc/Portal.php&amp;dashboard_tab=finance">Voir tout</a></header><p>Solde annuel, independant du filtre des transactions.</p><div class="sscx-table-scroll"><table><thead><tr><th>Eleve</th><th>Facture</th><th>Paye</th><th>Solde</th></tr></thead><tbody>';
         foreach($balances as $row)$html.='<tr><th scope="row"><a href="Modules.php?modname=Students/Student.php&amp;student_id='.(int)$row['STUDENT_ID'].'">'.$escape($row['FIRST_NAME'].' '.$row['LAST_NAME']).'</a></th><td>'.$escape($money($row['FEES'])).'</td><td>'.$escape($money($row['PAID'])).'</td><td>'.$escape($money($row['BALANCE'])).'</td></tr>';
-        if(!$balances)$html.='<tr><td colspan="4">Aucun solde positif pour cette annee.</td></tr>';
+        if(!$balances)$html.='<tr><td colspan="4">Aucun solde positif pour cette année.</td></tr>';
         $html.='</tbody></table></div><a href="Modules.php?modname=Student_Billing/DailyTransactions.php">Voir toutes les transactions</a></section>';
     }
     $html.='<form class="ss-finance-period ss-personnel-period" method="get" action="Modules.php"><input type="hidden" name="modname" value="misc/Portal.php"><input type="hidden" name="dashboard_tab" value="finance"><label>Finances du <input type="date" name="finance_start" value="'.$escape($start).'" required></label><label>au <input type="date" name="finance_end" value="'.$escape($end).'" required></label><button type="submit">Filtrer</button><a href="Modules.php?modname=misc/Portal.php&amp;dashboard_tab=finance">Toute l\'annee</a></form>';
-    if($periodError)$html.='<p class="ss-finance-period" role="alert">Periode invalide. La synthese annuelle est affichee.</p>';
+    if($periodError)$html.='<p class="ss-finance-period" role="alert">Période invalide. La synthèse annuelle est affichée.</p>';
     if(($_GET['dashboard_tab']??'overview')==='finance'){
         $selected=is_string($_GET['finance_kind']??null)?$_GET['finance_kind']:'';
         if(!isset($sources[$selected]))$selected=array_key_first($sources);
-        $html.='<section class="ss-finance-balances"><h3>Operations par rubrique</h3><nav class="ss-directory-groups" aria-label="Rubriques financieres">';
+        $html.='<section class="ss-finance-balances"><h3>Opérations par rubrique</h3><nav class="ss-directory-groups" aria-label="Rubriques financieres">';
         foreach($sources as $kind=>$source){
             $params=['modname'=>'misc/Portal.php','dashboard_tab'=>'finance','finance_kind'=>$kind];
             if($start!==''){$params['finance_start']=$start;$params['finance_end']=$end;}
@@ -87,9 +87,9 @@ function SchoolSafeFinanceOverview(): string
         $label=$selected==='payments'?"'Paiement scolaire'":'title';
         $operations=DBGet("SELECT id,".$source[1]." AS operation_date,$label AS title,amount FROM ".$source[0]." WHERE school_id=$school AND syear=$year$range ORDER BY ".$source[1]." DESC,id DESC LIMIT 101 OFFSET $offset");
         $more=count($operations)>100;
-        $html.='<div class="ss-directory-scroll"><table><thead><tr><th>Reference</th><th>Date</th><th>Operation</th><th>Montant</th></tr></thead><tbody>';
+        $html.='<div class="ss-directory-scroll"><table><thead><tr><th>Référence</th><th>Date</th><th>Opération</th><th>Montant</th></tr></thead><tbody>';
         foreach(array_slice(array_values($operations),0,100) as $operation)$html.='<tr><th scope="row">'.(int)$operation['ID'].'</th><td>'.$escape($operation['OPERATION_DATE']).'</td><td>'.$escape(ParseMLField($operation['TITLE'])).'</td><td>'.$escape($money($operation['AMOUNT'])).'</td></tr>';
-        if(!$operations)$html.='<tr><td colspan="4">Aucune operation pour cette periode.</td></tr>';
+        if(!$operations)$html.='<tr><td colspan="4">Aucune opération pour cette période.</td></tr>';
         $html.='</tbody></table></div><nav class="ss-directory-pages" aria-label="Pages des operations"><span>Page '.$page.'</span>';
         foreach(['Precedente'=>$page-1,'Suivante'=>$page+1] as $label=>$target){
             if(($target<$page&&$page>1)||($target>$page&&$more)){

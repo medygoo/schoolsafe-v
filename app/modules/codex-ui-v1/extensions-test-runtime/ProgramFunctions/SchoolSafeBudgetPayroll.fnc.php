@@ -2,24 +2,24 @@
 function SchoolSafeBudgetPage(): void
 {
     if(User('PROFILE')!=='admin'||!AllowUse('Accounting/Categories.php')){
-        echo '<p role="alert">Acces non autorise.</p>';return;
+        echo '<p role="alert">Accès non autorisé.</p>';return;
     }
     $school=(int)UserSchool();$year=(int)UserSyear();$staff=(int)User('STAFF_ID');
     if($school<1||$year<1)return;
     $e=static function($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');};
     DrawHeader('Budget annuel');
     echo '<link rel="stylesheet" href="assets/css/schoolsafe-dashboard-reference.css?v=reference-12">';
-    echo '<p>Montants prevus par categorie pour l\'ecole et l\'annee selectionnees. Enregistrer un budget ne cree aucune depense ni aucun paiement.</p>';
+    echo '<p>Montants prévus par catégorie pour l\'école et l\'année sélectionnées. Enregistrer un budget ne cree aucune dépense ni aucun paiement.</p>';
     if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         $token=$_POST['token']??null;$amount=$_POST['budget_amount']??null;
         $category=filter_var($_POST['budget_category']??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
         if(!AllowEdit('Accounting/Categories.php')||!is_string($token)||empty($_SESSION['token'])||!hash_equals($_SESSION['token'],$token)){
             echo '<p role="alert">Enregistrement refuse : droit ou session invalide.</p>';
         }elseif(!$category||!is_string($amount)||!preg_match('/^\d{1,12}(\.\d{1,2})?$/D',$amount)){
-            echo '<p role="alert">Choisissez une categorie et un montant positif ou nul avec deux decimales au maximum.</p>';
+            echo '<p role="alert">Choisissez une catégorie et un montant positif ou nul avec deux décimales au maximum.</p>';
         }else{
             $valid=DBGet("SELECT id FROM accounting_categories WHERE id=".(int)$category." AND school_id=$school AND type IN ('expenses','common')");
-            if(!$valid)echo '<p role="alert">Categorie non accessible dans cette ecole.</p>';
+            if(!$valid)echo '<p role="alert">Catégorie non accessible dans cette école.</p>';
             else{
                 DBQuery("INSERT INTO schoolsafe_accounting_budgets (school_id,syear,category_id,amount,updated_by)
                     VALUES ($school,$year,".(int)$category.",".DBEscapeString($amount).",$staff)
@@ -30,10 +30,10 @@ function SchoolSafeBudgetPage(): void
     }
     if(AllowEdit('Accounting/Categories.php')){
         $categories=DBGet("SELECT id,title FROM accounting_categories WHERE school_id=$school AND type IN ('expenses','common') ORDER BY sort_order NULLS LAST,title");
-        echo '<form method="post" action="Modules.php?modname=Accounting/Categories.php&amp;tab=budget&amp;modfunc=budget_save" class="ss-personnel-period"><input type="hidden" name="token" value="'.$e($_SESSION['token']).'"><label>Categorie <select name="budget_category" required><option value="">Choisir</option>';
+        echo '<form method="post" action="Modules.php?modname=Accounting/Categories.php&amp;tab=budget&amp;modfunc=budget_save" class="ss-personnel-period"><input type="hidden" name="token" value="'.$e($_SESSION['token']).'"><label>Catégorie <select name="budget_category" required><option value="">Choisir</option>';
         foreach($categories as $category)echo '<option value="'.(int)$category['ID'].'">'.$e(ParseMLField($category['TITLE'])).'</option>';
         echo '</select></label><label>Budget annuel <input type="number" name="budget_amount" min="0" max="999999999999.99" step="0.01" required></label><button type="submit">Enregistrer</button></form>';
-        if(!$categories)echo '<p>Ajoutez d\'abord une categorie de depenses dans les categories comptables.</p>';
+        if(!$categories)echo '<p>Ajoutez d\'abord une catégorie de dépenses dans les catégories comptables.</p>';
     }
     echo SchoolSafeBudgetPayrollSummary();
     echo '<a href="Modules.php?modname=Accounting/Categories.php">Categories comptables</a>';
@@ -60,13 +60,13 @@ function SchoolSafeBudgetPayrollSummary(string $start='',string $end=''): string
             else $html.='Non calculable';
             $html.='</td></tr>';
         }
-        if(!$rows)$html.='<tr><td colspan="5">Aucune categorie de depenses configuree.</td></tr>';
-        $html.='</tbody></table></div><p>Les depenses sans categorie ne sont pas reparties dans ce budget.</p></section>';
+        if(!$rows)$html.='<tr><td colspan="5">Aucune catégorie de dépenses configurée.</td></tr>';
+        $html.='</tbody></table></div><p>Les dépenses sans catégorie ne sont pas réparties dans ce budget.</p></section>';
     }
     $salary=AllowUse('Accounting/Salaries.php');$payment=AllowUse('Accounting/StaffPayments.php');
     if($salary||$payment){
-        $html.='<section class="ss-payroll-summary"><h3>Paie du personnel</h3><p>'.($start!==''?$e($start.' au '.$end):'Annee scolaire selectionnee').'</p><dl>';
-        foreach([['accounting_salaries','assigned_date','Salaires enregistres','Accounting/Salaries.php',$salary],['accounting_payments','payment_date','Paiements du personnel','Accounting/StaffPayments.php',$payment]] as $source){
+        $html.='<section class="ss-payroll-summary"><h3>Paie du personnel</h3><p>'.($start!==''?$e($start.' au '.$end):'Année scolaire sélectionnée').'</p><dl>';
+        foreach([['accounting_salaries','assigned_date','Salaires enregistrés','Accounting/Salaries.php',$salary],['accounting_payments','payment_date','Paiements du personnel','Accounting/StaffPayments.php',$payment]] as $source){
             if(!$source[4])continue;
             $range=$start!==''&&preg_match('/^\d{4}-\d{2}-\d{2}$/D',$start)&&preg_match('/^\d{4}-\d{2}-\d{2}$/D',$end)?" AND ".$source[1].">=DATE '$start' AND ".$source[1]."<DATE '$end'+INTERVAL '1 day'":'';
             $staffFilter=$source[0]==='accounting_payments'?' AND staff_id IS NOT NULL':'';

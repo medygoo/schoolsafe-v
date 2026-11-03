@@ -57,7 +57,7 @@ function SchoolSafeNativeDashboardSources(): string
         $fragment=$_ROSARIO['Dashboard'][$module]??'';
         $html.='<details open data-native-dashboard-source="'.$escape($module).'"><summary>'.$escape($title).'</summary>';
         if(is_string($fragment)&&trim($fragment)!=='')$html.=$fragment;
-        else $html.='<p class="sscx-empty">Aucune synthese disponible pour votre profil et le contexte selectionne.</p>';
+        else $html.='<p class="sscx-empty">Aucune synthèse disponible pour votre profil et le contexte sélectionné.</p>';
         $html.='<p><a href="Modules.php?modname='.$escape($route).'">Ouvrir '.$escape($title).'</a></p></details>';
     }
     if(!$html)return '';
@@ -76,7 +76,7 @@ function SchoolSafePersonalOverview(string $profile, array $feed): void
         'Grades/StudentAssignments.php'=>'Devoirs',
         'Grades/StudentGrades.php'=>'Cotes',
         'Grades/ReportCards.php'=>'Bulletins',
-        'Attendance/StudentSummary.php'=>'Presences',
+        'Attendance/StudentSummary.php'=>'Présences',
         'Student_Billing/StudentFees.php'=>'Frais scolaires',
         'Student_Billing/StudentPayments.php'=>'Paiements scolaires',
         'School_Setup/Calendar.php'=>'Calendrier',
@@ -125,14 +125,14 @@ function SchoolSafePersonalOverview(string $profile, array $feed): void
     if(!$rows)echo '<li>'.($parent?'Aucun enfant actif accessible dans cette école.':'Aucun groupe de cours accessible.').'</li>';
     echo '</ul></section><aside><h3>Alertes et notifications</h3>';
     if($parent)echo '<a href="parent-notifications-view.php">Mes notifications</a>';
-    echo SchoolSafeDashboardNativeWidget().'</aside></div><section class="sscx-overview-quick"><h3>Acces rapides</h3><div class="sscx-shortcuts">';
+    echo SchoolSafeDashboardNativeWidget().'</aside></div><section class="sscx-overview-quick"><h3>Accès rapides</h3><div class="sscx-shortcuts">';
     foreach($routes as $route=>$label)if(AllowUse($route))echo '<a href="Modules.php?modname='.$escape($route).'">'.$escape($label).'</a>';
     echo '</div></section>'.SchoolSafeNativeDashboardSources().'<footer class="sscx-overview-footer"><section><h3>Annonces scolaires</h3><ul class="sscx-feed">';
     foreach($feed['activities'] as $item)echo '<li><time>'.$escape(substr($item['CREATED_AT'],0,10)).'</time><strong>'.$escape(ParseMLField($item['TITLE'])).'</strong></li>';
     if(!$feed['activities'])echo '<li>Aucune annonce publiee pour votre profil.</li>';
     echo '</ul></section><section><h3>Calendrier scolaire</h3><ul class="sscx-feed">';
     foreach($feed['events'] as $item)echo '<li><time>'.$escape($item['SCHOOL_DATE']).'</time><strong>'.$escape(ParseMLField($item['TITLE'])).'</strong></li>';
-    if(!$feed['events'])echo '<li>Aucun evenement accessible dans les 30 prochains jours.</li>';
+    if(!$feed['events'])echo '<li>Aucun événement accessible dans les 30 prochains jours.</li>';
     echo '</ul></section></footer>';
 }
 
@@ -217,12 +217,12 @@ function SchoolSafeOverview()
     }
     if(isset($tabs['awards']))echo '<section id="ss-dashboard-awards" role="tabpanel" aria-labelledby="ss-dashboard-tab-awards" hidden>'.SchoolSafeDashboardNativeWidget().'</section>';
     else echo SchoolSafeDashboardNativeWidget();
-    echo '<footer class="sscx-overview-footer"><section><h3>Dernières activités</h3><small>Annonces publiées de l\'ecole</small><ul class="sscx-feed">';
+    echo '<footer class="sscx-overview-footer"><section><h3>Dernières activités</h3><small>Annonces publiées de l\'école</small><ul class="sscx-feed">';
     foreach($feed['activities'] as $item)echo '<li><time>'.$e(substr($item['CREATED_AT'],0,10)).'</time><strong>'.$e(ParseMLField($item['TITLE'])).'</strong></li>';
     if(!$feed['activities'])echo '<li>Aucune annonce publiee pour votre profil.</li>';
     echo '</ul></section><section><h3>Calendrier scolaire</h3><ul class="sscx-feed">';
     foreach($feed['events'] as $item)echo '<li><time>'.$e($item['SCHOOL_DATE']).'</time><strong>'.$e(ParseMLField($item['TITLE'])).'</strong></li>';
-    if(!$feed['events'])echo '<li>Aucun evenement accessible dans les 30 prochains jours.</li>';
+    if(!$feed['events'])echo '<li>Aucun événement accessible dans les 30 prochains jours.</li>';
     echo '</ul>';
     echo AllowUse('School_Setup/Calendar.php')?'<a href="Modules.php?modname=School_Setup/Calendar.php">Consulter le calendrier de l’école</a>':'<p class="sscx-empty">Calendrier non accessible.</p>';
     echo '</section></footer></section></div><script src="assets/js/schoolsafe-dashboard.js?v=1"></script>';

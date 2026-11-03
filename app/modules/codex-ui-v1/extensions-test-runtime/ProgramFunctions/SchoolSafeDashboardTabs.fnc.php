@@ -12,7 +12,7 @@ function SchoolSafeDashboardTabs(): array
         if(in_array(User('PROFILE'),['parent','student'],true)&&(AllowUse('Student_Billing/StudentFees.php')||AllowUse('Student_Billing/StudentPayments.php')))$tabs['finance']='Frais scolaires';
     }
     if(AllowUse('School_Setup/Calendar.php'))$tabs['activities']='Activités et calendrier';
-    $tabs['modules']='Synthèses Rosario';
+    $tabs['modules']='Synthèses SchoolSafe';
     $requested=$_GET['dashboard_tab']??'overview';
     $active=is_string($requested)&&isset($tabs[$requested])?$requested:'overview';
     $e=static function($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');};
