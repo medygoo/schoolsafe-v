@@ -207,10 +207,52 @@ function SchoolSafePickupRestrictions($school, $studentId, $day, array $db): arr
 // Spec v1.1 § 5 : tout refus de sortie est tracé (qui, quand, où, motif).
 function SchoolSafePickupLogRefusal($school, $year, $studentId, $locationId, $guardianId, $reason, $user, array $db): void
 {
-    $db['exec']('INSERT INTO schoolsafe_pickup_refusals(school_id, syear, student_id, location_id, guardian_id, reason, staff_id)'
+    $rows = $db['get']('INSERT INTO schoolsafe_pickup_refusals(school_id, syear, student_id, location_id, guardian_id, reason, staff_id)'
         . ' VALUES(' . (int) $school . ',' . (int) $year . ',' . (int) $studentId . ',' . ((int) $locationId > 0 ? (int) $locationId : 'NULL')
         . ',' . ($guardianId ? (int) $guardianId : 'NULL') . ",'" . str_replace("'", "''", (string) $reason) . "',"
-        . ((int) $user > 0 ? (int) $user : 'NULL') . ')');
+        . ((int) $user > 0 ? (int) $user : 'NULL') . ') RETURNING ID');
+    $refusalId = is_array($rows) && isset($rows[1]['ID']) ? (int) $rows[1]['ID'] : 0;
+    // Alerte immediate (03/11) : le refus est deja enregistre ; un echec d'alerte ne l'annule jamais.
+    if ($refusalId > 0) {
+        try { SchoolSafePickupRefusalAlert($refusalId, (int) $school, (int) $year, (int) $studentId, (int) $locationId, (string) $reason, (int) $user, $db); }
+        catch (Throwable $alertFailure) { error_log('SchoolSafe pickup refusal alert unavailable: ' . $alertFailure->getMessage()); }
+    }
+}
+
+// Refus de sortie : parents lies (fil, e-mail, WhatsApp) et direction de l'ecole (fil), type d'alerte security.p1.
+function SchoolSafePickupRefusalAlert(int $refusalId, int $school, int $year, int $studentId, int $locationId, string $reason, int $user, array $db): void
+{
+    require_once __DIR__ . '/SchoolSafeNotify.fnc.php';
+    $get = $db['get'];
+    $info = $get('SELECT s.FIRST_NAME, sc.TITLE AS SCHOOL_TITLE, c.TITLE AS CHECKPOINT_TITLE, r.CREATED_AT'
+        . ' FROM schoolsafe_pickup_refusals r JOIN students s ON s.STUDENT_ID=r.STUDENT_ID'
+        . ' JOIN schools sc ON sc.ID=r.SCHOOL_ID AND sc.SYEAR=r.SYEAR'
+        . ' LEFT JOIN entry_exit_checkpoints c ON c.ID=r.LOCATION_ID'
+        . ' WHERE r.ID=' . $refusalId . ' AND r.SCHOOL_ID=' . $school . ' AND r.SYEAR=' . $year . ' AND r.STUDENT_ID=' . $studentId);
+    if (!is_array($info) || count($info) !== 1) throw new RuntimeException('NOTIFY_CONTEXT_UNAVAILABLE');
+    $row = $info[1];
+    $first = trim((string) $row['FIRST_NAME']) !== '' ? trim((string) $row['FIRST_NAME']) : 'Votre enfant';
+    $hour = substr((string) $row['CREATED_AT'], 11, 5);
+    $why = ['UNKNOWN_PERSON' => 'personne inconnue ou non reconnue', 'NOT_IN_LIST' => 'personne absente de la liste',
+        'NOT_AUTHORIZED' => 'personne non habilitée', 'OTHER' => 'autre motif'][$reason] ?? 'motif non précisé';
+    $message = '🚨 Sortie refusée : une personne s’est présentée pour récupérer ' . $first . ' à ' . $hour . ' (' . $why . ').'
+        . "
+" . $first . ' reste à l’école. Contactez l’école si vous n’avez envoyé personne.'
+        . ($row['CHECKPOINT_TITLE'] ? "
+Point de passage : " . $row['CHECKPOINT_TITLE'] : '')
+        . "
+— " . $row['SCHOOL_TITLE'] . ' · SchoolSafe';
+    $recipients = SchoolSafeNotifyResolveRecipients('security.p1', $school, $year, $studentId, $db);
+    $admins = $get("SELECT STAFF_ID, SCHOOLS FROM staff WHERE PROFILE='admin' AND SYEAR=" . $year);
+    foreach ((array) $admins as $admin) {
+        if (preg_match('/(^|,)' . $school . '(,|$)/', trim((string) ($admin['SCHOOLS'] ?? ''), ',')))
+            $recipients[] = ['audience' => 'direction', 'staff_id' => (int) $admin['STAFF_ID'], 'channel' => 'feed'];
+    }
+    $out = SchoolSafeNotifyEmit(['school_id' => $school, 'syear' => $year, 'student_id' => $studentId, 'actor_staff_id' => $user ?: null,
+        'event_type' => 'security.p1', 'dedup_key' => 'pickup:refusal:' . $refusalId,
+        'payload' => ['version' => 1, 'source' => 'pickup_refusal', 'refusal_id' => $refusalId, 'title' => 'Sortie refusée', 'message' => $message]],
+        $recipients, $db, true);
+    if (!is_array($out)) throw new RuntimeException('NOTIFY_UNAVAILABLE');
 }
 
 function SchoolSafePickupRoleLabel($type, $principal)

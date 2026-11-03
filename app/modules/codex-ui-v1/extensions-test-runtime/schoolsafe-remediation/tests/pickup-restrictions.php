@@ -3,7 +3,9 @@
 require __DIR__ . '/../../ProgramFunctions/SchoolSafePickupScan.fnc.php';
 $fail = 0; $ok = function ($l, $c) use (&$fail) { echo ($c ? 'ok   ' : 'FAIL ') . $l . "\n"; if (!$c) $fail++; };
 $log = [];
-$db = ['get' => function ($sql) {
+$db = ['get' => function ($sql) use (&$log) {
+    // Refus enregistre avec RETURNING ID ; aucune ligne relue ici, l'alerte n'est donc pas emise.
+    if (strpos($sql, 'INSERT INTO schoolsafe_pickup_refusals') === 0) { $log[] = $sql; return []; }
     if (strpos($sql, 'FROM schoolsafe_pickup_restrictions') !== false)
         return [1 => ['GUARDIAN_ID' => 21, 'NAME' => 'Maman Test', 'REASON' => 'Ordonnance', 'SOURCE' => 'justice'],
                 2 => ['GUARDIAN_ID' => null, 'NAME' => 'Inconnu X', 'REASON' => 'Signalé', 'SOURCE' => 'ecole']];
