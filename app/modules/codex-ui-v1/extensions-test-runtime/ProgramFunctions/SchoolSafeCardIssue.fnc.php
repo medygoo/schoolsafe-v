@@ -24,7 +24,7 @@ function SchoolSafeNativeCardCredential(array $rows,string $secret): array
     if(!is_string($number)||!preg_match('/^[A-Za-z0-9_-]{1,64}$/D',$number)||!is_string($signature))throw new RuntimeException('CARD_REGISTRY_UNAVAILABLE');
     $expected=substr(strtr(base64_encode(hash_hmac('sha256',$number,hex2bin($secret),true)),'+/','-_'),0,32);
     if(!hash_equals($expected,$signature))throw new RuntimeException('CARD_KEY_MISMATCH');
-    return ['card_number'=>$number,'signature'=>$signature,'status'=>'active','qr_payload'=>'schoolsafe://card/'.$number.'/'.$signature];
+    return ['card_id'=>$number,'card_number'=>$number,'signature'=>$signature,'status'=>'active','qr_payload'=>'schoolsafe://card/'.$number.'/'.$signature];
 }
 
 function SchoolSafeNativeCardRegister(int $student,array $ctx,string $secret,array $db,callable $authorize): array

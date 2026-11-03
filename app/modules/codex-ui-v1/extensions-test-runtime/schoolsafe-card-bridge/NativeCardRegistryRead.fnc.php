@@ -24,7 +24,7 @@ function SchoolSafePrepareRegistryCard(int $student,string $resource,array $db):
         'matricule'=>$required('student.matricule',$verified['matricule']??null),
         'date_of_birth'=>(string)($record['CUSTOM_200000004']??''),
         'photo_path'=>$required('student.photo',$verified['photoUrl']??null),
-        'student_address'=>(string)($source['studentAddress']??'')],
+        'student_address'=>(string)($verified['studentAddress']??'')],
         'schoolSettings'=>['identity'=>['name'=>$required('school.name',$school['TITLE']??null)],
             'brand'=>['logo_path'=>$required('school.logo',$verified['logoUrl']??null)],
             'contact'=>['address'=>$required('school.address',$school['ADDRESS']??null),'city'=>(string)($school['CITY']??''),
@@ -35,9 +35,30 @@ function SchoolSafePrepareRegistryCard(int $student,string $resource,array $db):
             'registration'=>['school_number'=>(string)($school['SCHOOL_NUMBER']??'')]],
         'academicYearLabel'=>$required('school.year',$verified['academicYearLabel']??null),
         'classRow'=>[],'assignments'=>[],'family'=>[],'guardianPhones'=>[],'cardConfig'=>[],'credential'=>$credential];
-    // These mappings are not provided by the native identity reader. A grade or
-    // schedule candidate is NOT proof of a class cycle, tutor or pickup authority.
-    array_push($missing,'class.mapping','class.cycle','class.tutor','family.primary_contact');
+    // Classe = l'unique groupe de cours actif de l'eleve (emploi du temps natif) ; plusieurs ou aucun = manquant.
+    $schooling=$source['schoolingSource']??[];$sections=(array)($schooling['courseSections']??[]);
+    $grade=is_array($schooling['grade']??null)?trim((string)$schooling['grade']['title']):'';
+    if(count($sections)===1&&$grade!==''){
+        $section=$sections[0];$short=trim((string)($section['shortName']??''));
+        $folded=strtolower(strtr($grade,['è'=>'e','é'=>'e','ê'=>'e','È'=>'e','É'=>'e']));
+        $cycle=str_contains($folded,'maternel')?'maternelle':(str_contains($folded,'primaire')?'primaire':'secondaire');
+        $input['classRow']=['id'=>(string)$section['id'],'name'=>trim($grade.' '.$short),'cycle_key'=>$cycle];
+        $teacher=(int)($section['teacherId']??0);
+        $tutor=$teacher>0?$db['get']('SELECT FIRST_NAME,LAST_NAME FROM staff WHERE STAFF_ID='.$teacher.' AND SYEAR='.(int)$year):[];
+        $name=is_array($tutor)&&isset($tutor[1])?trim($tutor[1]['FIRST_NAME'].' '.$tutor[1]['LAST_NAME']):'';
+        if($name!=='')$input['assignments']=[['class_id'=>(string)$section['id'],'is_tutor'=>true,'teacher_name'=>$name]];
+        else $missing[]='class.tutor';
+    }else array_push($missing,'class.mapping','class.cycle','class.tutor');
+    // Contact principal = responsable principal actif de l'onglet Famille.
+    $primary=$db['get']('SELECT g.ID,g.FULL_NAME,g.GUARDIAN_TYPE,g.PHONE,s.CUSTOM_200000001 AS STAFF_PHONE'
+        .' FROM schoolsafe_pickup_guardians g LEFT JOIN staff s ON s.STAFF_ID=g.STAFF_ID AND s.SYEAR='.(int)$year
+        .' WHERE g.STUDENT_ID='.(int)$id.' AND g.SCHOOL_ID='.(int)$schoolId." AND g.IS_PRIMARY='t' AND g.IS_ACTIVE='t' ORDER BY g.ID");
+    if(is_array($primary)&&count($primary)===1&&trim((string)$primary[1]['FULL_NAME'])!==''){
+        $person=$primary[1];$phone=trim((string)($person['PHONE']?:$person['STAFF_PHONE']));
+        $input['family']=[['id'=>'g'.$person['ID'],'full_name'=>trim((string)$person['FULL_NAME']),'is_primary'=>true,'is_active'=>true,
+            'guardian_type'=>(string)$person['GUARDIAN_TYPE'],'phone'=>$phone,'is_authorized_pickup'=>true]];
+        if($phone!=='')$input['guardianPhones']=[['id'=>'g'.$person['ID'],'phone'=>$phone]];
+    }else $missing[]='family.primary_contact';
     if(!$credential)$missing[]='card.official_qr';
     if(!$keyReady)$missing[]='card.signing_configuration';
     $reference=['studentId'=>$id,'schoolId'=>$schoolId,'year'=>$year];

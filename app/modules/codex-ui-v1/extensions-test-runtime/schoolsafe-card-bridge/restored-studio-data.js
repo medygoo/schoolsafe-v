@@ -25,6 +25,7 @@ function toRestoredStudioData(result) {
     classes: [classData],
     students: [{ id: student.id, cid: classData.id,
       name: [student.last_name, student.middle_name, student.first_name].filter(Boolean).join(' '),
+      parts: [student.last_name || '', student.middle_name || '', student.first_name || ''],
       mat: student.mat, dob: student.dob, photo: student.photo, pid: parentId,
       official_qr: /^schoolsafe:\/\/card\/[^/\s]+\/[^/\s]+$/.test(student.qr || '') ? student.qr : '' }],
     users, aps: [],

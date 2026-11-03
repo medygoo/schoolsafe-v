@@ -14,6 +14,12 @@ if (SchoolSafeEndpointGateway('studio-native.php', $_SERVER['REQUEST_METHOD'], '
 $root = __DIR__ . '/schoolsafe-card-bridge/studio-validated-20261008/';
 if (isset($_GET['asset'])) {
     $asset = $_GET['asset'];
+    // Bibliotheques QR et export : le .htaccess natif refuse /vendor/ (garde conservee), elles passent ici.
+    if (in_array($asset, ['vendor/qrcode.min.js', 'vendor/html2canvas.min.js'], true)) {
+        header('Content-Type: application/javascript; charset=utf-8');
+        readfile($root . $asset);
+        exit;
+    }
     if (!in_array($asset, ['studio-card-options.js', 'studio-models.js', 'studio-layout.js'], true)) {
         http_response_code(400); exit('Ressource invalide');
     }
@@ -32,8 +38,11 @@ $head->insertBefore($base, $head->firstChild);
 foreach ($xpath->query('//script[@src]') as $script) {
     $src = $script->getAttribute('src');
     if ($src === 'start.js') { $script->parentNode->removeChild($script); continue; }
-    if (in_array($src, ['studio-card-options.js', 'studio-models.js', 'studio-layout.js'], true)) {
+    if (in_array($src, ['studio-card-options.js', 'studio-models.js', 'studio-layout.js', 'vendor/qrcode.min.js', 'vendor/html2canvas.min.js'], true)) {
         $script->setAttribute('src', '/studio-native.php?asset=' . rawurlencode($src));
+    } elseif (preg_match('/^[a-z0-9-]+\.js$/D', $src) && is_file($root . $src)) {
+        // Empreinte de version : une mise a jour du gabarit n'est jamais masquee par le cache du navigateur.
+        $script->setAttribute('src', $src . '?v=' . substr(hash_file('sha256', $root . $src), 0, 16));
     }
     if ($src === 'host-adapter.js') {
         $init = $doc->createElement('script');

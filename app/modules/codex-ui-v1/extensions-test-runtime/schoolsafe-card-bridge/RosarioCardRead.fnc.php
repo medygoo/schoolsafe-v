@@ -111,7 +111,8 @@ function SchoolSafeReadNativeCardInput( $student_id )
         'enrollment' => $context,
         'verified' => [ 'photoUrl' => $photo, 'logoUrl' => $logo, 'academicYearLabel' => $year_label,
             'schoolEmail' => SchoolSafeReadNativeSchoolEmail( $context ),
-            'matricule' => function_exists( 'SchoolSafeMatriculeLookup' ) ? SchoolSafeMatriculeLookup( $data['student']['STUDENT_ID'] ) : null,
+            'matricule' => function_exists( 'SchoolSafeMatriculeLookup' ) ? SchoolSafeMatriculeLookup( $data['student']['STUDENT_ID'] )
+                : SchoolSafeReadNativeMatricule( $data['student']['STUDENT_ID'] ),
             'studentAddress' => SchoolSafeReadNativeStudentAddress( $context ) ],
         'schoolingSource' => SchoolSafeReadNativeCardSchooling( $data ),
     ];
@@ -190,6 +191,17 @@ function SchoolSafeReadConfiguredSchoolEmail( $context, $field_id )
     return '';
 }
 
+// Champ eleve natif (Rosario) intitule « Matricule », type texte ; vide s'il n'existe pas.
+function SchoolSafeReadNativeMatricule( $student_id )
+{
+    $fields = DBGet( "SELECT ID FROM custom_fields WHERE TYPE='text' AND TITLE ILIKE '%Matricule%' ORDER BY ID LIMIT 1" );
+    $id = (int) ( $fields[1]['ID'] ?? 0 );
+    if ( $id < 1 ) { return null; }
+    $rows = DBGet( 'SELECT ' . DBEscapeIdentifier( 'CUSTOM_' . $id ) . ' AS MATRICULE FROM students WHERE STUDENT_ID=' . (int) $student_id );
+    $value = trim( (string) ( $rows[1]['MATRICULE'] ?? '' ) );
+    return $value === '' ? null : $value;
+}
+
 function SchoolSafeReadNativeCardSchooling( $data )
 {
     $context = $data['enrollment'];
@@ -213,7 +225,7 @@ function SchoolSafeReadNativeCardSchooling( $data )
     if ( ! AllowUse( 'Scheduling/Schedule.php' ) ) { return $result; }
     $result['scheduleAccess'] = true;
     // Sections are candidates, not proof of a homeroom or a primary teacher.
-    $rows = DBGet( 'SELECT DISTINCT cp.COURSE_PERIOD_ID,cp.TITLE,cp.COURSE_ID,cp.TEACHER_ID'
+    $rows = DBGet( 'SELECT DISTINCT cp.COURSE_PERIOD_ID,cp.TITLE,cp.SHORT_NAME,cp.COURSE_ID,cp.TEACHER_ID'
         . ' FROM schedule sch JOIN course_periods cp ON cp.COURSE_PERIOD_ID=sch.COURSE_PERIOD_ID'
         . ' AND cp.SCHOOL_ID=sch.SCHOOL_ID AND cp.SYEAR=sch.SYEAR'
         . ' WHERE sch.STUDENT_ID=' . (int) $context['STUDENT_ID']
@@ -224,7 +236,7 @@ function SchoolSafeReadNativeCardSchooling( $data )
     foreach ( (array) $rows as $row )
     {
         $result['courseSections'][] = [ 'id' => (string) $row['COURSE_PERIOD_ID'],
-            'title' => $row['TITLE'], 'courseId' => (string) $row['COURSE_ID'],
+            'title' => $row['TITLE'], 'shortName' => (string) ( $row['SHORT_NAME'] ?? '' ), 'courseId' => (string) $row['COURSE_ID'],
             'teacherId' => isset( $row['TEACHER_ID'] ) ? (string) $row['TEACHER_ID'] : null ];
     }
     return $result;
