@@ -24,6 +24,10 @@ if (User('PROFILE') === 'admin' && AllowEdit('School_Setup/Configuration.php')) 
     // Papier de l'ecole (04/11) : en-tete, pied de page et dispositions des documents.
     $add('school', 'Organisation scolaire', 'Papier de l’école', 'papier-ecole.php');
 }
+// Convocations et courriers (04/11) : modeles remplis, registre numerote, impression, envoi aux parents.
+if (User('PROFILE') === 'admin' && AllowUse('Students/Student.php')) {
+    $add('communication', 'Courriers', 'Convocations et courriers', 'courriers.php');
+}
 // Ma journee de classe (04/11) : classes du jour, appel rapide, cahier de textes.
 if (User('PROFILE') === 'teacher') {
     $add('pedagogy', 'Ma journée', 'Ma journée de classe', 'ma-journee.php');
