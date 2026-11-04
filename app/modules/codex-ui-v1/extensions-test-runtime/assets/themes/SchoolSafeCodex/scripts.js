@@ -401,6 +401,22 @@
 				['Food_Service/MenuItems.php', 'Plats et prix', 'Ce qui est servi, avec son prix.']]]
 		]
 	};
+	// Stock et Administration (05/11, docs/qualification/FUSION_MENU_STOCK_ADMINISTRATION_20261105.md).
+	// « Ressources » = 6 liens d'exemple du logiciel d'origine, aucun inventaire installe : hors menu pour tous.
+	var resourcesOut = [['Stock', [['Resources/Resources.php', null, '']]]];
+	menuPlans.inventory = {admin: resourcesOut, teacher: resourcesOut, parent: resourcesOut};
+	menuPlans.administration = {
+		admin: [
+			['1 · Fin d’année', [
+				['School_Setup/Rollover.php', 'Passage à l’année suivante', 'Ouvrir la nouvelle année scolaire : une fois par an, sans retour arrière.']]],
+			['2 · Réglages', [
+				['School_Setup/Configuration.php', 'Configuration du logiciel', 'Modules et options générales. À manier avec prudence.'],
+				['School_Setup/SchoolFields.php', 'Champs de la fiche école', 'Ajouter une information à la fiche de l’école.'],
+				['Users/Profiles.php', 'Profils et droits', 'Ce que chaque profil peut voir et faire.'],
+				['Users/Exceptions.php', 'Droits d’un utilisateur', 'Donner ou retirer un droit à une seule personne.'],
+				['School_Setup/CopySchool.php', 'Copier une école', 'Créer une école à partir des réglages d’une autre.']]]
+		]
+	};
 	function organizeByPlan(entries, plans) {
 		var plan = plans && plans[centralRole];
 		if (!plan) return entries;
