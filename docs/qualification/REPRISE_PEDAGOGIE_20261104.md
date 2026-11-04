@@ -24,7 +24,7 @@ Scénario : `docs/qualification/ESSAI_PEDAGOGIE_20261104.md`.
 | F. Parent : ouvrir le bulletin RDC | à faire |
 
 **Fait avant l'étape B** : regroupement du menu Pédagogie par bloc et par profil, en production (image
-`pedagogie-menu-20261104`, commit `d6a54c5`). Le détail est dans `docs/qualification/HARMONISATION_PEDAGOGIE_20261104.md`.
+`pedagogie-menu-2-20261104`, commits `d6a54c5` puis `c5f1020`). Le détail est dans `docs/qualification/HARMONISATION_PEDAGOGIE_20261104.md`.
 L'image en service n'est donc plus celle indiquée plus haut.
 
 Après chaque étape : vérifier dans la base (lecture seule) et corriger tout écart de présentation ou de fonctionnement, sans nouvelle fonctionnalité.

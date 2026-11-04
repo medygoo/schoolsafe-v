@@ -83,6 +83,38 @@ raccourci dans Communication.
   4 blocs, Mode d'emploi présent. Les vues enseignant et parent restent à regarder avec leurs comptes.
   Retour arrière possible : `release.sh rollback`.
 
+## Version 2 — parcours sans outil caché (correction du propriétaire, 4 novembre 2026)
+
+Correction du propriétaire : cacher 10 outils derrière « Autres outils » ne les rend pas compréhensibles. Il faut
+analyser chaque page, puis la **réunir** dans le parcours ou la **retirer**, pour que l'application soit facile.
+
+Analyse (code et base de production, en lecture seule) :
+
+| Pages d'origine | Constat | Décision |
+|---|---|---|
+| Demandes élève, Demandes groupées, Lancer le planificateur | 0 demande ; « Branches et maxima » inscrit directement les élèves | retirées du menu |
+| Activités (4 pages) et Saisir l'éligibilité | seulement les exemples livrés avec le logiciel (Basketball, Chess Team), 0 élève | retirées du menu |
+| Bulletins de notes, Livrets scolaires, Certificats, Notes finales | 0 note : le bulletin RDC a ses propres tables (`schoolsafe_bulletin_marks`) | retirées du menu ; le bulletin RDC les remplace |
+| Commentaires du bulletin, Codes de commentaires | servent seulement au bulletin d'origine | retirées du menu |
+| Historique des périodes, Notes historiques | 0 donnée | retirées du menu |
+| Cours, Emplois du temps groupés, Échelles de notation, Création de devoirs en masse | déjà ouvertes par les étapes de « Préparer l'année » | **réunies** dans « Préparer l'année » |
+| Saisie à la place d'un enseignant (5 pages) | double emploi avec le parcours enseignant | restent dans **Utilisateurs › Programmes enseignants** |
+| Carnet de notes, Notes des élèves (enseignant) | remplacés par « Devoirs et travaux » ; carnet ouvert depuis « Ma journée » | retirés du menu enseignant |
+| Notes, devoirs, bulletin et emploi du temps d'origine (parent) | déjà ouverts depuis « Travail de mon enfant » | retirés du menu parent |
+| Configuration des notes | réglage général encore utile | **gardée**, sous le nom « Réglages des notes » |
+
+Aucune page n'est effacée et aucun droit ne change : une page retirée du menu reste joignable par son adresse
+et par la page qui l'utilise. Un profil sans parcours SchoolSafe garde son menu d'origine.
+
+Résultat pour la direction : **11 liens**, en 4 étapes, chacun avec une phrase qui dit à quoi il sert. Aucun
+bouton « Outils détaillés » ni « Autres outils ».
+
+**En production le 4 novembre 2026** : image `schoolsafe-rosario:pedagogie-menu-2-20261104` (commits `c5f1020`
+et `bde640e`, worktree `SchoolSafeProdDrift-20261103`). Contrôle `verify` : service sain, 200, 0 erreur PHP,
+autres services inchangés. Contrôle à l'écran (direction) : 11 liens, 11 phrases d'aide, 0 repli. Les 5 pages
+« Programmes enseignants » sont toujours dans Utilisateurs. Les menus enseignant et parent restent à regarder
+pendant l'essai. Retour arrière : `release.sh rollback`.
+
 ## Fichiers concernés
 
 - `assets/themes/SchoolSafeCodex/scripts.js` : classement des pages d'origine dans les blocs, blocs repliés.
