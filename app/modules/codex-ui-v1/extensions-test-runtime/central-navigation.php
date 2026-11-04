@@ -18,6 +18,10 @@ $add = static function ($branch, $group, $title, $url) use (&$links) {
 if (SchoolSafeNativePermission('SchoolSafe/Studio.php')) {
     $add('school', 'Cartes SchoolSafe', 'Studio de cartes', 'Modules.php?modname=SchoolSafe/Studio.php');
 }
+// Preparer l'annee (03/11) : etapes de preparation de l'annee, administrateur avec la configuration de l'ecole.
+if (User('PROFILE') === 'admin' && AllowEdit('School_Setup/Configuration.php')) {
+    $add('pedagogy', 'Organisation pédagogique', 'Préparer l’année', 'preparer-annee.php');
+}
 if (SchoolSafeNativePermission('SchoolSafe/RemediationRead.php')) {
     $add('pedagogy', 'Accompagnement', 'Rattrapage', 'Modules.php?modname=SchoolSafe/RemediationRead.php');
 }
