@@ -32,7 +32,7 @@ $mine=static function(int $assignment)use($staff,$classes){
 $pupils=static function(array $a)use($classes,$staff){
     $cps=$a['COURSE_PERIOD_ID']?[(int)$a['COURSE_PERIOD_ID']]:array_keys(array_filter($classes,static function($c)use($a){return (int)$c['COURSE_ID']===(int)$a['COURSE_ID'];}));
     if(!$cps)return [];
-    return (array)DBGet("SELECT DISTINCT ON (s.STUDENT_ID) s.STUDENT_ID,s.FIRST_NAME,s.LAST_NAME,ss.COURSE_PERIOD_ID,gg.POINTS,gg.COMMENT,(SELECT 1 FROM student_assignments sa WHERE sa.ASSIGNMENT_ID=".(int)$a['ASSIGNMENT_ID']." AND sa.STUDENT_ID=s.STUDENT_ID LIMIT 1) AS HANDED_IN"
+    return (array)DBGet("SELECT DISTINCT ON (s.STUDENT_ID) s.STUDENT_ID,s.FIRST_NAME,s.LAST_NAME,ss.COURSE_PERIOD_ID,gg.POINTS,gg.COMMENT,(SELECT 1 FROM student_assignments sa WHERE sa.ASSIGNMENT_ID=".(int)$a['ASSIGNMENT_ID']." AND sa.STUDENT_ID=s.STUDENT_ID LIMIT 1) AS HANDED_IN,(SELECT 1 FROM schoolsafe_grade_copies gc WHERE gc.ASSIGNMENT_ID=".(int)$a['ASSIGNMENT_ID']." AND gc.STUDENT_ID=s.STUDENT_ID) AS HAS_COPY,(SELECT count(*) FROM schoolsafe_grade_seen gs WHERE gs.ASSIGNMENT_ID=".(int)$a['ASSIGNMENT_ID']." AND gs.STUDENT_ID=s.STUDENT_ID) AS SEEN"
         ." FROM schedule ss JOIN students s ON s.STUDENT_ID=ss.STUDENT_ID LEFT JOIN gradebook_grades gg ON gg.STUDENT_ID=s.STUDENT_ID AND gg.ASSIGNMENT_ID=".(int)$a['ASSIGNMENT_ID']
         ." WHERE ss.COURSE_PERIOD_ID IN (".implode(',',$cps).") AND ss.START_DATE<=CURRENT_DATE AND (ss.END_DATE IS NULL OR ss.END_DATE>=CURRENT_DATE) ORDER BY s.STUDENT_ID,s.LAST_NAME");
 };
@@ -74,8 +74,29 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
                 else DBQuery("INSERT INTO gradebook_grades(STUDENT_ID,COURSE_PERIOD_ID,ASSIGNMENT_ID,POINTS,COMMENT) VALUES(".$student.",".$byStudent[$student].",".(int)$a['ASSIGNMENT_ID'].",".$p.",".$c.")");
                 if($points!==null)$count++;
             }
+            // Corrige type (04/11) : montre aux familles apres la date de remise.
+            $answer=trim(str_replace("\r\n","\n",(string)($_POST['answer']??'')));
+            if(mb_strlen($answer)>20000)throw new RuntimeException('Corrigé trop long (20 000 caractères au plus).');
+            if($answer!=='')DBQuery("INSERT INTO schoolsafe_assignment_keys(ASSIGNMENT_ID,ANSWER,STAFF_ID) VALUES(".(int)$a['ASSIGNMENT_ID'].",'".DBEscapeString($answer)."',".$staff.")"
+                ." ON CONFLICT(ASSIGNMENT_ID) DO UPDATE SET ANSWER=EXCLUDED.ANSWER,STAFF_ID=EXCLUDED.STAFF_ID,UPDATED_AT=now()");
             DBQuery('COMMIT');$inTx=false;
-            $message='Notes enregistrées : '.$count.' élève(s) noté(s). Le carnet de notes et le rattrapage sont à jour.';
+            $message='Notes enregistrées : '.$count.' élève(s) noté(s). Chaque parent reçoit la note de son enfant avec la correction ; le carnet de notes et le rattrapage sont à jour.';
+        }elseif($action==='copie'){
+            // Copie corrigee (04/11) : photo ou PDF, visible par le parent avec la note.
+            if(!$canGrade)throw new RuntimeException('Permission requise : saisir les notes.');
+            $a=$mine((int)($_POST['assignment']??0));
+            if(!$a)throw new RuntimeException('Ce devoir n’est pas le vôtre.');
+            $sid=(int)($_POST['student']??0);$known=false;
+            foreach($pupils($a) as $p)if((int)$p['STUDENT_ID']===$sid)$known=true;
+            if(!$known)throw new RuntimeException('Élève inconnu dans cette classe.');
+            $file=$_FILES['copie']??null;
+            if(!is_array($file)||($file['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK||!is_uploaded_file((string)$file['tmp_name']))
+                throw new RuntimeException(in_array($file['error']??0,[UPLOAD_ERR_INI_SIZE,UPLOAD_ERR_FORM_SIZE],true)?'Photo trop lourde (8 Mo au plus).':'Choisissez une photo ou un PDF de la copie.');
+            require_once __DIR__.'/ProgramFunctions/SchoolSafeArchive.fnc.php';
+            [$mime,$bytes]=SchoolSafeArchiveFile((string)$file['tmp_name']);
+            DBQuery("INSERT INTO schoolsafe_grade_copies(ASSIGNMENT_ID,STUDENT_ID,MIME,SIZE_BYTES,SHA256,CONTENT,CREATED_BY) VALUES(".(int)$a['ASSIGNMENT_ID'].",".$sid.",'".$mime."',".strlen($bytes).",'".hash('sha256',$bytes)."',decode('".base64_encode($bytes)."','base64'),".$staff.")"
+                ." ON CONFLICT(ASSIGNMENT_ID,STUDENT_ID) DO UPDATE SET MIME=EXCLUDED.MIME,SIZE_BYTES=EXCLUDED.SIZE_BYTES,SHA256=EXCLUDED.SHA256,CONTENT=EXCLUDED.CONTENT,CREATED_BY=EXCLUDED.CREATED_BY,CREATED_AT=now()");
+            $message='Copie corrigée enregistrée : le parent la voit avec la note.';
         }else throw new RuntimeException('Action inconnue.');
     }catch(Throwable $failure){
         if($inTx)DBQuery('ROLLBACK');
@@ -116,14 +137,21 @@ $in7=(new DateTimeImmutable($today))->modify('+7 day')->format('Y-m-d');
 <p class="ss-sub">Barème : <?=$e(rtrim(rtrim((string)$correct['POINTS'],'0'),'.'))?> points · laissez vide si pas encore noté, * pour une dispense. Les notes vont dans le carnet natif ; le rattrapage réagit tout seul.</p>
 <?php if(!$canGrade):?><p class="ss-ko">Permission requise : saisir les notes.</p><?php elseif(!$list2):?><p>Aucun élève dans cette classe.</p><?php else:?>
 <form method="post"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="noter"><input type="hidden" name="assignment" value="<?=(int)$correct['ASSIGNMENT_ID']?>">
-<table class="ss-table"><thead><tr><th>Élève</th><th class="hide-sm">Rendu</th><th>Note</th><th>Appréciation</th></tr></thead><tbody>
+<table class="ss-table"><thead><tr><th>Élève</th><th class="hide-sm">Rendu</th><th>Note</th><th>Appréciation</th><th>Copie corrigée</th><th class="hide-sm">Vu</th></tr></thead><tbody>
 <?php foreach($list2 as $p): $sid=(int)$p['STUDENT_ID']; $pts=$p['POINTS']===null||$p['POINTS']===''?'':((float)$p['POINTS']<0?'*':rtrim(rtrim((string)$p['POINTS'],'0'),'.')); ?>
 <tr><td><b><?=$e($p['FIRST_NAME'].' '.$p['LAST_NAME'])?></b></td><td class="hide-sm"><?=$p['HANDED_IN']?'✅ rendu en ligne':'—'?></td>
 <td><input type="text" inputmode="decimal" name="n_<?=$sid?>" value="<?=$e($pts)?>" style="width:70px" aria-label="Note"> / <?=$e(rtrim(rtrim((string)$correct['POINTS'],'0'),'.'))?></td>
-<td><input type="text" name="c_<?=$sid?>" value="<?=$e($p['COMMENT']??'')?>" maxlength="200" list="ss-comments" aria-label="Appréciation"></td></tr>
+<td><input type="text" name="c_<?=$sid?>" value="<?=$e($p['COMMENT']??'')?>" maxlength="200" list="ss-comments" aria-label="Appréciation"></td>
+<td><div class="ss-chips"><label style="cursor:pointer;border:1px solid #c9d8d2;border-radius:16px;padding:4px 10px;background:#f4fbf8;color:#08766b;font-size:13px">📷 <?=$p['HAS_COPY']?'Remplacer':'Photo'?><input type="file" name="copie" form="ss-copy-<?=$sid?>" accept="image/*,application/pdf" data-copy style="display:none"></label>
+<?php if($p['HAS_COPY']):?><a href="note-devoir.php?devoir=<?=(int)$correct['ASSIGNMENT_ID']?>&amp;eleve=<?=$sid?>&amp;copie=1" target="_blank" rel="noopener">Voir</a><?php endif;?><a href="note-devoir.php?devoir=<?=(int)$correct['ASSIGNMENT_ID']?>&amp;eleve=<?=$sid?>" target="_blank" rel="noopener" title="Ce que voit le parent">Parent</a></div></td>
+<td class="hide-sm"><?=(int)$p['SEEN']?'✓ vu':'—'?></td></tr>
 <?php endforeach;?></tbody></table>
 <datalist id="ss-comments"><?php foreach(SchoolSafeHomeworkComments() as $c):?><option value="<?=$e($c)?>"><?php endforeach;?></datalist>
-<div><button class="ss-btn" type="submit">Enregistrer les notes</button> <a class="ss-btn light" href="devoirs-travaux.php">Fermer</a></div></form><?php endif;?>
+<label>Corrigé type (montré aux parents après la date de remise)<textarea name="answer" maxlength="20000" style="min-height:110px" placeholder="ex. Exercice 1 : 3/4 + 1/4 = 1. Exercice 2 : …"><?=$e((string)(DBGetOne("SELECT ANSWER FROM schoolsafe_assignment_keys WHERE ASSIGNMENT_ID=".(int)$correct['ASSIGNMENT_ID'])?:''))?></textarea></label>
+<p class="ss-sub">Chaque parent reçoit la note de son enfant avec l’appréciation, le corrigé et la photo de la copie corrigée (quelques minutes après l’enregistrement, ou le soir selon le choix de l’école).</p>
+<div><button class="ss-btn" type="submit">Enregistrer les notes</button> <a class="ss-btn light" href="devoirs-travaux.php">Fermer</a></div></form>
+<?php foreach($list2 as $p):?><form id="ss-copy-<?=(int)$p['STUDENT_ID']?>" method="post" enctype="multipart/form-data" hidden><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="copie"><input type="hidden" name="assignment" value="<?=(int)$correct['ASSIGNMENT_ID']?>"><input type="hidden" name="student" value="<?=(int)$p['STUDENT_ID']?>"></form><?php endforeach;?>
+<?php endif;?>
 </section>
 <?php endif;?>
 <section class="ss-box" id="nouveau"><h2>Nouveau devoir</h2>
@@ -158,4 +186,11 @@ $in7=(new DateTimeImmutable($today))->modify('+7 day')->format('Y-m-d');
 (function(){var cp=document.getElementById('ss-cp'),ty=document.getElementById('ss-type');if(!cp||!ty)return;
 function sync(){var c=cp.options[cp.selectedIndex].dataset.course,first=null;Array.prototype.forEach.call(ty.options,function(o){var ok=o.dataset.course===c;o.hidden=!ok;o.disabled=!ok;if(ok&&!first)first=o;});if(ty.selectedOptions[0]&&ty.selectedOptions[0].disabled&&first)first.selected=true;}
 cp.addEventListener('change',sync);sync();})();
+// Copie corrigee : photo allegee dans le navigateur puis envoyee aussitot.
+(function(){async function shrink(file){if(!/^image\/(jpeg|png)/.test(file.type)||!window.createImageBitmap)return file;
+ try{var bmp=await createImageBitmap(file,{imageOrientation:'from-image'});var s=Math.min(1,2200/Math.max(bmp.width,bmp.height));var c=document.createElement('canvas');c.width=Math.round(bmp.width*s);c.height=Math.round(bmp.height*s);
+ var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(bmp,0,0,c.width,c.height);
+ var blob=await new Promise(function(r){c.toBlob(r,'image/jpeg',0.85);});return blob?new File([blob],'copie.jpg',{type:'image/jpeg'}):file;}catch(e){return file;}}
+document.querySelectorAll('[data-copy]').forEach(function(input){input.addEventListener('change',async function(){var f=input.files[0];if(!f)return;input.parentNode.firstChild.textContent='⏳ ';
+ var ready=await shrink(f);try{var dt=new DataTransfer();dt.items.add(ready);input.files=dt.files;}catch(e){}document.getElementById(input.getAttribute('form')).submit();});});})();
 </script></body></html>

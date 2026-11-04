@@ -8,6 +8,7 @@ chdir(__DIR__);$_REQUEST=['modname'=>'misc/Portal.php','modfunc'=>''];
 $level=ob_get_level();ob_start();require_once __DIR__.'/Warehouse.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeLetterhead.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeHomeworkRelay.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeGradeNotice.fnc.php';
 $school=(int)UserSchool();$actor=(int)User('STAFF_ID');
 // Meme droit que « Preparer l'annee » : administrateur autorise a configurer l'ecole.
 $allowed=$actor&&User('PROFILE')==='admin'&&$school>0&&AllowEdit('School_Setup/Configuration.php');
@@ -31,7 +32,7 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
         }
         $valid=SchoolSafeLetterheadValidate($post);
         DBQuery('BEGIN');
-        foreach(['SCHOOLSAFE_DOC_LAYOUT'=>$valid['layout'],'SCHOOLSAFE_DOC_MINISTRY'=>$valid['ministry'],'SCHOOLSAFE_DOC_PROVINCE'=>$valid['province'],'SCHOOLSAFE_DOC_STYLE'=>$valid['style'],'SCHOOLSAFE_HOMEWORK_AUTO'=>!empty($post['homework_auto'])?'Y':'N'] as $title=>$value){
+        foreach(['SCHOOLSAFE_DOC_LAYOUT'=>$valid['layout'],'SCHOOLSAFE_DOC_MINISTRY'=>$valid['ministry'],'SCHOOLSAFE_DOC_PROVINCE'=>$valid['province'],'SCHOOLSAFE_DOC_STYLE'=>$valid['style'],'SCHOOLSAFE_HOMEWORK_AUTO'=>!empty($post['homework_auto'])?'Y':'N','SCHOOLSAFE_GRADE_NOTIFY'=>isset(SchoolSafeGradeNoticeModes()[$post['grade_notify']??''])?$post['grade_notify']:'immediat'] as $title=>$value){
             $sql="'".DBEscapeString($value)."'";
             $done=DBGet(DBQuery("UPDATE config SET CONFIG_VALUE=".$sql.",UPDATED_AT=CURRENT_TIMESTAMP WHERE SCHOOL_ID=".$school." AND TITLE='".$title."' RETURNING TITLE"));
             if(!$done)DBQuery("INSERT INTO config(SCHOOL_ID,TITLE,CONFIG_VALUE) VALUES(".$school.",'".$title."',".$sql.")");
@@ -42,6 +43,8 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
 }
 $identity=$allowed?SchoolSafeLetterheadIdentity($school):[];
 $homeworkAuto=$allowed?SchoolSafeHomeworkAutoEnabled($school,static function($sql){return DBGet($sql);}):true;
+$gradeNotify=$allowed?SchoolSafeGradeNoticeMode($school,static function($sql){return DBGet($sql);}):'immediat';
+if($proposal&&isset(SchoolSafeGradeNoticeModes()[$_POST['grade_notify']??'']))$gradeNotify=$_POST['grade_notify'];
 if($proposal)$homeworkAuto=!empty($_POST['homework_auto']);
 if($proposal){$identity['layout']=$proposal['layout'];$identity['style']=SchoolSafeLetterheadStyleEncode($proposal['style']);$identity['ministry']=$proposal['ministry'];$identity['province']=$proposal['province'];
     $message=$proposal['by']==='jaspe'?'JASPE propose cette disposition. Regardez l’aperçu puis enregistrez si elle vous convient.':($proposal['by']==='consignes'?'Disposition proposée par les consignes simples (JASPE indisponible). Regardez l’aperçu puis enregistrez.':'Demande non comprise : rien n’a changé. Essayez par exemple « logo à droite, titre centré ».');}
@@ -95,6 +98,8 @@ de l’école : <strong><?=$e($identity['school'])?></strong>. Le logo, la devis
 </fieldset>
 <fieldset><legend>4. Devoirs envoyés automatiquement</legend>
 <label class="ss-choice" style="display:flex"><input type="checkbox" name="homework_auto" value="1"<?=$homeworkAuto?' checked':''?>><span><strong>Envoyer chaque devoir publié aux parents</strong><small>Dès que l’enseignant publie un devoir, chaque parent le reçoit (fil, e-mail, WhatsApp) avec la fiche à imprimer déjà au nom de son enfant. Rien à faire de plus pour l’enseignant.</small></span></label>
+<label style="display:grid;gap:4px"><strong>Envoyer chaque note aux parents</strong><select name="grade_notify"><?php foreach(SchoolSafeGradeNoticeModes() as $k=>$label):?><option value="<?=$e($k)?>"<?=$gradeNotify===$k?' selected':''?>><?=$e($label)?></option><?php endforeach;?></select>
+<small>Chaque note (devoir, interrogation, travail, examen) arrive chez le parent avec l’appréciation, le corrigé et la photo de la copie corrigée. Le parent peut indiquer « Vu ».</small></label>
 </fieldset>
 <div><button class="ss-btn" type="submit" name="action" value="save">Enregistrer le papier de l’école</button></div>
 </form>

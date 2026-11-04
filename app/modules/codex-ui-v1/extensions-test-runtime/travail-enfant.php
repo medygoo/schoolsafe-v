@@ -65,7 +65,8 @@ $toDo=array_values(array_filter($homework,static function($h)use($today){return 
 <?php if(!$grades):?><p class="ss-empty">Aucune note ce mois-ci.</p><?php endif;?>
 <?php foreach($grades as $g): $m=SchoolSafeChildWorkMark($g['POINTS'],$g['MAXIMUM']); $pct=(float)$g['MAXIMUM']>0&&(float)$g['POINTS']>=0?(float)$g['POINTS']*100/(float)$g['MAXIMUM']:null; ?>
 <div class="ss-item"><b><?=$e(($g['TYPE_TITLE']?$g['TYPE_TITLE'].' — ':'').$g['TITLE'])?></b><span class="ss-sub"><?=$e($t($g['COURSE_TITLE']))?></span>
-<span><span class="ss-tag <?=$pct===null?'t-ok':($pct>=50?'t-ok':'t-bad')?>"><?=$e($m)?></span><?=$g['COMMENT']?' · '.$e($g['COMMENT']):''?></span></div><?php endforeach;?></section>
+<span><span class="ss-tag <?=$pct===null?'t-ok':($pct>=50?'t-ok':'t-bad')?>"><?=$e($m)?></span><?=$g['COMMENT']?' · '.$e($g['COMMENT']):''?></span>
+<div class="ss-act"><a href="note-devoir.php?devoir=<?=(int)$g['ASSIGNMENT_ID']?>&amp;eleve=<?=$sid?>">Voir la correction</a></div></div><?php endforeach;?></section>
 
 <section class="ss-card"><h2>🕘 Présence (30 derniers jours)</h2>
 <?php if(!$attendance):?><p class="ss-empty">Aucune absence ni aucun retard noté. 👏</p><?php endif;?>

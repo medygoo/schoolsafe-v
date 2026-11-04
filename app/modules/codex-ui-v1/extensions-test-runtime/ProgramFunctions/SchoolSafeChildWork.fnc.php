@@ -55,7 +55,7 @@ function SchoolSafeChildWorkHomework(int $student, array $classes, callable $get
 /** Notes recentes (30 jours), avec bareme et appreciation. */
 function SchoolSafeChildWorkGrades(int $student, int $school, int $year, callable $get): array
 {
-    return (array) $get("SELECT ga.TITLE,ga.POINTS AS MAXIMUM,gg.POINTS,gg.COMMENT,t.TITLE AS TYPE_TITLE,c.TITLE AS COURSE_TITLE,COALESCE(gg.UPDATED_AT,gg.CREATED_AT) AS GRADED_AT"
+    return (array) $get("SELECT ga.ASSIGNMENT_ID,ga.TITLE,ga.POINTS AS MAXIMUM,gg.POINTS,gg.COMMENT,t.TITLE AS TYPE_TITLE,c.TITLE AS COURSE_TITLE,COALESCE(gg.UPDATED_AT,gg.CREATED_AT) AS GRADED_AT"
         . " FROM gradebook_grades gg JOIN gradebook_assignments ga ON ga.ASSIGNMENT_ID=gg.ASSIGNMENT_ID JOIN course_periods cp ON cp.COURSE_PERIOD_ID=gg.COURSE_PERIOD_ID"
         . " JOIN courses c ON c.COURSE_ID=cp.COURSE_ID LEFT JOIN gradebook_assignment_types t ON t.ASSIGNMENT_TYPE_ID=ga.ASSIGNMENT_TYPE_ID"
         . " WHERE gg.STUDENT_ID=" . $student . " AND cp.SCHOOL_ID=" . $school . " AND cp.SYEAR=" . $year . " AND gg.POINTS IS NOT NULL"

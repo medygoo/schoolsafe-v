@@ -38,6 +38,11 @@ if($channel==='all'){
         $relayed+=SchoolSafeHomeworkRelay(['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}],
             rtrim(trim((string)getenv('SCHOOLSAFE_ASSETS_BASE_URL'))?:'https://app.shoolsafe.tech','/'),40);}
     catch(Throwable $homeworkFailure){fwrite(STDERR,"HOMEWORK_RELAY_UNAVAILABLE\n");}
+    // Notes enregistrees -> chaque parent, avec la correction (04/11).
+    try{require_once __DIR__.'/ProgramFunctions/SchoolSafeGradeNotice.fnc.php';
+        $relayed+=SchoolSafeGradeNoticeRelay(['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}],
+            rtrim(trim((string)getenv('SCHOOLSAFE_ASSETS_BASE_URL'))?:'https://app.shoolsafe.tech','/'));}
+    catch(Throwable $gradeFailure){fwrite(STDERR,"GRADE_RELAY_UNAVAILABLE\n");}
 }
 if($retryFailed){
     $retry=pg_query_params($conn,"UPDATE schoolsafe_notify_deliveries SET status='pending',updated_at=CURRENT_TIMESTAMP"
