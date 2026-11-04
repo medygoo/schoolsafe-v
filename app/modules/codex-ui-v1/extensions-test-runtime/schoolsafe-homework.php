@@ -4,7 +4,7 @@
 if ( ($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET' ) { http_response_code(405); exit; }
 $id = filter_input(INPUT_GET, 'assignment_id', FILTER_VALIDATE_INT);
 if (!$id || $id<1) { http_response_code(400); exit('Devoir invalide.'); }
-if (array_diff(array_keys($_GET), ['assignment_id','download','layout','lines','box','style','demande','jaspe','student','img','bulle'])) { http_response_code(400); exit('Requête invalide.'); }
+if (array_diff(array_keys($_GET), ['assignment_id','download','layout','lines','box','style','demande','jaspe','student','img','bulle','classe'])) { http_response_code(400); exit('Requête invalide.'); }
 header('Cache-Control: no-store'); header('X-Content-Type-Options: nosniff');
 chdir(__DIR__);
 $_REQUEST=['modname'=>'misc/Portal.php','modfunc'=>''];
@@ -97,6 +97,24 @@ $opts=[
  'student_box'=>$box,'points'=>$points!==''&&$points!=='0'?$points:'','answer_lines'=>$lines,'style'=>$style,
  'student_name'=>$pupilName,'student_class'=>$pupilClass,'jaspe_text'=>$bubble,
 ];
+// Toute la classe (04/11, lot 5) : un seul PDF, une fiche au nom de chaque eleve ; enseignant ou direction seulement.
+if(($_GET['classe']??'')==='1'){
+ if(in_array($profile,['parent','student'],true)){http_response_code(403);exit('Accès au devoir non autorisé.');}
+ require_once 'ProgramFunctions/SchoolSafeHomeworkDesk.fnc.php';
+ $class=DBGet("SELECT DISTINCT ON (s.STUDENT_ID) s.STUDENT_ID,s.FIRST_NAME,s.LAST_NAME,(SELECT g.TITLE FROM student_enrollment e JOIN school_gradelevels g ON g.ID=e.GRADE_ID WHERE e.STUDENT_ID=s.STUDENT_ID AND e.SCHOOL_ID=".$school." AND e.SYEAR=".$year." ORDER BY e.START_DATE DESC NULLS LAST LIMIT 1) AS CLASS_TITLE"
+  ." FROM gradebook_assignments ga JOIN course_periods cp ON (ga.COURSE_PERIOD_ID IS NOT NULL AND cp.COURSE_PERIOD_ID=ga.COURSE_PERIOD_ID) OR (ga.COURSE_PERIOD_ID IS NULL AND cp.COURSE_ID=ga.COURSE_ID AND cp.TEACHER_ID=ga.STAFF_ID)"
+  ." JOIN schedule ss ON ss.COURSE_PERIOD_ID=cp.COURSE_PERIOD_ID AND ss.START_DATE<=CURRENT_DATE AND (ss.END_DATE IS NULL OR ss.END_DATE>=CURRENT_DATE) JOIN students s ON s.STUDENT_ID=ss.STUDENT_ID"
+  ." WHERE ga.ASSIGNMENT_ID=".(int)$id." AND cp.SCHOOL_ID=".$school." AND cp.SYEAR=".$year." ORDER BY s.STUDENT_ID");
+ $sheets=[];
+ foreach((array)$class as $k){$sheets[]=[trim($k['FIRST_NAME'].' '.$k['LAST_NAME']),SchoolSafeLetterheadPage($identity,$layout,['student_name'=>trim($k['FIRST_NAME'].' '.$k['LAST_NAME']),'student_class'=>ParseMLField((string)($k['CLASS_TITLE']??''))]+$opts)];}
+ usort($sheets,static function($x,$y){return strcmp($x[0],$y[0]);});
+ if(!$sheets){http_response_code(404);exit('Aucun élève placé dans cette classe.');}
+ $book=SchoolSafeLetterheadBook(array_column($sheets,1));
+ if(($_GET['download']??'')!=='1'){header('Content-Type: text/html; charset=UTF-8');echo $book;exit;}
+ try{$pdf=SchoolSafeDocumentPdf($book);header('Content-Type: application/pdf');header('Content-Disposition: attachment; filename="devoir-'.$id.'-classe.pdf"');echo $pdf;}
+ catch(Throwable $error){http_response_code(503);echo 'La génération du PDF de la classe est temporairement indisponible.';}
+ exit;
+}
 $query=static function(array $more)use($id,$layout,$lines,$box,$style,$child,$bubble){return 'schoolsafe-homework.php?'.http_build_query(['assignment_id'=>$id,'layout'=>$layout,'lines'=>$lines,'box'=>$box?'1':'0','style'=>$style]+($child>0?['student'=>$child]:[])+($bubble!==''?['bulle'=>$bubble]:[])+$more);};
 if(($_GET['download']??'')!=='1'){
  $e='SchoolSafeLetterheadEscape';

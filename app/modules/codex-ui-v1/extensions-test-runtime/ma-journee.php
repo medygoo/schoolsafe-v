@@ -123,7 +123,7 @@ $policies=[];
 <label><b>Cahier de textes</b> — ce qui a été fait<textarea name="done" maxlength="4000" placeholder="ex. Leçon : les fractions de même dénominateur. Exercices 1 à 4 p. 32."><?=$e($diary[1]['DONE']??'')?></textarea></label>
 <label>À faire pour la prochaine fois<textarea name="todo" maxlength="2000" placeholder="ex. Apprendre la règle, exercice 5 p. 33."><?=$e($diary[1]['TODO']??'')?></textarea></label>
 <div><button type="submit" class="ss-btn">Enregistrer le cahier de textes</button></div></form>
-<div class="ss-links"><a href="Modules.php?modname=Grades/Assignments.php">Donner un devoir</a><a href="Modules.php?modname=Grades/Grades.php">Saisir des notes</a><a href="rattrapage.php">Rattrapage</a><a href="Modules.php?modname=SchoolSafe_Jaspe/Assistant.php">Préparer avec JASPE</a></div>
+<div class="ss-links"><a href="devoirs-travaux.php#nouveau">Donner un devoir</a><a href="Modules.php?modname=Grades/Grades.php">Saisir des notes</a><a href="rattrapage.php">Rattrapage</a><a href="Modules.php?modname=SchoolSafe_Jaspe/Assistant.php">Préparer avec JASPE</a></div>
 </section>
 <?php endforeach;?></main>
 <script>

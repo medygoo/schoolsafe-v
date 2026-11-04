@@ -27,6 +27,7 @@ if (User('PROFILE') === 'admin' && AllowEdit('School_Setup/Configuration.php')) 
 // Ma journee de classe (04/11) : classes du jour, appel rapide, cahier de textes.
 if (User('PROFILE') === 'teacher') {
     $add('pedagogy', 'Ma journée', 'Ma journée de classe', 'ma-journee.php');
+    $add('pedagogy', 'Ma journée', 'Devoirs et travaux', 'devoirs-travaux.php');
 }
 if (SchoolSafeNativePermission('SchoolSafe/RemediationRead.php')) {
     $add('pedagogy', 'Accompagnement', 'Rattrapage', 'Modules.php?modname=SchoolSafe/RemediationRead.php');
