@@ -19,7 +19,7 @@ function SchoolSafeLetterheadLayouts(): array
 
 function SchoolSafeLetterheadDefaults(): array
 {
-    return ['layout' => 'classique', 'ministry' => 'MINISTÈRE DE L’ÉDUCATION NATIONALE ET NOUVELLE CITOYENNETÉ', 'province' => ''];
+    return ['layout' => 'classique', 'ministry' => 'MINISTÈRE DE L’ÉDUCATION NATIONALE ET NOUVELLE CITOYENNETÉ', 'province' => '', 'style' => ''];
 }
 
 function SchoolSafeLetterheadEscape($text): string
@@ -33,9 +33,10 @@ function SchoolSafeLetterheadSettings(int $school, callable $get): array
     $settings = SchoolSafeLetterheadDefaults();
     if ($school < 1) return $settings;
     $rows = $get("SELECT TITLE,CONFIG_VALUE FROM config WHERE SCHOOL_ID=" . $school
-        . " AND TITLE IN ('SCHOOLSAFE_DOC_LAYOUT','SCHOOLSAFE_DOC_MINISTRY','SCHOOLSAFE_DOC_PROVINCE')");
+        . " AND TITLE IN ('SCHOOLSAFE_DOC_LAYOUT','SCHOOLSAFE_DOC_MINISTRY','SCHOOLSAFE_DOC_PROVINCE','SCHOOLSAFE_DOC_STYLE')");
     foreach ((array) $rows as $row) {
         $value = trim((string) ($row['CONFIG_VALUE'] ?? ''));
+        if ($row['TITLE'] === 'SCHOOLSAFE_DOC_STYLE') $settings['style'] = SchoolSafeLetterheadStyleEncode(SchoolSafeLetterheadStyleDecode($value));
         if ($row['TITLE'] === 'SCHOOLSAFE_DOC_LAYOUT' && isset(SchoolSafeLetterheadLayouts()[$value])) $settings['layout'] = $value;
         if ($row['TITLE'] === 'SCHOOLSAFE_DOC_MINISTRY' && $value !== '') $settings['ministry'] = mb_substr($value, 0, 120);
         if ($row['TITLE'] === 'SCHOOLSAFE_DOC_PROVINCE') $settings['province'] = mb_substr($value, 0, 160);
@@ -53,7 +54,8 @@ function SchoolSafeLetterheadValidate(array $in): array
         if (mb_strlen($value) > $max) throw new RuntimeException($label . ' : ' . $max . ' caractères au plus.');
         return $value;
     };
-    return ['layout' => $layout, 'ministry' => $line($in['ministry'] ?? '', 120, 'Ministère'), 'province' => $line($in['province'] ?? '', 160, 'Province et sous-division')];
+    return ['layout' => $layout, 'ministry' => $line($in['ministry'] ?? '', 120, 'Ministère'), 'province' => $line($in['province'] ?? '', 160, 'Province et sous-division'),
+        'style' => SchoolSafeLetterheadStyleEncode(SchoolSafeLetterheadStyleDecode((string) ($in['style'] ?? '')))];
 }
 
 /** Logo en image integree (le PDF n'ouvre aucune ressource exterieure). */
@@ -271,8 +273,13 @@ function SchoolSafeLetterheadPage(array $identity, string $layout, array $opts):
     $lines = max(0, min(30, (int) ($opts['answer_lines'] ?? 0)));
     $answer = $lines > 0 ? '<section class="ss-lines"><div class="ss-lines-title">Réponses</div>' . str_repeat('<div></div>', $lines) . '</section>' : '';
     $toolbar = (string) ($opts['toolbar'] ?? '');
+    // Disposition personnalisee (JASPE ou direction) : seulement des reglages prevus, jamais de retrait d'information.
+    $custom = SchoolSafeLetterheadStyleDecode((string) ($opts['style'] ?? ''));
+    $palette = SchoolSafeLetterheadPalette();
+    if (isset($custom['couleur'], $palette[$custom['couleur']])) $identity['accent'] = $palette[$custom['couleur']];
+    $accent = preg_match('/^#[0-9a-f]{6}$/iD', (string) ($identity['accent'] ?? '')) ? $identity['accent'] : '#176b52';
     return '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . $e($opts['title'] ?? '') . '</title><style>'
-        . SchoolSafeLetterheadCss($layout, (string) ($identity['accent'] ?? ''))
+        . SchoolSafeLetterheadCss($layout, $accent) . SchoolSafeLetterheadCustomCss($custom, $accent)
         . '.ss-toolbar{max-width:210mm;margin:6mm auto 0;background:#fff;border:1px solid #c9d8d2;border-radius:3mm;padding:3mm 4mm;font:14px Arial,sans-serif;display:flex;flex-wrap:wrap;gap:3mm;align-items:center}'
         . '.ss-toolbar select,.ss-toolbar input,.ss-toolbar button,.ss-toolbar a{min-height:36px;font-size:14px}.ss-toolbar button,.ss-toolbar a.ss-pdf{background:#08766b;color:#fff;border:0;border-radius:2mm;padding:0 4mm;text-decoration:none;display:inline-flex;align-items:center}'
         . '@media print{.ss-toolbar{display:none}}</style></head><body>' . $toolbar . '<article class="ss-paper ss-layout-' . $layout . '">'
@@ -281,4 +288,174 @@ function SchoolSafeLetterheadPage(array $identity, string $layout, array $opts):
         . '<h1 class="ss-title">' . $e($opts['title'] ?? '') . '</h1>' . ($meta !== '' ? '<div class="ss-meta">' . $meta . '</div>' : '')
         . $box . '<section class="ss-body">' . ($opts['body'] ?? '') . '</section>' . $answer
         . '</td></tr></tbody></table>' . SchoolSafeLetterheadFooter($identity) . '</article></body></html>';
+}
+
+/* ---------- Disposition personnalisee (04/11) : JASPE change la disposition, jamais les informations ---------- */
+
+/** Reglages permis et leurs valeurs ; aucun ne peut masquer une information. */
+function SchoolSafeLetterheadStyleSpec(): array
+{
+    return [
+        'logo' => ['gauche' => 'logo à gauche', 'droite' => 'logo à droite', 'centre' => 'logo centré au-dessus du nom'],
+        'entete' => ['ligne' => 'en-tête souligné', 'bandeau' => 'en-tête en bandeau de couleur', 'cadre' => 'en-tête encadré', 'double' => 'double trait sous l’en-tête'],
+        'alignement' => ['gauche' => 'texte de l’en-tête à gauche', 'centre' => 'texte de l’en-tête centré', 'droite' => 'texte de l’en-tête à droite'],
+        'titre' => ['gauche' => 'titre à gauche', 'centre' => 'titre centré', 'cadre' => 'titre encadré'],
+        'police' => ['sans' => 'police moderne (sans empattement)', 'serif' => 'police classique (avec empattement)'],
+        'taille' => ['petite' => 'texte plus petit', 'normale' => 'texte normal', 'grande' => 'texte plus grand (petites classes)'],
+        'interligne' => ['serre' => 'lignes serrées', 'normal' => 'interligne normal', 'aere' => 'lignes aérées'],
+        'couleur' => ['ecole' => 'couleur de l’école', 'vert' => 'vert', 'bleu' => 'bleu', 'rouge' => 'rouge', 'violet' => 'violet', 'orange' => 'orange', 'noir' => 'noir et gris'],
+        'pied' => ['centre' => 'pied de page centré', 'gauche' => 'pied de page à gauche'],
+    ];
+}
+
+function SchoolSafeLetterheadPalette(): array
+{
+    return ['vert' => '#176b52', 'bleu' => '#1f4e9c', 'rouge' => '#a32d2d', 'violet' => '#5b3c99', 'orange' => '#b9581a', 'noir' => '#2b2f36'];
+}
+
+/** « logo-droite.taille-grande » -> ['logo'=>'droite','taille'=>'grande'] ; tout le reste est ignore. */
+function SchoolSafeLetterheadStyleDecode(string $style): array
+{
+    $spec = SchoolSafeLetterheadStyleSpec();
+    $out = [];
+    foreach (explode('.', substr($style, 0, 300)) as $pair) {
+        if (!preg_match('/^([a-z]+)-([a-z]+)$/D', $pair, $m)) continue;
+        if (isset($spec[$m[1]][$m[2]])) $out[$m[1]] = $m[2];
+    }
+    return $out;
+}
+
+function SchoolSafeLetterheadStyleEncode(array $style): string
+{
+    $spec = SchoolSafeLetterheadStyleSpec();
+    $parts = [];
+    foreach ($spec as $key => $values) if (isset($style[$key]) && is_string($style[$key]) && isset($values[$style[$key]])) $parts[] = $key . '-' . $style[$key];
+    return implode('.', $parts);
+}
+
+/** Description lisible des reglages appliques. */
+function SchoolSafeLetterheadStyleText(array $style): string
+{
+    $spec = SchoolSafeLetterheadStyleSpec();
+    $words = [];
+    foreach ($style as $key => $value) if (isset($spec[$key][$value])) $words[] = $spec[$key][$value];
+    return $words ? implode(', ', $words) : 'disposition d’origine';
+}
+
+/** CSS des reglages ; ne contient aucune regle qui masque un element. */
+function SchoolSafeLetterheadCustomCss(array $c, string $accent): string
+{
+    $css = '';
+    if (($c['logo'] ?? '') === 'droite') $css .= '.ss-head{flex-direction:row-reverse}';
+    if (($c['logo'] ?? '') === 'centre') $css .= '.ss-head{flex-direction:column;align-items:center;text-align:center}.ss-head .ss-logo{margin:0 auto}';
+    if (($c['logo'] ?? '') === 'gauche') $css .= '.ss-head{flex-direction:row}';
+    $entete = $c['entete'] ?? '';
+    if ($entete === 'bandeau') $css .= '.ss-head{background:' . $accent . ';border:0;border-radius:3mm;padding:4mm 5mm}.ss-head .ss-school,.ss-head .ss-slogan,.ss-head .ss-head-contact,.ss-head .ss-rdc{color:#fff}.ss-head .ss-logo{background:#fff;border-radius:2mm;padding:1mm}';
+    if ($entete === 'cadre') $css .= '.ss-head{background:#fff;border:1.5px solid ' . $accent . ';border-radius:3mm;padding:3mm 4mm}.ss-head .ss-school{color:' . $accent . '}.ss-head .ss-slogan,.ss-head .ss-head-contact{color:#405064}';
+    if ($entete === 'double') $css .= '.ss-head{background:#fff;border:0;border-bottom:3px double ' . $accent . ';border-radius:0;padding:0 0 4mm}.ss-head .ss-school{color:' . $accent . '}';
+    if ($entete === 'ligne') $css .= '.ss-head{background:#fff;border:0;border-bottom:2px solid ' . $accent . ';border-radius:0;padding:0 0 4mm}.ss-head .ss-school{color:' . $accent . '}.ss-head .ss-slogan,.ss-head .ss-head-contact{color:#405064}';
+    $align = ['gauche' => 'left', 'centre' => 'center', 'droite' => 'right'];
+    if (isset($c['alignement'], $align[$c['alignement']])) $css .= '.ss-id,.ss-rdc{text-align:' . $align[$c['alignement']] . '}';
+    if (($c['titre'] ?? '') === 'centre') $css .= '.ss-title{text-align:center;border-left:0;padding-left:0}';
+    if (($c['titre'] ?? '') === 'gauche') $css .= '.ss-title{text-align:left}';
+    if (($c['titre'] ?? '') === 'cadre') $css .= '.ss-title{text-align:center;border:1.5px solid ' . $accent . ';border-radius:2mm;padding:2mm}';
+    if (($c['police'] ?? '') === 'serif') $css .= 'body,.ss-foot{font-family:Georgia,"Times New Roman",serif}';
+    if (($c['police'] ?? '') === 'sans') $css .= 'body,.ss-foot{font-family:Arial,Helvetica,sans-serif}';
+    $size = ['petite' => '10pt', 'normale' => '11pt', 'grande' => '13pt'];
+    if (isset($c['taille'], $size[$c['taille']])) $css .= 'body{font-size:' . $size[$c['taille']] . '}';
+    $lineHeight = ['serre' => '1.3', 'normal' => '1.55', 'aere' => '1.85'];
+    if (isset($c['interligne'], $lineHeight[$c['interligne']])) $css .= 'body{line-height:' . $lineHeight[$c['interligne']] . '}';
+    if (($c['pied'] ?? '') === 'gauche') $css .= '.ss-foot{text-align:left}.ss-foot .ss-brand{justify-content:flex-start}';
+    return $css;
+}
+
+/** Consigne a JASPE : repondre seulement par les reglages permis (JSON), sans toucher au contenu. */
+function SchoolSafeLetterheadJaspePrompt(string $request, array $current): string
+{
+    $lines = [];
+    foreach (SchoolSafeLetterheadStyleSpec() as $key => $values) $lines[] = $key . ' : ' . implode(' | ', array_keys($values));
+    $layouts = implode(' | ', array_keys(SchoolSafeLetterheadLayouts()));
+    return 'Tu règles la disposition d’une page A4 d’école. Tu ne modifies ni le texte ni les informations de l’école : '
+        . 'tu choisis seulement des réglages. Réglages permis : ' . implode(' ; ', $lines) . ' ; disposition : ' . $layouts . '. '
+        . 'Réglages actuels : ' . (SchoolSafeLetterheadStyleEncode($current) ?: 'aucun') . '. '
+        . 'Demande de l’utilisateur : « ' . mb_substr(trim(preg_replace('/\s+/u', ' ', $request) ?? ''), 0, 300) . ' ». '
+        . 'Réponds UNIQUEMENT par un objet JSON avec les réglages à changer, par exemple {"logo":"droite","taille":"grande"}.';
+}
+
+/** Lit la reponse de JASPE : seuls les reglages permis sont gardes (la disposition de base aussi). */
+function SchoolSafeLetterheadJaspeParse(string $reply): array
+{
+    if (!preg_match('/\{[^{}]{0,800}\}/u', $reply, $m)) return [];
+    $data = json_decode($m[0], true);
+    if (!is_array($data)) return [];
+    $spec = SchoolSafeLetterheadStyleSpec();
+    $out = [];
+    foreach ($data as $key => $value) {
+        if (!is_string($key) || !is_string($value)) continue;
+        $key = strtolower(trim($key)); $value = strtolower(trim($value));
+        $value = strtr($value, ['é' => 'e', 'è' => 'e', 'ê' => 'e']);
+        if ($key === 'disposition' && isset(SchoolSafeLetterheadLayouts()[$value])) $out['disposition'] = $value;
+        elseif (isset($spec[$key][$value])) $out[$key] = $value;
+    }
+    return $out;
+}
+
+/** Secours sans IA : consignes simples reconnues par mots-cles. */
+function SchoolSafeLetterheadGuess(string $request): array
+{
+    $t = mb_strtolower($request);
+    $t = strtr($t, ['é' => 'e', 'è' => 'e', 'ê' => 'e', 'à' => 'a', 'â' => 'a', 'ô' => 'o', 'î' => 'i', 'ç' => 'c']);
+    $out = [];
+    if (preg_match('/logo[^.,;]{0,25}droite/', $t)) $out['logo'] = 'droite';
+    elseif (preg_match('/logo[^.,;]{0,25}gauche/', $t)) $out['logo'] = 'gauche';
+    elseif (preg_match('/logo[^.,;]{0,25}(centr|milieu)/', $t)) $out['logo'] = 'centre';
+    if (preg_match('/bandeau/', $t)) $out['entete'] = 'bandeau';
+    elseif (preg_match('/(en-?tete|entete)[^.,;]{0,20}(encadr|cadre)/', $t)) $out['entete'] = 'cadre';
+    elseif (preg_match('/double (trait|ligne)/', $t)) $out['entete'] = 'double';
+    if (preg_match('/titre[^.,;]{0,20}(centr|milieu)/', $t)) $out['titre'] = 'centre';
+    elseif (preg_match('/titre[^.,;]{0,20}(encadr|cadre)/', $t)) $out['titre'] = 'cadre';
+    if (preg_match('/(plus grand|grosse|gros caract|grande police|agrandi|petites classes)/', $t)) $out['taille'] = 'grande';
+    elseif (preg_match('/(plus petit|petite police|reduire le texte)/', $t)) $out['taille'] = 'petite';
+    if (preg_match('/(serif|empattement|times|georgia|police classique)/', $t) && !preg_match('/sans (serif|empattement)/', $t)) $out['police'] = 'serif';
+    if (preg_match('/(aere|espace|plus d.espace entre)/', $t)) $out['interligne'] = 'aere';
+    elseif (preg_match('/(serre|compact)/', $t)) $out['interligne'] = 'serre';
+    foreach (['bleu', 'rouge', 'violet', 'orange', 'vert', 'noir'] as $color) if (preg_match('/\b' . $color . '/', $t)) { $out['couleur'] = $color; break; }
+    if (preg_match('/pied[^.,;]{0,25}gauche/', $t)) $out['pied'] = 'gauche';
+    if (preg_match('/officiel|rdc|ministere/', $t)) $out['disposition'] = 'officielle';
+    elseif (preg_match('/moderne/', $t)) $out['disposition'] = 'moderne';
+    elseif (preg_match('/(compacte|economi)/', $t)) $out['disposition'] = 'compacte';
+    return $out;
+}
+
+/**
+ * Demande de disposition : JASPE d'abord ($ask : message => ?string), secours par mots-cles sinon.
+ * Retourne ['layout' => ..., 'style' => [...], 'by' => 'jaspe'|'consignes'|''].
+ */
+function SchoolSafeLetterheadAsk(string $request, string $layout, array $current, ?callable $ask): array
+{
+    $changes = [];
+    $by = '';
+    if ($ask) {
+        try { $reply = $ask(SchoolSafeLetterheadJaspePrompt($request, $current)); } catch (Throwable $failure) { $reply = null; }
+        if (is_string($reply)) { $changes = SchoolSafeLetterheadJaspeParse($reply); if ($changes) $by = 'jaspe'; }
+    }
+    if (!$changes) { $changes = SchoolSafeLetterheadGuess($request); if ($changes) $by = 'consignes'; }
+    if (isset($changes['disposition'])) { $layout = $changes['disposition']; unset($changes['disposition']); }
+    return ['layout' => $layout, 'style' => array_merge($current, $changes), 'by' => $by];
+}
+
+/** Transport JASPE pour les reglages : service rapide d'abord, Worker ensuite (reponse courte). */
+function SchoolSafeLetterheadJaspeTransport(): callable
+{
+    return static function (string $message): ?string {
+        require_once __DIR__ . '/SchoolSafeJaspeFallbackLLM.fnc.php';
+        require_once __DIR__ . '/SchoolSafeJaspeCloudflare.fnc.php';
+        $result = SchoolSafeJaspeFallbackLLM($message, [], 'Réponds seulement en JSON.', 200);
+        if (!is_array($result)) {
+            $secret = getenv('JASPE_WORKER_HMAC_SECRET') ?: (string) Config('JASPE_WORKER_SECRET');
+            $url = getenv('JASPE_WORKER_URL') ?: (string) Config('JASPE_WORKER_URL');
+            $result = SchoolSafeJaspeCloudflare($message, hash_hmac('sha256', 'papier:' . User('STAFF_ID') . ':' . UserSchool(), $secret), $url, $secret, null, [], '');
+        }
+        return is_array($result) && ($result['state'] ?? '') !== 'OFFLINE' ? ($result['reply'] ?? null) : null;
+    };
 }
