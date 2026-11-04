@@ -4,7 +4,7 @@
 if ( ($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET' ) { http_response_code(405); exit; }
 $id = filter_input(INPUT_GET, 'assignment_id', FILTER_VALIDATE_INT);
 if (!$id || $id<1) { http_response_code(400); exit('Devoir invalide.'); }
-if (array_diff(array_keys($_GET), ['assignment_id','download','layout','lines','box','style','demande','jaspe'])) { http_response_code(400); exit('Requête invalide.'); }
+if (array_diff(array_keys($_GET), ['assignment_id','download','layout','lines','box','style','demande','jaspe','student'])) { http_response_code(400); exit('Requête invalide.'); }
 header('Cache-Control: no-store'); header('X-Content-Type-Options: nosniff');
 chdir(__DIR__);
 $_REQUEST=['modname'=>'misc/Portal.php','modfunc'=>''];
@@ -15,6 +15,13 @@ require_once 'ProgramFunctions/SchoolSafeLetterhead.fnc.php';
 require_once 'modules/Grades/includes/StudentAssignments.fnc.php';
 $school=(int)UserSchool(); $year=(int)UserSyear();
 $profile=User('PROFILE');
+// Fiche au nom de l'enfant (04/11) : le lien du message designe l'enfant ; il doit etre celui du parent ou de l'eleve.
+$child=(int)(filter_input(INPUT_GET,'student',FILTER_VALIDATE_INT)?:0);
+if($child>0&&in_array($profile,['parent','student'],true)){
+ $own=$profile==='student'?(int)User('STUDENT_ID')===$child:(bool)DBGetOne("SELECT 1 FROM students_join_users WHERE student_id='".$child."' AND staff_id='".(int)User('STAFF_ID')."'");
+ if(!$own){http_response_code(403);exit('Accès au devoir non autorisé.');}
+ if((int)UserStudentID()!==$child)SetUserStudentID($child);
+}
 $delegated=false;
 if($profile==='admin' && AllowUse('Users/TeacherPrograms.php&include=Grades/Assignments.php') && UserStaffID() && UserCoursePeriod()){
  $context=DBGetOne("SELECT 1 FROM course_periods cp JOIN staff teacher ON teacher.staff_id=cp.teacher_id WHERE cp.course_period_id='".(int)UserCoursePeriod()."' AND cp.teacher_id='".(int)UserStaffID()."' AND cp.school_id='".$school."' AND cp.syear='".$year."' AND teacher.profile='teacher'");
@@ -42,6 +49,15 @@ if(trim((string)($assignment['DESCRIPTION']??''))==='' && !empty($assignment['FI
  exit;
 }
 $identity=SchoolSafeLetterheadIdentity($school);
+// Nom et classe repris de la fiche de l'eleve : parent et eleve voient leur enfant, l'enseignant ou la direction
+// un eleve inscrit dans la classe du devoir.
+$sid=in_array($profile,['parent','student'],true)?(int)UserStudentID():$child;
+$pupil=$sid>0?DBGet("SELECT s.FIRST_NAME,s.LAST_NAME,(SELECT g.TITLE FROM student_enrollment e JOIN school_gradelevels g ON g.ID=e.GRADE_ID WHERE e.STUDENT_ID=s.STUDENT_ID AND e.SCHOOL_ID=".$school." AND e.SYEAR=".$year." ORDER BY e.START_DATE DESC NULLS LAST LIMIT 1) AS CLASS_TITLE"
+ ." FROM students s WHERE s.STUDENT_ID=".$sid." AND EXISTS(SELECT 1 FROM student_enrollment e WHERE e.STUDENT_ID=s.STUDENT_ID AND e.SCHOOL_ID=".$school." AND e.SYEAR=".$year.")"
+ ." AND EXISTS(SELECT 1 FROM schedule ss JOIN course_periods cp ON cp.COURSE_PERIOD_ID=ss.COURSE_PERIOD_ID JOIN gradebook_assignments ga ON ga.ASSIGNMENT_ID=".(int)$id
+ ." AND (cp.COURSE_PERIOD_ID=ga.COURSE_PERIOD_ID OR (ga.COURSE_PERIOD_ID IS NULL AND cp.COURSE_ID=ga.COURSE_ID)) WHERE ss.STUDENT_ID=s.STUDENT_ID)"):[];
+$pupilName=$pupil?trim($pupil[1]['FIRST_NAME'].' '.$pupil[1]['LAST_NAME']):'';
+$pupilClass=$pupil?ParseMLField((string)($pupil[1]['CLASS_TITLE']??'')):'';
 $layouts=SchoolSafeLetterheadLayouts();
 $layout=isset($_GET['layout'])&&is_string($_GET['layout'])&&isset($layouts[$_GET['layout']])?$_GET['layout']:$identity['layout'];
 $lines=isset($_GET['lines'])&&ctype_digit((string)$_GET['lines'])?min(30,(int)$_GET['lines']):($layout==='devoir'?12:0);
@@ -76,12 +92,13 @@ $opts=[
   ['Donné le',SchoolSafeLetterheadDate($assignment['ASSIGNED_DATE']??'')],['À rendre le',SchoolSafeLetterheadDate($assignment['DUE_DATE']??'')]],
  'body'=>SchoolSafeLetterheadContent((string)($assignment['DESCRIPTION']??''),$local),
  'student_box'=>$box,'points'=>$points!==''&&$points!=='0'?$points:'','answer_lines'=>$lines,'style'=>$style,
+ 'student_name'=>$pupilName,'student_class'=>$pupilClass,
 ];
-$query=static function(array $more)use($id,$layout,$lines,$box,$style){return 'schoolsafe-homework.php?'.http_build_query(['assignment_id'=>$id,'layout'=>$layout,'lines'=>$lines,'box'=>$box?'1':'0','style'=>$style]+$more);};
+$query=static function(array $more)use($id,$layout,$lines,$box,$style,$child){return 'schoolsafe-homework.php?'.http_build_query(['assignment_id'=>$id,'layout'=>$layout,'lines'=>$lines,'box'=>$box?'1':'0','style'=>$style]+($child>0?['student'=>$child]:[])+$more);};
 if(($_GET['download']??'')!=='1'){
  $e='SchoolSafeLetterheadEscape';
  $choice='';foreach($layouts as $key=>$label)$choice.='<option value="'.$e($key).'"'.($key===$layout?' selected':'').'>'.$e($label[0]).'</option>';
- $opts['toolbar']='<form class="ss-toolbar" method="get" action="schoolsafe-homework.php"><input type="hidden" name="assignment_id" value="'.(int)$id.'">'
+ $opts['toolbar']='<form class="ss-toolbar" method="get" action="schoolsafe-homework.php"><input type="hidden" name="assignment_id" value="'.(int)$id.'">'.($child>0?'<input type="hidden" name="student" value="'.$child.'">':'')
   .'<label>Disposition <select name="layout">'.$choice.'</select></label>'
   .'<label>Lignes de réponse <input type="number" name="lines" min="0" max="30" value="'.(int)$lines.'" style="width:64px"></label>'
   .'<label><input type="hidden" name="box" value="0"><input type="checkbox" name="box" value="1"'.($box?' checked':'').'> Cadre nom, classe, note</label>'
@@ -94,6 +111,6 @@ if(($_GET['download']??'')!=='1'){
 try{
  $pdf=SchoolSafeDocumentPdf(SchoolSafeLetterheadPage($identity,$layout,$opts));
  header('Content-Type: application/pdf');
- header('Content-Disposition: attachment; filename="devoir-'.$id.'.pdf"');
+ header('Content-Disposition: attachment; filename="devoir-'.$id.($pupilName!==''?'-'.preg_replace('/[^A-Za-z0-9]+/','-',iconv('UTF-8','ASCII//TRANSLIT//IGNORE',$pupilName)):'').'.pdf"');
  echo $pdf;
 }catch(Throwable $error){http_response_code(503);echo 'La génération du devoir PDF est temporairement indisponible.';}

@@ -9,7 +9,7 @@ require_once __DIR__.'/SchoolSafeSchoolState.fnc.php';
 function SchoolSafeNotifyWaEventTypes(): array
 {
     return ['security.entry','student.pickup','school.announcement','remediation.update',
-        'attendance.closure','absence.detected','case.updated','security.p1','fee.reminder'];
+        'attendance.closure','absence.detected','case.updated','security.p1','fee.reminder','homework.published'];
 }
 
 function SchoolSafeNotifyAccountReadable($username,int $school,array $db): bool

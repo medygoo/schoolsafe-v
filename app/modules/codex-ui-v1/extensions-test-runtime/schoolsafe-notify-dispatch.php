@@ -33,6 +33,11 @@ if($channel==='all'){
     try{require_once __DIR__.'/ProgramFunctions/SchoolSafeRemediationRelay.fnc.php';
         $relayed=SchoolSafeRemediationRelay(['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}],40);}
     catch(Throwable $relayFailure){fwrite(STDERR,"REMEDIATION_RELAY_UNAVAILABLE\n");}
+    // Devoirs publies -> chaque parent, fiche au nom de l'enfant (04/11).
+    try{require_once __DIR__.'/ProgramFunctions/SchoolSafeHomeworkRelay.fnc.php';
+        $relayed+=SchoolSafeHomeworkRelay(['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}],
+            rtrim(trim((string)getenv('SCHOOLSAFE_ASSETS_BASE_URL'))?:'https://app.shoolsafe.tech','/'),40);}
+    catch(Throwable $homeworkFailure){fwrite(STDERR,"HOMEWORK_RELAY_UNAVAILABLE\n");}
 }
 if($retryFailed){
     $retry=pg_query_params($conn,"UPDATE schoolsafe_notify_deliveries SET status='pending',updated_at=CURRENT_TIMESTAMP"

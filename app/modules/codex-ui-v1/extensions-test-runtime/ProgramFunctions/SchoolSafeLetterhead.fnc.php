@@ -189,15 +189,15 @@ function SchoolSafeLetterheadCss(string $layout, string $accent): string
         . '.ss-slogan{font-size:9.5pt;color:#405064;font-style:italic;margin-top:1mm}.ss-head-contact{font-size:8.5pt;color:#405064;margin-top:1mm}'
         . '.ss-title{font-size:16pt;margin:4mm 0 2mm;color:#142234;text-transform:uppercase;letter-spacing:.5px}.ss-meta{font-size:10pt;color:#2a3a4e;margin-bottom:4mm}'
         . '.ss-meta span{display:inline-block;margin-right:6mm}.ss-student{border:1px solid #8a99ab;border-radius:2mm;padding:3mm 4mm;margin:3mm 0 5mm;display:grid;grid-template-columns:2fr 1fr;gap:3mm 6mm;font-size:10pt}'
-        . '.ss-student b{font-weight:600}.ss-dots{border-bottom:1px dotted #5b6b80;display:inline-block;min-width:40mm}'
+        . '.ss-student b{font-weight:600}.ss-dots{border-bottom:1px dotted #5b6b80;display:inline-block;min-width:40mm}.ss-filled{font-weight:700;color:#142234;text-transform:uppercase;letter-spacing:.3px}'
         . '.ss-body img{max-width:100%;height:auto}.ss-body table{border-collapse:collapse;max-width:100%}.ss-body td,.ss-body th{border:1px solid #9aa8b8;padding:1.5mm 2.5mm;vertical-align:top}'
         . '.ss-body h1,.ss-body h2,.ss-body h3{color:' . $accent . ';page-break-after:avoid}.ss-body p,.ss-body li{orphans:3;widows:3}'
         . '.ss-lines{margin-top:6mm}.ss-lines div{border-bottom:1px solid #c3ccd6;height:8.5mm}.ss-lines-title{font-weight:600;font-size:10pt;margin-bottom:1mm}'
-        . '.ss-frame{width:100%;border-collapse:collapse}.ss-frame>tbody>tr>td,.ss-frame>tfoot>tr>td{padding:0;border:0}.ss-foot-space{height:20mm}.ss-layout-compacte .ss-foot-space{height:15mm}.ss-foot{position:fixed;left:0;right:0;bottom:0;border-top:1.5px solid ' . $accent . ';padding-top:1.5mm;font-size:8pt;color:#405064;text-align:center;line-height:1.35;background:#fff}'
+        . '.ss-frame{width:100%;border-collapse:collapse}.ss-frame>tbody>tr>td,.ss-frame>tfoot>tr>td{padding:0;border:0}.ss-foot-space{height:28mm}.ss-layout-compacte .ss-foot-space{height:24mm}.ss-foot{position:fixed;left:0;right:0;bottom:0;border-top:1.5px solid ' . $accent . ';padding-top:1.5mm;font-size:8pt;color:#405064;text-align:center;line-height:1.35;background:#fff}'
         . '.ss-foot .ss-foot-school{font-weight:700;color:' . $accent . ';font-size:9pt}.ss-foot .ss-brand{font-size:6.5pt;color:#8a99ab}'
-        . '.ss-foot .ss-brand{display:flex;gap:1.5mm;align-items:center;justify-content:center;margin-top:.8mm;font-size:7pt;color:#5b6b80}.ss-brand-logo{height:4.5mm;width:auto}'
+        . '.ss-foot .ss-brand{display:flex;gap:2.5mm;align-items:center;justify-content:center;margin-top:1.5mm;font-size:9.5pt;color:#1f3347}.ss-brand-logo{height:9mm;width:auto}.ss-brand b{font-size:11pt;color:#0b3d62;letter-spacing:.2px}.ss-brand i{font-style:italic;font-weight:600}'
         . '@media screen and (max-width:820px){.ss-paper{width:auto!important;min-height:0!important;margin:0!important;padding:5mm 4mm 34mm!important;box-shadow:none!important}.ss-foot{left:4mm!important;right:4mm!important}.ss-student{grid-template-columns:1fr}.ss-dots{min-width:30mm!important}.ss-body{overflow-x:auto}}'
-        . '@media screen{.ss-foot-space{height:0}body{background:#eef2f5}.ss-paper{width:210mm;min-height:297mm;margin:8mm auto;background:#fff;padding:12mm 13mm 30mm;position:relative;box-shadow:0 2px 12px rgba(0,0,0,.12)}.ss-foot{position:absolute;bottom:6mm;left:13mm;right:13mm}}';
+        . '@media screen{.ss-foot-space{height:0}body{background:#eef2f5}.ss-paper{width:210mm;min-height:297mm;margin:8mm auto;background:#fff;padding:12mm 13mm 38mm;position:relative;box-shadow:0 2px 12px rgba(0,0,0,.12)}.ss-foot{position:absolute;bottom:6mm;left:13mm;right:13mm}}';
     if ($layout === 'officielle') {
         $css .= '.ss-head{display:block;text-align:center;border-bottom:3px double ' . $accent . '}.ss-rdc{font-size:9.5pt;font-weight:700;letter-spacing:.4px;line-height:1.35}'
             . '.ss-rdc .ss-ministry{font-size:9pt}.ss-rdc .ss-province{font-weight:600;font-size:8.5pt}.ss-head .ss-logo{display:block;margin:2mm auto}'
@@ -247,7 +247,7 @@ function SchoolSafeLetterheadBrand(): string
     $file = __DIR__ . '/../schoolsafe-logo.png';
     $logo = is_file($file) && filesize($file) < 200000
         ? '<img class="ss-brand-logo" alt="SchoolSafe" src="data:image/png;base64,' . base64_encode((string) file_get_contents($file)) . '">' : '';
-    return $logo . '<span><b>SchoolSafe</b> · Un enfant protégé, un parent informé</span>';
+    return $logo . '<span><b>SchoolSafe</b> · <i>Un enfant protégé, un parent informé</i></span>';
 }
 
 /**
@@ -265,8 +265,11 @@ function SchoolSafeLetterheadPage(array $identity, string $layout, array $opts):
     $box = '';
     if (!empty($opts['student_box'])) {
         $points = trim((string) ($opts['points'] ?? ''));
-        $box = '<div class="ss-student"><div><b>Nom et prénom :</b> <span class="ss-dots" style="min-width:70mm"></span></div>'
-            . '<div><b>Classe :</b> <span class="ss-dots" style="min-width:25mm"></span></div>'
+        // Fiche nominative (04/11) : nom et classe de l'enfant repris automatiquement de sa fiche.
+        $name = trim((string) ($opts['student_name'] ?? ''));
+        $class = trim((string) ($opts['student_class'] ?? ''));
+        $box = '<div class="ss-student"><div><b>Nom et prénom :</b> ' . ($name !== '' ? '<span class="ss-filled">' . $e($name) . '</span>' : '<span class="ss-dots" style="min-width:70mm"></span>') . '</div>'
+            . '<div><b>Classe :</b> ' . ($class !== '' ? '<span class="ss-filled">' . $e($class) . '</span>' : '<span class="ss-dots" style="min-width:25mm"></span>') . '</div>'
             . '<div><b>Date :</b> <span class="ss-dots"></span></div>'
             . '<div><b>Note :</b> <span class="ss-dots" style="min-width:15mm"></span>' . ($points !== '' ? ' / ' . $e($points) : '') . '</div></div>';
     }

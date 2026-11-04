@@ -7,6 +7,7 @@ if(array_diff(array_keys($_GET),['apercu','style'])){http_response_code(400);exi
 chdir(__DIR__);$_REQUEST=['modname'=>'misc/Portal.php','modfunc'=>''];
 $level=ob_get_level();ob_start();require_once __DIR__.'/Warehouse.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeLetterhead.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeHomeworkRelay.fnc.php';
 $school=(int)UserSchool();$actor=(int)User('STAFF_ID');
 // Meme droit que « Preparer l'annee » : administrateur autorise a configurer l'ecole.
 $allowed=$actor&&User('PROFILE')==='admin'&&$school>0&&AllowEdit('School_Setup/Configuration.php');
@@ -30,7 +31,7 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
         }
         $valid=SchoolSafeLetterheadValidate($post);
         DBQuery('BEGIN');
-        foreach(['SCHOOLSAFE_DOC_LAYOUT'=>$valid['layout'],'SCHOOLSAFE_DOC_MINISTRY'=>$valid['ministry'],'SCHOOLSAFE_DOC_PROVINCE'=>$valid['province'],'SCHOOLSAFE_DOC_STYLE'=>$valid['style']] as $title=>$value){
+        foreach(['SCHOOLSAFE_DOC_LAYOUT'=>$valid['layout'],'SCHOOLSAFE_DOC_MINISTRY'=>$valid['ministry'],'SCHOOLSAFE_DOC_PROVINCE'=>$valid['province'],'SCHOOLSAFE_DOC_STYLE'=>$valid['style'],'SCHOOLSAFE_HOMEWORK_AUTO'=>!empty($post['homework_auto'])?'Y':'N'] as $title=>$value){
             $sql="'".DBEscapeString($value)."'";
             $done=DBGet(DBQuery("UPDATE config SET CONFIG_VALUE=".$sql.",UPDATED_AT=CURRENT_TIMESTAMP WHERE SCHOOL_ID=".$school." AND TITLE='".$title."' RETURNING TITLE"));
             if(!$done)DBQuery("INSERT INTO config(SCHOOL_ID,TITLE,CONFIG_VALUE) VALUES(".$school.",'".$title."',".$sql.")");
@@ -40,6 +41,8 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
     }catch(Throwable $failure){$error=$failure instanceof RuntimeException?$failure->getMessage():'Enregistrement impossible.';}
 }
 $identity=$allowed?SchoolSafeLetterheadIdentity($school):[];
+$homeworkAuto=$allowed?SchoolSafeHomeworkAutoEnabled($school,static function($sql){return DBGet($sql);}):true;
+if($proposal)$homeworkAuto=!empty($_POST['homework_auto']);
 if($proposal){$identity['layout']=$proposal['layout'];$identity['style']=SchoolSafeLetterheadStyleEncode($proposal['style']);$identity['ministry']=$proposal['ministry'];$identity['province']=$proposal['province'];
     $message=$proposal['by']==='jaspe'?'JASPE propose cette disposition. Regardez l’aperçu puis enregistrez si elle vous convient.':($proposal['by']==='consignes'?'Disposition proposée par les consignes simples (JASPE indisponible). Regardez l’aperçu puis enregistrez.':'Demande non comprise : rien n’a changé. Essayez par exemple « logo à droite, titre centré ».');}
 while(ob_get_level()>$level)ob_end_clean();
@@ -89,6 +92,9 @@ de l’école : <strong><?=$e($identity['school'])?></strong>. Le logo, la devis
 <label>Votre demande<input type="text" name="demande" maxlength="300" placeholder="ex. logo centré, en-tête en bandeau bleu, titre encadré, texte plus grand"></label>
 <div><button class="ss-btn" type="submit" name="action" value="jaspe" style="background:#5b3c99">Demander à JASPE</button>
 <button class="ss-btn" type="submit" name="action" value="style-reset" onclick="this.form.style.value=''">Revenir à la disposition d’origine</button></div>
+</fieldset>
+<fieldset><legend>4. Devoirs envoyés automatiquement</legend>
+<label class="ss-choice" style="display:flex"><input type="checkbox" name="homework_auto" value="1"<?=$homeworkAuto?' checked':''?>><span><strong>Envoyer chaque devoir publié aux parents</strong><small>Dès que l’enseignant publie un devoir, chaque parent le reçoit (fil, e-mail, WhatsApp) avec la fiche à imprimer déjà au nom de son enfant. Rien à faire de plus pour l’enseignant.</small></span></label>
 </fieldset>
 <div><button class="ss-btn" type="submit" name="action" value="save">Enregistrer le papier de l’école</button></div>
 </form>
