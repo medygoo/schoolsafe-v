@@ -32,7 +32,7 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
         }
         $valid=SchoolSafeLetterheadValidate($post);
         DBQuery('BEGIN');
-        foreach(['SCHOOLSAFE_DOC_LAYOUT'=>$valid['layout'],'SCHOOLSAFE_DOC_MINISTRY'=>$valid['ministry'],'SCHOOLSAFE_DOC_PROVINCE'=>$valid['province'],'SCHOOLSAFE_DOC_STYLE'=>$valid['style'],'SCHOOLSAFE_HOMEWORK_AUTO'=>!empty($post['homework_auto'])?'Y':'N','SCHOOLSAFE_GRADE_NOTIFY'=>isset(SchoolSafeGradeNoticeModes()[$post['grade_notify']??''])?$post['grade_notify']:'immediat'] as $title=>$value){
+        foreach(['SCHOOLSAFE_DOC_LAYOUT'=>$valid['layout'],'SCHOOLSAFE_DOC_MINISTRY'=>$valid['ministry'],'SCHOOLSAFE_DOC_PROVINCE'=>$valid['province'],'SCHOOLSAFE_DOC_CODE'=>$valid['code'],'SCHOOLSAFE_DOC_IDNUM'=>$valid['idnum'],'SCHOOLSAFE_DOC_COMMUNE'=>$valid['commune'],'SCHOOLSAFE_DOC_STYLE'=>$valid['style'],'SCHOOLSAFE_HOMEWORK_AUTO'=>!empty($post['homework_auto'])?'Y':'N','SCHOOLSAFE_GRADE_NOTIFY'=>isset(SchoolSafeGradeNoticeModes()[$post['grade_notify']??''])?$post['grade_notify']:'immediat'] as $title=>$value){
             $sql="'".DBEscapeString($value)."'";
             $done=DBGet(DBQuery("UPDATE config SET CONFIG_VALUE=".$sql.",UPDATED_AT=CURRENT_TIMESTAMP WHERE SCHOOL_ID=".$school." AND TITLE='".$title."' RETURNING TITLE"));
             if(!$done)DBQuery("INSERT INTO config(SCHOOL_ID,TITLE,CONFIG_VALUE) VALUES(".$school.",'".$title."',".$sql.")");
@@ -88,6 +88,9 @@ de l’école : <strong><?=$e($identity['school'])?></strong>. Le logo, la devis
 <fieldset><legend>2. En-tête officiel (disposition « Officielle RDC »)</legend>
 <label>Ministère<input type="text" name="ministry" maxlength="120" value="<?=$e($identity['ministry'])?>"></label>
 <label>Province éducationnelle et sous-division (facultatif)<input type="text" name="province" maxlength="160" value="<?=$e($identity['province'])?>" placeholder="ex. PROVINCE ÉDUCATIONNELLE KINSHASA-FUNA • SOUS-DIVISION …"></label>
+<label>Code de l’école (bulletin)<input type="text" name="code" maxlength="40" value="<?=$e($identity['code']??'')?>" placeholder="ex. 9006613"></label>
+<label>N° ID (bulletin)<input type="text" name="idnum" maxlength="40" value="<?=$e($identity['idnum']??'')?>"></label>
+<label>Commune<input type="text" name="commune" maxlength="80" value="<?=$e($identity['commune']??'')?>" placeholder="ex. Limete"></label>
 </fieldset>
 <fieldset><legend>3. Disposition personnalisée par JASPE</legend>
 <p style="margin:0">Disposition actuelle : <strong><?=$e(SchoolSafeLetterheadStyleText(SchoolSafeLetterheadStyleDecode($identity['style'])))?></strong>. JASPE change seulement la disposition : les informations de l’école, le logo, le pied de page et le contenu restent toujours présents.</p>

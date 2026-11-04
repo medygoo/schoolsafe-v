@@ -40,7 +40,9 @@ if($allowed&&$classCp&&($isStaff||$access['open'])){
     $validated=[];foreach($status as $mp=>$st)if(($st['STATUS']??'')==='valide')$validated[]=(int)$mp;
     $visible=$isStaff?array_merge(array_keys($terms),[$fy]):$validated;
     $draft=$isStaff&&count(array_diff(array_merge(array_keys($terms),[$fy]),$validated))>0;
-    $st=DBGet("SELECT FIRST_NAME,LAST_NAME,CUSTOM_200000000 AS SEXE,CUSTOM_200000004 AS NAISSANCE,CUSTOM_200000012 AS MATRICULE FROM students WHERE STUDENT_ID=".$sid);
+    // Lieu de naissance : champ natif cree par la migration 067 (repere par son titre).
+    $birthplace=(int)(DBGetOne("SELECT ID FROM custom_fields WHERE TITLE LIKE '%fr_FR.utf8:Lieu de naissance%' LIMIT 1")?:0);
+    $st=DBGet("SELECT FIRST_NAME,LAST_NAME,CUSTOM_200000000 AS SEXE,CUSTOM_200000004 AS NAISSANCE,CUSTOM_200000012 AS MATRICULE".($birthplace?",CUSTOM_".$birthplace." AS LIEU":'')." FROM students WHERE STUDENT_ID=".$sid);
     $cls=DBGet("SELECT c.TITLE,(SELECT g.TITLE FROM school_gradelevels g WHERE g.ID=c.GRADE_LEVEL) AS LEVEL,t.FIRST_NAME,t.LAST_NAME FROM course_periods cp JOIN courses c ON c.COURSE_ID=cp.COURSE_ID LEFT JOIN staff t ON t.STAFF_ID=cp.TEACHER_ID WHERE cp.COURSE_PERIOD_ID=".$classCp);
     $html=SchoolSafeBulletinHtml(['identity'=>SchoolSafeLetterheadIdentity($school),'student'=>$st[1]??[],'class_title'=>(string)(($cls[1]['LEVEL']??'')?:ParseMLField((string)($cls[1]['TITLE']??''))),
         'year_label'=>$year.'-'.($year+1),'branches'=>$branches,'calc'=>$calc,'terms'=>$terms,'status'=>$status,'visible'=>$visible,'fy'=>$fy,'sid'=>$sid,'count'=>$calc['count'],

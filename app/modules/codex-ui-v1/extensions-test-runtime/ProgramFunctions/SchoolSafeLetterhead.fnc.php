@@ -19,7 +19,8 @@ function SchoolSafeLetterheadLayouts(): array
 
 function SchoolSafeLetterheadDefaults(): array
 {
-    return ['layout' => 'classique', 'ministry' => 'MINISTÈRE DE L’ÉDUCATION NATIONALE ET NOUVELLE CITOYENNETÉ', 'province' => '', 'style' => ''];
+    return ['layout' => 'classique', 'ministry' => 'MINISTÈRE DE L’ÉDUCATION NATIONALE ET NOUVELLE CITOYENNETÉ', 'province' => '', 'style' => '',
+        'code' => '', 'idnum' => '', 'commune' => ''];
 }
 
 function SchoolSafeLetterheadEscape($text): string
@@ -33,13 +34,17 @@ function SchoolSafeLetterheadSettings(int $school, callable $get): array
     $settings = SchoolSafeLetterheadDefaults();
     if ($school < 1) return $settings;
     $rows = $get("SELECT TITLE,CONFIG_VALUE FROM config WHERE SCHOOL_ID=" . $school
-        . " AND TITLE IN ('SCHOOLSAFE_DOC_LAYOUT','SCHOOLSAFE_DOC_MINISTRY','SCHOOLSAFE_DOC_PROVINCE','SCHOOLSAFE_DOC_STYLE')");
+        . " AND TITLE IN ('SCHOOLSAFE_DOC_LAYOUT','SCHOOLSAFE_DOC_MINISTRY','SCHOOLSAFE_DOC_PROVINCE','SCHOOLSAFE_DOC_STYLE','SCHOOLSAFE_DOC_CODE','SCHOOLSAFE_DOC_IDNUM','SCHOOLSAFE_DOC_COMMUNE')");
     foreach ((array) $rows as $row) {
         $value = trim((string) ($row['CONFIG_VALUE'] ?? ''));
         if ($row['TITLE'] === 'SCHOOLSAFE_DOC_STYLE') $settings['style'] = SchoolSafeLetterheadStyleEncode(SchoolSafeLetterheadStyleDecode($value));
         if ($row['TITLE'] === 'SCHOOLSAFE_DOC_LAYOUT' && isset(SchoolSafeLetterheadLayouts()[$value])) $settings['layout'] = $value;
         if ($row['TITLE'] === 'SCHOOLSAFE_DOC_MINISTRY' && $value !== '') $settings['ministry'] = mb_substr($value, 0, 120);
         if ($row['TITLE'] === 'SCHOOLSAFE_DOC_PROVINCE') $settings['province'] = mb_substr($value, 0, 160);
+        // Bulletin RDC (04/11) : code de l'ecole, N° ID et commune.
+        if ($row['TITLE'] === 'SCHOOLSAFE_DOC_CODE') $settings['code'] = mb_substr($value, 0, 40);
+        if ($row['TITLE'] === 'SCHOOLSAFE_DOC_IDNUM') $settings['idnum'] = mb_substr($value, 0, 40);
+        if ($row['TITLE'] === 'SCHOOLSAFE_DOC_COMMUNE') $settings['commune'] = mb_substr($value, 0, 80);
     }
     return $settings;
 }
@@ -55,6 +60,7 @@ function SchoolSafeLetterheadValidate(array $in): array
         return $value;
     };
     return ['layout' => $layout, 'ministry' => $line($in['ministry'] ?? '', 120, 'Ministère'), 'province' => $line($in['province'] ?? '', 160, 'Province et sous-division'),
+        'code' => $line($in['code'] ?? '', 40, 'Code de l’école'), 'idnum' => $line($in['idnum'] ?? '', 40, 'N° ID'), 'commune' => $line($in['commune'] ?? '', 80, 'Commune'),
         'style' => SchoolSafeLetterheadStyleEncode(SchoolSafeLetterheadStyleDecode((string) ($in['style'] ?? '')))];
 }
 

@@ -128,10 +128,10 @@ function SchoolSafeBulletinHtml(array $v): string
         . '.note{font-size:6.8pt;margin-top:0.8mm;display:flex;justify-content:space-between}.draft{position:fixed;top:40%;left:15%;font-size:60pt;color:rgba(200,0,0,0.12);transform:rotate(-20deg);font-weight:bold}'
         . '</style></head><body>' . (!empty($v['draft']) ? '<div class="draft">PROJET — NON VALIDÉ</div>' : '')
         . '<div class="top"><div class="id"><b>RÉPUBLIQUE DÉMOCRATIQUE DU CONGO</b><div><b>' . $e($id['ministry'] ?? 'MINISTÈRE DE L’ÉDUCATION NATIONALE ET NOUVELLE CITOYENNETÉ') . '</b></div>'
-        . '<div>N° ID : ' . $dots . '</div><div>PROVINCE : ' . $e(($id['province'] ?? '') ?: $dots) . '</div><div>VILLE : ' . $e($city ?: $dots) . '</div><div>COMMUNE : ' . $dots . '</div>'
-        . '<div>ÉCOLE : <b>' . $e($id['school'] ?? '') . '</b></div><div>CODE : ' . $dots . '</div></div>'
+        . '<div>N° ID : ' . $e(($id['idnum'] ?? '') ?: $dots) . '</div><div>PROVINCE : ' . $e(($id['province'] ?? '') ?: $dots) . '</div><div>VILLE : ' . $e($city ?: $dots) . '</div><div>COMMUNE : ' . $e(($id['commune'] ?? '') ?: $dots) . '</div>'
+        . '<div>ÉCOLE : <b>' . $e($id['school'] ?? '') . '</b></div><div>CODE : ' . $e(($id['code'] ?? '') ?: $dots) . '</div></div>'
         . '<div class="id"><div>ÉLÈVE : <b>' . $e(mb_strtoupper(trim(($s['LAST_NAME'] ?? '') . ' ' . ($s['FIRST_NAME'] ?? '')))) . '</b></div><div>SEXE : ' . $e($sexe ?: $dots) . '</div>'
-        . '<div>NÉ(E) À : ' . $dots . ' LE : ' . $e($birthTxt) . '</div><div>CLASSE : <b>' . $e($v['class_title']) . '</b></div><div>N° PERM. : ' . $e(($s['MATRICULE'] ?? '') ?: $dots) . '</div>'
+        . '<div>NÉ(E) À : ' . $e(trim((string) ($s['LIEU'] ?? '')) ?: $dots) . ' LE : ' . $e($birthTxt) . '</div><div>CLASSE : <b>' . $e($v['class_title']) . '</b></div><div>N° PERM. : ' . $e(($s['MATRICULE'] ?? '') ?: $dots) . '</div>'
         . '<div>TITULAIRE : ' . $e($v['titulaire'] ?? '') . '</div></div></div>'
         . '<div class="title">BULLETIN DE LA ' . $e(mb_strtoupper($v['class_title'])) . ' — ANNÉE SCOLAIRE ' . $e($v['year_label']) . '</div>'
         . '<table><thead>' . $head1 . $head2 . '</thead><tbody>' . $body . $foot . '</tbody></table>'
