@@ -103,9 +103,12 @@ function SchoolSafeYearSetupSteps(int $school, int $year, callable $get): array
 
     // 8. Types de devoirs
     $types = $all("SELECT DISTINCT TRIM(TITLE) AS TITLE FROM gradebook_assignment_types WHERE COURSE_ID IN (SELECT COURSE_ID FROM course_periods WHERE SCHOOL_ID=$s AND SYEAR=$y) ORDER BY 1");
+    // Un type sans sorte (devoir, interrogation, examen) ne compte pas pour le rattrapage.
+    $unmapped = (int) ($one("SELECT COUNT(*) AS N FROM gradebook_assignment_types t WHERE t.COURSE_ID IN (SELECT COURSE_ID FROM course_periods WHERE SCHOOL_ID=$s AND SYEAR=$y) AND NOT EXISTS (SELECT 1 FROM schoolsafe_remediation_types r WHERE r.ASSIGNMENT_TYPE_ID=t.ASSIGNMENT_TYPE_ID)")['N'] ?? 0);
     $steps[] = ['id' => 'types', 'title' => 'Types de devoirs', 'url' => 'Modules.php?modname=Grades/MassCreateAssignments.php&assignment_type=new',
-        'state' => $types ? 'ok' : 'todo',
-        'detail' => $types ? count($types) . ' type(s) : ' . implode(', ', array_column($types, 'TITLE')) . '.' : 'Aucun type : aucun devoir ne peut être créé.',
+        'tool' => ['types-devoirs.php', 'Choisir les types'],
+        'state' => $types ? ($unmapped ? 'warn' : 'ok') : 'todo',
+        'detail' => $types ? count($types) . ' type(s) : ' . implode(', ', array_column($types, 'TITLE')) . '.' . ($unmapped ? ' ' . $unmapped . ' sans sorte pour le rattrapage.' : '') : 'Aucun type : aucun devoir ne peut être créé.',
         'help' => 'Devoir, interrogation, examen… créés en une fois pour tous les cours choisis. Ils débloquent les devoirs et servent au rattrapage.'];
 
     // 9. Horaires d'arrivee
@@ -381,6 +384,97 @@ function SchoolSafeScaleApply(int $school, int $year, string $model, bool $linkC
         }
         $exec('COMMIT');
         return ['scale' => $scaleId, 'grades' => $order + 1, 'linked' => $linked];
+    } catch (Throwable $failure) {
+        $exec('ROLLBACK');
+        throw $failure;
+    }
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * Types de devoirs (04/11, valide par le proprietaire) : l'ecole choisit ses types (modeles cochables,
+ * noms modifiables, types libres). Chaque type est cree par cours et par enseignant (comme l'ecran
+ * natif « Creer des devoirs en masse ») et recoit sa sorte pour le rattrapage (devoir, interrogation,
+ * examen) — sans cette sorte, aucun dossier de rattrapage ne peut s'ouvrir.
+ * ------------------------------------------------------------------------------------------- */
+
+function SchoolSafeTypeModels(): array
+{
+    return [
+        ['Devoir', 'homework', true], ['Interrogation', 'quiz', true], ['Examen', 'exam', true],
+        ['Travail pratique', 'homework', false], ['Exercice en classe', 'quiz', false],
+    ];
+}
+
+function SchoolSafeTypeKinds(): array
+{
+    return ['homework' => 'Devoir', 'quiz' => 'Interrogation', 'exam' => 'Examen', '' => 'Hors rattrapage'];
+}
+
+/** Types retenus par l'ecole : [titre, sorte, % de la note de periode ou null]. Titres uniques. */
+function SchoolSafeTypeValidate(array $rows): array
+{
+    $kinds = SchoolSafeTypeKinds(); $clean = []; $seen = [];
+    foreach ($rows as $row) {
+        if (!is_array($row) || empty($row['on'])) continue;
+        $title = trim(preg_replace('/\s+/u', ' ', (string) ($row['title'] ?? '')));
+        if ($title === '') continue;
+        if (mb_strlen($title) > 60) throw new RuntimeException('Nom de type trop long : « ' . mb_substr($title, 0, 20) . '… ».');
+        $key = mb_strtolower($title);
+        if (isset($seen[$key])) throw new RuntimeException('Le type « ' . $title . ' » est choisi deux fois.');
+        $kind = (string) ($row['kind'] ?? '');
+        if (!array_key_exists($kind, $kinds)) throw new RuntimeException('Sorte inconnue pour « ' . $title . ' ».');
+        $raw = trim(str_replace(',', '.', (string) ($row['percent'] ?? '')));
+        if ($raw !== '' && (!is_numeric($raw) || (float) $raw < 0 || (float) $raw > 100)) throw new RuntimeException('Part de la note invalide pour « ' . $title . ' » (0 à 100 %).');
+        $seen[$key] = true;
+        $clean[] = [$title, $kind, $raw === '' ? null : round((float) $raw, 2)];
+    }
+    if (!$clean) throw new RuntimeException('Cochez au moins un type de devoir.');
+    return $clean;
+}
+
+/** Cours de l'ecole qui ont au moins un enseignant : [COURSE_ID => [titre, [enseignants]]]. */
+function SchoolSafeTypeCourses(int $school, int $year, callable $get): array
+{
+    $courses = [];
+    foreach ((array) $get("SELECT DISTINCT cp.COURSE_ID,c.TITLE,cp.TEACHER_ID FROM course_periods cp JOIN courses c ON c.COURSE_ID=cp.COURSE_ID"
+        . " WHERE cp.SCHOOL_ID=$school AND cp.SYEAR=$year AND cp.TEACHER_ID IS NOT NULL ORDER BY c.TITLE") as $r) {
+        $id = (int) $r['COURSE_ID'];
+        if (!isset($courses[$id])) $courses[$id] = [SchoolSafeYearSetupTitle((string) $r['TITLE']), []];
+        $courses[$id][1][] = (int) $r['TEACHER_ID'];
+    }
+    return $courses;
+}
+
+/**
+ * Cree les types pour chaque cours choisi et chacun de ses enseignants ; un type deja present
+ * (meme cours, meme enseignant, meme nom) n'est jamais double. Une seule transaction.
+ */
+function SchoolSafeTypeApply(int $school, int $year, int $mp, int $actor, array $types, array $courseIds, callable $get, callable $exec): array
+{
+    $courses = SchoolSafeTypeCourses($school, $year, $get);
+    $chosen = array_values(array_filter(array_map('intval', $courseIds), static function ($id) use ($courses) { return isset($courses[$id]); }));
+    if (!$chosen) throw new RuntimeException('Choisissez au moins un cours qui a un enseignant.');
+    $q = static function ($v) { return "'" . str_replace("'", "''", (string) $v) . "'"; };
+    $colors = ['homework' => '#2e7d32', 'quiz' => '#1565c0', 'exam' => '#c62828', '' => '#6d4c41'];
+    $created = 0; $kept = 0;
+    $exec('BEGIN');
+    try {
+        foreach ($chosen as $courseId) {
+            foreach (array_unique($courses[$courseId][1]) as $teacher) {
+                foreach ($types as $i => $t) {
+                    $exists = $get("SELECT ASSIGNMENT_TYPE_ID AS ID FROM gradebook_assignment_types WHERE COURSE_ID=$courseId AND STAFF_ID=$teacher AND LOWER(TRIM(TITLE))=LOWER(TRIM(" . $q($t[0]) . '))');
+                    if (is_array($exists) && isset($exists[1])) { $id = (int) $exists[1]['ID']; $kept++; }
+                    else {
+                        $new = $get("INSERT INTO gradebook_assignment_types(STAFF_ID,COURSE_ID,TITLE,FINAL_GRADE_PERCENT,SORT_ORDER,COLOR,CREATED_MP) VALUES($teacher,$courseId," . $q($t[0]) . ','
+                            . ($t[2] === null ? 'NULL' : (float) $t[2] / 100) . ',' . ($i + 1) . ',' . $q($colors[$t[1]]) . ',' . ($mp > 0 ? $mp : 'NULL') . ') RETURNING ASSIGNMENT_TYPE_ID AS ID');
+                        $id = (int) $new[1]['ID']; $created++;
+                    }
+                    if ($t[1] !== '') $exec('INSERT INTO schoolsafe_remediation_types(ASSIGNMENT_TYPE_ID,KIND,CONFIGURED_BY) VALUES(' . $id . ',' . $q($t[1]) . ',' . ($actor > 0 ? $actor : 'NULL') . ') ON CONFLICT (ASSIGNMENT_TYPE_ID) DO NOTHING');
+                }
+            }
+        }
+        $exec('COMMIT');
+        return ['created' => $created, 'kept' => $kept, 'courses' => count($chosen)];
     } catch (Throwable $failure) {
         $exec('ROLLBACK');
         throw $failure;
