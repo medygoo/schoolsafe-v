@@ -296,7 +296,7 @@ function SchoolSafeAttendanceDetection($school, $year, $dateStr, $scopeKind, $sc
             $red = substr((string) $policy['DETECTION_TIME'], 0, 5);
             $message = '⚠️ ' . $first . ' n’est pas arrivé(e) à l’école ce matin (heure limite ' . $red . ' dépassée, aucun passage enregistré).'
                 . "\nSi c’est normal (maladie, absence prévue), prévenez l’école. Sinon, contactez-la rapidement."
-                . "\n— " . (string) ($who[1]['TITLE'] ?? '') . ' · SchoolSafe';
+                . "\n— " . (string) ($who[1]['TITLE'] ?? '') . ' · SchoolSafe · Un enfant protégé, un parent informé';
             $out = SchoolSafeAttendanceEmitNotify(['school_id' => $school, 'syear' => $year,
                 'event_type' => 'absence.detected', 'student_id' => $sid,
                 'dedup_key' => "absence:$school:$dateStr:$sid",

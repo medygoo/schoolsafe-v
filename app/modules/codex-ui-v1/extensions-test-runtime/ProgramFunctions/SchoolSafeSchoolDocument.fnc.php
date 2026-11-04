@@ -34,7 +34,7 @@ function SchoolSafeDocumentFooter( array $identity )
         $product = '<img alt="SchoolSafe" src="data:image/png;base64,' . base64_encode( file_get_contents( 'schoolsafe-logo.png' ) ) . '">';
     }
     return '<footer>' . SchoolSafeDocumentEscape( $address ) . '<br>' . SchoolSafeDocumentEscape( $contact ) .
-        '<a class="product-brand" href="https://shoolsafe.tech/" target="_blank" rel="noopener noreferrer">' . $product . 'SchoolSafe · shoolsafe.tech</a></footer>';
+        '<a class="product-brand" href="https://shoolsafe.tech/" target="_blank" rel="noopener noreferrer">' . $product . 'SchoolSafe · Un enfant protégé, un parent informé · shoolsafe.tech</a></footer>';
 }
 
 function SchoolSafeDocumentIdentityCss()

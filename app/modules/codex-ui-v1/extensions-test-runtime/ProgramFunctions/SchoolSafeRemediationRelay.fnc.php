@@ -73,7 +73,7 @@ function SchoolSafeRemediationRelay(array $db, int $limit = 40): int
             $out = SchoolSafeNotifyEmit(['school_id' => (int) $row['SCHOOL_ID'], 'syear' => (int) $row['SYEAR'], 'student_id' => (int) $row['STUDENT_ID'],
                 'actor_staff_id' => $row['ACTOR_ID'] !== null && $row['ACTOR_ID'] !== '' ? (int) $row['ACTOR_ID'] : null,
                 'event_type' => 'remediation.update', 'dedup_key' => 'remediation:event:' . (int) $row['ID'],
-                'payload' => ['source' => 'remediation', 'title' => $message[0], 'message' => $message[1] . "\n— SchoolSafe"]], $recipients, $db, true);
+                'payload' => ['source' => 'remediation', 'title' => $message[0], 'message' => $message[1] . "\n— SchoolSafe · Un enfant protégé, un parent informé"]], $recipients, $db, true);
             if (is_array($out) && ($out['created'] ?? false)) $sent++;
         } catch (Throwable $failure) {
             error_log('SchoolSafe remediation relay: ' . $failure->getMessage()); // un evenement en echec n'arrete pas les autres
@@ -114,7 +114,7 @@ function SchoolSafeRemediationWatchRelay(array $db, int $limit = 40): int
             if (!$recipients) continue;
             $out = SchoolSafeNotifyEmit(['school_id' => $school, 'syear' => (int) $row['SYEAR'], 'student_id' => (int) $row['STUDENT_ID'],
                 'actor_staff_id' => null, 'event_type' => 'remediation.update', 'dedup_key' => 'remediation:watch:' . (int) $row['ID'],
-                'payload' => ['source' => 'remediation', 'title' => $message[0], 'message' => $message[1] . "\n— SchoolSafe"]], $recipients, $db, true);
+                'payload' => ['source' => 'remediation', 'title' => $message[0], 'message' => $message[1] . "\n— SchoolSafe · Un enfant protégé, un parent informé"]], $recipients, $db, true);
             if (is_array($out) && ($out['created'] ?? false)) $sent++;
         } catch (Throwable $failure) {
             error_log('SchoolSafe remediation watch relay: ' . $failure->getMessage());

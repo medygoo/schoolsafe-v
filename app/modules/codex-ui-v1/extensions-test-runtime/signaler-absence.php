@@ -41,7 +41,7 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
                 $recipients[]=['audience'=>'direction','staff_id'=>(int)$admin['STAFF_ID'],'channel'=>'feed'];
         $who=trim($child['FIRST_NAME'].' '.$child['LAST_NAME']);
         $text='📝 Signalement du parent : '.$who.' — '.mb_strtolower($motives[$motive]).' le '.date('d/m/Y',strtotime($day)).'.'
-            .($note!==''?"\nNote : ".$note:'')."\n— ".$child['SCHOOL_TITLE'].' · SchoolSafe';
+            .($note!==''?"\nNote : ".$note:'')."\n— ".$child['SCHOOL_TITLE'].' · SchoolSafe · Un enfant protégé, un parent informé';
         if($recipients)SchoolSafeNotifyEmit(['school_id'=>$school,'syear'=>$year,'student_id'=>$student,'actor_staff_id'=>$parent,
             'event_type'=>'absence.detected','dedup_key'=>'parent-report:'.$school.':'.$student.':'.$day.':'.$motive,
             'payload'=>['source'=>'parent_report','school_date'=>$day,'title'=>'Signalement du parent','message'=>$text]],$recipients,['get'=>$get,'exec'=>$exec],true);

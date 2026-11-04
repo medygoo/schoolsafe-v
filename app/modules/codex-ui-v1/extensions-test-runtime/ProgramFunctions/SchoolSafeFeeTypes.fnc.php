@@ -217,7 +217,7 @@ function SchoolSafeFeeTypesAlert( int $student, int $school, int $year, array $s
     if ( ! is_array( $who ) || ! isset( $who[1] ) ) return 0;
     $first = trim( (string) $who[1]['FIRST_NAME'] ) ?: 'Votre enfant';
     $full = trim( $who[1]['FIRST_NAME'] . ' ' . $who[1]['LAST_NAME'] );
-    $sign = "\n— " . $who[1]['TITLE'] . ' · SchoolSafe';
+    $sign = "\n— " . $who[1]['TITLE'] . ' · SchoolSafe · Un enfant protégé, un parent informé';
     $week = date( 'o-W' ); $sent = 0;
     foreach ( (array) ( $status['types'] ?? [] ) as $type )
     {
@@ -258,7 +258,7 @@ function SchoolSafeCanteenAlert( int $student, int $school, int $year, int $acto
         'event_type' => 'fee.reminder', 'dedup_key' => 'canteen:' . $school . ':' . $student . ':' . date( 'o-W' ),
         'payload' => [ 'source' => 'canteen', 'title' => 'Compte cantine insuffisant',
             'message' => '🔴 Le compte cantine de ' . $first . ' est insuffisant. Le repas est servi ; merci de recharger le compte auprès de l’économat.'
-                . "\n— " . ( $who[1]['TITLE'] ?? '' ) . ' · SchoolSafe' ] ], $recipients, $db, true );
+                . "\n— " . ( $who[1]['TITLE'] ?? '' ) . ' · SchoolSafe · Un enfant protégé, un parent informé' ] ], $recipients, $db, true );
     return $color;
 }
 

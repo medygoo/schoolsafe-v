@@ -241,7 +241,7 @@ function SchoolSafePickupRefusalAlert(int $refusalId, int $school, int $year, in
         . ($row['CHECKPOINT_TITLE'] ? "
 Point de passage : " . $row['CHECKPOINT_TITLE'] : '')
         . "
-— " . $row['SCHOOL_TITLE'] . ' · SchoolSafe';
+— " . $row['SCHOOL_TITLE'] . ' · SchoolSafe · Un enfant protégé, un parent informé';
     $recipients = SchoolSafeNotifyResolveRecipients('security.p1', $school, $year, $studentId, $db);
     $admins = $get("SELECT STAFF_ID, SCHOOLS FROM staff WHERE PROFILE='admin' AND SYEAR=" . $year);
     foreach ((array) $admins as $admin) {

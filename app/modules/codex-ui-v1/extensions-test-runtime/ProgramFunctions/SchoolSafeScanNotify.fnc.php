@@ -80,7 +80,7 @@ function SchoolSafeScanNotifyRecord(string $type,int $id,array $identity,array $
                 .(!empty($identity['person_role'])?' ('.mb_strtolower($identity['person_role']).')':'').' à '.$hour.'.';
         }
         $message.="\nPoint de passage : ".$row['CHECKPOINT_TITLE'].(($identity['class_name']??'')!==''?' · Classe : '.$identity['class_name']:'')
-            ."\n— ".$row['SCHOOL_TITLE'].' · SchoolSafe';
+            ."\n— ".$row['SCHOOL_TITLE'].' · SchoolSafe · Un enfant protégé, un parent informé';
         if(($identity['recovered']??false)===true)$message.="\nReprise du passage conservé, pas de nouvelle arrivée ou remise. Identité du dossier relue au moment de cette reprise.";
         $payload=['version'=>1,'source'=>'native_scan','record_id'=>$id,'title'=>$title,'message'=>$message];
         $dedup=($type==='security.entry'?'entry:record:':'pickup:record:').$id;

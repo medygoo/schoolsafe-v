@@ -26,7 +26,7 @@ if (!$authenticated) {
 <body>
 <header><a class="brand" href="https://shoolsafe.tech/" target="_blank" rel="noopener noreferrer" title="Ouvrir le site officiel SchoolSafe"><img src="schoolsafe-logo.png" alt="SchoolSafe"><strong>SchoolSafe</strong></a><a href="Modules.php?modname=misc/Portal.php">← Tableau de bord</a></header>
 <main>
-<section><h1>À propos de SchoolSafe</h1><p>SchoolSafe accompagne la vie scolaire en réunissant les informations de l’école, le suivi des élèves et les échanges avec les familles.</p></section>
+<section><h1>À propos de SchoolSafe</h1><p class="ss-slogan"><strong>Un enfant protégé, un parent informé.</strong></p><p>SchoolSafe accompagne la vie scolaire en réunissant les informations de l’école, le suivi des élèves et les échanges avec les familles.</p></section>
 <section class="services" aria-label="Services SchoolSafe">
 <article><h2>Vie scolaire</h2><p>Dossiers des élèves, inscriptions, classes, présences et documents scolaires.</p></article>
 <article><h2>Pédagogie</h2><p>Travaux scolaires, cotes, bulletins, palmarès et suivi du rattrapage.</p></article>

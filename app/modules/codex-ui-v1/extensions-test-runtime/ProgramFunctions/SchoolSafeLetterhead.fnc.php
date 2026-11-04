@@ -247,7 +247,7 @@ function SchoolSafeLetterheadBrand(): string
     $file = __DIR__ . '/../schoolsafe-logo.png';
     $logo = is_file($file) && filesize($file) < 200000
         ? '<img class="ss-brand-logo" alt="SchoolSafe" src="data:image/png;base64,' . base64_encode((string) file_get_contents($file)) . '">' : '';
-    return $logo . '<span><b>SchoolSafe</b> · Un enfant protégé, parent informé</span>';
+    return $logo . '<span><b>SchoolSafe</b> · Un enfant protégé, un parent informé</span>';
 }
 
 /**

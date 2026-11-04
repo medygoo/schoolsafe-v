@@ -107,8 +107,8 @@ function SchoolSafeMailBuild(array $event, array $identity)
     $motto = trim((string) ($identity['motto'] ?? ''));
     $lines[] = '';
     $lines[] = '--';
-    $lines[] = 'SchoolSafe' . ($motto !== '' ? ' — ' . $motto : '');
-    $lines[] = $school;
+    $lines[] = 'SchoolSafe · Un enfant protégé, un parent informé';
+    $lines[] = $school . ($motto !== '' ? ' — ' . $motto : '');
     if ($contactBits) $lines[] = implode(' • ', $contactBits);
     $text = implode("\n", $lines);
 
@@ -123,6 +123,7 @@ function SchoolSafeMailBuild(array $event, array $identity)
         . '<div style="max-width:600px;margin:0 auto;background:#ffffff;">'
         . '<div style="background:#0b3d62;color:#ffffff;padding:16px 20px;">'
         . ($brandLogo !== '' ? '<img src="' . SchoolSafeMailEscape($brandLogo) . '" alt="SchoolSafe" width="120" style="display:block;border:0;"/>' : '<strong style="font-size:18px;">SchoolSafe</strong>')
+        . '<div style="font-size:12px;opacity:.85;font-style:italic;">Un enfant protégé, un parent informé</div>'
         . '<div style="font-size:13px;opacity:.9;">' . SchoolSafeMailEscape($school) . '</div>'
         . '</div><div style="padding:20px;">'
         . '<h1 style="font-size:18px;color:#0b3d62;margin:0 0 12px;">' . SchoolSafeMailEscape($subject) . '</h1>';
