@@ -379,6 +379,28 @@
 				['Users/Preferences.php', 'Mes préférences', 'Langue, thème et affichage de votre compte.']]]
 		]
 	};
+	// Vie et bien-etre (05/11, docs/qualification/FUSION_MENU_VIE_20261105.md) : la cantine, partie repas.
+	menuPlans.care = {
+		admin: [
+			['1 · Préparer les repas', [
+				['Food_Service/Menus.php', 'Types de repas', 'Petit-déjeuner, déjeuner, goûter…'],
+				['Food_Service/MenuItems.php', 'Plats et produits', 'Ce qui est servi, avec son prix.'],
+				['Food_Service/DailyMenus.php', 'Menus du jour', 'Le menu de la cantine, jour par jour.']]],
+			['2 · Servir', [
+				['Food_Service/ServeMenus.php', 'Servir les repas', 'Noter le repas pris par chaque élève, au moment du service.'],
+				['Food_Service/Kiosk.php', 'Écran de la cantine', 'Afficher le menu du jour sur un écran.']]]
+		],
+		teacher: [
+			['Cantine', [
+				['Food_Service/DailyMenus.php', 'Menu du jour', 'Le menu de la cantine, jour par jour.'],
+				['Food_Service/MenuItems.php', 'Plats et prix', 'Ce qui est servi, avec son prix.']]]
+		],
+		parent: [
+			['Cantine', [
+				['Food_Service/DailyMenus.php', 'Menu du jour', 'Le menu de la cantine, jour par jour.'],
+				['Food_Service/MenuItems.php', 'Plats et prix', 'Ce qui est servi, avec son prix.']]]
+		]
+	};
 	function organizeByPlan(entries, plans) {
 		var plan = plans && plans[centralRole];
 		if (!plan) return entries;
