@@ -16,7 +16,8 @@ $ssDirector = $ssManage && (bool) DBGet("SELECT id FROM user_profiles WHERE id="
 $ssEscape = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
 $ssScope = 'r.school_id=' . $ssSchool . ' AND r.syear=' . $ssYear;
 if (User('PROFILE') === 'teacher') {
-    $ssScope .= ' AND EXISTS(SELECT 1 FROM course_periods cp WHERE cp.course_id=r.course_id AND cp.teacher_id=' . $ssUser . ')';
+    // Enseignant de la matiere, ou enseignant a qui la direction a confie une seance (04/11).
+    $ssScope .= ' AND (EXISTS(SELECT 1 FROM course_periods cp WHERE cp.course_id=r.course_id AND cp.teacher_id=' . $ssUser . ') OR EXISTS(SELECT 1 FROM schoolsafe_remediation_sessions se WHERE se.case_id=r.id AND se.teacher_id=' . $ssUser . '))';
 } elseif (User('PROFILE') === 'parent') {
     $ssScope .= ' AND EXISTS(SELECT 1 FROM students_join_users su WHERE su.student_id=r.student_id AND su.staff_id=' . $ssUser . ')';
     require_once __DIR__ . '/PrincipalScope.fnc.php';
@@ -30,6 +31,8 @@ if (User('PROFILE') === 'teacher') {
     $ssScope .= ' AND FALSE';
 }
 $ssMessage = '';
+require_once __DIR__ . '/../ProgramFunctions/SchoolSafeRemediationSettings.fnc.php';
+$ssRule = SchoolSafeRemediationSettings($ssSchool, function ($sql) { return DBGet($sql); });
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf']) || !is_string($_POST['csrf']) || !hash_equals($ssToken, $_POST['csrf'])) {
         http_response_code(403); exit('Requete expiree.');
@@ -78,10 +81,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $objective = DBEscapeString($objective);
         DBQuery('BEGIN');
         $locked = DBGet('SELECT r.id FROM schoolsafe_remediation_cases r WHERE r.id=' . $caseId . ' AND ' . $ssScope . " AND r.status IN ('approved','repeat') FOR UPDATE");
-        $saved = $locked ? DBGet(DBQuery("INSERT INTO schoolsafe_remediation_sessions(case_id,teacher_id,starts_at,duration_minutes,objective) SELECT r.id," . $teacherId . ",'" . $time . "'," . $duration . ",'" . $objective . "' FROM schoolsafe_remediation_cases r WHERE r.id=" . $caseId . ' AND EXISTS(SELECT 1 FROM course_periods cp WHERE cp.course_id=r.course_id AND cp.teacher_id=' . $teacherId . ') RETURNING id')) : [];
+        $saved = $locked ? DBGet(DBQuery("INSERT INTO schoolsafe_remediation_sessions(case_id,teacher_id,starts_at,duration_minutes,objective) SELECT r.id," . $teacherId . ",'" . $time . "'," . $duration . ",'" . $objective . "' FROM schoolsafe_remediation_cases r WHERE r.id=" . $caseId . ' AND EXISTS(SELECT 1 FROM staff st WHERE st.staff_id=' . $teacherId . " AND st.profile='teacher' AND st.syear=r.syear AND (st.schools IS NULL OR st.schools LIKE '%,'||r.school_id||',%'))" . (empty($ssRule['other_teacher']) ? '' : ' AND NOT EXISTS(SELECT 1 FROM course_periods cp WHERE cp.course_id=r.course_id AND cp.teacher_id=' . $teacherId . ')') . ' RETURNING id')) : [];
         if ($saved) DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(" . $caseId . ",'session_scheduled'," . $ssUser . ')');
         DBQuery('COMMIT');
-        $ssMessage = $saved ? 'Seance programmee.' : 'Dossier non valide ou enseignant non titulaire.';
+        $ssMessage = $saved ? 'Séance programmée.' : 'Dossier non valide ou enseignant hors de l’école' . (empty($ssRule['other_teacher']) ? '.' : ' ; l’école exige un autre enseignant que celui de la matière.');
     } elseif ($action === 'update_session' && ($ssManage || $ssCanTeach)) {
         $sessionId = (int) ($_POST['session_id'] ?? 0);
         $status = $_POST['status'] ?? '';
@@ -157,10 +160,9 @@ $ssLabels = ['pending'=>'En attente','approved'=>'Validé','refused'=>'Refusé',
 $ssSessionLabels = ['scheduled'=>'programmée','held'=>'tenue','postponed'=>'reportée','cancelled'=>'annulée'];
 $ssEventLabels = ['detected'=>'Difficulté détectée','approved'=>'Dossier validé','refused'=>'Dossier refusé','session_scheduled'=>'Séance programmée','session_held'=>'Séance tenue','session_postponed'=>'Séance reportée','session_cancelled'=>'Séance annulée','reassessment_passed'=>'Réévaluation : réussi','reassessment_repeat'=>'Réévaluation : à reprendre','reassessment_closed'=>'Dossier clôturé','billing_configured'=>'Tarification définie','payment_recorded'=>'Paiement enregistré, confirmation en attente','payment_confirmed'=>'Paiement confirmé','payment_review_required'=>'Paiement à revérifier'];
 $ssNotifications = DBGet('SELECT n.created_at,e.kind,r.id AS case_id,c.title AS course_title FROM schoolsafe_remediation_notifications n JOIN schoolsafe_remediation_events e ON e.id=n.event_id JOIN schoolsafe_remediation_cases r ON r.id=e.case_id JOIN courses c ON c.course_id=r.course_id WHERE n.recipient_id=' . $ssUser . ' AND ' . $ssScope . ' ORDER BY n.created_at DESC LIMIT 50');
-require_once __DIR__ . '/../ProgramFunctions/SchoolSafeRemediationSettings.fnc.php';
-$ssRule = SchoolSafeRemediationSettings($ssSchool, function ($sql) { return DBGet($sql); });
+$ssWatchScope = User('PROFILE') === 'teacher' ? 'w.school_id=' . $ssSchool . ' AND w.syear=' . $ssYear . ' AND EXISTS(SELECT 1 FROM course_periods cp WHERE cp.course_id=w.course_id AND cp.teacher_id=' . $ssUser . ')' : preg_replace('/\br\./', 'w.', $ssScope);
 // Vigilance (04/11) : au moins 2 notes sous le seuil, sans dossier ; direction et enseignant de la matiere.
-$ssWatch = in_array(User('PROFILE'), ['admin', 'teacher'], true) ? DBGet('SELECT w.*,s.first_name,s.last_name,c.title AS course_title FROM schoolsafe_remediation_watch w JOIN students s ON s.student_id=w.student_id JOIN courses c ON c.course_id=w.course_id WHERE ' . preg_replace('/\br\./', 'w.', $ssScope) . ' AND NOT w.cleared AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_cases x WHERE x.student_id=w.student_id AND x.course_id=w.course_id AND x.school_id=w.school_id AND x.syear=w.syear) ORDER BY w.created_at DESC LIMIT 100') : [];
+$ssWatch = in_array(User('PROFILE'), ['admin', 'teacher'], true) ? DBGet('SELECT w.*,s.first_name,s.last_name,c.title AS course_title FROM schoolsafe_remediation_watch w JOIN students s ON s.student_id=w.student_id JOIN courses c ON c.course_id=w.course_id WHERE ' . $ssWatchScope . ' AND NOT w.cleared AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_cases x WHERE x.student_id=w.student_id AND x.course_id=w.course_id AND x.school_id=w.school_id AND x.syear=w.syear) ORDER BY w.created_at DESC LIMIT 100') : [];
 ?>
 <?php if ($ssNotifications): ?>
 <section aria-label="Mes notifications"><h2>Mes notifications de rattrapage</h2>
@@ -203,10 +205,10 @@ $ssWatch = in_array(User('PROFILE'), ['admin', 'teacher'], true) ? DBGet('SELECT
 </form>
 <?php endif; ?>
 <?php if ($ssManage && $ssActions['session'] && in_array($case['STATUS'], ['approved','repeat'], true)): ?>
-<?php $teachers = DBGet('SELECT DISTINCT st.staff_id,st.first_name,st.last_name FROM course_periods cp JOIN staff st ON st.staff_id=cp.teacher_id WHERE cp.course_id=' . (int) $case['COURSE_ID']); ?>
+<?php $teachers = DBGet('SELECT st.staff_id,st.first_name,st.last_name,EXISTS(SELECT 1 FROM course_periods cp WHERE cp.course_id=' . (int) $case['COURSE_ID'] . ' AND cp.teacher_id=st.staff_id) AS teaches FROM staff st WHERE st.profile=\'teacher\' AND st.syear=' . $ssYear . ' AND (st.schools IS NULL OR st.schools LIKE \'%,' . $ssSchool . ',%\') ORDER BY 4 DESC,st.last_name,st.first_name LIMIT 300'); ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= $ssEscape($ssToken) ?>"><input type="hidden" name="action" value="session"><input type="hidden" name="case_id" value="<?= (int) $case['ID'] ?>">
-<label>Enseignant titulaire<select name="teacher_id" required><?php foreach ($teachers as $teacher): ?><option value="<?= (int) $teacher['STAFF_ID'] ?>"><?= $ssEscape($teacher['FIRST_NAME'] . ' ' . $teacher['LAST_NAME']) ?></option><?php endforeach; ?></select></label>
+<label>Enseignant du rattrapage<select name="teacher_id" required><?php foreach ($teachers as $teacher): $ssTeaches = $teacher['TEACHES'] === 't'; if ($ssTeaches && !empty($ssRule['other_teacher'])) continue; ?><option value="<?= (int) $teacher['STAFF_ID'] ?>"><?= $ssEscape($teacher['FIRST_NAME'] . ' ' . $teacher['LAST_NAME'] . ($ssTeaches ? ' — enseigne et note cette matière' : ' — autre enseignant')) ?></option><?php endforeach; ?></select></label>
 <label>Date et heure<input name="starts_at" type="datetime-local" required></label>
 <label>Dur&eacute;e en minutes<input name="duration" type="number" min="1" max="480" required></label>
 <label>Objectif p&eacute;dagogique<textarea name="objective" maxlength="2000" required></textarea></label><button>Programmer la s&eacute;ance</button>
@@ -239,6 +241,31 @@ $ssWatch = in_array(User('PROFILE'), ['admin', 'teacher'], true) ? DBGet('SELECT
 </article>
 <?php endforeach; ?>
 </section>
+<?php if ($ssManage): ?>
+<?php require_once __DIR__ . '/../ProgramFunctions/SchoolSafeRemediationOverview.fnc.php';
+$ssGet = function ($sql) { return DBGet($sql); };
+$ssView = SchoolSafeRemediationOverview(SchoolSafeRemediationClassRows($ssSchool, $ssYear, $ssGet), SchoolSafeRemediationGiverRows($ssSchool, $ssYear, $ssGet));
+$ssPct = static function ($v) { return $v === null ? '—' : $v . ' %'; }; ?>
+<section aria-labelledby="suivi-title" class="remediation-overview"><h2 id="suivi-title">Suivi de la direction</h2>
+<p>Élèves en difficulté = dossiers + alertes « vigilance ». Quand une classe dépasse 30 % (au moins 3 élèves), regardez d’abord l’enseignement (méthode, programme, appui à l’enseignant) avant le rattrapage.</p>
+<h3>Par classe</h3>
+<?php if (!$ssView['classes']): ?><p>Aucune classe pour cette année.</p><?php else: ?>
+<table><thead><tr><th>Classe</th><th>Enseignant</th><th>Élèves</th><th>Dossiers</th><th>Vigilance</th><th>Taux</th><th>Réussis</th><th></th></tr></thead><tbody>
+<?php foreach ($ssView['classes'] as $row): ?><tr><td><?= $ssEscape($row['title']) ?></td><td><?= $ssEscape($row['teacher']) ?></td><td><?= (int) $row['students'] ?></td><td><?= (int) $row['cases'] ?></td><td><?= (int) $row['watch'] ?></td><td><?= $ssEscape($ssPct($row['rate'])) ?></td><td><?= (int) $row['passed'] ?></td><td><?= $row['alert'] ? '<strong>À examiner : accompagner l’enseignement</strong>' : '' ?></td></tr><?php endforeach; ?>
+</tbody></table><?php endif; ?>
+<h3>Par enseignant de la matière</h3>
+<?php if (!$ssView['teachers']): ?><p>Aucun enseignant.</p><?php else: ?>
+<table><thead><tr><th>Enseignant</th><th>Classes</th><th>Élèves</th><th>Dossiers</th><th>Vigilance</th><th>Taux</th><th>Réussite des dossiers</th><th>Classes à examiner</th></tr></thead><tbody>
+<?php foreach ($ssView['teachers'] as $row): ?><tr><td><?= $ssEscape($row['teacher']) ?></td><td><?= (int) $row['classes'] ?></td><td><?= (int) $row['students'] ?></td><td><?= (int) $row['cases'] ?></td><td><?= (int) $row['watch'] ?></td><td><?= $ssEscape($ssPct($row['rate'])) ?></td><td><?= $ssEscape($ssPct($row['success'])) ?></td><td><?= (int) $row['alerts'] ?></td></tr><?php endforeach; ?>
+</tbody></table><?php endif; ?>
+<h3>Qui donne le rattrapage</h3>
+<?php if (!$ssView['givers']): ?><p>Aucune séance programmée pour l’instant.</p><?php else: ?>
+<table><thead><tr><th>Enseignant</th><th>Dossiers suivis</th><th>Séances</th><th>Tenues</th><th>Dans sa propre matière</th></tr></thead><tbody>
+<?php foreach ($ssView['givers'] as $row): ?><tr><td><?= $ssEscape($row['teacher']) ?></td><td><?= (int) $row['cases'] ?></td><td><?= (int) $row['sessions'] ?></td><td><?= (int) $row['held'] ?></td><td><?= (int) $row['own'] ?><?= $row['own'] > 0 ? ' (enseigne et note aussi la matière)' : '' ?></td></tr><?php endforeach; ?>
+</tbody></table><?php endif; ?>
+<p><?= $ssEscape(SchoolSafeRemediationRuleText($ssRule)['teacher']) ?></p>
+</section>
+<?php endif; ?>
 <?php if ($ssManage && $ssActions['map']): ?>
 <section aria-labelledby="categories-title"><h2 id="categories-title">Types d'&eacute;valuation SchoolSafe</h2>
 <?php if (!$ssTypes): ?><p>Aucune cat&eacute;gorie d'&eacute;valuation n'est encore enregistr&eacute;e dans SchoolSafe pour cette &eacute;cole et cette ann&eacute;e.</p><?php endif; ?>

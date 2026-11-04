@@ -8,14 +8,14 @@
 function SchoolSafeRemediationDefaults(): array
 {
     return ['threshold_percent' => 50.0, 'failures' => 3, 'min_kinds' => 2, 'vigilance' => true,
-        'school_share_percent' => 40.0, 'pass_percent' => 50.0, 'pass_gain_points' => null, 'saved' => false];
+        'school_share_percent' => 40.0, 'pass_percent' => 50.0, 'pass_gain_points' => null, 'other_teacher' => false, 'saved' => false];
 }
 
 function SchoolSafeRemediationSettings(int $school, callable $get): array
 {
     $settings = SchoolSafeRemediationDefaults();
     if ($school < 1) return $settings;
-    $rows = $get('SELECT THRESHOLD_PERCENT,FAILURES,MIN_KINDS,VIGILANCE,SCHOOL_SHARE_PERCENT,PASS_PERCENT,PASS_GAIN_POINTS'
+    $rows = $get('SELECT THRESHOLD_PERCENT,FAILURES,MIN_KINDS,VIGILANCE,SCHOOL_SHARE_PERCENT,PASS_PERCENT,PASS_GAIN_POINTS,OTHER_TEACHER'
         . ' FROM schoolsafe_remediation_settings WHERE SCHOOL_ID=' . $school);
     if (!is_array($rows) || !isset($rows[1])) return $settings;
     $row = $rows[1];
@@ -23,7 +23,8 @@ function SchoolSafeRemediationSettings(int $school, callable $get): array
     return ['threshold_percent' => (float) $row['THRESHOLD_PERCENT'], 'failures' => (int) $row['FAILURES'],
         'min_kinds' => (int) $row['MIN_KINDS'], 'vigilance' => in_array($row['VIGILANCE'], ['t', true, 1, '1'], true),
         'school_share_percent' => (float) $row['SCHOOL_SHARE_PERCENT'], 'pass_percent' => (float) $row['PASS_PERCENT'],
-        'pass_gain_points' => $gain === null || $gain === '' ? null : (float) $gain, 'saved' => true];
+        'pass_gain_points' => $gain === null || $gain === '' ? null : (float) $gain,
+        'other_teacher' => in_array($row['OTHER_TEACHER'] ?? 'f', ['t', true, 1, '1'], true), 'saved' => true];
 }
 
 /** Valide le formulaire ; message en francais en cas d'erreur. */
@@ -45,6 +46,7 @@ function SchoolSafeRemediationSettingsValidate(array $in): array
     $s['pass_percent'] = $number($in['pass_percent'] ?? '', 'Note de réussite', 1, 100);
     $gain = trim((string) ($in['pass_gain_points'] ?? ''));
     $s['pass_gain_points'] = $gain === '' ? null : $number($gain, 'Progression', 1, 100);
+    $s['other_teacher'] = !empty($in['other_teacher']);
     return $s;
 }
 
@@ -52,12 +54,12 @@ function SchoolSafeRemediationSettingsSave(int $school, int $actor, array $s, ca
 {
     if ($school < 1 || $actor < 1) throw new RuntimeException('Contexte de l’école invalide.');
     $n = static function ($v) { return $v === null ? 'NULL' : number_format((float) $v, 2, '.', ''); };
-    $exec('INSERT INTO schoolsafe_remediation_settings(school_id,threshold_percent,failures,min_kinds,vigilance,school_share_percent,pass_percent,pass_gain_points,updated_by,updated_at)'
+    $exec('INSERT INTO schoolsafe_remediation_settings(school_id,threshold_percent,failures,min_kinds,vigilance,school_share_percent,pass_percent,pass_gain_points,other_teacher,updated_by,updated_at)'
         . ' VALUES(' . $school . ',' . $n($s['threshold_percent']) . ',' . (int) $s['failures'] . ',' . (int) $s['min_kinds'] . ',' . ($s['vigilance'] ? 'true' : 'false')
-        . ',' . $n($s['school_share_percent']) . ',' . $n($s['pass_percent']) . ',' . $n($s['pass_gain_points']) . ',' . $actor . ',now())'
+        . ',' . $n($s['school_share_percent']) . ',' . $n($s['pass_percent']) . ',' . $n($s['pass_gain_points']) . ',' . (!empty($s['other_teacher']) ? 'true' : 'false') . ',' . $actor . ',now())'
         . ' ON CONFLICT(school_id) DO UPDATE SET threshold_percent=EXCLUDED.threshold_percent,failures=EXCLUDED.failures,min_kinds=EXCLUDED.min_kinds,'
         . 'vigilance=EXCLUDED.vigilance,school_share_percent=EXCLUDED.school_share_percent,pass_percent=EXCLUDED.pass_percent,'
-        . 'pass_gain_points=EXCLUDED.pass_gain_points,updated_by=EXCLUDED.updated_by,updated_at=now()');
+        . 'pass_gain_points=EXCLUDED.pass_gain_points,other_teacher=EXCLUDED.other_teacher,updated_by=EXCLUDED.updated_by,updated_at=now()');
 }
 
 function SchoolSafeRemediationPct(float $value): string
@@ -75,6 +77,7 @@ function SchoolSafeRemediationRuleText(array $s): array
             . ' dans une même matière, ' . ($kinds[(int) $s['min_kinds']] ?? $kinds[2]) . '.',
         'vigilance' => $s['vigilance'] ? 'Alerte « vigilance » dès 2 évaluations sous le seuil : l’enseignant la voit ici, le parent est prévenu.' : 'Alerte « vigilance » désactivée.',
         'share' => 'Partage des paiements : ' . SchoolSafeRemediationPct($s['school_share_percent']) . ' pour l’école, ' . SchoolSafeRemediationPct(100 - $s['school_share_percent']) . ' pour l’enseignant.',
+        'teacher' => !empty($s['other_teacher']) ? 'Le rattrapage est donné par un autre enseignant que celui qui enseigne la matière.' : 'Le rattrapage peut être donné par l’enseignant de la matière ou par un autre enseignant de l’école.',
         'pass' => 'Réussite conseillée : ' . SchoolSafeRemediationPct($s['pass_percent']) . ' ou plus à la nouvelle évaluation' . $gain . '.',
     ];
 }
@@ -86,4 +89,10 @@ function SchoolSafeRemediationPassVerdict(array $s, float $points, float $maximu
     $percent = $points * 100 / $maximum;
     if ($percent >= (float) $s['pass_percent']) return true;
     return $s['pass_gain_points'] !== null && $before !== null && $percent - $before >= (float) $s['pass_gain_points'];
+}
+
+/** Refus si l'ecole exige un autre enseignant et que celui choisi enseigne la matiere. */
+function SchoolSafeRemediationTeacherAllowed(array $s, bool $teachesCourse): bool
+{
+    return empty($s['other_teacher']) || !$teachesCourse;
 }

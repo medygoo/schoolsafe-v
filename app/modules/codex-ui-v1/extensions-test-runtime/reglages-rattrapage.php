@@ -14,7 +14,7 @@ $get=function($sql){return DBGet($sql);};
 $s=$allowed?SchoolSafeRemediationSettings($school,$get):SchoolSafeRemediationDefaults();
 $form=$s;$message='';$error='';
 if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
-    $form=array_merge($s,array_map(static function($v){return is_string($v)?$v:'';},$_POST));$form['vigilance']=!empty($_POST['vigilance']);
+    $form=array_merge($s,array_map(static function($v){return is_string($v)?$v:'';},$_POST));$form['vigilance']=!empty($_POST['vigilance']);$form['other_teacher']=!empty($_POST['other_teacher']);
     try{
         if(!is_string($_POST['csrf']??null)||!hash_equals($csrf,$_POST['csrf']))throw new RuntimeException('Session expirée : rechargez la page.');
         $valid=SchoolSafeRemediationSettingsValidate($_POST);
@@ -40,7 +40,7 @@ $text=SchoolSafeRemediationRuleText($s);
 <body><header><strong>SchoolSafe</strong><a href="rattrapage.php">Rattrapage</a></header>
 <main class="ss-rr"><h1>Réglages du rattrapage</h1>
 <div class="ss-legend"><strong><?=$s['saved']?'Règles actuelles de l’école':'Règles d’origine (aucun réglage enregistré)'?></strong><br>
-<?=$e($text['detection'])?><br><?=$e($text['vigilance'])?><br><?=$e($text['share'])?><br><?=$e($text['pass'])?></div>
+<?=$e($text['detection'])?><br><?=$e($text['vigilance'])?><br><?=$e($text['share'])?><br><?=$e($text['teacher'])?><br><?=$e($text['pass'])?></div>
 <?php if($message):?><p class="ss-ok" role="status"><?=$e($message)?></p><?php endif;?>
 <?php if($error):?><p class="ss-ko" role="alert"><?=$e($error)?></p><?php endif;?>
 <form method="post"><input type="hidden" name="csrf" value="<?=$e($csrf)?>">
@@ -56,7 +56,11 @@ $text=SchoolSafeRemediationRuleText($s);
 <fieldset><legend>3. Partage des paiements</legend>
 <label>Part de l’école (en %)<input type="text" inputmode="decimal" name="school_share_percent" value="<?=$e($num($form['school_share_percent']))?>" required><small>Le reste revient à l’enseignant. Exemple : 40 → 40 % école, 60 % enseignant.</small></label>
 </fieldset>
-<fieldset><legend>4. Réussite du rattrapage</legend>
+<fieldset><legend>4. Qui donne le rattrapage</legend>
+<label class="inline"><input type="checkbox" name="other_teacher" value="1"<?=!empty($form['other_teacher'])?' checked':''?>> Exiger un autre enseignant que celui qui enseigne et note la matière</label>
+<small>Évite qu’un parent soupçonne un conflit d’intérêt. Décoché : la direction choisit librement parmi les enseignants de l’école.</small>
+</fieldset>
+<fieldset><legend>5. Réussite du rattrapage</legend>
 <label>Note de réussite à la nouvelle évaluation (en %)<input type="text" inputmode="decimal" name="pass_percent" value="<?=$e($num($form['pass_percent']))?>" required></label>
 <label>Ou progression d’au moins (en points de %, facultatif)<input type="text" inputmode="decimal" name="pass_gain_points" value="<?=$e($num($form['pass_gain_points']))?>" placeholder="ex. 15"><small>Comparée à la moyenne des notes du dossier. Laissez vide pour ne pas l’utiliser.</small></label>
 <small>C’est une indication : la Direction pédagogique garde la décision.</small>
