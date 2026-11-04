@@ -240,6 +240,49 @@
 			]
 		}
 	};
+	// Securite et controle (05/11, docs/qualification/FUSION_MENU_SECURITE_20261105.md).
+	// Une ligne dont le nom vaut null sort du menu : la page reste joignable par son adresse.
+	menuPlans.security = {
+		admin: [
+			['1 · Contrôle à l’entrée', [
+				['SchoolSafe/ScanVerify.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération, frais.'],
+				['SchoolSafe/ScanArrival.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération, frais.'],
+				['SchoolSafe/ScanPickup.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération, frais.'],
+				['SchoolSafe/ScanFees.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération, frais.'],
+				['Entry_Exit/Records.php', 'Entrées et sorties', 'Qui est entré ou sorti de l’école, et à quelle heure.'],
+				['Entry_Exit/AddRecords.php', 'Pointage manuel', 'Noter une entrée ou une sortie sans carte.']]],
+			['2 · Présences et absences', [
+				['Attendance/Administration.php', 'Contrôle des présences', 'Voir et corriger les présences d’une journée, classe par classe.'],
+				['Attendance/AddAbsences.php', 'Ajouter des absences', 'Marquer absents plusieurs élèves à la fois (sortie, maladie…).'],
+				['Attendance/FixDailyAttendance.php', null, ''],
+				['Attendance/DuplicateAttendance.php', null, '']]],
+			['3 · Discipline', [
+				['Discipline/MakeReferral.php', 'Signaler un incident', 'Noter un incident de discipline pour un élève.'],
+				['Discipline/Referrals.php', 'Incidents', 'Tous les incidents signalés, élève par élève.']]],
+			['4 · Historique', [
+				['School_Setup/AccessLog.php', 'Journal des connexions', 'Qui s’est connecté à SchoolSafe, et quand.']]],
+			['5 · Réglages', [
+				['Attendance/AttendanceCodes.php', 'Codes de présence', 'Présent, absent, retard… et leur effet sur la journée.'],
+				['Discipline/DisciplineForm.php', 'Formulaire d’incident', 'Les informations demandées pour chaque incident.']]]
+		],
+		teacher: [
+			['Contrôle à l’entrée', [
+				['SchoolSafe/ScanVerify.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération.'],
+				['SchoolSafe/ScanArrival.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération.'],
+				['SchoolSafe/ScanPickup.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération.']]],
+			['Présences', [
+				['Attendance/TakeAttendance.php', null, ''],
+				['Attendance/DailySummary.php', 'Tableau des présences', 'Les présences de vos élèves, jour par jour. L’appel se fait dans Ma journée.']]],
+			['Discipline', [
+				['Discipline/MakeReferral.php', 'Signaler un incident', 'Noter un incident de discipline pour un élève.'],
+				['Discipline/Referrals.php', 'Incidents', 'Les incidents signalés pour vos élèves.']]]
+		],
+		parent: [
+			['Mon enfant', [
+				['Attendance/DailySummary.php', 'Présences de mon enfant', 'Présent, absent ou en retard, jour par jour.'],
+				['Discipline/Referrals.php', 'Incidents de mon enfant', 'Les incidents signalés par l’école.']]]
+		]
+	};
 	function organizeByPlan(entries, plans) {
 		var plan = plans && plans[centralRole];
 		if (!plan) return entries;
@@ -249,19 +292,21 @@
 				rules[row[0]] = {heading: step[0], title: row[1], hint: row[2], rank: s * 100 + r};
 			});
 		});
-		var matched = 0;
+		var matched = 0, kept = [];
 		entries.forEach(function (entry, index) {
 			var anchor = entry.item.querySelector('a[href]');
 			var rule = anchor && rules[menuKey(anchor)];
 			if (rule) {
 				matched++;
+				if (rule.title === null) return;
 				entry.heading = rule.heading;
 				entry.planRank = rule.rank;
 				decorateMenuLink(anchor, rule.title, rule.hint);
 			} else entry.planRank = 10000 + index;
+			kept.push(entry);
 		});
 		if (!matched) { entries.forEach(function (entry) { delete entry.planRank; }); return entries; }
-		return entries.sort(function (a, b) { return a.planRank - b.planRank; });
+		return kept.sort(function (a, b) { return a.planRank - b.planRank; });
 	}
 	function organizeMenu() {
 		var menu = document.querySelector('#menu .adminmenu');
