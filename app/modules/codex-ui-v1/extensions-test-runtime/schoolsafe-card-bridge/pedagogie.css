@@ -65,6 +65,21 @@ p[role=status].ss-ok,p[role=status].br-ok,p[role=status].nb-ok,p[role=status].sb
 p[role=alert]{background:#fdeeee;border:1px solid #f0c8c0;border-radius:10px;padding:10px 12px;margin:0}
 .ss-sub,.pf-sub,.br-sub,.nb-sub,.sb-sub,.bu-sub{color:var(--pg-muted)}
 
+/* Mise en page commune (04/11, demande du proprietaire : une bonne mise en page partout).
+   Un tableau large defile dans sa largeur au lieu de couper les mots lettre par lettre ;
+   les cadres de formulaire retrecissent avec l'ecran ; une seule taille de sous-titre. */
+html body main :has(> table){overflow-x:auto;-webkit-overflow-scrolling:touch}
+html body main table th,html body main table td{overflow-wrap:normal;word-break:normal;hyphens:none}
+html body main table th{white-space:nowrap}
+html body main fieldset{min-width:0}
+/* Aucun bloc ne s'elargit au-dela de l'ecran a cause de son contenu (tableau, liste, longue option). */
+html body main :is(section,form,div,fieldset,article,label,p){min-width:0}
+html body main :is(select,input,textarea){max-width:100%}
+html body main label{grid-template-columns:minmax(0,1fr)}
+html body main [class*=chips],html body main [class*=-tabs]{flex-wrap:wrap}
+html body main h2{font-size:19px;line-height:1.3;margin:0 0 8px}
+html body main h3{font-size:16px;line-height:1.3;margin:0 0 6px}
+
 /* Telephone */
 @media (max-width:640px){
   html body header.pg-head{padding:8px 12px;gap:8px}

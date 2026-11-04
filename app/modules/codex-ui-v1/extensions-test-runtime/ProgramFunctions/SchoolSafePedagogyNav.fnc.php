@@ -96,5 +96,5 @@ function SchoolSafePedagogyHeader(string $page, int $child = 0): string
 /** Feuille de style commune (chargee en dernier pour harmoniser toutes les pages). */
 function SchoolSafePedagogyStyle(): string
 {
-    return '<link rel="stylesheet" href="schoolsafe-card-bridge/pedagogie.css?v=3">';
+    return '<link rel="stylesheet" href="schoolsafe-card-bridge/pedagogie.css?v=4">';
 }
