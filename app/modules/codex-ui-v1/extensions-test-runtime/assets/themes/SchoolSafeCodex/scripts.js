@@ -332,6 +332,28 @@
 				['Food_Service/Statements.php', 'Relevé cantine', 'Le détail des repas et recharges.']]]
 		]
 	};
+	// Communication (05/11, docs/qualification/FUSION_MENU_COMMUNICATION_20261105.md).
+	menuPlans.communication = {
+		admin: [
+			['1 · Annonces', [
+				['School_Setup/PortalNotes.php', 'Annonces du tableau de bord', 'Un message affiché à l’accueil des parents et du personnel.'],
+				['School_Setup/PortalPolls.php', 'Sondages', 'Poser une question aux parents ou au personnel.'],
+				// Reinitialise les mots de passe des parents ; aucun parent n'a d'e-mail.
+				['Custom/NotifyParents.php', null, ''],
+				// Boite de reception du parent : impasse pour la direction.
+				['SchoolSafe/Notifications.php', null, '']]]
+		],
+		teacher: [
+			['Annonces', [
+				// Boite de reception du parent (« compte parent requis ») : impasse pour l'enseignant aussi.
+				['SchoolSafe/Notifications.php', null, '']]]
+		],
+		parent: [
+			['Mon enfant', [
+				['SchoolSafe/Notifications.php', 'Messages de l’école', 'Devoirs, notes, absences et annonces reçus.'],
+				['signaler-absence.php', 'Signaler une absence', 'Prévenir l’école d’une absence ou d’un retard.']]]
+		]
+	};
 	function organizeByPlan(entries, plans) {
 		var plan = plans && plans[centralRole];
 		if (!plan) return entries;
