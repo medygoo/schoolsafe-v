@@ -26,6 +26,10 @@ if (User('PROFILE') === 'admin' && AllowEdit('School_Setup/Configuration.php')) 
     // Archives de l'ecole (04/11) : documents deposes par photo ou PDF, classes et retrouvables.
     $add('school', 'Organisation scolaire', 'Archives de l’école', 'archives.php');
 }
+// Suivi pedagogique (04/11, lot 9) : direction avec la configuration de l'ecole ou les bulletins.
+if (User('PROFILE') === 'admin' && (AllowEdit('School_Setup/Configuration.php') || AllowUse('Grades/ReportCards.php'))) {
+    $add('pedagogy', 'Organisation pédagogique', 'Suivi pédagogique', 'suivi-pedagogique.php');
+}
 // Convocations et courriers (04/11) : modeles remplis, registre numerote, impression, envoi aux parents.
 if (User('PROFILE') === 'admin' && AllowUse('Students/Student.php')) {
     $add('communication', 'Courriers', 'Convocations et courriers', 'courriers.php');

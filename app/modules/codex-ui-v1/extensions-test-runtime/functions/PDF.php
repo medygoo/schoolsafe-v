@@ -195,6 +195,77 @@ function PDFStop( $handle )
 		return $path . DIRECTORY_SEPARATOR . $filename . '.html';
 	}
 
+	// SchoolSafe (04/11) : moteur Chromium. Les options de wkhtmltopdf ne lui conviennent pas (PDF natifs
+	// casses) : Chromium imprime la page lui-meme, ressources lues sur le disque (aucun reseau), format,
+	// orientation et marges natifs. Les en-tetes et pieds HTML propres a wkhtmltopdf ne sont pas repris.
+	if ( stripos( basename( (string) $wkhtmltopdfPath ), 'chromium' ) !== false )
+	{
+		require_once 'ProgramFunctions/SchoolSafeSchoolDocument.fnc.php';
+
+		$page_size = preg_match( '/^[A-Za-z0-9]{2,10}$/', (string) Preferences( 'PAGE_SIZE' ) ) ? Preferences( 'PAGE_SIZE' ) : 'A4';
+
+		$landscape = ! empty( $handle['orientation'] ) && $handle['orientation'] === 'landscape';
+
+		$page_margins = [];
+
+		$margin_mm = [];
+
+		foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side )
+		{
+			$margin = $handle['margins'][ $side ] ?? null;
+
+			$margin_mm[ $side ] = is_numeric( $margin ) ? (float) $margin : 10.0;
+
+			$page_margins[] = $margin_mm[ $side ] . 'mm';
+		}
+
+		// Largeur du gabarit natif (994 px portrait, 1405 px paysage) ramenee a la largeur imprimable.
+		$page_width_mm = strtoupper( $page_size ) === 'LETTER' ? ( $landscape ? 279.4 : 215.9 ) : ( $landscape ? 297.0 : 210.0 );
+
+		$page_zoom = round( ( $page_width_mm - $margin_mm['left'] - $margin_mm['right'] ) * 96 / 25.4 / ( $landscape ? 1405 : 994 ), 3 );
+
+		$chromium_html = str_replace(
+			'<base href="' . RosarioURL() . '" />',
+			'<base href="file://' . str_replace( '\\', '/', getcwd() ) . '/" />',
+			$html
+		);
+
+		$chromium_html = preg_replace(
+			'/<\/head>/',
+			'<style>@page{size:' . $page_size . ( $landscape ? ' landscape' : '' ) . ';margin:' . implode( ' ', $page_margins ) . '}html,body{height:auto!important;min-height:0!important}body{padding:0!important}.wkhtmltopdf-body-wrapper{zoom:' . $page_zoom . '}</style></head>',
+			$chromium_html,
+			1
+		);
+
+		try
+		{
+			$pdf_bytes = SchoolSafeDocumentPdf( $chromium_html );
+		}
+		catch ( Throwable $error )
+		{
+			echo ErrorMessage( [ 'La génération du PDF est momentanément indisponible.' ] );
+
+			return '';
+		}
+
+		if ( $handle['mode'] === 3 ) // Save.
+		{
+			$full_path = $path . DIRECTORY_SEPARATOR . $filename . '.pdf';
+
+			file_put_contents( $full_path, $pdf_bytes );
+
+			return $full_path;
+		}
+
+		header( 'Content-Type: application/pdf' );
+		header( 'Content-Disposition: ' . ( $handle['mode'] ? 'inline' : 'attachment' ) . '; filename="' . preg_replace( '/["\\\\\r\n]/', '', $filename ) . '.pdf"' );
+		header( 'Content-Length: ' . strlen( $pdf_bytes ) );
+
+		echo $pdf_bytes;
+
+		return '';
+	}
+
 	// Set wkhtmltopdf options.
 	$pdf_options = [
 		'title' => $page_title,

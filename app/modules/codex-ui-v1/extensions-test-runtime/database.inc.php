@@ -72,6 +72,13 @@ function db_start( $show_error = true )
 		}
 
 		$db_connection = pg_connect( $connectstring );
+
+		// SchoolSafe (04/11, lot 9) : compte connecte, lu par le journal des modifications de notes.
+		if ( $db_connection
+			&& ! empty( $_SESSION['STAFF_ID'] ) )
+		{
+			pg_query_params( $db_connection, "SELECT set_config('schoolsafe.actor', $1, false)", [ (string) (int) $_SESSION['STAFF_ID'] ] );
+		}
 	}
 
 	// Error code for both.
