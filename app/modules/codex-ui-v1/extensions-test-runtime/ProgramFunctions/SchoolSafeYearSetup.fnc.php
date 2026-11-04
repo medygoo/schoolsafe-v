@@ -91,10 +91,14 @@ function SchoolSafeYearSetupSteps(int $school, int $year, callable $get): array
     // Bareme americain d'installation (A+ a F, moyenne sur 4, reussite a 60 %) : a remplacer par celui de l'ecole.
     $letters = array_column($all("SELECT TITLE FROM report_card_grades WHERE SCHOOL_ID=$s AND SYEAR=$y"), 'TITLE');
     $american = in_array('A+', $letters, true) && in_array('F', $letters, true);
+    // Une classe sans bareme n'envoie aucune note au bulletin.
+    $noScale = (int) ($one("SELECT COUNT(*) AS N FROM course_periods WHERE SCHOOL_ID=$s AND SYEAR=$y AND GRADE_SCALE_ID IS NULL")['N'] ?? 0);
     $steps[] = ['id' => 'baremes', 'title' => 'Barèmes de notation', 'url' => 'Modules.php?modname=Grades/ReportCardGrades.php',
-        'state' => !$scales ? 'todo' : ($enScales || $american ? 'warn' : 'ok'),
+        'tool' => ['bareme-annee.php', 'Choisir le barème'],
+        'state' => !$scales ? 'todo' : ($enScales || $american || $noScale ? 'warn' : 'ok'),
         'detail' => !$scales ? 'Aucun barème.' : count($scales) . ' barème(s) : ' . implode(', ', array_column($scales, 'TITLE')) . ($enScales ? ' (nom anglais à traduire)' : '')
-            . ($american ? ' — barème américain d’installation (A+ à F, réussite à 60 %) : choisissez celui de votre école.' : '.'),
+            . ($american ? ' — barème américain d’installation (A+ à F, réussite à 60 %) : choisissez celui de votre école.' : '.')
+            . ($noScale ? ' ' . $noScale . ' classe(s) sans barème : leurs notes n’iront pas au bulletin.' : ''),
         'help' => 'Échelle des notes (sur 10, sur 20, en pourcentage) et mentions. Les bulletins et le rattrapage (moins de 50 %) l’utilisent.'];
 
     // 8. Types de devoirs
@@ -279,6 +283,74 @@ function SchoolSafeYearApply(int $school, int $year, array $plan, callable $get,
         }
         $exec('COMMIT');
         return $summary;
+    } catch (Throwable $failure) {
+        $exec('ROLLBACK');
+        throw $failure;
+    }
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * Choix du bareme (04/11, valide par le proprietaire) : l'ecole choisit un modele ou regle le sien
+ * dans l'ecran natif. Une mention = [code, libelle, seuil en %, valeur pour la moyenne].
+ * ------------------------------------------------------------------------------------------- */
+
+function SchoolSafeScaleModels(): array
+{
+    return [
+        'pourcentage' => ['label' => 'Pourcentage avec mentions', 'desc' => 'Usage RDC : réussite à 50 %, mentions de Passable à Élite.',
+            'scale' => 100, 'passing' => 50, 'grades' => [
+                ['E', 'Élite', 90, 95], ['GD', 'Grande distinction', 80, 85], ['D', 'Distinction', 70, 75],
+                ['S', 'Satisfaction', 60, 65], ['P', 'Passable', 50, 55], ['ECH', 'Échec', 0, 25]]],
+        'sur20' => ['label' => 'Sur 20', 'desc' => 'Réussite à 10/20 : Très bien, Bien, Assez bien, Passable, Insuffisant.',
+            'scale' => 20, 'passing' => 10, 'grades' => [
+                ['TB', 'Très bien (16 à 20/20)', 80, 18], ['B', 'Bien (14 à 15,9/20)', 70, 15], ['AB', 'Assez bien (12 à 13,9/20)', 60, 13],
+                ['P', 'Passable (10 à 11,9/20)', 50, 11], ['I', 'Insuffisant (moins de 10/20)', 0, 5]]],
+        'sur10' => ['label' => 'Sur 10', 'desc' => 'Réussite à 5/10 : Très bien, Bien, Assez bien, Passable, Insuffisant.',
+            'scale' => 10, 'passing' => 5, 'grades' => [
+                ['TB', 'Très bien (8 à 10/10)', 80, 9], ['B', 'Bien (7 à 7,9/10)', 70, 7.5], ['AB', 'Assez bien (6 à 6,9/10)', 60, 6.5],
+                ['P', 'Passable (5 à 5,9/10)', 50, 5.5], ['I', 'Insuffisant (moins de 5/10)', 0, 2.5]]],
+    ];
+}
+
+/**
+ * Applique le modele : met a jour le bareme existant (ou en cree un), remplace ses mentions, et
+ * relie eventuellement les classes sans bareme. Refuse si des notes de bulletin utilisent deja ses
+ * mentions (rien n'est alors modifie). Une seule transaction.
+ */
+function SchoolSafeScaleApply(int $school, int $year, string $model, bool $linkClasses, callable $get, callable $exec): array
+{
+    $models = SchoolSafeScaleModels();
+    if (!isset($models[$model]) || $school < 1 || $year < 1) throw new RuntimeException('Modèle de barème inconnu.');
+    $m = $models[$model];
+    $q = static function ($v) { return "'" . str_replace("'", "''", (string) $v) . "'"; };
+    $exec('BEGIN');
+    try {
+        $scales = (array) $get("SELECT ID FROM report_card_grade_scales WHERE SCHOOL_ID=$school AND SYEAR=$year ORDER BY SORT_ORDER,ID FOR UPDATE");
+        if (isset($scales[1])) {
+            $scaleId = (int) $scales[1]['ID'];
+            $used = (int) ($get("SELECT COUNT(*) AS N FROM student_report_card_grades WHERE REPORT_CARD_GRADE_ID IN (SELECT ID FROM report_card_grades WHERE GRADE_SCALE_ID=$scaleId)")[1]['N'] ?? 0);
+            if ($used > 0) throw new RuntimeException('Des notes de bulletin utilisent déjà ce barème (' . $used . ') : rien n’a été modifié. Ajustez-le dans l’écran natif.');
+            $exec('UPDATE report_card_grade_scales SET TITLE=' . $q($m['label']) . ',COMMENT=' . $q($m['desc']) . ',GP_SCALE=' . (float) $m['scale'] . ',GP_PASSING_VALUE=' . (float) $m['passing']
+                . ',HR_GPA_VALUE=NULL,HHR_GPA_VALUE=NULL,HRS_GPA_VALUE=NULL,UPDATED_AT=CURRENT_TIMESTAMP WHERE ID=' . $scaleId);
+            $exec('DELETE FROM report_card_grades WHERE GRADE_SCALE_ID=' . $scaleId . " AND SCHOOL_ID=$school AND SYEAR=$year");
+        } else {
+            $new = $get("INSERT INTO report_card_grade_scales(SYEAR,SCHOOL_ID,TITLE,COMMENT,SORT_ORDER,GP_SCALE,GP_PASSING_VALUE) VALUES($year,$school," . $q($m['label']) . ',' . $q($m['desc']) . ',1,' . (float) $m['scale'] . ',' . (float) $m['passing'] . ') RETURNING ID');
+            $scaleId = (int) $new[1]['ID'];
+        }
+        $order = 0;
+        foreach ($m['grades'] as $g) {
+            $order++;
+            $exec("INSERT INTO report_card_grades(SYEAR,SCHOOL_ID,TITLE,SORT_ORDER,GPA_VALUE,UNWEIGHTED_GP,BREAK_OFF,COMMENT,GRADE_SCALE_ID) VALUES($year,$school,"
+                . $q($g[0]) . ",$order," . (float) $g[3] . ',' . (float) $g[3] . ',' . (float) $g[2] . ',' . $q($g[1]) . ",$scaleId)");
+        }
+        $exec("INSERT INTO report_card_grades(SYEAR,SCHOOL_ID,TITLE,SORT_ORDER,COMMENT,GRADE_SCALE_ID) VALUES($year,$school,'NE'," . ($order + 1) . ",'Non évalué (ne compte pas dans la moyenne)',$scaleId)");
+        $linked = 0;
+        if ($linkClasses) {
+            $rows = $get("UPDATE course_periods SET GRADE_SCALE_ID=$scaleId WHERE SCHOOL_ID=$school AND SYEAR=$year AND GRADE_SCALE_ID IS NULL RETURNING COURSE_PERIOD_ID");
+            $linked = is_array($rows) ? count($rows) : 0;
+        }
+        $exec('COMMIT');
+        return ['scale' => $scaleId, 'grades' => $order + 1, 'linked' => $linked];
     } catch (Throwable $failure) {
         $exec('ROLLBACK');
         throw $failure;
