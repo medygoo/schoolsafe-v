@@ -57,6 +57,10 @@ if (SchoolSafeNativePermission('SchoolSafe/FeeModelsRead.php')) {
 if (SchoolSafeNativePermission('SchoolSafe/RemediationPaymentsRead.php')) {
     $add('finance', 'Rattrapage', 'Paiements de rattrapage', 'Modules.php?modname=SchoolSafe/RemediationPaymentsRead.php');
 }
+// Travail de mon enfant (04/11) : devoirs, notes, presences, cahier de textes sur une seule page.
+if (in_array(User('PROFILE'), ['parent', 'student'], true)) {
+    $add('communication', 'Suivi de mon enfant', 'Travail de mon enfant', 'travail-enfant.php');
+}
 if (User('PROFILE') === 'parent') {
     $add('communication', 'Suivi de mon enfant', 'Signaler une absence ou un retard', 'signaler-absence.php');
 }
