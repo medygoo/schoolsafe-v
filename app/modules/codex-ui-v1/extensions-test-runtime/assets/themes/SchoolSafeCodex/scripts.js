@@ -110,69 +110,70 @@
 		if (branch === 'administration' && /Profiles|Exceptions|UserFields|CopySchool|Rollover/.test(path)) return 'Administration';
 		return groups[branch] || 'Fonctions disponibles';
 	}
-	// Pedagogie (04/11, harmonisation demandee par le proprietaire) : peu de blocs par profil.
-	// Les pages d'origine sont rangees sous la tache qu'elles servent, repliees ; rien n'est retire,
-	// chaque page garde ses propres controles d'acces.
-	var PEDAGOGY_OTHER = 'Autres outils (logiciel d’origine)';
+	// Pedagogie (04/11, harmonisation demandee par le proprietaire) : un parcours par profil, sans outil cache.
+	// Chaque lien porte une phrase qui dit a quoi il sert. Les pages d'origine en double ou jamais utilisees
+	// (analyse du 04/11 : demandes de cours, activites, bulletins/livrets/historique d'origine = 0 donnee)
+	// sortent du menu ; elles restent ouvertes depuis la page qui les utilise et gardent leurs droits.
 	var pedagogyOrder = ['Ma classe', 'Mon enfant', '1 · Organiser l’année', '2 · Suivre et évaluer', '3 · Communiquer et archiver', 'Aide'];
-	var pedagogyDetails = {
-		organiser: /^(Scheduling\/(Courses|Schedule|MassSchedule|MassDrops)|Grades\/(Configuration|ReportCardGrades|ReportCardComments|ReportCardCommentCodes|EditHistoryMarkingPeriods))\.php$/,
-		suivre: /^(Users\/TeacherPrograms|Grades\/(Grades|StudentGrades|Assignments|StudentAssignments|AnomalousGrades|InputFinalGrades|FinalGrades|TeacherCompletion|GradeBreakdown|GradebookBreakdown|ProgressReports|EditReportCardGrades|MassCreateAssignments))\.php$/,
-		communiquer: /^Scheduling\/Print(ClassLists|ClassPictures|Schedules)\.php$/
+	var pedagogyKept = {
+		'Grades/Configuration.php': ['1 · Organiser l’année', 'Réglages des notes'],
+		'SchoolSafe/RemediationRead.php': ['2 · Suivre et évaluer', ''],
+		'SchoolSafe/ArrivalAttendance.php': ['2 · Suivre et évaluer', '']
+	};
+	var pedagogyHints = {
+		'preparer-annee.php': 'Les étapes de la rentrée : périodes, calendrier, cours, barèmes, élèves placés.',
+		'branches-classe.php': 'Les branches de chaque niveau, leurs maxima et les titulaires.',
+		'papier-ecole.php': 'L’en-tête officiel des bulletins et des courriers.',
+		'Grades/Configuration.php': 'Options générales des notes et du carnet de devoirs.',
+		'suivi-pedagogique.php': 'Appels faits, devoirs donnés et journal des notes, classe par classe.',
+		'synthese-bulletin.php': 'Totaux, places et validation des bulletins de chaque période.',
+		'SchoolSafe/ArrivalAttendance.php': 'Qui est arrivé à l’école aujourd’hui, et à quelle heure.',
+		'SchoolSafe/RemediationRead.php': 'Élèves en difficulté et séances de rattrapage.',
+		'courriers.php': 'Convocations et lettres aux parents, sur le papier de l’école.',
+		'archives.php': 'Les documents de l’école, classés par année.',
+		'guide-pedagogie.php': 'Comment utiliser Pédagogie, étape par étape.',
+		'ma-journee.php': 'Faire l’appel et remplir le cahier de textes.',
+		'devoirs-travaux.php': 'Donner un devoir, le corriger, envoyer la note aux parents.',
+		'notes-bulletin.php': 'Saisir les notes de période et d’examen.',
+		'travail-enfant.php': 'Devoirs, notes, présences et cahier de textes.',
+		'dossier-annee.php': 'Tous les travaux de l’année, à télécharger en PDF.',
+		'bulletin.php': 'Le bulletin officiel, dès qu’il est validé.'
 	};
 	function pedagogyRank(heading) {
-		if (heading === PEDAGOGY_OTHER) return pedagogyOrder.length + 1;
 		var i = pedagogyOrder.indexOf(heading);
 		return i < 0 ? pedagogyOrder.length : i;
 	}
-	function organizePedagogy(entries) {
-		var headings = entries.filter(function (e) { return e.central; }).map(function (e) { return e.heading; });
-		var main = headings.indexOf('Ma classe') >= 0 ? 'Ma classe' : headings.indexOf('Mon enfant') >= 0 ? 'Mon enfant' : '';
-		var blocks = {
-			organiser: main || pedagogyOrder[2],
-			suivre: main || pedagogyOrder[3],
-			communiquer: main || pedagogyOrder[4]
-		};
-		entries.forEach(function (entry) {
-			var anchor = entry.item.querySelector('a[href]');
-			var path = anchor ? new URL(anchor.getAttribute('href'), location.href).searchParams.get('modname') || '' : '';
-			entry.detail = false;
-			if (/^SchoolSafe\/(Remediation\w*|ArrivalAttendance)\.php$/.test(path)) { entry.heading = blocks.suivre; return; }
-			if (entry.central) return;
-			entry.detail = true;
-			entry.heading = pedagogyDetails.organiser.test(path) ? blocks.organiser
-				: pedagogyDetails.suivre.test(path) ? blocks.suivre
-				: pedagogyDetails.communiquer.test(path) ? blocks.communiquer
-				: PEDAGOGY_OTHER;
-		});
-		// Pages du parcours d'abord, outils replies ensuite (tri stable).
-		return entries.map(function (entry, index) { return [entry, index]; })
-			.sort(function (a, b) {
-				function weight(entry) { return entry.detail ? 2 : entry.central ? 0 : 1; }
-				return (weight(a[0]) - weight(b[0])) || (a[1] - b[1]);
-			})
-			.map(function (pair) { return pair[0]; });
+	function pedagogyKey(anchor) {
+		var url = new URL(anchor.getAttribute('href'), location.href);
+		return url.searchParams.get('modname') || url.pathname.replace(/^.*\//, '');
 	}
-	function pedagogyFoldToggle(heading, entries, foldItems) {
-		var count = entries.filter(function (e) { return e.detail && e.heading === heading; }).length;
-		var toggle = document.createElement('li');
-		toggle.className = 'ss-fold-toggle';
-		var button = document.createElement('button');
-		button.type = 'button';
-		var text = heading === PEDAGOGY_OTHER ? 'Afficher ces outils' : 'Outils détaillés';
-		toggle.syncFold = function () {
-			var open = foldItems.some(function (item) { return !item.hidden; });
-			button.setAttribute('aria-expanded', open ? 'true' : 'false');
-			button.textContent = (open ? '▾ ' : '▸ ') + (open ? 'Masquer ' + (heading === PEDAGOGY_OTHER ? 'ces outils' : 'les outils détaillés') : text) + ' (' + count + ')';
-		};
-		button.addEventListener('click', function (event) {
-			event.preventDefault(); event.stopPropagation();
-			var open = button.getAttribute('aria-expanded') === 'true';
-			foldItems.forEach(function (item) { item.hidden = open; });
-			toggle.syncFold();
+	function organizePedagogy(entries) {
+		// Sans parcours SchoolSafe (profil sans ces droits), le menu d'origine reste tel quel.
+		if (!entries.some(function (e) { return e.central; })) return entries;
+		var main = entries.some(function (e) { return e.central && e.heading === 'Ma classe'; }) ? 'Ma classe'
+			: entries.some(function (e) { return e.central && e.heading === 'Mon enfant'; }) ? 'Mon enfant' : '';
+		var kept = [];
+		entries.forEach(function (entry, index) {
+			var anchor = entry.item.querySelector('a[href]');
+			if (!anchor) return;
+			var key = pedagogyKey(anchor), rule = pedagogyKept[key];
+			if (rule) {
+				if (main && key === 'Grades/Configuration.php') return;
+				entry.heading = main || rule[0];
+				if (rule[1]) anchor.textContent = rule[1];
+			} else if (!entry.central) return;
+			if (pedagogyHints[key] && !anchor.querySelector('.ss-link-hint')) {
+				var title = document.createElement('span'); title.className = 'ss-link-title';
+				while (anchor.firstChild) title.appendChild(anchor.firstChild);
+				var hint = document.createElement('small'); hint.className = 'ss-link-hint';
+				hint.textContent = pedagogyHints[key];
+				anchor.appendChild(title); anchor.appendChild(hint);
+				anchor.classList.add('ss-link-with-hint');
+			}
+			entry.order = (entry.central ? 0 : 1000) + index;
+			kept.push(entry);
 		});
-		toggle.appendChild(button);
-		return toggle;
+		return kept.sort(function (a, b) { return a.order - b.order; });
 	}
 	function organizeMenu() {
 		var menu = document.querySelector('#menu .adminmenu');
@@ -285,25 +286,15 @@
 			if (definition[0] === 'finance') { var financeOrder = ['Encaissements \u00e9l\u00e8ves', 'Frais et soldes \u00e9l\u00e8ves', 'Frais et mod\u00e8les', 'Rattrapage', 'Salaires et dettes', 'Tr\u00e9sorerie \u00e9cole', 'Cantine']; order.sort(function (a, b) { var ai = financeOrder.indexOf(a), bi = financeOrder.indexOf(b); return (ai < 0 ? financeOrder.length : ai) - (bi < 0 ? financeOrder.length : bi); }); }
 			entries = order.flatMap(function (heading) { return buckets[heading]; });
 			if (definition[0] === 'finance') { var feesEntry = entries.find(function (e) { var a = e.item.querySelector('a'); return a && new URL(a.href, location.href).searchParams.get('modname') === 'Student_Billing/StudentFees.php'; }); if (feesEntry) top.href = feesEntry.item.querySelector('a').getAttribute('href'); }
-			var previous = '', foldItems = null;
+			var previous = '';
 			entries.forEach(function (entry) {
 				if (entry.heading !== previous) {
 					var label = document.createElement('li');
 					label.className = 'menu-inter'; label.textContent = entry.heading;
-					submenu.appendChild(label); previous = entry.heading; foldItems = null;
-				}
-				if (entry.detail && !foldItems) {
-					foldItems = [];
-					submenu.appendChild(pedagogyFoldToggle(entry.heading, entries, foldItems));
-				}
-				if (entry.detail) {
-					entry.item.classList.add('ss-fold-item');
-					entry.item.hidden = !entry.item.querySelector('#selectedMenuLink');
-					foldItems.push(entry.item);
+					submenu.appendChild(label); previous = entry.heading;
 				}
 				submenu.appendChild(entry.item);
 			});
-			submenu.querySelectorAll('.ss-fold-toggle').forEach(function (toggle) { toggle.syncFold(); });
 			module.appendChild(top); module.appendChild(submenu); menu.appendChild(module);
 			if (submenu.querySelector('#selectedMenuLink')) top.id = 'selectedModuleLink';
 		});

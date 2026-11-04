@@ -95,17 +95,11 @@ body.modules #menu .adminmenu .wp-submenu #selectedMenuLink {
     body.modules #menu .wp-submenu .ss-context-heading { padding: 12px 6px; }
 }
 
-/* Pedagogie (04/11, harmonisation) : outils de detail replies sous chaque bloc. */
-body.modules #menu .adminmenu .wp-submenu li.ss-fold-item[hidden] { display: none !important; }
-body.modules #menu .adminmenu .wp-submenu li.ss-fold-toggle { list-style: none; margin: 2px 0 4px; }
-body.modules #menu .adminmenu .wp-submenu li.ss-fold-toggle button {
-    display: block; width: 100%; min-height: 40px; box-sizing: border-box;
-    padding: 8px 8px 8px 16px; border: 1px dashed #c9d3e0; border-radius: 5px;
-    background: transparent; color: #516176; text-align: left;
-    font: 600 13px/1.4 system-ui, sans-serif; cursor: pointer;
+/* Pedagogie (04/11, harmonisation) : sous chaque lien, une phrase qui dit a quoi il sert. */
+body.modules #menu .adminmenu .wp-submenu a.ss-link-with-hint { flex-direction: column; gap: 2px; }
+body.modules #menu .adminmenu .wp-submenu a.ss-link-with-hint .ss-link-title { display: block; }
+body.modules #menu .adminmenu .wp-submenu a.ss-link-with-hint .ss-link-hint {
+    display: block; font: 400 12px/1.35 system-ui, sans-serif; color: #5d6b7e;
+    white-space: normal; text-transform: none; letter-spacing: 0;
 }
-body.modules #menu .adminmenu .wp-submenu li.ss-fold-toggle button:hover,
-body.modules #menu .adminmenu .wp-submenu li.ss-fold-toggle button:focus-visible {
-    border-color: var(--ss-branch-ink, #2455c6); color: var(--ss-branch-ink, #2455c6);
-}
-body.modules #menu .adminmenu .wp-submenu li.ss-fold-item a { font-size: 13px; }
+html[data-ss-background="night"] body.modules #menu .adminmenu .wp-submenu a.ss-link-with-hint .ss-link-hint { color: #b6c2d3; }
