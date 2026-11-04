@@ -184,7 +184,7 @@
 	function menuKey(anchor) {
 		var url = new URL(anchor.getAttribute('href'), location.href);
 		var key = url.searchParams.get('modname') || url.pathname.replace(/^.*\//, '');
-		if (url.searchParams.get('student_id') === 'new') return key + '#new';
+		if (url.searchParams.get('student_id') === 'new' || url.searchParams.get('staff_id') === 'new') return key + '#new';
 		if (url.searchParams.get('category_id')) return key + '#cat';
 		return key;
 	}
@@ -352,6 +352,31 @@
 			['Mon enfant', [
 				['SchoolSafe/Notifications.php', 'Messages de l’école', 'Devoirs, notes, absences et annonces reçus.'],
 				['signaler-absence.php', 'Signaler une absence', 'Prévenir l’école d’une absence ou d’un retard.']]]
+		]
+	};
+	// Utilisateurs (05/11, docs/qualification/FUSION_MENU_UTILISATEURS_20261105.md). Le menu Personnel n'existe pas.
+	menuPlans.users = {
+		admin: [
+			['1 · Comptes', [
+				['Users/User.php#new', 'Ajouter un utilisateur', 'Créer le compte d’un membre du personnel ou d’un parent.'],
+				['Users/User.php', 'Fiche d’un utilisateur', 'Rechercher une personne, voir et modifier sa fiche.'],
+				['Users/AddStudents.php', 'Relier un parent à ses enfants', 'Partir du parent pour choisir ses enfants (6 parents au plus par élève).']]],
+			['2 · Réglages', [
+				['Users/UserFields.php', 'Champs de la fiche utilisateur', 'Ajouter une information à toutes les fiches.'],
+				['Users/Preferences.php', 'Mes préférences', 'Langue, thème et affichage de votre compte.'],
+				// Les 5 « programmes enseignants » font double emploi avec Synthese du bulletin,
+				// Suivi pedagogique et Controle des presences : hors menu, joignables par adresse.
+				['Users/TeacherPrograms.php', null, '']]]
+		],
+		teacher: [
+			['Mon compte', [
+				['Users/User.php', 'Ma fiche', 'Vos informations et votre photo.'],
+				['Users/Preferences.php', 'Mes préférences', 'Langue, thème et affichage de votre compte.']]]
+		],
+		parent: [
+			['Mon compte', [
+				['Users/User.php', 'Ma fiche', 'Vos informations et votre photo.'],
+				['Users/Preferences.php', 'Mes préférences', 'Langue, thème et affichage de votre compte.']]]
 		]
 	};
 	function organizeByPlan(entries, plans) {
