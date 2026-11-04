@@ -29,6 +29,7 @@ function SchoolSafeFollowupRows(int $school, int $year, string $from, string $to
         . " AND ac.SCHOOL_DATE>=(SELECT min(sc0.START_DATE) FROM schedule sc0 WHERE sc0.COURSE_PERIOD_ID=cp.COURSE_PERIOD_ID)";
     return (array) $get("SELECT cp.COURSE_PERIOD_ID,cp.TITLE,c.TITLE AS COURSE_TITLE,cp.TEACHER_ID,st.FIRST_NAME,st.LAST_NAME,"
         . "(cp.DOES_ATTENDANCE IS NOT NULL AND cp.DOES_ATTENDANCE<>'') AS TAKES_ROLL,"
+        . "EXISTS (SELECT 1 FROM schoolsafe_class_branches b WHERE b.COURSE_PERIOD_ID=cp.COURSE_PERIOD_ID) AS IS_BRANCH,"
         . "(SELECT count(*) FROM (" . $enrolled . ") e) AS STUDENTS,"
         . "(SELECT count(*) FROM (" . $days . ") x) AS EXPECTED_ROLLS,"
         . "(SELECT count(*) FROM (" . $days . ") x WHERE EXISTS(SELECT 1 FROM attendance_completed acp WHERE acp.STAFF_ID=cp.TEACHER_ID AND acp.SCHOOL_DATE=x.SCHOOL_DATE AND acp.PERIOD_ID=x.PERIOD_ID)) AS DONE_ROLLS,"
@@ -52,7 +53,7 @@ function SchoolSafeFollowupAlerts(array $row): array
     if ($truthy($row['TAKES_ROLL'] ?? false) && (int) ($row['EXPECTED_ROLLS'] ?? 0) > (int) ($row['DONE_ROLLS'] ?? 0)) {
         $alerts[] = ((int) $row['EXPECTED_ROLLS'] - (int) $row['DONE_ROLLS']) . ' appel(s) non fait(s)';
     }
-    if ((int) ($row['STUDENTS'] ?? 0) > 0 && (int) ($row['EXPECTED_DAYS'] ?? 0) > (int) ($row['DIARY_DAYS'] ?? 0)) {
+    if (!$truthy($row['IS_BRANCH'] ?? false) && (int) ($row['STUDENTS'] ?? 0) > 0 && (int) ($row['EXPECTED_DAYS'] ?? 0) > (int) ($row['DIARY_DAYS'] ?? 0)) {
         $alerts[] = ((int) $row['EXPECTED_DAYS'] - (int) $row['DIARY_DAYS']) . ' jour(s) sans cahier de textes';
     }
     if ((int) ($row['MISSING_GRADES'] ?? 0) > 0) {

@@ -62,7 +62,10 @@ function SchoolSafeClassDayClasses(int $staff, int $school, int $year, string $d
         . " JOIN course_period_school_periods cpsp ON cpsp.COURSE_PERIOD_ID=cp.COURSE_PERIOD_ID"
         . " JOIN school_periods sp ON sp.PERIOD_ID=cpsp.PERIOD_ID"
         . " WHERE cp.SCHOOL_ID=" . $school . " AND cp.SYEAR=" . $year . " AND (cp.TEACHER_ID=" . $staff . " OR cp.SECONDARY_TEACHER_ID=" . $staff . ")"
-        . " AND position('" . $letter . "' in cpsp.DAYS)>0 ORDER BY sp.SORT_ORDER,c.TITLE LIMIT 30");
+        . " AND position('" . $letter . "' in cpsp.DAYS)>0"
+        // Branches du bulletin (04/11) : l'appel et le cahier de textes restent sur la classe.
+        . " AND NOT EXISTS (SELECT 1 FROM schoolsafe_class_branches b WHERE b.COURSE_PERIOD_ID=cp.COURSE_PERIOD_ID)"
+        . " ORDER BY sp.SORT_ORDER,c.TITLE LIMIT 30");
 }
 
 /** Eleves de la classe ce jour-la, avec le premier scan d'entree et l'appel deja saisi. */

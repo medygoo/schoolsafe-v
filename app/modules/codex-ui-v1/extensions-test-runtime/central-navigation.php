@@ -21,6 +21,8 @@ if (SchoolSafeNativePermission('SchoolSafe/Studio.php')) {
 // Preparer l'annee (03/11) : etapes de preparation de l'annee, administrateur avec la configuration de l'ecole.
 if (User('PROFILE') === 'admin' && AllowEdit('School_Setup/Configuration.php')) {
     $add('pedagogy', 'Organisation pédagogique', 'Préparer l’année', 'preparer-annee.php');
+    // Branches et maxima du bulletin (04/11) : liste par niveau, appliquee aux classes.
+    $add('pedagogy', 'Organisation pédagogique', 'Branches et maxima', 'branches-classe.php');
     // Papier de l'ecole (04/11) : en-tete, pied de page et dispositions des documents.
     $add('school', 'Organisation scolaire', 'Papier de l’école', 'papier-ecole.php');
     // Archives de l'ecole (04/11) : documents deposes par photo ou PDF, classes et retrouvables.
