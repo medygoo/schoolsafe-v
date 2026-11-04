@@ -45,6 +45,7 @@ function SchoolSafeYearSetupSteps(int $school, int $year, callable $get): array
     if (count($years) > 1) $problems[] = count($years) . ' années complètes au lieu d’une';
     if ($english) $problems[] = count($english) . ' période(s) au nom anglais (' . implode(', ', array_slice(array_map(static function ($m) { return $m['TITLE']; }, $english), 0, 3)) . ')';
     $steps[] = ['id' => 'periodes', 'title' => 'Année scolaire et périodes', 'url' => 'Modules.php?modname=School_Setup/MarkingPeriods.php',
+        'tool' => ['decoupage-annee.php', 'Choisir le découpage'],
         'state' => !$years ? 'todo' : ($problems ? 'warn' : 'ok'),
         'detail' => !$years ? 'Aucune année scolaire définie.' : ($problems ? 'À corriger : ' . implode(' ; ', $problems) . '.' : count($mps) . ' période(s), du ' . $years[0]['START_DATE'] . ' au ' . $years[0]['END_DATE'] . '.'),
         'help' => 'Dates de l’année puis découpage (trimestres, semestres, périodes d’évaluation). Les notes et les bulletins sont rattachés à ces périodes.'];
@@ -122,4 +123,160 @@ function SchoolSafeYearSetupProgress(array $steps): array
 {
     $done = count(array_filter($steps, static function ($st) { return $st['state'] === 'ok'; }));
     return [$done, count($steps)];
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * Decoupage de l'annee (04/11, valide par le proprietaire : « laisser le choix selon son ecole »).
+ * Modeles proposes ; l'ecole choisit, ajuste les dates, confirme. Hierarchie native :
+ * annee (FY) > semestre ou trimestre (SEM) > trimestre ou periode (QTR, ou se saisissent les notes).
+ * ------------------------------------------------------------------------------------------- */
+
+function SchoolSafeYearModels(): array
+{
+    return [
+        'trimestres' => ['label' => '3 trimestres', 'desc' => 'Une note par trimestre.',
+            'sem' => [['Année scolaire', 'AN', [['1er trimestre', 'T1'], ['2e trimestre', 'T2'], ['3e trimestre', 'T3']]]]],
+        'trimestres_periodes' => ['label' => '3 trimestres de 2 périodes', 'desc' => 'Comme le primaire en RDC : 6 périodes, regroupées en 3 trimestres.',
+            'sem' => [['1er trimestre', 'T1', [['1re période', 'P1'], ['2e période', 'P2']]],
+                ['2e trimestre', 'T2', [['3e période', 'P3'], ['4e période', 'P4']]],
+                ['3e trimestre', 'T3', [['5e période', 'P5'], ['6e période', 'P6']]]]],
+        'semestres_periodes' => ['label' => '2 semestres de 2 périodes', 'desc' => 'Comme le secondaire en RDC : 4 périodes, regroupées en 2 semestres.',
+            'sem' => [['1er semestre', 'S1', [['1re période', 'P1'], ['2e période', 'P2']]],
+                ['2e semestre', 'S2', [['3e période', 'P3'], ['4e période', 'P4']]]]],
+        'semestres' => ['label' => '2 semestres', 'desc' => 'Une note par semestre.',
+            'sem' => [['1er semestre', 'S1', [['1er semestre', 'S1']]], ['2e semestre', 'S2', [['2e semestre', 'S2']]]]],
+    ];
+}
+
+function SchoolSafeYearDate(string $date): ?DateTimeImmutable
+{
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/D', $date)) return null;
+    $d = DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+    return $d && $d->format('Y-m-d') === $date ? $d : null;
+}
+
+/**
+ * Plan du decoupage : dates reparties regulierement entre le debut et la fin de l'annee, sauf
+ * dates choisies par l'ecole ($dates[i] = [debut, fin] pour la i-eme periode de notes).
+ * Les dates d'un semestre/trimestre englobent ses periodes. Leve RuntimeException si incoherent.
+ */
+function SchoolSafeYearPlan(string $model, string $start, string $end, array $dates = []): array
+{
+    $models = SchoolSafeYearModels();
+    if (!isset($models[$model])) throw new RuntimeException('Modèle de découpage inconnu.');
+    $from = SchoolSafeYearDate($start); $to = SchoolSafeYearDate($end);
+    if (!$from || !$to || $from >= $to) throw new RuntimeException('Dates de l’année invalides : le début doit précéder la fin.');
+    if ($from->diff($to)->days > 400) throw new RuntimeException('Une année scolaire ne peut pas dépasser 13 mois.');
+    $leaves = [];
+    foreach ($models[$model]['sem'] as $si => $sem) foreach ($sem[2] as $q) $leaves[] = ['sem' => $si, 'title' => $q[0], 'short' => $q[1]];
+    $n = count($leaves); $total = $from->diff($to)->days + 1; $cursor = $from;
+    foreach ($leaves as $i => &$leaf) {
+        $len = (int) floor($total * ($i + 1) / $n) - (int) floor($total * $i / $n);
+        $leaf['start'] = $cursor->format('Y-m-d');
+        $leaf['end'] = $i === $n - 1 ? $to->format('Y-m-d') : $cursor->modify('+' . ($len - 1) . ' days')->format('Y-m-d');
+        if (isset($dates[$i]) && is_array($dates[$i])) {
+            $a = SchoolSafeYearDate((string) ($dates[$i][0] ?? '')); $b = SchoolSafeYearDate((string) ($dates[$i][1] ?? ''));
+            if (!$a || !$b) throw new RuntimeException('Dates invalides pour « ' . $leaf['title'] . ' ».');
+            $leaf['start'] = $a->format('Y-m-d'); $leaf['end'] = $b->format('Y-m-d');
+        }
+        $cursor = SchoolSafeYearDate($leaf['end'])->modify('+1 day');
+    }
+    unset($leaf);
+    foreach ($leaves as $i => $leaf) {
+        if ($leaf['start'] > $leaf['end']) throw new RuntimeException('« ' . $leaf['title'] . ' » se termine avant de commencer.');
+        if ($leaf['start'] < $from->format('Y-m-d') || $leaf['end'] > $to->format('Y-m-d')) throw new RuntimeException('« ' . $leaf['title'] . ' » sort de l’année scolaire.');
+        if ($i > 0 && $leaf['start'] <= $leaves[$i - 1]['end']) throw new RuntimeException('« ' . $leaf['title'] . ' » chevauche la période précédente.');
+    }
+    $sems = [];
+    foreach ($models[$model]['sem'] as $si => $sem) {
+        $children = array_values(array_filter($leaves, static function ($l) use ($si) { return $l['sem'] === $si; }));
+        $sems[] = ['title' => $sem[0], 'short' => $sem[1], 'start' => $children[0]['start'], 'end' => $children[count($children) - 1]['end'], 'qtrs' => $children];
+    }
+    $label = 'Année scolaire ' . $from->format('Y') . '-' . $to->format('Y');
+    return ['model' => $model, 'fy' => ['title' => $label, 'short' => 'AN', 'start' => $from->format('Y-m-d'), 'end' => $to->format('Y-m-d')], 'sems' => $sems];
+}
+
+/** Nombre de lignes qui designent une periode, dans toutes les tables qui ont une colonne marking_period_id. */
+function SchoolSafeYearPeriodUses(int $id, callable $get): int
+{
+    $uses = 0;
+    // Vraies tables seulement : les vues (marking_periods, course_details) relisent les periodes elles-memes.
+    foreach ((array) $get("SELECT c.TABLE_NAME FROM information_schema.columns c JOIN information_schema.tables t ON t.TABLE_SCHEMA=c.TABLE_SCHEMA AND t.TABLE_NAME=c.TABLE_NAME AND t.TABLE_TYPE='BASE TABLE'"
+        . " WHERE c.TABLE_SCHEMA='public' AND c.COLUMN_NAME='marking_period_id' AND c.TABLE_NAME<>'school_marking_periods'") as $row) {
+        $table = (string) ($row['TABLE_NAME'] ?? '');
+        if (!preg_match('/^[a-z0-9_]+$/D', $table)) continue;
+        $rows = $get('SELECT COUNT(*) AS N FROM ' . $table . " WHERE CAST(MARKING_PERIOD_ID AS TEXT)='" . $id . "'");
+        $uses += (int) ($rows[1]['N'] ?? 0);
+    }
+    return $uses;
+}
+
+/**
+ * Applique le plan dans une transaction : reutilise et renomme les periodes existantes (memes
+ * identifiants, rien ne casse), cree celles qui manquent, ne supprime une periode en trop que si
+ * aucune donnee ne la designe (sinon tout est annule). Retourne un resume.
+ */
+function SchoolSafeYearApply(int $school, int $year, array $plan, callable $get, callable $exec): array
+{
+    if ($school < 1 || $year < 1 || empty($plan['fy']) || empty($plan['sems'])) throw new RuntimeException('Plan incomplet.');
+    $q = static function ($v) { return "'" . str_replace("'", "''", (string) $v) . "'"; };
+    $post = static function (string $end, int $days) { return SchoolSafeYearDate($end)->modify(($days >= 0 ? '+' : '') . $days . ' days')->format('Y-m-d'); };
+    $exec('BEGIN');
+    try {
+        $rows = (array) $get("SELECT MARKING_PERIOD_ID AS ID,MP,START_DATE FROM school_marking_periods WHERE SCHOOL_ID=$school AND SYEAR=$year ORDER BY START_DATE,SORT_ORDER FOR UPDATE");
+        $by = ['FY' => [], 'SEM' => [], 'QTR' => [], 'PRO' => []];
+        foreach ($rows as $r) if (isset($by[$r['MP']])) $by[$r['MP']][] = (int) $r['ID'];
+        $summary = ['renamed' => 0, 'created' => 0, 'deleted' => 0];
+        // Annee : on garde celle qui porte des donnees (cours, emplois du temps...), sinon la premiere.
+        $fyId = null; $best = -1;
+        foreach ($by['FY'] as $id) { $u = SchoolSafeYearPeriodUses($id, $get); if ($u > $best) { $best = $u; $fyId = $id; } }
+        $fy = $plan['fy'];
+        if ($fyId) {
+            $exec('UPDATE school_marking_periods SET TITLE=' . $q($fy['title']) . ',SHORT_NAME=' . $q($fy['short']) . ',SORT_ORDER=1,PARENT_ID=NULL,START_DATE=' . $q($fy['start'])
+                . ',END_DATE=' . $q($fy['end']) . ',UPDATED_AT=CURRENT_TIMESTAMP WHERE MARKING_PERIOD_ID=' . $fyId);
+            $summary['renamed']++;
+        } else {
+            $new = $get("INSERT INTO school_marking_periods(SYEAR,MP,SCHOOL_ID,TITLE,SHORT_NAME,SORT_ORDER,START_DATE,END_DATE) VALUES($year,'FY',$school," . $q($fy['title']) . ',' . $q($fy['short']) . ',1,' . $q($fy['start']) . ',' . $q($fy['end']) . ') RETURNING MARKING_PERIOD_ID AS ID');
+            $fyId = (int) $new[1]['ID']; $summary['created']++;
+        }
+        $semIds = $by['SEM']; $qtrIds = $by['QTR']; $qi = 0; $usedQtr = []; $usedSem = [];
+        foreach ($plan['sems'] as $si => $sem) {
+            if (isset($semIds[$si])) {
+                $semId = $semIds[$si];
+                $exec('UPDATE school_marking_periods SET TITLE=' . $q($sem['title']) . ',SHORT_NAME=' . $q($sem['short']) . ',SORT_ORDER=' . ($si + 1) . ",PARENT_ID=$fyId,START_DATE=" . $q($sem['start'])
+                    . ',END_DATE=' . $q($sem['end']) . ',POST_START_DATE=NULL,POST_END_DATE=NULL,UPDATED_AT=CURRENT_TIMESTAMP WHERE MARKING_PERIOD_ID=' . $semId);
+                $summary['renamed']++;
+            } else {
+                $new = $get("INSERT INTO school_marking_periods(SYEAR,MP,SCHOOL_ID,PARENT_ID,TITLE,SHORT_NAME,SORT_ORDER,START_DATE,END_DATE) VALUES($year,'SEM',$school,$fyId," . $q($sem['title']) . ',' . $q($sem['short']) . ',' . ($si + 1) . ',' . $q($sem['start']) . ',' . $q($sem['end']) . ') RETURNING MARKING_PERIOD_ID AS ID');
+                $semId = (int) $new[1]['ID']; $summary['created']++;
+            }
+            $usedSem[] = $semId;
+            foreach ($sem['qtrs'] as $qtr) {
+                $ps = $post($qtr['end'], -6); $pe = $post($qtr['end'], 14);
+                if (isset($qtrIds[$qi])) {
+                    $qtrId = $qtrIds[$qi];
+                    $exec('UPDATE school_marking_periods SET TITLE=' . $q($qtr['title']) . ',SHORT_NAME=' . $q($qtr['short']) . ',SORT_ORDER=' . ($qi + 1) . ",PARENT_ID=$semId,START_DATE=" . $q($qtr['start'])
+                        . ',END_DATE=' . $q($qtr['end']) . ',POST_START_DATE=' . $q($ps) . ',POST_END_DATE=' . $q($pe) . ",DOES_GRADES='Y',DOES_COMMENTS='Y',UPDATED_AT=CURRENT_TIMESTAMP WHERE MARKING_PERIOD_ID=" . $qtrId);
+                    $summary['renamed']++;
+                } else {
+                    $new = $get("INSERT INTO school_marking_periods(SYEAR,MP,SCHOOL_ID,PARENT_ID,TITLE,SHORT_NAME,SORT_ORDER,START_DATE,END_DATE,POST_START_DATE,POST_END_DATE,DOES_GRADES,DOES_COMMENTS) VALUES($year,'QTR',$school,$semId,"
+                        . $q($qtr['title']) . ',' . $q($qtr['short']) . ',' . ($qi + 1) . ',' . $q($qtr['start']) . ',' . $q($qtr['end']) . ',' . $q($ps) . ',' . $q($pe) . ",'Y','Y') RETURNING MARKING_PERIOD_ID AS ID");
+                    $qtrId = (int) $new[1]['ID']; $summary['created']++;
+                }
+                $usedQtr[] = $qtrId; $qi++;
+            }
+        }
+        // Periodes en trop : supprimees seulement si rien ne les designe (periodes de suivi d'abord).
+        $surplus = array_merge($by['PRO'], array_diff($qtrIds, $usedQtr), array_diff($semIds, $usedSem), array_diff($by['FY'], [$fyId]));
+        foreach ($surplus as $id) {
+            if (SchoolSafeYearPeriodUses((int) $id, $get) > 0) throw new RuntimeException('Une période en trop contient déjà des données (notes, cours ou appels) : rien n’a été modifié. Ajustez-la dans l’écran natif.');
+            $exec('DELETE FROM school_marking_periods WHERE MARKING_PERIOD_ID=' . (int) $id . " AND SCHOOL_ID=$school AND SYEAR=$year");
+            $summary['deleted']++;
+        }
+        $exec('COMMIT');
+        return $summary;
+    } catch (Throwable $failure) {
+        $exec('ROLLBACK');
+        throw $failure;
+    }
 }

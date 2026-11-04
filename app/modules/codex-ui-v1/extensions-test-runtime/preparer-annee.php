@@ -26,8 +26,8 @@ $next=null;foreach($steps as $st)if($st['state']!=='ok'){$next=$st['id'];break;}
 .ss-step.ok .num{background:#2e8b57}.ss-step.warn .num{background:#c78a00}.ss-step.todo .num{background:#a32d2d}
 .ss-step h2{margin:0;font-size:16px;color:#14233a}.ss-step .state{font-size:13px;font-weight:600;margin-left:6px}.ss-step p{margin:3px 0 0;font-size:14px;line-height:1.45}
 .ss-step .help{color:#5b6b80;font-size:13px}.ss-step a.go{align-self:center;white-space:nowrap;min-height:40px;display:inline-flex;align-items:center;padding:0 14px;border-radius:8px;background:#08766b;color:#fff;text-decoration:none;font-size:14px}
-.ss-step.ok a.go{background:#fff;color:#08766b;border:1px solid #08766b}.ss-legend{font-size:14px;line-height:1.6;background:#f4fbf8;border-left:4px solid #08766b;padding:10px 12px}
-@media(max-width:620px){.ss-step{grid-template-columns:auto 1fr}.ss-step a.go{grid-column:1/-1;justify-content:center}}</style></head>
+.ss-step .acts{display:grid;gap:6px;align-self:center}.ss-step a.go.alt{background:#fff;color:#08766b;border:1px solid #08766b}.ss-step.ok a.go{background:#fff;color:#08766b;border:1px solid #08766b}.ss-legend{font-size:14px;line-height:1.6;background:#f4fbf8;border-left:4px solid #08766b;padding:10px 12px}
+@media(max-width:620px){.ss-step{grid-template-columns:auto 1fr}.ss-step .acts{grid-column:1/-1}.ss-step a.go{justify-content:center}}</style></head>
 <body><header><strong>SchoolSafe</strong><a href="Modules.php?modname=misc/Portal.php">Tableau de bord</a></header>
 <main class="ss-year"><h1>Préparer l’année <?=$e($year)?>-<?=$e($year+1)?></h1>
 <p class="ss-legend"><b><?=$e($schoolTitle)?></b> — <?=$done?> étape(s) terminée(s) sur <?=$total?>.<br>
@@ -38,7 +38,7 @@ Suivez les étapes dans l’ordre : chacune prépare la suivante. Le bouton ouvr
 <span class="num"><?=$i+1?></span>
 <div><h2><?=$e($st['title'])?><span class="state"><?=$icon?> <?=$e($label)?></span></h2>
 <p><?=$e($st['detail'])?></p><p class="help"><?=$e($st['help'])?></p></div>
-<a class="go" href="<?=$e($st['url'])?>"><?=$st['state']==='ok'?'Voir':'Ouvrir'?></a>
+<span class="acts"><?php if(!empty($st['tool'])):?><a class="go" href="<?=$e($st['tool'][0])?>"><?=$e($st['tool'][1])?></a><?php endif;?><a class="go<?=!empty($st['tool'])?' alt':''?>" href="<?=$e($st['url'])?>"><?=!empty($st['tool'])?'Écran détaillé':($st['state']==='ok'?'Voir':'Ouvrir')?></a></span>
 </section>
 <?php endforeach;?>
 </main></body></html>
