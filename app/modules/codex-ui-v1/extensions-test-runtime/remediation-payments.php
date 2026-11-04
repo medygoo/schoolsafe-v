@@ -22,6 +22,10 @@ $token=$_SESSION['ss_remediation_finance_csrf'];
 $escape=static function($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');};
 $message='';
 require_once __DIR__.'/schoolsafe-remediation/PaymentScope.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeRemediationSettings.fnc.php';
+$shareRule=SchoolSafeRemediationSettings($school,function($sql){return DBGet($sql);});
+$sharePct=number_format((float)$shareRule['school_share_percent'],2,'.','');
+$shareText=SchoolSafeRemediationPct((float)$shareRule['school_share_percent']).' / '.SchoolSafeRemediationPct(100-(float)$shareRule['school_share_percent']);
 $versionSchema=DBGet("SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='schoolsafe_remediation_payments' AND column_name='confirmation_version') AS ready");
 $canReconfirm=($versionSchema[1]['READY']??'f')==='t';
 $usedPaymentScope=$canReconfirm?' AND (used.invalidated_at IS NULL OR used.case_id<>r.id)':'';
@@ -61,11 +65,11 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
  $source=$purposeLocked?DBGet('SELECT p.id,p.amount FROM billing_payments p JOIN schoolsafe_remediation_cases r ON r.student_id=p.student_id AND r.school_id=p.school_id AND r.syear=p.syear JOIN schoolsafe_remediation_payment_purpose purpose ON purpose.payment_id=p.id AND purpose.fee_id=r.fee_id WHERE r.id='.$case.' AND p.id='.$payment.' AND p.amount>0 AND p.payment_date IS NOT NULL AND p.refunded_payment_id IS NULL AND NOT EXISTS(SELECT 1 FROM billing_payments ref WHERE ref.refunded_payment_id=p.id) AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_payments used WHERE used.payment_id=p.id'.$usedPaymentScope.') AND p.amount<=r.tariff-COALESCE((SELECT sum(amount) FROM schoolsafe_remediation_payments a WHERE a.case_id=r.id AND a.invalidated_at IS NULL),0)'):[];
  if($source){
   $previous=$canReconfirm?DBGet('SELECT id FROM schoolsafe_remediation_payments WHERE case_id='.$case.' AND payment_id='.$payment.' AND invalidated_at IS NOT NULL LIMIT 1'):[];
-  DBQuery('INSERT INTO schoolsafe_remediation_payments(case_id,payment_id,amount,school_share,teacher_share,confirmed_by) SELECT '.$case.',id,amount,round(amount*0.4,2),amount-round(amount*0.4,2),'.$user.' FROM billing_payments WHERE id='.$payment);
+  DBQuery('INSERT INTO schoolsafe_remediation_payments(case_id,payment_id,amount,school_share,teacher_share,confirmed_by) SELECT '.$case.',id,amount,round(amount*'.$sharePct.'/100,2),amount-round(amount*'.$sharePct.'/100,2),'.$user.' FROM billing_payments WHERE id='.$payment);
   DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(".$case.",'".($previous?'payment_reconfirmed':'payment_confirmed')."',".$user.')');
  }
  DBQuery('COMMIT');
- $message=$source?'Paiement associe et confirme. Repartition comptable 40/60 enregistree.':'Paiement indisponible, rembourse, deja associe, frais modifie ou montant superieur au solde du rattrapage.';
+ $message=$source?'Paiement associe et confirme. Répartition comptable école / enseignant '.$shareText.' enregistrée.':'Paiement indisponible, rembourse, deja associe, frais modifie ou montant superieur au solde du rattrapage.';
  }
  $_SESSION['ss_remediation_finance_csrf']=bin2hex(random_bytes(32));$token=$_SESSION['ss_remediation_finance_csrf'];
 }

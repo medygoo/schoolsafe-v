@@ -48,10 +48,12 @@ register_shutdown_function(static function () {
 $fixturePath = sys_get_temp_dir() . '/ss-remediation-' . bin2hex(random_bytes(8));
 mkdir($fixturePath . '/schoolsafe-remediation', 0700, true);
 mkdir($fixturePath . '/modules/SchoolSafe', 0700, true);
+mkdir($fixturePath . '/ProgramFunctions', 0700, true);
 file_put_contents($fixturePath . '/Warehouse.php', '<?php /* bootstrap supplied by test */');
 file_put_contents($fixturePath . '/modules/SchoolSafe/Gateway.php', '<?php /* gateway supplied by test */');
 $runtime = dirname(__DIR__, 2);
 foreach (['rattrapage.php','remediation-payments.php'] as $file) copy($runtime . '/' . $file, $fixturePath . '/' . $file);
+copy($runtime . '/ProgramFunctions/SchoolSafeRemediationSettings.fnc.php', $fixturePath . '/ProgramFunctions/SchoolSafeRemediationSettings.fnc.php');
 foreach (['Workspace.inc.php','PaymentScope.fnc.php'] as $file) copy(dirname(__DIR__) . '/' . $file, $fixturePath . '/schoolsafe-remediation/' . $file);
 register_shutdown_function(static function () use ($fixturePath) {
     foreach (glob($fixturePath . '/schoolsafe-remediation/*') as $file) unlink($file);
@@ -59,6 +61,8 @@ register_shutdown_function(static function () use ($fixturePath) {
     unlink($fixturePath . '/Warehouse.php');
     unlink($fixturePath . '/rattrapage.php');
     unlink($fixturePath . '/remediation-payments.php');
+    unlink($fixturePath . '/ProgramFunctions/SchoolSafeRemediationSettings.fnc.php');
+    rmdir($fixturePath . '/ProgramFunctions');
     rmdir($fixturePath . '/schoolsafe-remediation');
     rmdir($fixturePath . '/modules/SchoolSafe');
     rmdir($fixturePath . '/modules');

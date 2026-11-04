@@ -81,7 +81,7 @@ check($r['status']===200 && str_contains($sql,'INSERT INTO billing_payments') &&
 check(str_contains($sql,SchoolSafeRemediationFeeScopeSql()),'record checks native fee student, school, year and amount');
 $r=request(['method'=>'POST','post'=>['csrf'=>'test-token','action'=>'confirm','case_id'=>'7','payment_id'=>'10']]);
 $sql=implode("\n",$r['queries']);
-check(str_contains($sql,'round(amount*0.4,2),amount-round(amount*0.4,2)') && str_contains($sql,"'payment_confirmed'"),'confirmation calls 40/60 native SQL and journals event');
+check(str_contains($sql,'round(amount*40.00/100,2),amount-round(amount*40.00/100,2)') && str_contains($sql,"'payment_confirmed'"),'confirmation uses the school share (default 40/60) and journals event');
 check(str_contains($sql,SchoolSafeRemediationFeeScopeSql()) && str_contains($sql,'FOR UPDATE'),'confirmation locks dossier and checks native fee');
 check(strpos($sql,'SELECT fee.id')<strpos($sql,'SELECT r.id FROM schoolsafe_remediation_cases'),'confirmation locks fee before dossier');
 check(str_contains($sql,'used.invalidated_at IS NULL OR used.case_id<>r.id'),'reconfirmation excludes active or foreign-case allocations');

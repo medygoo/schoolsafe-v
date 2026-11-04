@@ -157,11 +157,21 @@ $ssLabels = ['pending'=>'En attente','approved'=>'Validé','refused'=>'Refusé',
 $ssSessionLabels = ['scheduled'=>'programmée','held'=>'tenue','postponed'=>'reportée','cancelled'=>'annulée'];
 $ssEventLabels = ['detected'=>'Difficulté détectée','approved'=>'Dossier validé','refused'=>'Dossier refusé','session_scheduled'=>'Séance programmée','session_held'=>'Séance tenue','session_postponed'=>'Séance reportée','session_cancelled'=>'Séance annulée','reassessment_passed'=>'Réévaluation : réussi','reassessment_repeat'=>'Réévaluation : à reprendre','reassessment_closed'=>'Dossier clôturé','billing_configured'=>'Tarification définie','payment_recorded'=>'Paiement enregistré, confirmation en attente','payment_confirmed'=>'Paiement confirmé','payment_review_required'=>'Paiement à revérifier'];
 $ssNotifications = DBGet('SELECT n.created_at,e.kind,r.id AS case_id,c.title AS course_title FROM schoolsafe_remediation_notifications n JOIN schoolsafe_remediation_events e ON e.id=n.event_id JOIN schoolsafe_remediation_cases r ON r.id=e.case_id JOIN courses c ON c.course_id=r.course_id WHERE n.recipient_id=' . $ssUser . ' AND ' . $ssScope . ' ORDER BY n.created_at DESC LIMIT 50');
+require_once __DIR__ . '/../ProgramFunctions/SchoolSafeRemediationSettings.fnc.php';
+$ssRule = SchoolSafeRemediationSettings($ssSchool, function ($sql) { return DBGet($sql); });
+// Vigilance (04/11) : au moins 2 notes sous le seuil, sans dossier ; direction et enseignant de la matiere.
+$ssWatch = in_array(User('PROFILE'), ['admin', 'teacher'], true) ? DBGet('SELECT w.*,s.first_name,s.last_name,c.title AS course_title FROM schoolsafe_remediation_watch w JOIN students s ON s.student_id=w.student_id JOIN courses c ON c.course_id=w.course_id WHERE ' . preg_replace('/\br\./', 'w.', $ssScope) . ' AND NOT w.cleared AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_cases x WHERE x.student_id=w.student_id AND x.course_id=w.course_id AND x.school_id=w.school_id AND x.syear=w.syear) ORDER BY w.created_at DESC LIMIT 100') : [];
 ?>
 <?php if ($ssNotifications): ?>
 <section aria-label="Mes notifications"><h2>Mes notifications de rattrapage</h2>
 <?php foreach ($ssNotifications as $notification): ?><p><?= $ssEscape($notification['CREATED_AT']) ?> · <?= $ssEscape(ParseMLField($notification['COURSE_TITLE'])) ?> · <?= $ssEscape($ssEventLabels[$notification['KIND']] ?? 'Dossier mis a jour') ?> · Dossier <?= (int) $notification['CASE_ID'] ?></p><?php endforeach; ?>
 </section>
+<?php endif; ?>
+<?php if ($ssWatch): ?>
+<section aria-labelledby="vigilance-title"><h2 id="vigilance-title">Vigilance</h2>
+<p>&Eacute;l&egrave;ves avec au moins 2 &eacute;valuations sous <?= $ssEscape(SchoolSafeRemediationPct($ssRule['threshold_percent'])) ?>, sans dossier ouvert. Le parent est pr&eacute;venu ; un &eacute;change avec la famille peut suffire.</p><ul>
+<?php foreach ($ssWatch as $watch): ?><li><?= $ssEscape($watch['FIRST_NAME'] . ' ' . $watch['LAST_NAME']) ?> · <?= $ssEscape(ParseMLField($watch['COURSE_TITLE'])) ?> · <?= (int) $watch['FAILURES'] ?> &eacute;valuations sous le seuil · depuis le <?= $ssEscape(substr((string) $watch['CREATED_AT'], 0, 10)) ?></li><?php endforeach; ?>
+</ul></section>
 <?php endif; ?>
 <section aria-labelledby="dossiers-title">
 <h2 id="dossiers-title">Dossiers de rattrapage</h2>
@@ -218,7 +228,9 @@ $ssNotifications = DBGet('SELECT n.created_at,e.kind,r.id AS case_id,c.title AS 
 <?php if ($ssDirector && $ssActions['reevaluate'] && in_array($case['STATUS'], ['approved','repeat'], true)): ?>
 <form method="post"><input type="hidden" name="csrf" value="<?= $ssEscape($ssToken) ?>"><input type="hidden" name="action" value="reevaluate"><input type="hidden" name="case_id" value="<?= (int) $case['ID'] ?>">
 <?php $availableGrades = DBGet('SELECT DISTINCT ga.assignment_id,ga.title,gg.points,ga.points AS maximum FROM gradebook_grades gg JOIN gradebook_assignments ga ON ga.assignment_id=gg.assignment_id JOIN course_periods cp ON cp.course_period_id=gg.course_period_id WHERE gg.student_id=' . (int) $case['STUDENT_ID'] . ' AND cp.course_id=' . (int) $case['COURSE_ID'] . ' AND cp.school_id=' . $ssSchool . ' AND cp.syear=' . $ssYear . ' AND (ga.course_id=cp.course_id OR ga.course_period_id=cp.course_period_id) AND gg.points>=0 AND ga.points>0 AND ga.created_at>=\'' . DBEscapeString($case['CREATED_AT']) . '\' ORDER BY ga.assignment_id'); ?>
-<label>Nouvelle &eacute;valuation SchoolSafe<select name="assignment_id" required><option value="">Choisir une &eacute;valuation enregistr&eacute;e</option><?php foreach ($availableGrades as $grade): ?><option value="<?= (int) $grade['ASSIGNMENT_ID'] ?>"><?= $ssEscape($grade['TITLE'] . ' : ' . $grade['POINTS'] . ' / ' . $grade['MAXIMUM']) ?></option><?php endforeach; ?></select></label>
+<?php $ssBefore = null; if ($evidenceGrades) { $ssSum = 0; foreach ($evidenceGrades as $evidence) $ssSum += (float) $evidence['POINTS'] * 100 / max(1e-9, (float) $evidence['MAXIMUM']); $ssBefore = $ssSum / count($evidenceGrades); } ?>
+<p><?= $ssEscape(SchoolSafeRemediationRuleText($ssRule)['pass']) ?> Indication seulement : la d&eacute;cision reste la v&ocirc;tre.</p>
+<label>Nouvelle &eacute;valuation SchoolSafe<select name="assignment_id" required><option value="">Choisir une &eacute;valuation enregistr&eacute;e</option><?php foreach ($availableGrades as $grade): ?><option value="<?= (int) $grade['ASSIGNMENT_ID'] ?>"><?= $ssEscape($grade['TITLE'] . ' : ' . $grade['POINTS'] . ' / ' . $grade['MAXIMUM'] . (SchoolSafeRemediationPassVerdict($ssRule, (float) $grade['POINTS'], (float) $grade['MAXIMUM'], $ssBefore) ? ' — atteint la règle de réussite' : ' — sous la règle de réussite')) ?></option><?php endforeach; ?></select></label>
 <label>D&eacute;cision p&eacute;dagogique<select name="outcome"><option value="passed">R&eacute;ussi</option><option value="repeat">&Agrave; reprendre</option><option value="closed">Cl&ocirc;tur&eacute;</option></select></label>
 <label>Motif<textarea name="note" maxlength="4000" required></textarea></label><button>Enregistrer la r&eacute;&eacute;valuation</button></form>
 <?php endif; ?>
