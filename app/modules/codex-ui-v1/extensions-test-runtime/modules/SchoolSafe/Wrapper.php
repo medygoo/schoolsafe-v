@@ -4,12 +4,12 @@ function SchoolSafeRenderPermissionProgram(string $key): void
 {
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
         http_response_code(405);
-        echo 'Method not allowed.';
+        echo 'Méthode non autorisée.';
         return;
     }
     if (!SchoolSafeNativeCommandPermission($key)) {
         http_response_code(403);
-        echo 'Permission refusee.';
+        echo 'Permission refusée.';
         return;
     }
     $definition = SchoolSafePermissionCatalog()[$key];
@@ -19,6 +19,10 @@ function SchoolSafeRenderPermissionProgram(string $key): void
     if (in_array($entryUrl, ['family-management.php', 'scanner-native.php'], true)
         && !empty($route[2])) {
         $entryUrl .= '#' . rawurlencode($route[2]);
+    }
+    // Rattrapage (04/11) : chaque entree du menu ouvre la bonne partie de la page.
+    if ($entryUrl === 'rattrapage.php' && !empty($route[2])) {
+        $entryUrl .= $route[2] === 'map' ? '#categories-title' : '#dossiers-title';
     }
     $entry = htmlspecialchars($entryUrl, ENT_QUOTES, 'UTF-8');
     DrawHeader($definition['title']);

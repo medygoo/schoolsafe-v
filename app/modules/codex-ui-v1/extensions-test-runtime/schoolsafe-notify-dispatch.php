@@ -27,6 +27,13 @@ SchoolSafeNotifyCliInit($conn);
 // Missing migration is unavailable, never permission to run the old unclaimed path.
 $ready=pg_query($conn,"SELECT dispatch_claim_token,dispatch_claimed_at FROM schoolsafe_notify_deliveries LIMIT 0");
 if($ready===false){fwrite(STDERR,"DISPATCH_CLAIM_UNAVAILABLE\n");exit(1);}
+// Rattrapage -> parents (04/11) : les evenements du rattrapage deviennent des notifications avant l'envoi.
+$relayed=0;
+if($channel==='all'){
+    try{require_once __DIR__.'/ProgramFunctions/SchoolSafeRemediationRelay.fnc.php';
+        $relayed=SchoolSafeRemediationRelay(['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}],40);}
+    catch(Throwable $relayFailure){fwrite(STDERR,"REMEDIATION_RELAY_UNAVAILABLE\n");}
+}
 if($retryFailed){
     $retry=pg_query_params($conn,"UPDATE schoolsafe_notify_deliveries SET status='pending',updated_at=CURRENT_TIMESTAMP"
         ." WHERE status='failed' AND dispatch_claim_token IS NULL AND last_error LIKE 'PRE_SEND:%' AND ($1='all' OR channel=$1)",[$channel]);
@@ -162,4 +169,4 @@ $acks=0;
 if(($channel==='all'||$channel==='whatsapp')&&!$transports){
     try{$acks=SchoolSafeWaAckPoll($conn,20);}catch(Throwable $ackFailure){fwrite(STDERR,"WA_ACK_UNAVAILABLE\n");}
 }
-echo "DISPATCH sent=$sent failed=$failed held=$held acks=$acks channel=$channel\n";
+echo "DISPATCH sent=$sent failed=$failed held=$held acks=$acks relayed=$relayed channel=$channel\n";

@@ -1,6 +1,6 @@
 <?php
 if (!in_array($_SERVER['REQUEST_METHOD'] ?? '', ['GET', 'POST'], true)) {
-    header('Allow: GET, POST'); http_response_code(405); exit('Methode non autorisee.');
+    header('Allow: GET, POST'); http_response_code(405); exit('Méthode non autorisée.');
 }
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');

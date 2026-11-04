@@ -153,8 +153,9 @@ if (SchoolSafeEndpointGateway('rattrapage.php', 'GET') === 'deny') {
 }
 $ssTypes = ($ssManage && $ssActions['map']) ? DBGet('SELECT gt.assignment_type_id,gt.title,c.title AS course_title,mt.kind FROM gradebook_assignment_types gt JOIN courses c ON c.course_id=gt.course_id LEFT JOIN schoolsafe_remediation_types mt ON mt.assignment_type_id=gt.assignment_type_id WHERE c.school_id=' . $ssSchool . ' AND c.syear=' . $ssYear . ' ORDER BY c.title,gt.title') : [];
 $ssCases = DBGet('SELECT r.*,s.first_name,s.last_name,c.title AS course_title FROM schoolsafe_remediation_cases r JOIN students s ON s.student_id=r.student_id JOIN courses c ON c.course_id=r.course_id WHERE ' . $ssScope . ' ORDER BY r.created_at DESC LIMIT 200');
-$ssLabels = ['pending'=>'En attente','approved'=>'Valide','refused'=>'Refuse','passed'=>'Reussi','repeat'=>'A reprendre','closed'=>'Cloture'];
-$ssEventLabels = ['detected'=>'Difficulte detectee','approved'=>'Dossier valide','refused'=>'Dossier refuse','session_scheduled'=>'Seance programmee','session_held'=>'Seance tenue','session_postponed'=>'Seance reportee','session_cancelled'=>'Seance annulee','reassessment_passed'=>'Reevaluation : reussi','reassessment_repeat'=>'Reevaluation : a reprendre','reassessment_closed'=>'Dossier cloture','billing_configured'=>'Tarification definie','payment_recorded'=>'Paiement enregistre, confirmation en attente','payment_confirmed'=>'Paiement confirme','payment_review_required'=>'Paiement a reverifier'];
+$ssLabels = ['pending'=>'En attente','approved'=>'Validé','refused'=>'Refusé','passed'=>'Réussi','repeat'=>'À reprendre','closed'=>'Clôturé'];
+$ssSessionLabels = ['scheduled'=>'programmée','held'=>'tenue','postponed'=>'reportée','cancelled'=>'annulée'];
+$ssEventLabels = ['detected'=>'Difficulté détectée','approved'=>'Dossier validé','refused'=>'Dossier refusé','session_scheduled'=>'Séance programmée','session_held'=>'Séance tenue','session_postponed'=>'Séance reportée','session_cancelled'=>'Séance annulée','reassessment_passed'=>'Réévaluation : réussi','reassessment_repeat'=>'Réévaluation : à reprendre','reassessment_closed'=>'Dossier clôturé','billing_configured'=>'Tarification définie','payment_recorded'=>'Paiement enregistré, confirmation en attente','payment_confirmed'=>'Paiement confirmé','payment_review_required'=>'Paiement à revérifier'];
 $ssNotifications = DBGet('SELECT n.created_at,e.kind,r.id AS case_id,c.title AS course_title FROM schoolsafe_remediation_notifications n JOIN schoolsafe_remediation_events e ON e.id=n.event_id JOIN schoolsafe_remediation_cases r ON r.id=e.case_id JOIN courses c ON c.course_id=r.course_id WHERE n.recipient_id=' . $ssUser . ' AND ' . $ssScope . ' ORDER BY n.created_at DESC LIMIT 50');
 ?>
 <?php if ($ssNotifications): ?>
@@ -203,7 +204,7 @@ $ssNotifications = DBGet('SELECT n.created_at,e.kind,r.id AS case_id,c.title AS 
 <?php endif; ?>
 <?php $sessions = DBGet('SELECT * FROM schoolsafe_remediation_sessions WHERE case_id=' . (int) $case['ID'] . ' ORDER BY starts_at'); ?>
 <?php foreach ($sessions as $session): ?>
-<div class="session-row"><p><strong><?= $ssEscape($session['STARTS_AT']) ?></strong> · <?= (int) $session['DURATION_MINUTES'] ?> min · <?= $ssEscape($session['OBJECTIVE']) ?> (<?= $ssEscape($session['STATUS']) ?>)</p>
+<div class="session-row"><p><strong><?= $ssEscape($session['STARTS_AT']) ?></strong> · <?= (int) $session['DURATION_MINUTES'] ?> min · <?= $ssEscape($session['OBJECTIVE']) ?> (<?= $ssEscape($ssSessionLabels[$session['STATUS']] ?? $session['STATUS']) ?>)</p>
 <?php if ($session['REPORT']): ?><p>Compte rendu : <?= $ssEscape($session['REPORT']) ?></p><p>Progression : <?= $ssEscape($session['PROGRESS']) ?></p><?php endif; ?>
 <?php if ($ssActions['update_session'] && ($ssManage || ($ssCanTeach && (int) $session['TEACHER_ID'] === $ssUser)) && in_array($case['STATUS'], ['approved','repeat'], true)): ?>
 <form method="post"><input type="hidden" name="csrf" value="<?= $ssEscape($ssToken) ?>"><input type="hidden" name="action" value="update_session"><input type="hidden" name="session_id" value="<?= (int) $session['ID'] ?>">
