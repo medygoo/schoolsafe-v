@@ -26,6 +26,12 @@ Scénario : `docs/qualification/ESSAI_PEDAGOGIE_20261104.md`.
 **Fait avant l'étape B** : regroupement du menu Pédagogie par bloc et par profil, en production (image
 `pedagogie-menu-2-20261104`, commits `d6a54c5` puis `c5f1020`). Le détail est dans `docs/qualification/HARMONISATION_PEDAGOGIE_20261104.md`.
 L'image en service n'est donc plus celle indiquée plus haut.
+Puis mise en page commune des pages (tableaux lisibles sur téléphone, une taille de sous-titre) : image en service
+**`pedagogie-mise-en-page-20261104`** (commits `edee573`, `2573db6`). Pages enseignant et parent à regarder pendant l'essai.
+
+**Suite décidée** : appliquer la méthode « fusion » (`docs/DECISIONS.md`, 4 novembre 2026) aux autres menus, un par lot :
+École, Sécurité et contrôle, Finance, Communication, Personnel, Vie et bien-être, Stock, Comptabilité,
+Administration, Rapports, Utilisateurs. Montrer l'analyse page par page au propriétaire avant tout changement.
 
 Après chaque étape : vérifier dans la base (lecture seule) et corriger tout écart de présentation ou de fonctionnement, sans nouvelle fonctionnalité.
 
