@@ -283,6 +283,55 @@
 				['Discipline/Referrals.php', 'Incidents de mon enfant', 'Les incidents signalés par l’école.']]]
 		]
 	};
+	// Finance (05/11, docs/qualification/FUSION_MENU_FINANCE_20261105.md) : aucun lien retire.
+	menuPlans.finance = {
+		admin: [
+			['1 · Frais des élèves', [
+				['Student_Billing/MassAssignFees.php', 'Facturer une classe', 'Ajouter le même frais à un groupe d’élèves.'],
+				['Student_Billing/StudentFees.php', 'Frais d’un élève', 'Voir, ajouter ou corriger les frais d’un élève.'],
+				['Student_Billing/StudentBalances.php', 'Soldes des élèves', 'Qui doit combien, élève par élève.']]],
+			['2 · Encaissements', [
+				['Student_Billing/StudentPayments.php', 'Encaisser un paiement', 'Enregistrer ce qu’une famille paie.'],
+				['Student_Billing/MassAssignPayments.php', 'Encaisser pour plusieurs élèves', 'Le même paiement pour un groupe d’élèves.'],
+				['Student_Billing/DailyTransactions.php', 'Caisse du jour', 'Frais et paiements des élèves sur une journée.'],
+				['Student_Billing/Statements.php', 'Relevés des élèves', 'Imprimer le compte d’un élève pour sa famille.'],
+				['SchoolSafe/RemediationPaymentsRead.php', 'Paiements du rattrapage', 'Ce que les familles paient pour les séances de rattrapage.']]],
+			['3 · Personnel', [
+				['Accounting/Salaries.php', 'Salaires', 'Le salaire dû à chaque membre du personnel.'],
+				['Accounting/StaffPayments.php', 'Paiements du personnel', 'Enregistrer un salaire ou une avance versés.'],
+				['Accounting/StaffBalances.php', 'Soldes du personnel', 'Ce qui reste à payer à chacun.'],
+				['Accounting/Statements.php', 'Relevés du personnel', 'Imprimer le compte d’un membre du personnel.']]],
+			['4 · Trésorerie de l’école', [
+				['Accounting/Incomes.php', 'Recettes', 'Argent reçu par l’école, hors frais des élèves.'],
+				['Accounting/Expenses.php', 'Dépenses', 'Achats et charges payés par l’école.'],
+				['Accounting/DailyTransactions.php', 'Journal de trésorerie', 'Recettes et dépenses sur une période.']]],
+			['5 · Cantine', [
+				['Food_Service/Accounts.php', 'Comptes cantine', 'Le solde cantine de chaque élève.'],
+				['Food_Service/Transactions.php', 'Transactions cantine', 'Recharger un compte ou noter un repas payé.'],
+				['Food_Service/Statements.php', 'Relevés cantine', 'Le détail du compte cantine d’un élève.'],
+				['Food_Service/TransactionsReport.php', 'Bilan cantine', 'Toutes les transactions de la cantine sur une période.']]],
+			['6 · Réglages', [
+				['SchoolSafe/FeeModelsRead.php', 'Contrôle des frais', 'Seuils vert, jaune, rouge des frais payés (scan et rappels).'],
+				['Accounting/Categories.php', 'Catégories de trésorerie', 'Les rubriques de recettes et de dépenses.']]]
+		],
+		teacher: [
+			['Mon salaire', [
+				['Accounting/Salaries.php', 'Mon salaire', 'Le salaire prévu pour vous.'],
+				['Accounting/StaffPayments.php', 'Mes paiements reçus', 'Les salaires et avances qui vous ont été versés.']]],
+			['Cantine', [
+				['Food_Service/Accounts.php', 'Compte cantine', 'Votre solde à la cantine.'],
+				['Food_Service/Statements.php', 'Relevé cantine', 'Le détail de vos repas et recharges.']]]
+		],
+		parent: [
+			['Mon enfant', [
+				['Student_Billing/StudentFees.php', 'Frais de mon enfant', 'Les frais demandés par l’école.'],
+				['Student_Billing/StudentPayments.php', 'Paiements effectués', 'Ce que vous avez déjà payé.'],
+				['Student_Billing/DailyTransactions.php', 'Historique du compte', 'Frais et paiements, jour par jour.']]],
+			['Cantine', [
+				['Food_Service/Accounts.php', 'Compte cantine', 'Le solde cantine de votre enfant.'],
+				['Food_Service/Statements.php', 'Relevé cantine', 'Le détail des repas et recharges.']]]
+		]
+	};
 	function organizeByPlan(entries, plans) {
 		var plan = plans && plans[centralRole];
 		if (!plan) return entries;
@@ -420,7 +469,7 @@
 				});
 			}
 			if (definition[0] === 'pedagogy') order.sort(function (a, b) { return pedagogyRank(a) - pedagogyRank(b); });
-			if (definition[0] === 'finance') { var financeOrder = ['Encaissements \u00e9l\u00e8ves', 'Frais et soldes \u00e9l\u00e8ves', 'Frais et mod\u00e8les', 'Rattrapage', 'Salaires et dettes', 'Tr\u00e9sorerie \u00e9cole', 'Cantine']; order.sort(function (a, b) { var ai = financeOrder.indexOf(a), bi = financeOrder.indexOf(b); return (ai < 0 ? financeOrder.length : ai) - (bi < 0 ? financeOrder.length : bi); }); }
+			if (definition[0] === 'finance' && !planned) { var financeOrder = ['Encaissements \u00e9l\u00e8ves', 'Frais et soldes \u00e9l\u00e8ves', 'Frais et mod\u00e8les', 'Rattrapage', 'Salaires et dettes', 'Tr\u00e9sorerie \u00e9cole', 'Cantine']; order.sort(function (a, b) { var ai = financeOrder.indexOf(a), bi = financeOrder.indexOf(b); return (ai < 0 ? financeOrder.length : ai) - (bi < 0 ? financeOrder.length : bi); }); }
 			entries = order.flatMap(function (heading) { return buckets[heading]; });
 			if (definition[0] === 'finance') { var feesEntry = entries.find(function (e) { var a = e.item.querySelector('a'); return a && new URL(a.href, location.href).searchParams.get('modname') === 'Student_Billing/StudentFees.php'; }); if (feesEntry) top.href = feesEntry.item.querySelector('a').getAttribute('href'); }
 			var previous = '';
