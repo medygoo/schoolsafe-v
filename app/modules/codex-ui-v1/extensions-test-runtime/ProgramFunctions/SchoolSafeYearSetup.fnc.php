@@ -297,10 +297,10 @@ function SchoolSafeYearApply(int $school, int $year, array $plan, callable $get,
 function SchoolSafeScaleModels(): array
 {
     return [
-        'pourcentage' => ['label' => 'Pourcentage avec mentions', 'desc' => 'Usage RDC : réussite à 50 %, mentions de Passable à Élite.',
+        'rdc' => ['label' => 'RDC (pourcentage et mentions)', 'desc' => 'Usage des bulletins et palmarès en RDC : réussite à 50 %, mentions de Satisfaction à Élite.',
             'scale' => 100, 'passing' => 50, 'grades' => [
-                ['E', 'Élite', 90, 95], ['GD', 'Grande distinction', 80, 85], ['D', 'Distinction', 70, 75],
-                ['S', 'Satisfaction', 60, 65], ['P', 'Passable', 50, 55], ['ECH', 'Échec', 0, 25]]],
+                ['E', 'Élite', 80, 90], ['GD', 'Grande distinction', 70, 75], ['D', 'Distinction', 60, 65],
+                ['S', 'Satisfaction', 50, 55], ['ECH', 'Échec', 0, 25]]],
         'sur20' => ['label' => 'Sur 20', 'desc' => 'Réussite à 10/20 : Très bien, Bien, Assez bien, Passable, Insuffisant.',
             'scale' => 20, 'passing' => 10, 'grades' => [
                 ['TB', 'Très bien (16 à 20/20)', 80, 18], ['B', 'Bien (14 à 15,9/20)', 70, 15], ['AB', 'Assez bien (12 à 13,9/20)', 60, 13],
@@ -313,15 +313,45 @@ function SchoolSafeScaleModels(): array
 }
 
 /**
+ * Mentions modifiees par l'ecole : [code, libelle, seuil %]. Seuils strictement decroissants, le dernier
+ * a 0 %, codes uniques. La valeur pour la moyenne est le milieu de chaque tranche, a l'echelle du bareme.
+ */
+function SchoolSafeScaleValidate(array $rows, float $scale): array
+{
+    $clean = []; $codes = [];
+    foreach ($rows as $row) {
+        if (!is_array($row)) continue;
+        $code = trim((string) ($row[0] ?? '')); $label = trim((string) ($row[1] ?? '')); $raw = trim(str_replace(',', '.', (string) ($row[2] ?? '')));
+        if ($code === '' && $label === '' && $raw === '') continue; // ligne laissee vide = retiree
+        if ($code === '' || mb_strlen($code) > 5 || !preg_match('/^[\p{L}\p{N}+\-]+$/u', $code)) throw new RuntimeException('Code de mention invalide : « ' . $code . ' » (1 à 5 lettres ou chiffres).');
+        if (isset($codes[mb_strtoupper($code)]) || mb_strtoupper($code) === 'NE') throw new RuntimeException('Le code « ' . $code . ' » est utilisé deux fois ou réservé.');
+        if ($label === '' || mb_strlen($label) > 80) throw new RuntimeException('Libellé manquant ou trop long pour « ' . $code . ' ».');
+        if (!is_numeric($raw) || (float) $raw < 0 || (float) $raw > 100) throw new RuntimeException('Seuil invalide pour « ' . $code . ' » (0 à 100 %).');
+        $codes[mb_strtoupper($code)] = true;
+        $clean[] = [$code, $label, round((float) $raw, 2)];
+    }
+    if (count($clean) < 2) throw new RuntimeException('Il faut au moins deux mentions.');
+    foreach ($clean as $i => $g) if ($i > 0 && $g[2] >= $clean[$i - 1][2]) throw new RuntimeException('Les seuils doivent aller du plus haut au plus bas (« ' . $g[0] . ' »).');
+    if ($clean[count($clean) - 1][2] != 0) throw new RuntimeException('La dernière mention doit commencer à 0 %.');
+    foreach ($clean as $i => &$g) {
+        $upper = $i === 0 ? 100 : $clean[$i - 1][2];
+        $g[3] = round(($g[2] + $upper) / 2 * $scale / 100, 2);
+    }
+    unset($g);
+    return $clean;
+}
+
+/**
  * Applique le modele : met a jour le bareme existant (ou en cree un), remplace ses mentions, et
  * relie eventuellement les classes sans bareme. Refuse si des notes de bulletin utilisent deja ses
  * mentions (rien n'est alors modifie). Une seule transaction.
  */
-function SchoolSafeScaleApply(int $school, int $year, string $model, bool $linkClasses, callable $get, callable $exec): array
+function SchoolSafeScaleApply(int $school, int $year, string $model, bool $linkClasses, callable $get, callable $exec, ?array $custom = null): array
 {
     $models = SchoolSafeScaleModels();
     if (!isset($models[$model]) || $school < 1 || $year < 1) throw new RuntimeException('Modèle de barème inconnu.');
     $m = $models[$model];
+    if ($custom !== null) $m['grades'] = SchoolSafeScaleValidate($custom, (float) $m['scale']); // mentions modifiees par l'ecole
     $q = static function ($v) { return "'" . str_replace("'", "''", (string) $v) . "'"; };
     $exec('BEGIN');
     try {
