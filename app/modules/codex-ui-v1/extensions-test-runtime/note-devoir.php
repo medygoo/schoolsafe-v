@@ -15,6 +15,7 @@ require_once __DIR__.'/ProgramFunctions/SchoolSafeGradeNotice.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeChildWork.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeRemediationSettings.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeLetterhead.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeJaspeAssist.fnc.php';
 $school=(int)UserSchool();$year=(int)UserSyear();$profile=(string)User('PROFILE');$staff=(int)User('STAFF_ID');
 $get=function($sql){return DBGet($sql);};
 $row=null;
@@ -59,7 +60,7 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
     elseif(($_POST['action']??'')==='vu'&&$profile==='parent'&&$staff>0){
         DBQuery("INSERT INTO schoolsafe_grade_seen(ASSIGNMENT_ID,STUDENT_ID,SEEN_BY) VALUES(".$assignment.",".$student.",".$staff.") ON CONFLICT DO NOTHING");
         $message='Merci : l’enseignant voit que vous avez pris connaissance de cette note.';
-    }else $error='Action impossible.';
+    }elseif(($_POST['action']??'')!=='expliquer')$error='Action impossible.';
 }
 $tz=new DateTimeZone('Africa/Kinshasa');$today=(new DateTime('now',$tz))->format('Y-m-d');
 $answer=null;$copy=null;$average=null;$trend=[];$seen=[];$threshold=50.0;
@@ -71,6 +72,23 @@ if($allowed){
     $trend=SchoolSafeGradeNoticeTrend($student,(int)$row['COURSE_PERIOD_ID'],$get);
     $seen=(array)DBGet("SELECT p.FIRST_NAME,p.LAST_NAME,v.SEEN_AT,v.SEEN_BY FROM schoolsafe_grade_seen v JOIN staff p ON p.STAFF_ID=v.SEEN_BY WHERE v.ASSIGNMENT_ID=".$assignment." AND v.STUDENT_ID=".$student." ORDER BY v.SEEN_AT");
     $threshold=(float)(SchoolSafeRemediationSettings($school,$get)['threshold_percent']??50);
+}
+// Lot 10 : explication au parent en francais simple, lingala ou swahili (sans nom, gardee pour la session).
+$explanation='';$explainError='';$explainLang='';
+if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'&&($_POST['action']??'')==='expliquer'&&!$error&&$row['POINTS']!==null&&$row['POINTS']!==''){
+    $langs=SchoolSafeJaspeLanguages();$code=is_string($_POST['langue']??null)&&isset($langs[$_POST['langue']])?$_POST['langue']:'simple';$explainLang=$langs[$code];
+    $names=SchoolSafeJaspeStudentNames($school,$year,$get);
+    $p=(float)$row['MAXIMUM']>0&&(float)$row['POINTS']>=0?round((float)$row['POINTS']*100/(float)$row['MAXIMUM']):null;
+    $facts='Matière : '.ParseMLField((string)$row['COURSE_TITLE']).'. Travail : '.($row['TYPE_TITLE']?:'devoir').' « '.SchoolSafeJaspeMask((string)$row['TITLE'],$names).' ». '
+        .((float)$row['POINTS']<0?'Élève dispensé.':'Note : '.SchoolSafeGradeNoticeNumber($row['POINTS']).' sur '.SchoolSafeGradeNoticeNumber($row['MAXIMUM']).($p!==null?' ('.$p.' %)':'').'.')
+        .' Seuil de réussite de l’école : '.SchoolSafeGradeNoticeNumber($threshold).' %.'.($average!==null?' Moyenne de la classe : '.SchoolSafeGradeNoticeNumber($average).' %.':'')
+        .(SchoolSafeGradeNoticeDirection($trend)!==''?' Progression dans la matière : '.SchoolSafeGradeNoticeDirection($trend).'.':'')
+        .(trim((string)$row['COMMENT'])!==''?' Appréciation de l’enseignant : '.SchoolSafeJaspeMask((string)$row['COMMENT'],$names).'.':'');
+    $key=md5($code.'|'.$facts);
+    if(isset($_SESSION['jaspe_explain'][$key]))$explanation=$_SESSION['jaspe_explain'][$key];
+    elseif(!SchoolSafeJaspeAssistAllowed())$explainError='Trop de demandes à JASPE : patientez une minute.';
+    else{$reply=SchoolSafeJaspeAssistAsk(SchoolSafeJaspeExplainPrompt($code,$facts),'explication',900,null,SchoolSafeJaspeLanguageRule($code));
+        if($reply===null)$explainError='JASPE est indisponible pour le moment.';else{$explanation=SchoolSafeJaspeAssistPlain($reply,1500);$_SESSION['jaspe_explain'][$key]=$explanation;}}
 }
 $schoolName=$allowed?(string)SchoolInfo('TITLE'):'';
 while(ob_get_level()>$level)ob_end_clean();
@@ -116,6 +134,10 @@ $course=ParseMLField((string)$row['COURSE_TITLE']);
 <?php if($answer===null&&!$copy&&!DBGet("SELECT 1 FROM schoolsafe_assignment_keys WHERE ASSIGNMENT_ID=".$assignment)):?><p class="ss-sub">L’enseignant n’a pas encore ajouté de corrigé ni de copie corrigée.</p><?php endif;?>
 <div class="ss-act"><a class="ss-btn light" href="schoolsafe-homework.php?assignment_id=<?=$assignment?>&amp;student=<?=$student?>&amp;download=1">Fiche du devoir</a></div>
 </section>
+<section class="ss-card"><h2>Expliquer cette note</h2>
+<form method="post" style="display:flex;gap:8px;flex-wrap:wrap"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="expliquer">
+<?php foreach(SchoolSafeJaspeLanguages() as $code=>$label):?><button class="ss-btn light" type="submit" name="langue" value="<?=$e($code)?>"><?=$e($label)?></button><?php endforeach;?></form>
+<?php if($explanation!==''):?><p style="white-space:pre-wrap;background:#f4fbf8;border-radius:8px;padding:10px;margin:0"><?=$e($explanation)?></p><p class="ss-sub">Explication proposée par JASPE (<?=$e($explainLang)?>). En cas de doute, la note et le bulletin en français font foi.</p><?php elseif($explainError!==''):?><p class="ss-sub"><?=$e($explainError)?></p><?php endif;?></section>
 <section class="ss-card"><h2>Vu par le parent</h2>
 <?php foreach($seen as $v):?><p class="ok">✓ Vu par <?=$e(trim($v['FIRST_NAME'].' '.$v['LAST_NAME']))?> le <?=$e(SchoolSafeLetterheadDate(substr((string)$v['SEEN_AT'],0,10),false))?>.</p><?php endforeach;?>
 <?php if($profile==='parent'&&$graded&&!$iSaw):?><form method="post"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="vu"><button class="ss-btn" type="submit">J’ai vu cette note</button>

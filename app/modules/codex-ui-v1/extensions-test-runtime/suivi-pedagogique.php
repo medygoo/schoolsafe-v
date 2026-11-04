@@ -9,15 +9,16 @@ $level=ob_get_level();ob_start();require_once __DIR__.'/Warehouse.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyFollowup.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeRemediationSettings.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeLetterhead.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeJaspeAssist.fnc.php';
 $school=(int)UserSchool();$year=(int)UserSyear();$staff=(int)User('STAFF_ID');
 $allowed=$staff>0&&User('PROFILE')==='admin'&&$school>0&&$year>0&&(AllowEdit('School_Setup/Configuration.php')||AllowUse('Grades/ReportCards.php'));
 $today=date('Y-m-d');
 [$from,$to]=SchoolSafeFollowupRange(is_string($_GET['du']??null)?$_GET['du']:null,is_string($_GET['au']??null)?$_GET['au']:null,$today);
 $view=($_GET['vue']??'')==='journal'?'journal':'classes';
-$rows=[];$journal=[];$pass=50.0;
+$rows=[];$journal=[];$pass=50.0;$dropouts=[];
 if($allowed){
     $settings=SchoolSafeRemediationSettings($school,'DBGet');$pass=(float)($settings['threshold_percent']??50);
-    if($view==='classes')$rows=SchoolSafeFollowupRows($school,$year,$from,$to,$today,'DBGet');
+    if($view==='classes'){$rows=SchoolSafeFollowupRows($school,$year,$from,$to,$today,'DBGet');$dropouts=SchoolSafeDropoutRows($school,$year,$pass,'DBGet');}
     else $journal=SchoolSafeFollowupJournal($school,$year,'DBGet',150);
 }
 while(ob_get_level()>$level)ob_end_clean();
@@ -53,6 +54,11 @@ $link=fn($v)=>'suivi-pedagogique.php?'.http_build_query(['du'=>$from,'au'=>$to]+
 <div><b class="<?=$tot['missing']?'ko':''?>"><?=$tot['missing']?></b>copies non notées</div><div><b><?=$tot['abs']?></b>absences en classe</div><div><b><?=$tot['rem']?></b>rattrapages en cours</div><div><b><?=count($teachers)?></b>enseignant(s) à relancer</div></div>
 <?php if($teachers):?><section class="ss-box ss-alert"><h2>À relancer</h2><ul style="margin:0"><?php foreach($teachers as $name=>$items):?><li><b><?=$e($name)?></b><ul><?php foreach($items as $it):?><li><?=$e($it)?></li><?php endforeach;?></ul></li><?php endforeach;?></ul></section>
 <?php elseif($rows):?><p class="ok" role="status">Tout est à jour sur la période : appels, cahiers de textes et copies.</p><?php endif;?>
+<?php if($dropouts):?><section class="ss-box ss-alert"><h2>Élèves à surveiller (risque de décrochage)</h2>
+<p class="ss-sub">Au moins deux signaux sur les 30 derniers jours. Un regard humain décide : appel aux parents, convocation, rattrapage.</p>
+<div class="ss-wrap"><table class="ss-table"><thead><tr><th>Élève</th><th>Signaux</th><th></th></tr></thead><tbody>
+<?php foreach($dropouts as $d):?><tr><td><b><?=$e($d['name'])?></b></td><td><?=$e(implode(' · ',$d['signals']))?></td>
+<td><a href="courriers.php?modele=convocation&amp;eleve=<?=(int)$d['id']?>">Convoquer</a> · <a href="dossier-annee.php?enfant=<?=(int)$d['id']?>">Dossier</a></td></tr><?php endforeach;?></tbody></table></div></section><?php endif;?>
 <section class="ss-box"><h2>Classes et matières</h2>
 <?php if(!$rows):?><p class="ss-sub">Aucune classe pour cette année scolaire.</p><?php else:?>
 <div class="ss-wrap"><table class="ss-table"><thead><tr><th>Matière / classe</th><th>Enseignant</th><th>Élèves</th><th>Appels faits</th><th>Cahier de textes</th><th>Devoirs</th><th>Non notées</th><th>Moyenne</th><th>Absences</th><th>Rattrapage</th></tr></thead><tbody>

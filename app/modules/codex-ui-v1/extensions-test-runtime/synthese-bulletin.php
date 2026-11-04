@@ -10,6 +10,8 @@ $level=ob_get_level();ob_start();require_once __DIR__.'/Warehouse.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeBulletin.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeBulletinDoc.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeNotify.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeJaspeAssist.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeRemediationSettings.fnc.php';
 $school=(int)UserSchool();$year=(int)UserSyear();$staff=(int)User('STAFF_ID');$profile=(string)User('PROFILE');
 $isDirection=$profile==='admin'&&$school>0&&(AllowEdit('School_Setup/Configuration.php')||AllowUse('Grades/ReportCards.php'));
 $get=function($sql){return DBGet($sql);};
@@ -71,6 +73,8 @@ if($allowed&&$classCp&&$mp&&$_SERVER['REQUEST_METHOD']==='POST'){
             if(mb_strlen($reason)<3||mb_strlen($reason)>300)throw new RuntimeException('Indiquez la raison de l’ouverture (3 à 300 caractères).');
             DBQuery("INSERT INTO schoolsafe_bulletin_unlocks(SCHOOL_ID,SYEAR,CLASS_COURSE_PERIOD_ID,STUDENT_ID,MARKING_PERIOD_ID,REASON,UNLOCKED_BY) VALUES(".$school.",".$year.",".$classCp.",".$sid.",".$mp.",'".DBEscapeString($reason)."',".$staff.") ON CONFLICT DO NOTHING");
             $message='Bulletin de '.$students[$sid].' ouvert malgré les frais. La raison est gardée.';
+        }elseif($action==='jaspe_mots'){
+            // Traite apres le calcul de la classe (plus bas) : rien n'est enregistre ici.
         }elseif($action==='frais'){
             if(!$isDirection)throw new RuntimeException('Réglage réservé à la direction.');
             $value=($_POST['frais']??'')==='N'?'N':'Y';
@@ -106,6 +110,26 @@ $branches=$classCp?SchoolSafeBulletinBranches($classCp,$get):[];
 $calc=$classCp?SchoolSafeBulletinCompute($branches,$students,SchoolSafeBulletinMarks($classCp,$get),$terms,SchoolSafeBulletinLangMode($school,$get)):['slots'=>[],'students'=>[],'count'=>0];
 $status=$classCp?SchoolSafeBulletinStatus($classCp,$get):[];
 $rawMarks=$classCp?SchoolSafeBulletinMarks($classCp,$get):[];
+// Lot 10 : JASPE propose le mot du titulaire de chaque eleve (sans nom) ; le titulaire relit puis enregistre.
+$drafts=[];
+if($allowed&&$classCp&&$term==='annee'&&$_SERVER['REQUEST_METHOD']==='POST'&&($_POST['action']??'')==='jaspe_mots'&&!$error&&($isTitulaire||$isDirection)){
+    $threshold=(float)(SchoolSafeRemediationSettings($school,$get)['threshold_percent']??50);
+    $facts=[];$extra=[];
+    foreach($calc['students'] as $sid=>$r){
+        $strong=[];$weak=[];
+        foreach($branches as $b){$c=$r['cells'][(int)$b['COURSE_PERIOD_ID']]['TG']??[null,0];if($c[0]===null||$c[1]<=0)continue;$p=$c[0]*100/$c[1];if($p>=$threshold+20)$strong[]=$b['TITLE'];elseif($p<$threshold)$weak[]=$b['TITLE'];}
+        $abs=(int)(DBGetOne("SELECT count(*) FROM attendance_period ap JOIN attendance_codes ac ON ac.ID=ap.ATTENDANCE_CODE WHERE ap.STUDENT_ID=".$sid." AND ac.SCHOOL_ID=".$school." AND ac.SYEAR=".$year." AND ac.STATE_CODE='A'")?:0);
+        $facts[$sid]=SchoolSafeJaspeAppreciationFacts($r['pct']['TG']??null,$r['rank']['TG']??null,$calc['count'],$strong,$weak,$abs);
+        $extra[$sid]=[$r['pct']['TG']??null,$strong,$weak];
+    }
+    $ids=array_keys($facts);$words=[];
+    if($facts&&count($facts)<=40&&SchoolSafeJaspeAssistAllowed()){
+        $reply=SchoolSafeJaspeAssistAsk(SchoolSafeJaspeAppreciationPrompt(array_values($facts)),'appreciations',1500,null,'Pour cette demande : réponds uniquement par le JSON demandé.');
+        if($reply!==null)$words=SchoolSafeJaspeAppreciationParse($reply,count($ids));
+    }
+    foreach($ids as $i=>$sid)$drafts[$sid]=$words[$i]??SchoolSafeJaspeAppreciationFallback($extra[$sid][0],$threshold,$extra[$sid][1],$extra[$sid][2]);
+    $message=$words?'Mots proposés par JASPE : relisez-les, corrigez-les puis cliquez sur « Enregistrer ».':'JASPE est indisponible : des mots simples ont été proposés à partir des résultats. Relisez-les puis enregistrez.';
+}
 while(ob_get_level()>$level)ob_end_clean();
 if(!$allowed){http_response_code(403);exit('Page réservée aux titulaires et à la direction.');}
 $e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
@@ -141,12 +165,13 @@ $readOnly=static function($sid)use($status,$mp,$isDirection,$isTitulaire){return
 <td><input type="text" name="conduite[<?=$sid?>]" value="<?=$e($st['CONDUITE']??'')?>" maxlength="40" list="sb-mentions"<?=$ro?' disabled':''?>></td>
 <?php if($term==='annee'):?><td><select name="decision[<?=$sid?>]"<?=$ro?' disabled':''?>><option value="">—</option><?php foreach(SchoolSafeBulletinDecisions() as $k=>$lab):?><option value="<?=$e($k)?>"<?=($st['DECISION']??'')===$k?' selected':''?>><?=$e($lab)?></option><?php endforeach;?></select></td>
 <td><input type="text" name="decision_note[<?=$sid?>]" value="<?=$e($st['DECISION_NOTE']??'')?>" maxlength="300" placeholder="ex. repêchage en calcul"<?=$ro?' disabled':''?>></td>
-<td><input type="text" name="titulaire_note[<?=$sid?>]" value="<?=$e($st['TITULAIRE_NOTE']??'')?>" maxlength="600"<?=$ro?' disabled':''?>></td><?php endif;?>
+<td><input type="text" name="titulaire_note[<?=$sid?>]" value="<?=$e($drafts[$sid]??($st['TITULAIRE_NOTE']??''))?>" maxlength="600"<?=$ro?' disabled':''?><?=isset($drafts[$sid])?' style="background:#fff8ec"':''?>></td><?php endif;?>
 <td><?=$e($labels[$st['STATUS']??'brouillon'])?></td>
 <td><a href="bulletin.php?<?=$e(http_build_query(['eleve'=>$sid,'pdf'=>1]))?>" target="_blank" rel="noopener">PDF</a><?php if($isDirection): $acc=SchoolSafeBulletinAccess($sid,$school,$year,date('Y-m-d'),$get); ?><br><span class="sb-sub"><?=$acc['reason']==='fees'?'frais : reste '.$e(SchoolSafeFeeFormatCents((int)$acc['remaining'])):($acc['reason']==='unlocked'?'ouvert (exception)':($acc['open']?'ouvert':'non publié'))?></span><?php endif;?></td></tr><?php endforeach;?>
 </tbody></table></div>
 <datalist id="sb-mentions"><?php foreach($mentions as $m):?><option value="<?=$e($m)?>"><?php endforeach;?></datalist>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><?php if($isTitulaire||$isDirection):?><button class="sb-btn light" name="action" value="enregistrer" type="submit">Enregistrer</button><button class="sb-btn" name="action" value="proposer" type="submit">Proposer à la direction</button><?php endif;?>
+<?php if($term==='annee'&&($isTitulaire||$isDirection)):?><button class="sb-btn light" name="action" value="jaspe_mots" type="submit" formnovalidate>✨ Mots du titulaire proposés par JASPE</button><?php endif;?>
 <?php if($isDirection):?><button class="sb-btn" name="action" value="valider" type="submit">Valider (verrouiller)</button><button class="sb-btn light" name="action" value="rouvrir" type="submit">Rouvrir</button><?php endif;?></div></form></section>
 <?php if($isDirection): $feesOn=SchoolSafeBulletinFeesRequired($school,$get); ?><section class="sb-box"><h2>Accès des parents au bulletin</h2>
 <form method="post" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="frais">

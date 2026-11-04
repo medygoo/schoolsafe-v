@@ -10,6 +10,7 @@ require_once __DIR__.'/ProgramFunctions/SchoolSafeLetters.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeLetterhead.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeHomeworkDesk.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeSchoolDocument.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeJaspeAssist.fnc.php';
 $school=(int)UserSchool();$year=(int)UserSyear();$staff=(int)User('STAFF_ID');$profile=(string)User('PROFILE');
 $staffAllowed=$staff>0&&$profile==='admin'&&$school>0&&$year>0&&AllowUse('Students/Student.php');
 $models=SchoolSafeLetterModels();
@@ -82,6 +83,7 @@ $send=static function(array $L)use($school,$year){
     DBQuery("UPDATE schoolsafe_letters SET SENT_AT=now(),SENT_COUNT=SENT_COUNT+".$count." WHERE ID=".(int)$L['ID']);
     return $count;
 };
+$jaspeBody='';$jaspeIntent='';
 if($staffAllowed&&$_SERVER['REQUEST_METHOD']==='POST'){
     try{
         if(!is_string($_POST['csrf']??null)||!hash_equals($csrf,$_POST['csrf']))throw new RuntimeException('Session expirée : rechargez la page.');
@@ -112,6 +114,17 @@ if($staffAllowed&&$_SERVER['REQUEST_METHOD']==='POST'){
             if($L[1]['KIND']==='attestation')throw new RuntimeException('Une attestation s’imprime ; elle ne s’envoie pas.');
             $sent=$send($L[1]);$savedId=(int)$L[1]['ID'];
             $message='Courrier '.$L[1]['REFERENCE'].' envoyé : '.$sent.' élève(s) dont les parents n’avaient pas encore reçu ce courrier.';
+        }elseif(($_POST['action']??'')==='jaspe'){
+            // Lot 10 : JASPE propose un texte ; la direction relit et complete avant d'enregistrer.
+            $k=(string)($_POST['kind']??'');
+            if(!isset($models[$k]))throw new RuntimeException('Choisissez un modèle.');
+            $jaspeIntent=mb_substr((string)($_POST['intent']??''),0,400);
+            $prompt=SchoolSafeJaspeLetterPrompt($models[$k][0],SchoolSafeJaspeMask($jaspeIntent,SchoolSafeJaspeStudentNames($school,$year,static function($sql){return DBGet($sql);})));
+            if(!SchoolSafeJaspeAssistAllowed())throw new RuntimeException('Trop de demandes à JASPE : patientez une minute.');
+            $reply=SchoolSafeJaspeAssistAsk($prompt,'courrier',1500,null,'Pour cette demande : écris le courrier complet demandé (120 à 220 mots), sans te limiter à quatre phrases.');
+            if($reply===null)throw new RuntimeException('JASPE est indisponible pour le moment : partez du modèle ci-dessous.');
+            $jaspeBody=SchoolSafeJaspeLetterClean($reply);
+            $message='Brouillon de JASPE prêt : relisez-le, complétez les « … » et vérifiez chaque mot avant d’enregistrer.';
         }else throw new RuntimeException('Action inconnue.');
     }catch(Throwable $failure){
         if($inTx)DBQuery('ROLLBACK');
@@ -123,6 +136,7 @@ $pickStudent=isset($_GET['eleve'])&&ctype_digit((string)$_GET['eleve'])&&isset($
 $pickClass=isset($_GET['classe'])&&ctype_digit((string)$_GET['classe'])&&isset($classes[(int)$_GET['classe']])?(int)$_GET['classe']:0;
 $draftSubject=$kind?SchoolSafeLetterFill($models[$kind][2],$vars($pickStudent,$pickClass)):'';
 $draftBody=$kind?SchoolSafeLetterFill($models[$kind][3],$vars($pickStudent,$pickClass)):'';
+if($kind&&$jaspeBody!=='')$draftBody=SchoolSafeLetterFill($jaspeBody,$vars($pickStudent,$pickClass));
 $register=$staffAllowed?(array)DBGet("SELECT l.*,s.FIRST_NAME,s.LAST_NAME,c.TITLE AS CLASS_TITLE FROM schoolsafe_letters l LEFT JOIN students s ON s.STUDENT_ID=l.STUDENT_ID LEFT JOIN course_periods cp ON cp.COURSE_PERIOD_ID=l.COURSE_PERIOD_ID LEFT JOIN courses c ON c.COURSE_ID=cp.COURSE_ID"
     ." WHERE l.SCHOOL_ID=".$school." AND l.SYEAR=".$year." ORDER BY l.CREATED_AT DESC LIMIT 100"):[];
 while(ob_get_level()>$level)ob_end_clean();
@@ -150,6 +164,9 @@ $need=$kind?$models[$kind][4]:'';
 <?php if($need!=='eleve'||$pickStudent):?>
 <section class="ss-box"><h2><?=$need==='aucun'?'2':'3'?>. Relire et compléter</h2>
 <p class="ss-sub">Les informations de l’école, de l’élève et de la classe sont déjà remplies. Complétez les « … » et vérifiez le texte avant d’enregistrer.</p>
+<form method="post" class="ss-grid" style="align-items:end;background:#f4fbf8;border:1px dashed #08766b;border-radius:10px;padding:10px"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="jaspe"><input type="hidden" name="kind" value="<?=$e($kind)?>">
+<label style="grid-column:1/-1">✨ Rédiger avec JASPE — dites en quelques mots ce que le courrier doit dire<input type="text" name="intent" maxlength="400" value="<?=$e($jaspeIntent)?>" placeholder="ex. retards répétés le matin depuis deux semaines ; rencontrer les parents pour trouver une solution"></label>
+<div><button class="ss-btn" type="submit">Proposer un texte</button></div><p class="ss-sub" style="grid-column:1/-1;margin:0">JASPE propose, vous relisez et corrigez. Les noms des élèves ne lui sont jamais envoyés.</p></form>
 <form method="post"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="enregistrer"><input type="hidden" name="kind" value="<?=$e($kind)?>">
 <input type="hidden" name="student" value="<?=$pickStudent?>"><input type="hidden" name="class" value="<?=$pickClass?>">
 <?php if($models[$kind][5]):?><div class="ss-grid"><label>Date du rendez-vous<input type="date" name="date" required></label><label>Heure<input type="time" name="time" value="08:00" required></label><label>Lieu<input type="text" name="place" maxlength="200" placeholder="ex. au bureau de la direction"></label></div><?php endif;?>
