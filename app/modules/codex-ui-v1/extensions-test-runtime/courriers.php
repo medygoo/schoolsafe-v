@@ -149,8 +149,8 @@ $need=$kind?$models[$kind][4]:'';
 .ss-l label{display:grid;gap:4px;font-size:14px}.ss-l input[type=text],.ss-l input[type=date],.ss-l input[type=time],.ss-l select,.ss-l textarea{min-height:38px;font-size:15px;box-sizing:border-box;width:100%}.ss-l textarea{min-height:260px}
 .ss-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.ss-chips{display:flex;gap:8px;flex-wrap:wrap}.ss-chips a{border:1px solid #c9d8d2;border-radius:16px;padding:6px 12px;background:#f4fbf8;color:#08766b;text-decoration:none}
 .ss-chips a.on{background:#08766b;color:#fff}.ss-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
-.ss-table{width:100%;border-collapse:collapse;font-size:14px}.ss-table td,.ss-table th{border-bottom:1px solid #e3ebe8;padding:6px;text-align:left;vertical-align:top}.ss-ok{color:#08766b;font-weight:600}.ss-ko{color:#a32d2d;font-weight:600}.ss-sub{color:#556777;font-size:13px}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="papier-ecole.php">Papier de l’école</a></header>
+.ss-table{width:100%;border-collapse:collapse;font-size:14px}.ss-table td,.ss-table th{border-bottom:1px solid #e3ebe8;padding:6px;text-align:left;vertical-align:top}.ss-ok{color:#08766b;font-weight:600}.ss-ko{color:#a32d2d;font-weight:600}.ss-sub{color:#556777;font-size:13px}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('courriers.php',0); ?>
 <main class="ss-l"><h1>Convocations et courriers</h1>
 <?php if($message):?><p class="ss-ok" role="status"><?=$e($message)?><?php if($savedId):?> <a href="courriers.php?voir=<?=$savedId?>" target="_blank" rel="noopener">Voir</a> · <a href="courriers.php?pdf=<?=$savedId?>">Imprimer (PDF)</a><?php endif;?></p><?php endif;?>
 <?php if($error):?><p class="ss-ko" role="alert"><?=$e($error)?></p><?php endif;?>

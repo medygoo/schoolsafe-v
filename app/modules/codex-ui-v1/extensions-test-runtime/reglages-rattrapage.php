@@ -36,8 +36,8 @@ $text=SchoolSafeRemediationRuleText($s);
 .ss-rr legend{font-weight:700;color:#08766b;padding:0 6px}.ss-rr label{display:grid;gap:4px;font-size:15px}.ss-rr label.inline{display:flex;gap:8px;align-items:center}
 .ss-rr input[type=text]{min-height:38px;font-size:15px;max-width:140px}.ss-rr small{color:#5b6b80}
 .ss-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer}
-.ss-legend{font-size:14px;line-height:1.6;background:#f4fbf8;border-left:4px solid #08766b;padding:10px 12px}.ss-ok{color:#08766b;font-weight:600}.ss-ko{color:#a32d2d;font-weight:600}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="rattrapage.php">Rattrapage</a></header>
+.ss-legend{font-size:14px;line-height:1.6;background:#f4fbf8;border-left:4px solid #08766b;padding:10px 12px}.ss-ok{color:#08766b;font-weight:600}.ss-ko{color:#a32d2d;font-weight:600}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('reglages-rattrapage.php',0); ?>
 <main class="ss-rr"><h1>Réglages du rattrapage</h1>
 <div class="ss-legend"><strong><?=$s['saved']?'Règles actuelles de l’école':'Règles d’origine (aucun réglage enregistré)'?></strong><br>
 <?=$e($text['detection'])?><br><?=$e($text['vigilance'])?><br><?=$e($text['share'])?><br><?=$e($text['teacher'])?><br><?=$e($text['pass'])?></div>

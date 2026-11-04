@@ -36,9 +36,9 @@ ob_start();
 <title>Rattrapage | SchoolSafe</title>
 <link rel="stylesheet" href="schoolsafe-remediation/remediation.css?v=3">
 <script src="schoolsafe-remediation/card-scan.js?v=1" defer></script>
-</head>
+<?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
 <body>
-<header><strong>School<span>Safe</span></strong><a href="Modules.php?modname=misc/Portal.php">Tableau de bord</a></header>
+<?php echo SchoolSafePedagogyHeader('rattrapage.php',0); ?>
 <main>
 <nav aria-label="Fil d'Ariane">P&eacute;dagogie / Rattrapage</nav>
 <h1>Rattrapage</h1>

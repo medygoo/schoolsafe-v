@@ -18,33 +18,31 @@ $add = static function ($branch, $group, $title, $url) use (&$links) {
 if (SchoolSafeNativePermission('SchoolSafe/Studio.php')) {
     $add('school', 'Cartes SchoolSafe', 'Studio de cartes', 'Modules.php?modname=SchoolSafe/Studio.php');
 }
-// Preparer l'annee (03/11) : etapes de preparation de l'annee, administrateur avec la configuration de l'ecole.
-if (User('PROFILE') === 'admin' && AllowEdit('School_Setup/Configuration.php')) {
-    $add('pedagogy', 'Organisation pédagogique', 'Préparer l’année', 'preparer-annee.php');
-    // Branches et maxima du bulletin (04/11) : liste par niveau, appliquee aux classes.
-    $add('pedagogy', 'Organisation pédagogique', 'Branches et maxima', 'branches-classe.php');
-    // Synthese du bulletin (04/11) : la direction valide les bulletins proposes par les titulaires.
-    $add('pedagogy', 'Organisation pédagogique', 'Synthèse du bulletin', 'synthese-bulletin.php');
-    // Papier de l'ecole (04/11) : en-tete, pied de page et dispositions des documents.
-    $add('school', 'Organisation scolaire', 'Papier de l’école', 'papier-ecole.php');
-    // Archives de l'ecole (04/11) : documents deposes par photo ou PDF, classes et retrouvables.
-    $add('school', 'Organisation scolaire', 'Archives de l’école', 'archives.php');
+// Pedagogie (04/11, harmonisation demandee par le proprietaire) : un parcours par profil, dans l'ordre d'usage.
+// Ce sont des entrees, pas des droits : chaque page verifie son propre acces.
+require_once __DIR__ . '/ProgramFunctions/SchoolSafePedagogyNav.fnc.php';
+if (User('PROFILE') === 'admin') {
+    $ssConfig = AllowEdit('School_Setup/Configuration.php');
+    $ssReports = $ssConfig || AllowUse('Grades/ReportCards.php');
+    if ($ssConfig) {
+        $add('pedagogy', '1 · Organiser l’année', 'Préparer l’année', 'preparer-annee.php');
+        $add('pedagogy', '1 · Organiser l’année', 'Branches et maxima', 'branches-classe.php');
+        $add('pedagogy', '1 · Organiser l’année', 'Papier de l’école', 'papier-ecole.php');
+    }
+    if ($ssReports) {
+        $add('pedagogy', '2 · Suivre et évaluer', 'Suivi pédagogique', 'suivi-pedagogique.php');
+        $add('pedagogy', '2 · Suivre et évaluer', 'Synthèse du bulletin', 'synthese-bulletin.php');
+    }
+    if (AllowUse('Students/Student.php')) $add('pedagogy', '3 · Communiquer et archiver', 'Convocations et courriers', 'courriers.php');
+    if ($ssConfig) $add('pedagogy', '3 · Communiquer et archiver', 'Archives de l’école', 'archives.php');
+    if ($ssConfig || $ssReports) $add('pedagogy', 'Aide', 'Mode d’emploi Pédagogie', 'guide-pedagogie.php#direction');
 }
-// Suivi pedagogique (04/11, lot 9) : direction avec la configuration de l'ecole ou les bulletins.
-if (User('PROFILE') === 'admin' && (AllowEdit('School_Setup/Configuration.php') || AllowUse('Grades/ReportCards.php'))) {
-    $add('pedagogy', 'Organisation pédagogique', 'Suivi pédagogique', 'suivi-pedagogique.php');
-}
-// Convocations et courriers (04/11) : modeles remplis, registre numerote, impression, envoi aux parents.
-if (User('PROFILE') === 'admin' && AllowUse('Students/Student.php')) {
-    $add('communication', 'Courriers', 'Convocations et courriers', 'courriers.php');
-}
-// Ma journee de classe (04/11) : classes du jour, appel rapide, cahier de textes.
 if (User('PROFILE') === 'teacher') {
-    $add('pedagogy', 'Ma journée', 'Ma journée de classe', 'ma-journee.php');
-    $add('pedagogy', 'Ma journée', 'Devoirs et travaux', 'devoirs-travaux.php');
-    // Bulletin (04/11) : notes de periode et d'examen ; synthese pour le titulaire.
-    $add('pedagogy', 'Ma journée', 'Notes du bulletin', 'notes-bulletin.php');
-    $add('pedagogy', 'Ma journée', 'Synthèse du bulletin', 'synthese-bulletin.php');
+    $add('pedagogy', 'Ma classe', 'Ma journée de classe', 'ma-journee.php');
+    $add('pedagogy', 'Ma classe', 'Devoirs et travaux', 'devoirs-travaux.php');
+    $add('pedagogy', 'Ma classe', 'Notes du bulletin', 'notes-bulletin.php');
+    if (SchoolSafePedagogyIsTitulaire()) $add('pedagogy', 'Ma classe', 'Synthèse du bulletin (titulaire)', 'synthese-bulletin.php');
+    $add('pedagogy', 'Aide', 'Mode d’emploi Pédagogie', 'guide-pedagogie.php#enseignant');
 }
 if (SchoolSafeNativePermission('SchoolSafe/RemediationRead.php')) {
     $add('pedagogy', 'Accompagnement', 'Rattrapage', 'Modules.php?modname=SchoolSafe/RemediationRead.php');
@@ -79,6 +77,8 @@ if (in_array(User('PROFILE'), ['parent', 'student'], true)) {
     $add('communication', 'Suivi de mon enfant', 'Travail de mon enfant', 'travail-enfant.php');
     // Dossier de l'annee (04/11) : tous les travaux de l'annee, bilan et PDF.
     $add('communication', 'Suivi de mon enfant', 'Dossier de l’année', 'dossier-annee.php');
+    $add('communication', 'Suivi de mon enfant', 'Bulletin', 'bulletin.php');
+    $add('communication', 'Suivi de mon enfant', 'Mode d’emploi', 'guide-pedagogie.php#' . (User('PROFILE') === 'student' ? 'eleve' : 'parent'));
 }
 if (User('PROFILE') === 'parent') {
     $add('communication', 'Suivi de mon enfant', 'Signaler une absence ou un retard', 'signaler-absence.php');

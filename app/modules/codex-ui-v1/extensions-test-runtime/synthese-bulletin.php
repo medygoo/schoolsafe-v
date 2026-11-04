@@ -146,8 +146,8 @@ $readOnly=static function($sid)use($status,$mp,$isDirection,$isTitulaire){return
 .sb-chips{display:flex;gap:6px;flex-wrap:wrap}.sb-chips a{border:1px solid #c9d8d2;border-radius:16px;padding:5px 11px;background:#f4fbf8;color:#08766b;text-decoration:none;font-size:14px}.sb-chips a.on{background:#08766b;color:#fff}
 .sb-wrap{overflow-x:auto}.sb-table{border-collapse:collapse;font-size:14px;width:100%}.sb-table th,.sb-table td{border:1px solid #e3ebe8;padding:5px;text-align:center;vertical-align:middle}.sb-table th{background:#f4fbf8;font-size:12px}.sb-table td.l{text-align:left}
 .sb-table input,.sb-table select{min-height:32px;font-size:14px;max-width:130px}.sb-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer}.sb-btn.light{background:#eef7f4;color:#08766b;border:1px solid #08766b}
-.sb-ok{color:#08766b;font-weight:600}.sb-ko{color:#a32d2d;font-weight:600}.sb-sub{color:#556777;font-size:13px}.sb-miss{color:#a86200;font-weight:600}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="notes-bulletin.php">Notes du bulletin</a></header>
+.sb-ok{color:#08766b;font-weight:600}.sb-ko{color:#a32d2d;font-weight:600}.sb-sub{color:#556777;font-size:13px}.sb-miss{color:#a86200;font-weight:600}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('synthese-bulletin.php',0); ?>
 <main class="sb"><h1>Synthèse du bulletin</h1>
 <?php if($message):?><p class="sb-ok" role="status"><?=$e($message)?></p><?php endif;?><?php if($error):?><p class="sb-ko" role="alert"><?=$e($error)?></p><?php endif;?>
 <?php if(!$classes):?><p>Aucune classe avec des branches. La direction les crée dans « Branches et maxima ».</p><?php else:?>

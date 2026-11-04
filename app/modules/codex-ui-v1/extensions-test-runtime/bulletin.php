@@ -82,8 +82,8 @@ $e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bulletin | SchoolSafe</title><link rel="stylesheet" href="schoolsafe-card-bridge/parent-notifications.css">
 <style>.bu{display:grid;gap:14px;max-width:760px}.bu-card{border:1px solid #c9d8d2;border-radius:12px;padding:16px;display:grid;gap:10px;background:#fff}.bu-btn{min-height:44px;background:#08766b;color:#fff;border-radius:8px;font-size:15px;padding:0 16px;text-decoration:none;display:inline-flex;align-items:center;width:max-content}
-.bu-warn{background:#fff8ec;border:1px solid #f0d7a8}.bu-sub{color:#556777;font-size:14px}</style></head>
-<body><header><strong>SchoolSafe</strong><?php if($family):?><a href="travail-enfant.php?enfant=<?=$sid?>">Travail de mon enfant</a><?php else:?><a href="synthese-bulletin.php">Synthèse du bulletin</a><?php endif;?></header>
+.bu-warn{background:#fff8ec;border:1px solid #f0d7a8}.bu-sub{color:#556777;font-size:14px}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('bulletin.php',(int)($sid??0)); ?>
 <main class="bu"><h1>Bulletin</h1>
 <?php if($html!==''):?><section class="bu-card"><p><?=$isStaff?'Aperçu du bulletin (marqué « PROJET » tant que tout n’est pas validé).':'Le bulletin de votre enfant est disponible.'?></p>
 <a class="bu-btn" href="bulletin.php?<?=$e(http_build_query(['eleve'=>$sid,'pdf'=>1]))?>" target="_blank" rel="noopener">📄 Ouvrir le bulletin (PDF)</a>

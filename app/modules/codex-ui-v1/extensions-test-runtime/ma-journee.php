@@ -86,8 +86,8 @@ $policies=[];
 .ss-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer}.ss-btn.light{background:#eef7f4;color:#08766b;border:1px solid #08766b}
 .ss-links{display:flex;gap:10px;flex-wrap:wrap}.ss-links a{background:#f4fbf8;border:1px solid #c9d8d2;border-radius:8px;padding:8px 12px;color:#08766b;text-decoration:none}
 .ss-diary{display:grid;gap:8px}.ss-diary textarea{width:100%;min-height:70px;font-size:15px;box-sizing:border-box}.ss-ok{color:#08766b;font-weight:600}.ss-ko{color:#a32d2d;font-weight:600}
-@media(max-width:600px){.ss-roll td:nth-child(2){display:none}}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="Modules.php?modname=misc/Portal.php">Tableau de bord</a></header>
+@media(max-width:600px){.ss-roll td:nth-child(2){display:none}}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('ma-journee.php',0); ?>
 <main class="ss-day"><h1>Ma journée de classe</h1>
 <div class="ss-nav"><a href="ma-journee.php?date=<?=$e($prev)?>">← Jour précédent</a><strong><?=$e(ucfirst(SchoolSafeLetterheadDate($date)))?></strong>
 <?php if($date!==$today):?><a href="ma-journee.php?date=<?=$e($next)?>">Jour suivant →</a> <a href="ma-journee.php">Aujourd’hui</a><?php endif;?></div>

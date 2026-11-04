@@ -108,8 +108,8 @@ $course=ParseMLField((string)$row['COURSE_TITLE']);
 .ss-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}.ss-btn.light{background:#eef7f4;color:#08766b;border:1px solid #08766b}
 .ss-act{display:flex;gap:8px;flex-wrap:wrap}.ss-answer{white-space:pre-wrap;background:#f4fbf8;border-radius:8px;padding:10px;font-size:15px}.ss-copy{max-width:100%;border:1px solid #c9d8d2;border-radius:8px}
 .ss-bars{display:flex;gap:6px;align-items:flex-end;height:70px}.ss-bars div{flex:1;background:#cfe8e1;border-radius:4px 4px 0 0;position:relative;min-height:4px}.ss-bars div.cur{background:#08766b}.ss-bars span{position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:12px}
-.ss-help{background:#fff4f2;border:1px solid #f0c8c0}</style></head>
-<body><header><strong>SchoolSafe</strong><?php if($isParent):?><a href="travail-enfant.php?enfant=<?=$student?>">Travail de mon enfant</a><?php elseif($profile==='teacher'):?><a href="devoirs-travaux.php?corriger=<?=$assignment?>#correction">Corriger ce devoir</a><?php endif;?></header>
+.ss-help{background:#fff4f2;border:1px solid #f0c8c0}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('note-devoir.php',(int)($student??0)); ?>
 <main class="ss-nt">
 <h1><?=$e($course)?> — <?=$e(($row['TYPE_TITLE']?$row['TYPE_TITLE'].' « ':'« ').$row['TITLE'].' »')?></h1>
 <p class="ss-sub"><?=$e($row['FIRST_NAME'].' '.$row['LAST_NAME'])?> · donné le <?=$e(SchoolSafeLetterheadDate((string)($row['ASSIGNED_DATE']??''),false))?><?=$row['DUE_DATE']?' · à rendre le '.$e(SchoolSafeLetterheadDate((string)$row['DUE_DATE'],false)):''?> · enseignant : <?=$e(trim(($row['T_FIRST']??'').' '.($row['T_LAST']??'')))?></p>

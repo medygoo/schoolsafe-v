@@ -81,8 +81,8 @@ if($pdf){
 .pf-table{width:100%;border-collapse:collapse;font-size:14px}.pf-table th,.pf-table td{border-bottom:1px solid #e3ebe8;padding:6px;text-align:left;vertical-align:middle}.pf-ok{color:#08766b;font-weight:600}.pf-mid{color:#a86200;font-weight:600}.pf-ko{color:#a32d2d;font-weight:600}
 .pf-chips{display:flex;gap:6px;flex-wrap:wrap}.pf-chips a{border:1px solid #c9d8d2;border-radius:16px;padding:4px 10px;background:#f4fbf8;color:#08766b;text-decoration:none;font-size:13px}.pf-chips a.on{background:#08766b;color:#fff}
 .pf-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;text-decoration:none;display:inline-flex;align-items:center}.pf-btn.light{background:#eef7f4;color:#08766b;border:1px solid #08766b}
-.pf-sub{color:#556777;font-size:13px}details summary{cursor:pointer;font-weight:600;color:#08766b;font-size:17px}@media(max-width:640px){.pf-table .hide-sm{display:none}}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="travail-enfant.php<?=$sid?'?enfant='.$sid:''?>">Travail de mon enfant</a></header>
+.pf-sub{color:#556777;font-size:13px}details summary{cursor:pointer;font-weight:600;color:#08766b;font-size:17px}@media(max-width:640px){.pf-table .hide-sm{display:none}}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('dossier-annee.php',(int)($sid??0)); ?>
 <main class="pf"><h1>Dossier de l’année</h1>
 <?php if(!$child):?><p>Aucun enfant inscrit n’est lié à ce compte.</p><?php else:?>
 <?php if(count($children)>1):?><div class="pf-chips"><?php foreach($children as $c):?><a class="<?=(int)$c['STUDENT_ID']===$sid?'on':''?>" href="dossier-annee.php?enfant=<?=(int)$c['STUDENT_ID']?>"><?=$e($c['FIRST_NAME'])?></a><?php endforeach;?></div><?php endif;?>

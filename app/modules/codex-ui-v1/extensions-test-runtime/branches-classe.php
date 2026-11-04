@@ -74,8 +74,8 @@ $isOn=fn($v)=>in_array((string)$v,['t','1','true','Y'],true);
 .br-table{width:100%;border-collapse:collapse;font-size:14px}.br-table th,.br-table td{border-bottom:1px solid #e3ebe8;padding:4px;text-align:left;vertical-align:middle}.br-table input[type=text]{min-height:34px;font-size:14px;width:100%;box-sizing:border-box}
 .br-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}.br-btn.light{background:#eef7f4;color:#08766b;border:1px solid #08766b}
 .br-ok{color:#08766b;font-weight:600}.br-ko{color:#a32d2d;font-weight:600}.br-sub{color:#556777;font-size:13px}.br-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end}.br-grid label{display:grid;gap:4px;font-size:14px}.br-grid select{min-height:38px}
-.br-prev{background:#f4fbf8;border:1px solid #08766b}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="preparer-annee.php">Préparer l’année</a></header>
+.br-prev{background:#f4fbf8;border:1px solid #08766b}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('branches-classe.php',0); ?>
 <main class="br"><h1>Branches et maxima du bulletin</h1>
 <p class="br-sub">Chaque branche devient un cours de la classe : le titulaire y donne ses notes en français ; le professeur d’anglais, s’il y en a un, y donne les siennes. Le titulaire fera la synthèse du bulletin. Rien n’est jamais effacé.</p>
 <?php if($message):?><p class="br-ok" role="status"><?=$e($message)?></p><?php endif;?><?php if($error):?><p class="br-ko" role="alert"><?=$e($error)?></p><?php endif;?>

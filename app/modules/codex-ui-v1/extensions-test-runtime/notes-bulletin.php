@@ -78,8 +78,8 @@ $n=fn($v)=>SchoolSafeBulletinNumber($v);
 .nb-chips{display:flex;gap:6px;flex-wrap:wrap}.nb-chips a{border:1px solid #c9d8d2;border-radius:16px;padding:5px 11px;background:#f4fbf8;color:#08766b;text-decoration:none;font-size:14px}.nb-chips a.on{background:#08766b;color:#fff}
 .nb-wrap{overflow-x:auto}.nb-table{border-collapse:collapse;font-size:14px}.nb-table th,.nb-table td{border:1px solid #e3ebe8;padding:4px;text-align:center}.nb-table th{background:#f4fbf8;font-size:12px;max-width:90px}.nb-table td:first-child,.nb-table th:first-child{text-align:left;position:sticky;left:0;background:#fff;min-width:150px}
 .nb-table input{width:58px;min-height:32px;font-size:15px;text-align:center}.nb-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer}.nb-btn.light{background:#eef7f4;color:#08766b;border:1px solid #08766b}
-.nb-ok{color:#08766b;font-weight:600}.nb-ko{color:#a32d2d;font-weight:600}.nb-sub{color:#556777;font-size:13px}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="devoirs-travaux.php">Devoirs et travaux</a></header>
+.nb-ok{color:#08766b;font-weight:600}.nb-ko{color:#a32d2d;font-weight:600}.nb-sub{color:#556777;font-size:13px}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('notes-bulletin.php',0); ?>
 <main class="nb"><h1>Notes du bulletin</h1>
 <?php if($message):?><p class="nb-ok" role="status"><?=$e($message)?></p><?php endif;?><?php if($error):?><p class="nb-ko" role="alert"><?=$e($error)?></p><?php endif;?>
 <?php if(!$classes):?><p>Aucune branche ne vous est confiée. La direction attribue les branches dans « Branches et maxima ».</p><?php else:?>

@@ -1,0 +1,76 @@
+/* Pedagogie SchoolSafe : apparence commune a toutes les pages (04/11, harmonisation demandee par le
+   proprietaire). Chargee en dernier : memes couleurs, cartes, boutons, tableaux et messages partout.
+   Aucune information n'est masquee ; seule la presentation est unifiee. */
+:root{--pg-green:#08766b;--pg-green-dark:#0b4f48;--pg-soft:#eef7f4;--pg-line:#d6e4df;--pg-text:#17263b;--pg-muted:#556777;--pg-bad:#a32d2d;--pg-warn:#a86200;--pg-bg:#f4f8f6}
+html body{background:var(--pg-bg);color:var(--pg-text);font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.45}
+
+/* En-tete commun */
+html body header.pg-head{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-height:56px;padding:10px 18px;background:var(--pg-green-dark);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.pg-head .pg-brand{color:#fff;text-decoration:none;font-size:19px;letter-spacing:.2px}
+.pg-head .pg-brand b{color:#9fe3d6}
+.pg-head .pg-title{font-weight:700;font-size:16px;opacity:.95}
+.pg-head .pg-tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.pg-head .pg-tools a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.45);border-radius:18px;padding:6px 12px;font-size:14px;white-space:nowrap}
+.pg-head .pg-tools a:hover,.pg-head .pg-tools a[aria-current]{background:#fff;color:var(--pg-green-dark)}
+
+/* Parcours du profil */
+/* La feuille de base stylise nav, ol et li (fil des notifications) : remise a zero pour le parcours et le mode d'emploi. */
+html body nav.pg-steps{display:block;flex-wrap:nowrap;gap:0;padding:0;border-bottom:1px solid var(--pg-line)}
+html body nav.pg-steps li,html body .gd-steps li{padding:0;border:0;border-left:0;overflow-wrap:normal}
+.pg-steps{background:#fff;border-bottom:1px solid var(--pg-line);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pg-steps ol{list-style:none;margin:0 auto;padding:8px 14px;display:flex;gap:6px;max-width:1220px;align-items:center}
+.pg-steps li{flex:0 0 auto;display:flex;align-items:center;gap:6px}
+.pg-steps li[data-group]:not(:first-child)::before{content:attr(data-group);font-size:11px;color:var(--pg-muted);text-transform:uppercase;letter-spacing:.4px;margin:0 2px 0 10px;padding-left:10px;border-left:1px solid var(--pg-line)}
+.pg-steps li[data-group]:first-child::before{content:attr(data-group);font-size:11px;color:var(--pg-muted);text-transform:uppercase;letter-spacing:.4px;margin-right:2px}
+.pg-steps a{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--pg-green);background:var(--pg-soft);border:1px solid var(--pg-line);border-radius:20px;padding:6px 12px 6px 6px;font-size:14px;white-space:nowrap}
+.pg-steps a span{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#fff;border:1px solid var(--pg-line);font-size:12px;font-weight:700}
+.pg-steps li.on a{background:var(--pg-green);color:#fff;border-color:var(--pg-green);font-weight:700}
+.pg-steps li.on a span{background:#fff;color:var(--pg-green);border-color:#fff}
+
+/* Zone de travail */
+html body > main{max-width:1220px;margin:0 auto!important;padding:18px 16px 48px!important;display:grid;gap:16px}
+/* Un contenu large (tableau, texte) reste dans la page au lieu d'elargir la grille. */
+html body > main > *{min-width:0;max-width:100%}
+html body > main{overflow-wrap:anywhere}
+.ss-chips{display:flex;gap:8px;flex-wrap:wrap}.ss-chips a{padding:5px 12px;text-decoration:none;font-size:14px}
+html body > main > h1{margin:4px 0 0;font-size:24px;color:var(--pg-green-dark)}
+html body main h2{color:var(--pg-green-dark)}
+
+/* Cartes */
+.ss-box,.ss-card,.pf-card,.br-box,.sb-box,.nb-box,.bu-card,.ss-class,.ss-year section,.ss-pe fieldset{background:#fff;border:1px solid var(--pg-line)!important;border-radius:12px!important;box-shadow:0 1px 3px rgba(23,38,59,.05)}
+
+/* Boutons */
+.ss-btn,.pf-btn,.br-btn,.nb-btn,.sb-btn,.bu-btn{min-height:44px;border-radius:8px!important;background:var(--pg-green)!important;color:#fff!important;border:1px solid var(--pg-green)!important;font-size:15px;padding:0 16px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.ss-btn.light,.pf-btn.light,.br-btn.light,.nb-btn.light,.sb-btn.light,.bu-btn.light{background:var(--pg-soft)!important;color:var(--pg-green)!important}
+.ss-btn:hover,.pf-btn:hover,.br-btn:hover,.nb-btn:hover,.sb-btn:hover,.bu-btn:hover{filter:brightness(1.06)}
+button:disabled{opacity:.55;cursor:not-allowed}
+
+/* Puces et onglets */
+.ss-chips a,.pf-chips a,.br-chips a,.nb-chips a,.sb-chips a,.ss-tabs a,.ss-cats a{border:1px solid var(--pg-line)!important;border-radius:16px!important;background:var(--pg-soft)!important;color:var(--pg-green)!important}
+.ss-chips a.on,.pf-chips a.on,.br-chips a.on,.nb-chips a.on,.sb-chips a.on,.ss-tabs a.on,.ss-cats a.on{background:var(--pg-green)!important;color:#fff!important;border-color:var(--pg-green)!important}
+
+/* Tableaux */
+.ss-table,.pf-table,.br-table,.nb-table,.sb-table{font-size:14px;border-collapse:collapse}
+.ss-table th,.pf-table th,.br-table th,.nb-table th,.sb-table th{background:var(--pg-soft);color:var(--pg-green-dark);font-weight:700}
+.ss-table td,.ss-table th,.pf-table td,.pf-table th,.br-table td,.br-table th{border-color:var(--pg-line)!important}
+
+/* Champs */
+html body main input[type=text],html body main input[type=date],html body main input[type=time],html body main input[type=search],html body main select,html body main textarea{border:1px solid #b9cbc5;border-radius:8px;padding:6px 8px;background:#fff;font:inherit}
+html body main input:focus,html body main select:focus,html body main textarea:focus{outline:2px solid rgba(8,118,107,.35);border-color:var(--pg-green)}
+
+/* Messages */
+.ss-ok,.pf-ok,.br-ok,.nb-ok,.sb-ok,.ok{color:var(--pg-green)}
+.ss-ko,.pf-ko,.br-ko,.nb-ko,.sb-ko,.bad{color:var(--pg-bad)}
+p[role=status].ss-ok,p[role=status].br-ok,p[role=status].nb-ok,p[role=status].sb-ok,p[role=status].ok{background:#e9f7f2;border:1px solid #bfe3d6;border-radius:10px;padding:10px 12px;margin:0}
+p[role=alert]{background:#fdeeee;border:1px solid #f0c8c0;border-radius:10px;padding:10px 12px;margin:0}
+.ss-sub,.pf-sub,.br-sub,.nb-sub,.sb-sub,.bu-sub{color:var(--pg-muted)}
+
+/* Telephone */
+@media (max-width:640px){
+  html body header.pg-head{padding:8px 12px;gap:8px}
+  .pg-head .pg-tools{margin-left:0;width:100%}
+  html body > main{padding:12px 10px 40px!important}
+  html body > main > h1{font-size:21px}
+}
+/* Impression : seulement le contenu */
+@media print{header.pg-head,.pg-steps{display:none!important}html body{background:#fff}html body > main{padding:0!important}}

@@ -104,8 +104,8 @@ $money=fn($a,$c)=>$a===null||$a===''?'':number_format((float)$a,2,',',' ').' '.$
 .ss-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}.ss-btn.light{background:#eef7f4;color:#08766b;border:1px solid #08766b}
 .ss-drop{border:2px dashed #08766b;border-radius:12px;padding:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#f4fbf8}.ss-drop input[type=file]{display:none}
 .ss-table{width:100%;border-collapse:collapse;font-size:14px}.ss-table td,.ss-table th{border-bottom:1px solid #e3ebe8;padding:6px;text-align:left;vertical-align:top}.ss-sub{color:#556777;font-size:13px}.ss-ok{color:#08766b;font-weight:600}.ss-ko{color:#a32d2d;font-weight:600}
-.ss-preview{max-width:100%;max-height:70vh;border:1px solid #c9d8d2;border-radius:8px}@media(max-width:640px){.ss-table .hide-sm{display:none}}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="courriers.php">Courriers</a></header>
+.ss-preview{max-width:100%;max-height:70vh;border:1px solid #c9d8d2;border-radius:8px}@media(max-width:640px){.ss-table .hide-sm{display:none}}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('archives.php',0); ?>
 <main class="ss-ar"><h1>Archives de l’école</h1>
 <p class="ss-sub"><?=$total?> document(s) archivé(s). Chaque document est numéroté, classé et sauvegardé chaque nuit, chiffré, hors du serveur.</p>
 <?php if($message):?><p class="ss-ok" role="status"><?=$e($message)?><?php if($newId):?> <a href="archives.php?fiche=<?=$newId?>">Voir la fiche</a><?php endif;?></p><?php endif;?>

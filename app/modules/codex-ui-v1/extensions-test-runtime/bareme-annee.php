@@ -43,8 +43,8 @@ $e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
 .ss-scale .grades{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.ss-scale .grades span{font-size:12.5px;padding:3px 8px;border-radius:12px;background:#e7f3ef;color:#14233a}
 .ss-btn.alt{background:#fff;color:#08766b;border:1px solid #08766b}.ss-scale td input{min-height:36px;font-size:15px;box-sizing:border-box}.ss-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer}.ss-scale table{border-collapse:collapse;width:100%;font-size:14px}
 .ss-scale th,.ss-scale td{border-bottom:1px solid #e3ebe8;padding:6px 8px;text-align:left}.ss-legend{font-size:14px;line-height:1.6;background:#f4fbf8;border-left:4px solid #08766b;padding:10px 12px}
-.ss-ok{color:#08766b;font-weight:600}.ss-ko{color:#a32d2d;font-weight:600}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="preparer-annee.php">Préparer l’année</a></header>
+.ss-ok{color:#08766b;font-weight:600}.ss-ko{color:#a32d2d;font-weight:600}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('bareme-annee.php',0); ?>
 <main class="ss-scale"><h1>Barème de notation <?=$e($year)?>-<?=$e($year+1)?></h1>
 <p class="ss-legend">Choisissez le barème de votre école. Il transforme les notes en mentions sur les bulletins et fixe le seuil de réussite.
 Le rattrapage reste déclenché par trois évaluations sous 50 %. Si des notes de bulletin utilisent déjà le barème actuel, rien n’est modifié.</p>

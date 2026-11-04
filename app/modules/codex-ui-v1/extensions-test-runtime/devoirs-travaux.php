@@ -127,8 +127,8 @@ $in7=(new DateTimeImmutable($today))->modify('+7 day')->format('Y-m-d');
 .ss-btn.light{background:#eef7f4;color:#08766b;border:1px solid #08766b}.ss-chips{display:flex;gap:6px;flex-wrap:wrap}.ss-chips a,.ss-chips button{border:1px solid #c9d8d2;border-radius:16px;padding:4px 10px;background:#f4fbf8;color:#08766b;text-decoration:none;font-size:13px;cursor:pointer}
 .ss-table{width:100%;border-collapse:collapse;font-size:14px}.ss-table th,.ss-table td{border-bottom:1px solid #e3ebe8;padding:6px;text-align:left;vertical-align:middle}.ss-table input{min-height:34px;font-size:15px}
 .ss-ok{color:#08766b;font-weight:600}.ss-ko{color:#a32d2d;font-weight:600}.ss-sub{color:#556777;font-size:13px}
-@media(max-width:640px){.ss-table .hide-sm{display:none}}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="ma-journee.php">Ma journée de classe</a></header>
+@media(max-width:640px){.ss-table .hide-sm{display:none}}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('devoirs-travaux.php',0); ?>
 <main class="ss-hw"><h1>Devoirs et travaux</h1>
 <?php if($message):?><p class="ss-ok" role="status"><?=$e($message)?><?php if($created):?> <a href="schoolsafe-homework.php?assignment_id=<?=$created?>" target="_blank" rel="noopener">Voir la fiche A4</a> · <a href="schoolsafe-homework.php?assignment_id=<?=$created?>&amp;classe=1&amp;download=1">Imprimer pour toute la classe</a><?php endif;?></p><?php endif;?>
 <?php if($error):?><p class="ss-ko" role="alert"><?=$e($error)?></p><?php endif;?>

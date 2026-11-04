@@ -73,8 +73,8 @@ foreach(['logo'=>'logo','address'=>'adresse','phone'=>'téléphone','email'=>'e-
 .ss-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.ss-choice{border:1px solid #c9d8d2;border-radius:8px;padding:10px;display:flex!important;gap:8px;align-items:flex-start}
 .ss-choice small{display:block;color:#5b6b80}.ss-btn{min-height:44px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer}
 .ss-preview{width:100%;height:760px;border:1px solid #c9d8d2;border-radius:8px;background:#eef2f5}.ss-ok{color:#08766b;font-weight:600}.ss-ko{color:#a32d2d;font-weight:600}
-.ss-legend{font-size:14px;line-height:1.6;background:#f4fbf8;border-left:4px solid #08766b;padding:10px 12px}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="preparer-annee.php">Préparer l’année</a></header>
+.ss-legend{font-size:14px;line-height:1.6;background:#f4fbf8;border-left:4px solid #08766b;padding:10px 12px}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('papier-ecole.php',0); ?>
 <main class="ss-pe"><h1>Papier de l’école</h1>
 <p class="ss-legend">Le haut et le bas de chaque document (devoirs, interrogations, convocations, courriers) sont construits avec les informations
 de l’école : <strong><?=$e($identity['school'])?></strong>. Le logo, la devise, l’adresse, le téléphone, l’e-mail et le site se modifient dans la

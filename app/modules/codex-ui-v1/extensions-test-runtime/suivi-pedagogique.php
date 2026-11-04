@@ -43,8 +43,8 @@ $link=fn($v)=>'suivi-pedagogique.php?'.http_build_query(['du'=>$from,'au'=>$to]+
 .ss-form{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.ss-form label{display:grid;gap:4px;font-size:14px}.ss-form input{min-height:38px;font-size:15px}
 .ss-btn{min-height:40px;background:#08766b;color:#fff;border:0;border-radius:8px;font-size:15px;padding:0 16px;cursor:pointer}
 .ss-wrap{overflow-x:auto}.ss-table{width:100%;border-collapse:collapse;font-size:14px}.ss-table td,.ss-table th{border-bottom:1px solid #e3ebe8;padding:6px;text-align:left;vertical-align:top}.ss-table td.n{text-align:center}
-.ss-sub{color:#556777;font-size:13px}.ok{color:#08766b;font-weight:600}.mid{color:#a86200;font-weight:600}.ko{color:#a32d2d;font-weight:600}.ss-alert{background:#fff4f2;border:1px solid #f0c8c0}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="ma-journee.php">Ma journée</a></header>
+.ss-sub{color:#556777;font-size:13px}.ok{color:#08766b;font-weight:600}.mid{color:#a86200;font-weight:600}.ko{color:#a32d2d;font-weight:600}.ss-alert{background:#fff4f2;border:1px solid #f0c8c0}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('suivi-pedagogique.php',0); ?>
 <main class="ss-sp"><h1>Suivi pédagogique</h1>
 <div class="ss-tabs"><a class="<?=$view==='classes'?'on':''?>" href="<?=$e($link('classes'))?>">Classes et enseignants</a><a class="<?=$view==='journal'?'on':''?>" href="<?=$e($link('journal'))?>">Journal des notes</a></div>
 <?php if($view==='classes'):?>

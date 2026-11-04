@@ -38,8 +38,8 @@ $toDo=array_values(array_filter($homework,static function($h)use($today){return 
 .ss-item{border-top:1px solid #e3ebe8;padding-top:8px;display:grid;gap:3px}.ss-item:first-of-type{border-top:0;padding-top:0}.ss-sub{color:#556777;font-size:13px}
 .ss-tag{font-size:12px;border-radius:10px;padding:2px 8px;display:inline-block}.t-ok{background:#e6f4ef;color:#08766b}.t-warn{background:#fff4e0;color:#8a4a10}.t-bad{background:#fbeaea;color:#a32d2d}
 .ss-act{display:flex;gap:8px;flex-wrap:wrap}.ss-act a{background:#08766b;color:#fff;border-radius:8px;padding:8px 12px;text-decoration:none;font-size:14px}.ss-act a.light{background:#eef7f4;color:#08766b;border:1px solid #08766b}
-.ss-empty{color:#556777;margin:0}</style></head>
-<body><header><strong>SchoolSafe</strong><a href="Modules.php?modname=misc/Portal.php">Tableau de bord</a></header>
+.ss-empty{color:#556777;margin:0}</style><?php require_once __DIR__.'/ProgramFunctions/SchoolSafePedagogyNav.fnc.php'; echo SchoolSafePedagogyStyle(); ?></head>
+<body><?php echo SchoolSafePedagogyHeader('travail-enfant.php',(int)($sid??0)); ?>
 <main class="ss-kid"><h1>Travail de <?=$child?$e($child['FIRST_NAME']):'mon enfant'?></h1>
 <?php if($child):?><div class="ss-act"><a href="dossier-annee.php?enfant=<?=$sid?>">📚 Dossier de l’année (tous les travaux, bilan, PDF)</a><a class="light" href="bulletin.php?eleve=<?=$sid?>">📄 Bulletin</a></div><?php endif;?>
 <?php if(count($children)>1):?><nav class="ss-kids" aria-label="Choisir l’enfant"><?php foreach($children as $c):?><a href="travail-enfant.php?enfant=<?=(int)$c['STUDENT_ID']?>" class="<?=(int)$c['STUDENT_ID']===$sid?'on':''?>"><?=$e($c['FIRST_NAME'])?></a><?php endforeach;?></nav><?php endif;?>
