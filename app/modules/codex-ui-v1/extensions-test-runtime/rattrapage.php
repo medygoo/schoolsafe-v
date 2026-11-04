@@ -34,7 +34,8 @@ ob_start();
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rattrapage | SchoolSafe</title>
-<link rel="stylesheet" href="schoolsafe-remediation/remediation.css?v=2">
+<link rel="stylesheet" href="schoolsafe-remediation/remediation.css?v=3">
+<script src="schoolsafe-remediation/card-scan.js?v=1" defer></script>
 </head>
 <body>
 <header><strong>School<span>Safe</span></strong><a href="Modules.php?modname=misc/Portal.php">Tableau de bord</a></header>

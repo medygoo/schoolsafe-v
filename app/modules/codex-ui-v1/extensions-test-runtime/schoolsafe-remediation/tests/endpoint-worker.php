@@ -53,7 +53,7 @@ file_put_contents($fixturePath . '/Warehouse.php', '<?php /* bootstrap supplied 
 file_put_contents($fixturePath . '/modules/SchoolSafe/Gateway.php', '<?php /* gateway supplied by test */');
 $runtime = dirname(__DIR__, 2);
 foreach (['rattrapage.php','remediation-payments.php'] as $file) copy($runtime . '/' . $file, $fixturePath . '/' . $file);
-foreach (['SchoolSafeRemediationSettings.fnc.php','SchoolSafeRemediationOverview.fnc.php'] as $file) copy($runtime . '/ProgramFunctions/' . $file, $fixturePath . '/ProgramFunctions/' . $file);
+foreach (['SchoolSafeRemediationSettings.fnc.php','SchoolSafeRemediationOverview.fnc.php','SchoolSafeRemediationSessions.fnc.php','SchoolSafeAttendance.fnc.php','SchoolSafeCardVerify.fnc.php'] as $file) copy($runtime . '/ProgramFunctions/' . $file, $fixturePath . '/ProgramFunctions/' . $file);
 foreach (['Workspace.inc.php','PaymentScope.fnc.php'] as $file) copy(dirname(__DIR__) . '/' . $file, $fixturePath . '/schoolsafe-remediation/' . $file);
 register_shutdown_function(static function () use ($fixturePath) {
     foreach (glob($fixturePath . '/schoolsafe-remediation/*') as $file) unlink($file);

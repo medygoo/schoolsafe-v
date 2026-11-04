@@ -11,8 +11,10 @@
  * Regle de confidentialite : l'historique de session (generique) + la question
  * seulement. Aucune donnee d'eleve n'est envoyee par ce chemin.
  */
-function SchoolSafeJaspeFallbackLLM(string $message, array $history, string $preamble = ''): ?array
+function SchoolSafeJaspeFallbackLLM(string $message, array $history, string $preamble = '', int $maxTokens = 400): ?array
 {
+    // 04/11 : longueur reglable (brouillons d'exercices du rattrapage) ; la conversation garde 400.
+    $maxTokens = max(100, min(1500, $maxTokens));
     $dir = '/var/lib/schoolsafe-jaspe';
     $url = is_file($dir.'/fallback-url') ? trim((string) file_get_contents($dir.'/fallback-url')) : '';
     $key = is_file($dir.'/fallback-key') ? trim((string) file_get_contents($dir.'/fallback-key')) : '';
@@ -32,7 +34,7 @@ function SchoolSafeJaspeFallbackLLM(string $message, array $history, string $pre
         CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => 30, CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
         CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Authorization: Bearer ' . $key],
         CURLOPT_POSTFIELDS => json_encode(['model' => $model, 'messages' => $messages,
-            'max_tokens' => 400, 'temperature' => 0.6], JSON_THROW_ON_ERROR)]);
+            'max_tokens' => $maxTokens, 'temperature' => 0.6], JSON_THROW_ON_ERROR)]);
     $response = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
     curl_close($ch);

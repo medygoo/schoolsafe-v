@@ -21,3 +21,6 @@ form{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:12px 0}label{di
 .remediation-overview th,.remediation-overview td{border-bottom:1px solid #e3ebe8;padding:6px 8px;text-align:left;white-space:nowrap}
 .remediation-overview th{background:#f4fbf8;color:#08766b}
 .remediation-overview strong{color:#a32d2d}
+
+/* Seances utiles (04/11) */
+.remediation-group{border:1px solid #c9d8d2;border-radius:8px;padding:8px 12px;margin:8px 0}.remediation-group label{display:flex;gap:8px;align-items:center}.ss-card-camera{display:grid;gap:8px;margin:8px 0}.ss-card-camera video{width:100%;max-width:360px;border-radius:8px;background:#000}.ss-card-note{font-size:13px;color:#5b6b80}.remediation-jaspe{border-top:1px dashed #c9d8d2;margin-top:10px;padding-top:10px}.remediation-jaspe-draft textarea{width:100%;box-sizing:border-box;font-size:14px}

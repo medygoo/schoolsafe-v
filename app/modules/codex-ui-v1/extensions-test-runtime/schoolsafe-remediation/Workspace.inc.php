@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../modules/SchoolSafe/Gateway.php';
 $ssActions = [];
-foreach (['map', 'decide', 'session', 'update_session', 'reevaluate', 'billing', 'parent_response'] as $ssAction) {
+foreach (['map', 'decide', 'session', 'update_session', 'reevaluate', 'billing', 'parent_response', 'jaspe_exercises'] as $ssAction) {
     $ssActions[$ssAction] = SchoolSafeEndpointGateway('rattrapage.php', 'POST', '', ['action' => $ssAction]) !== 'deny';
 }
 $_SESSION['ss_remediation_csrf'] = $_SESSION['ss_remediation_csrf'] ?? bin2hex(random_bytes(32));
@@ -33,6 +33,8 @@ if (User('PROFILE') === 'teacher') {
 $ssMessage = '';
 require_once __DIR__ . '/../ProgramFunctions/SchoolSafeRemediationSettings.fnc.php';
 $ssRule = SchoolSafeRemediationSettings($ssSchool, function ($sql) { return DBGet($sql); });
+require_once __DIR__ . '/../ProgramFunctions/SchoolSafeRemediationSessions.fnc.php';
+$ssJaspeDraft = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf']) || !is_string($_POST['csrf']) || !hash_equals($ssToken, $_POST['csrf'])) {
         http_response_code(403); exit('Requete expiree.');
@@ -79,12 +81,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $time = DBEscapeString($date->format('Y-m-d H:i:sP'));
         $objective = DBEscapeString($objective);
+        // Seances utiles (04/11) : jour de classe du calendrier de l'ecole (s'il existe), groupe de la meme matiere.
+        require_once __DIR__ . '/../ProgramFunctions/SchoolSafeAttendance.fnc.php';
+        if (DBGet('SELECT 1 FROM attendance_calendar WHERE SCHOOL_ID=' . $ssSchool . ' AND SYEAR=' . $ssYear . ' LIMIT 1')
+            && !SchoolSafeAttendanceIsSchoolDay($ssSchool, $ssYear, $date->format('Y-m-d'), ['get' => function ($sql) { return DBGet($sql); }])) {
+            http_response_code(400); exit('Ce jour n’est pas un jour de classe dans le calendrier de l’école.');
+        }
+        try { $ssGroup = SchoolSafeRemediationGroupIds($_POST, $caseId); } catch (RuntimeException $failure) { http_response_code(400); exit($failure->getMessage()); }
+        $ssGroupKey = SchoolSafeRemediationGroupKey(count($ssGroup) + 1);
         DBQuery('BEGIN');
-        $locked = DBGet('SELECT r.id FROM schoolsafe_remediation_cases r WHERE r.id=' . $caseId . ' AND ' . $ssScope . " AND r.status IN ('approved','repeat') FOR UPDATE");
-        $saved = $locked ? DBGet(DBQuery("INSERT INTO schoolsafe_remediation_sessions(case_id,teacher_id,starts_at,duration_minutes,objective) SELECT r.id," . $teacherId . ",'" . $time . "'," . $duration . ",'" . $objective . "' FROM schoolsafe_remediation_cases r WHERE r.id=" . $caseId . ' AND EXISTS(SELECT 1 FROM staff st WHERE st.staff_id=' . $teacherId . " AND st.profile='teacher' AND st.syear=r.syear AND (st.schools IS NULL OR st.schools LIKE '%,'||r.school_id||',%'))" . (empty($ssRule['other_teacher']) ? '' : ' AND NOT EXISTS(SELECT 1 FROM course_periods cp WHERE cp.course_id=r.course_id AND cp.teacher_id=' . $teacherId . ')') . ' RETURNING id')) : [];
-        if ($saved) DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(" . $caseId . ",'session_scheduled'," . $ssUser . ')');
+        $ssSaved = 0;
+        $ssMain = DBGet('SELECT r.id,r.course_id FROM schoolsafe_remediation_cases r WHERE r.id=' . $caseId . ' AND ' . $ssScope . " AND r.status IN ('approved','repeat') FOR UPDATE");
+        if ($ssMain) foreach (array_merge([$caseId], $ssGroup) as $ssCase) {
+            $locked = $ssCase === $caseId ? $ssMain : DBGet('SELECT r.id FROM schoolsafe_remediation_cases r WHERE r.id=' . (int) $ssCase . ' AND r.course_id=' . (int) $ssMain[1]['COURSE_ID'] . ' AND ' . $ssScope . " AND r.status IN ('approved','repeat') FOR UPDATE");
+            $saved = $locked ? DBGet(DBQuery("INSERT INTO schoolsafe_remediation_sessions(case_id,teacher_id,starts_at,duration_minutes,objective,group_key) SELECT r.id," . $teacherId . ",'" . $time . "'," . $duration . ",'" . $objective . "'," . ($ssGroupKey === null ? 'NULL' : "'" . $ssGroupKey . "'") . " FROM schoolsafe_remediation_cases r WHERE r.id=" . $ssCase . ' AND EXISTS(SELECT 1 FROM staff st WHERE st.staff_id=' . $teacherId . " AND st.profile='teacher' AND st.syear=r.syear AND (st.schools IS NULL OR st.schools LIKE '%,'||r.school_id||',%'))" . (empty($ssRule['other_teacher']) ? '' : ' AND NOT EXISTS(SELECT 1 FROM course_periods cp WHERE cp.course_id=r.course_id AND cp.teacher_id=' . $teacherId . ')') . ' RETURNING id')) : [];
+            if ($saved) { $ssSaved++; DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(" . (int) $ssCase . ",'session_scheduled'," . $ssUser . ')'); }
+        }
         DBQuery('COMMIT');
-        $ssMessage = $saved ? 'Séance programmée.' : 'Dossier non valide ou enseignant hors de l’école' . (empty($ssRule['other_teacher']) ? '.' : ' ; l’école exige un autre enseignant que celui de la matière.');
+        $ssMessage = $ssSaved > 1 ? 'Séance de groupe programmée pour ' . $ssSaved . ' élèves.' : ($ssSaved ? 'Séance programmée.' : 'Dossier non valide ou enseignant hors de l’école' . (empty($ssRule['other_teacher']) ? '.' : ' ; l’école exige un autre enseignant que celui de la matière.'));
     } elseif ($action === 'update_session' && ($ssManage || $ssCanTeach)) {
         $sessionId = (int) ($_POST['session_id'] ?? 0);
         $status = $_POST['status'] ?? '';
@@ -101,11 +115,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             http_response_code(400); exit('Nouvelle date requise pour un report.');
         }
         DBQuery('BEGIN');
+        $ssByCard = false;
+        $ssCardQr = trim((string) ($_POST['card_qr'] ?? ''));
         $locked = DBGet('SELECT r.id FROM schoolsafe_remediation_cases r JOIN schoolsafe_remediation_sessions se ON se.case_id=r.id WHERE se.id=' . $sessionId . ' AND ' . $ssScope . " AND r.status IN ('approved','repeat')" . ($ssManage ? '' : ' AND se.teacher_id=' . $ssUser) . ' FOR UPDATE OF r');
-        $changed = $locked ? DBGet(DBQuery("UPDATE schoolsafe_remediation_sessions SET status='" . $status . "',attendance=" . ($status === 'held' ? "'" . $attendance . "'" : 'NULL') . ",report='" . DBEscapeString($report) . "',progress='" . DBEscapeString($progress) . "',updated_by=" . $ssUser . ',updated_at=now()' . ($status === 'postponed' ? ",starts_at='" . DBEscapeString($date->format('Y-m-d H:i:sP')) . "'" : '') . ' WHERE id=' . $sessionId . ' RETURNING case_id')) : [];
+        if ($locked && $ssCardQr !== '' && $status === 'held') {
+            // Presence par carte (04/11) : carte valide de l'eleve du dossier, verifiee comme au portail.
+            require_once __DIR__ . '/../ProgramFunctions/SchoolSafeCardVerify.fnc.php';
+            $ssStudent = DBGet('SELECT r.student_id FROM schoolsafe_remediation_cases r JOIN schoolsafe_remediation_sessions se ON se.case_id=r.id WHERE se.id=' . $sessionId);
+            $ssCheck = SchoolSafeRemediationCardCheck($ssCardQr, (int) ($ssStudent[1]['STUDENT_ID'] ?? 0), $ssSchool, $ssYear, getenv('SCHOOLSAFE_CARD_HMAC_SECRET') ?: '',
+                function ($number, $school) use ($ssYear) { return SchoolSafeCardVerifyQuery($number, $school, $ssYear); });
+            if ($ssCheck !== 'ok') { DBQuery('ROLLBACK'); http_response_code(400); exit(SchoolSafeRemediationCardMessage($ssCheck)); }
+            $attendance = 'present';
+            $ssByCard = true;
+        }
+        $changed = $locked ? DBGet(DBQuery("UPDATE schoolsafe_remediation_sessions SET status='" . $status . "',attendance=" . ($status === 'held' ? "'" . $attendance . "'" : 'NULL') . ',attendance_card=' . ($ssByCard ? 'true' : 'false') . ",report='" . DBEscapeString($report) . "',progress='" . DBEscapeString($progress) . "',updated_by=" . $ssUser . ',updated_at=now()' . ($status === 'postponed' ? ",starts_at='" . DBEscapeString($date->format('Y-m-d H:i:sP')) . "'" : '') . ' WHERE id=' . $sessionId . ' RETURNING case_id')) : [];
         if ($changed) DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(" . (int) $changed[1]['CASE_ID'] . ",'session_" . $status . "'," . $ssUser . ')');
         DBQuery('COMMIT');
-        $ssMessage = $changed ? 'Suivi de seance enregistre.' : 'Seance non accessible.';
+        $ssMessage = $changed ? 'Suivi de séance enregistré' . ($ssByCard ? ' : présence vérifiée par la carte.' : '.') : 'Séance non accessible.';
     } elseif ($action === 'reevaluate' && $ssDirector) {
         $caseId = (int) ($_POST['case_id'] ?? 0);
         $assignmentId = (int) ($_POST['assignment_id'] ?? 0);
@@ -156,6 +182,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($changed) DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(" . $caseId . ",'parent_" . $response . "'," . $ssUser . ')');
         DBQuery('COMMIT');
         $ssMessage = $changed ? 'Votre réponse est enregistrée ; l’école en est informée.' : 'Réponse déjà enregistrée ou plan indisponible.';
+    } elseif ($action === 'jaspe_exercises' && ($ssManage || $ssCanTeach)) {
+        // Aide JASPE (04/11) : matiere, niveau et objectif seulement ; noms masques ; brouillon a relire, rien n'est enregistre.
+        $caseId = (int) ($_POST['case_id'] ?? 0);
+        $ssInfo = DBGet('SELECT c.title AS course,(SELECT g.title FROM student_enrollment e JOIN school_gradelevels g ON g.id=e.grade_id WHERE e.student_id=r.student_id AND e.school_id=r.school_id AND e.syear=r.syear ORDER BY e.start_date DESC NULLS LAST LIMIT 1) AS level FROM schoolsafe_remediation_cases r JOIN courses c ON c.course_id=r.course_id WHERE r.id=' . $caseId . ' AND ' . $ssScope . " AND r.status IN ('approved','repeat')");
+        if (!$ssInfo) { http_response_code(403); exit('Dossier non accessible.'); }
+        $ssNow = time();
+        $ssHits = array_values(array_filter($_SESSION['jaspe_ai_hits'] ?? [], static function ($hit) use ($ssNow) { return is_int($hit) && $ssNow - $hit < 60; }));
+        if (count($ssHits) >= 10) { http_response_code(429); exit('Trop de demandes à JASPE : patientez une minute.'); }
+        $_SESSION['jaspe_ai_hits'] = array_merge($ssHits, [$ssNow]);
+        try {
+            $ssPrompt = SchoolSafeRemediationJaspePrompt(ParseMLField((string) $ssInfo[1]['COURSE']), ParseMLField((string) $ssInfo[1]['LEVEL']), (string) ($_POST['objective'] ?? ''));
+        } catch (RuntimeException $failure) { http_response_code(400); exit($failure->getMessage()); }
+        require_once __DIR__ . '/../ProgramFunctions/SchoolSafeJaspePrompt.fnc.php';
+        require_once __DIR__ . '/../ProgramFunctions/SchoolSafeJaspeCloudflare.fnc.php';
+        $ssPrompt = SchoolSafeJaspeMask($ssPrompt, SchoolSafeJaspeStudentNames($ssSchool, $ssYear, static function ($sql) { return DBGet($sql); }));
+        $ssDraft = SchoolSafeRemediationJaspeExercises($ssPrompt, function ($message) {
+            // Brouillon long : le service rapide d'abord (reponse en quelques secondes), le Worker en second.
+            $preamble = SchoolSafeJaspeGuidelines(SchoolSafeJaspeWho());
+            require_once __DIR__ . '/../ProgramFunctions/SchoolSafeJaspeFallbackLLM.fnc.php';
+            $result = SchoolSafeJaspeFallbackLLM($message, [], $preamble, 1200);
+            if (!is_array($result)) {
+                $secret = getenv('JASPE_WORKER_HMAC_SECRET') ?: (string) Config('JASPE_WORKER_SECRET');
+                $url = getenv('JASPE_WORKER_URL') ?: (string) Config('JASPE_WORKER_URL');
+                $result = SchoolSafeJaspeCloudflare($message, hash_hmac('sha256', 'rattrapage:' . User('STAFF_ID') . ':' . UserSchool(), $secret), $url, $secret, null, [], $preamble);
+            }
+            return is_array($result) && ($result['state'] ?? '') !== 'OFFLINE' ? ($result['reply'] ?? null) : null;
+        });
+        if ($ssDraft !== null) $ssJaspeDraft[$caseId] = $ssDraft;
+        $ssMessage = $ssDraft !== null ? 'Brouillon de JASPE prêt : relisez-le avant de l’utiliser.' : 'JASPE est indisponible pour le moment.';
     } else {
         http_response_code(403); exit('Operation non autorisee.');
     }
@@ -242,24 +297,33 @@ $ssWatch = in_array(User('PROFILE'), ['admin', 'teacher'], true) ? DBGet('SELECT
 <form method="post">
 <input type="hidden" name="csrf" value="<?= $ssEscape($ssToken) ?>"><input type="hidden" name="action" value="session"><input type="hidden" name="case_id" value="<?= (int) $case['ID'] ?>">
 <label>Enseignant du rattrapage<select name="teacher_id" required><?php foreach ($teachers as $teacher): $ssTeaches = $teacher['TEACHES'] === 't'; if ($ssTeaches && !empty($ssRule['other_teacher'])) continue; ?><option value="<?= (int) $teacher['STAFF_ID'] ?>"><?= $ssEscape($teacher['FIRST_NAME'] . ' ' . $teacher['LAST_NAME'] . ($ssTeaches ? ' — enseigne et note cette matière' : ' — autre enseignant')) ?></option><?php endforeach; ?></select></label>
-<label>Date et heure<input name="starts_at" type="datetime-local" required></label>
+<?php $ssPeers = DBGet('SELECT r.id,s.first_name,s.last_name FROM schoolsafe_remediation_cases r JOIN students s ON s.student_id=r.student_id WHERE r.course_id=' . (int) $case['COURSE_ID'] . ' AND r.id<>' . (int) $case['ID'] . ' AND ' . $ssScope . " AND r.status IN ('approved','repeat') ORDER BY s.last_name,s.first_name LIMIT 30"); ?>
+<?php if ($ssPeers): ?><fieldset class="remediation-group"><legend>Séance de groupe (même matière, facultatif)</legend><?php foreach ($ssPeers as $peer): ?><label><input type="checkbox" name="group_<?= (int) $peer['ID'] ?>" value="1"> <?= $ssEscape($peer['FIRST_NAME'] . ' ' . $peer['LAST_NAME']) ?></label><?php endforeach; ?></fieldset><?php endif; ?>
+<label>Date et heure (jour de classe)<input name="starts_at" type="datetime-local" required></label>
 <label>Dur&eacute;e en minutes<input name="duration" type="number" min="1" max="480" required></label>
 <label>Objectif p&eacute;dagogique<textarea name="objective" maxlength="2000" required></textarea></label><button>Programmer la s&eacute;ance</button>
 </form>
 <?php endif; ?>
-<?php $sessions = DBGet('SELECT * FROM schoolsafe_remediation_sessions WHERE case_id=' . (int) $case['ID'] . ' ORDER BY starts_at'); ?>
+<?php $sessions = DBGet('SELECT se.*,(SELECT count(*) FROM schoolsafe_remediation_sessions g WHERE g.group_key=se.group_key) AS group_size FROM schoolsafe_remediation_sessions se WHERE se.case_id=' . (int) $case['ID'] . ' ORDER BY se.starts_at'); ?>
 <?php foreach ($sessions as $session): ?>
-<div class="session-row"><p><strong><?= $ssEscape($session['STARTS_AT']) ?></strong> · <?= (int) $session['DURATION_MINUTES'] ?> min · <?= $ssEscape($session['OBJECTIVE']) ?> (<?= $ssEscape($ssSessionLabels[$session['STATUS']] ?? $session['STATUS']) ?>)</p>
+<div class="session-row"><p><strong><?= $ssEscape($session['STARTS_AT']) ?></strong> · <?= (int) $session['DURATION_MINUTES'] ?> min · <?= $ssEscape($session['OBJECTIVE']) ?> (<?= $ssEscape($ssSessionLabels[$session['STATUS']] ?? $session['STATUS']) ?>)<?php if ((int) ($session['GROUP_SIZE'] ?? 0) > 1): ?> · séance de groupe (<?= (int) $session['GROUP_SIZE'] ?> élèves)<?php endif; ?><?php if (($session['ATTENDANCE_CARD'] ?? 'f') === 't'): ?> · présence vérifiée par carte<?php endif; ?></p>
 <?php if ($session['REPORT']): ?><p>Compte rendu : <?= $ssEscape($session['REPORT']) ?></p><p>Progression : <?= $ssEscape($session['PROGRESS']) ?></p><?php endif; ?>
 <?php if ($ssActions['update_session'] && ($ssManage || ($ssCanTeach && (int) $session['TEACHER_ID'] === $ssUser)) && in_array($case['STATUS'], ['approved','repeat'], true)): ?>
 <form method="post"><input type="hidden" name="csrf" value="<?= $ssEscape($ssToken) ?>"><input type="hidden" name="action" value="update_session"><input type="hidden" name="session_id" value="<?= (int) $session['ID'] ?>">
 <label>&Eacute;tat<select name="status"><option value="held">Tenue</option><option value="postponed">Report&eacute;e</option><option value="cancelled">Annul&eacute;e</option></select></label>
 <label>Pr&eacute;sence<select name="attendance"><option value="present">Pr&eacute;sent</option><option value="absent">Absent</option><option value="excused">Excus&eacute;</option></select></label>
 <label>Nouvelle date en cas de report<input type="datetime-local" name="starts_at"></label>
+<label>Carte de l’élève (facultatif)<input name="card_qr" maxlength="2000" autocomplete="off" placeholder="schoolsafe://card/…"></label><button type="button" class="ss-card-scan">Scanner la carte avec la caméra</button><p class="ss-card-note">Une carte lue confirme la présence ; un lecteur de cartes peut aussi remplir le champ.</p>
 <label>Compte rendu ou motif<textarea name="report" maxlength="4000" required><?= $ssEscape($session['REPORT']) ?></textarea></label>
 <label>Progression observ&eacute;e<textarea name="progress" maxlength="4000"><?= $ssEscape($session['PROGRESS']) ?></textarea></label><button>Enregistrer le suivi</button></form>
 <?php endif; ?></div>
 <?php endforeach; ?>
+<?php if (($ssManage || $ssCanTeach) && $ssActions['jaspe_exercises'] && in_array($case['STATUS'], ['approved','repeat'], true)): ?>
+<form method="post" class="remediation-jaspe"><input type="hidden" name="csrf" value="<?= $ssEscape($ssToken) ?>"><input type="hidden" name="action" value="jaspe_exercises"><input type="hidden" name="case_id" value="<?= (int) $case['ID'] ?>">
+<label>Préparer des exercices avec JASPE : objectif de la séance<textarea name="objective" maxlength="400" required placeholder="ex. additionner des fractions de dénominateurs différents"></textarea></label><button>Demander à JASPE</button>
+<p>JASPE reçoit la matière, le niveau et l’objectif, jamais le nom ni les notes de l’élève. Relisez toujours le brouillon.</p></form>
+<?php if (!empty($ssJaspeDraft[(int) $case['ID']])): ?><div class="remediation-jaspe-draft"><h4>Brouillon de JASPE (à vérifier par l’enseignant)</h4><textarea readonly rows="14"><?= $ssEscape($ssJaspeDraft[(int) $case['ID']]) ?></textarea></div><?php endif; ?>
+<?php endif; ?>
 <?php if ($ssDirector && $ssActions['reevaluate'] && in_array($case['STATUS'], ['approved','repeat'], true)): ?>
 <form method="post"><input type="hidden" name="csrf" value="<?= $ssEscape($ssToken) ?>"><input type="hidden" name="action" value="reevaluate"><input type="hidden" name="case_id" value="<?= (int) $case['ID'] ?>">
 <?php $availableGrades = DBGet('SELECT DISTINCT ga.assignment_id,ga.title,gg.points,ga.points AS maximum FROM gradebook_grades gg JOIN gradebook_assignments ga ON ga.assignment_id=gg.assignment_id JOIN course_periods cp ON cp.course_period_id=gg.course_period_id WHERE gg.student_id=' . (int) $case['STUDENT_ID'] . ' AND cp.course_id=' . (int) $case['COURSE_ID'] . ' AND cp.school_id=' . $ssSchool . ' AND cp.syear=' . $ssYear . ' AND (ga.course_id=cp.course_id OR ga.course_period_id=cp.course_period_id) AND gg.points>=0 AND ga.points>0 AND ga.created_at>=\'' . DBEscapeString($case['CREATED_AT']) . '\' ORDER BY ga.assignment_id'); ?>
