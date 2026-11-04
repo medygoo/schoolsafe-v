@@ -18,6 +18,7 @@
 	} catch (_) { document.documentElement.dataset.ssBackground = 'white'; }
 	// Shared SchoolSafe presentation is loaded by Warehouse for every theme (2026-10-14).
 	var centralProfile = null;
+	var centralRole = '';
 	var headerNotificationUrl = null;
 	var headerScanUrl = null;
 	var branchDefinitions = [
@@ -162,18 +163,105 @@
 				entry.heading = main || rule[0];
 				if (rule[1]) anchor.textContent = rule[1];
 			} else if (!entry.central) return;
-			if (pedagogyHints[key] && !anchor.querySelector('.ss-link-hint')) {
-				var title = document.createElement('span'); title.className = 'ss-link-title';
-				while (anchor.firstChild) title.appendChild(anchor.firstChild);
-				var hint = document.createElement('small'); hint.className = 'ss-link-hint';
-				hint.textContent = pedagogyHints[key];
-				anchor.appendChild(title); anchor.appendChild(hint);
-				anchor.classList.add('ss-link-with-hint');
-			}
+			decorateMenuLink(anchor, '', pedagogyHints[key]);
 			entry.order = (entry.central ? 0 : 1000) + index;
 			kept.push(entry);
 		});
 		return kept.sort(function (a, b) { return a.order - b.order; });
+	}
+	// Nom clair et phrase d'aide sous un lien du menu (methode « fusion », DECISIONS 04/11).
+	function decorateMenuLink(anchor, title, hintText) {
+		if (title) anchor.textContent = title;
+		if (!hintText || anchor.querySelector('.ss-link-hint')) return;
+		var label = document.createElement('span'); label.className = 'ss-link-title';
+		while (anchor.firstChild) label.appendChild(anchor.firstChild);
+		var hint = document.createElement('small'); hint.className = 'ss-link-hint';
+		hint.textContent = hintText;
+		anchor.appendChild(label); anchor.appendChild(hint);
+		anchor.classList.add('ss-link-with-hint');
+	}
+	// Cle d'un lien : page, plus « #new » (ajout d'eleve) ou « #cat » (onglet de la fiche eleve).
+	function menuKey(anchor) {
+		var url = new URL(anchor.getAttribute('href'), location.href);
+		var key = url.searchParams.get('modname') || url.pathname.replace(/^.*\//, '');
+		if (url.searchParams.get('student_id') === 'new') return key + '#new';
+		if (url.searchParams.get('category_id')) return key + '#cat';
+		return key;
+	}
+	// Plans « fusion » par menu et par profil : [etape, [[cle, nom ou '', phrase d'aide], ...]].
+	// Un lien absent du plan reste visible a la fin ; aucun droit n'est donne ni retire.
+	var menuPlans = {
+		school: {
+			admin: [
+				['1 · Élèves', [
+					['Students/Student.php#new', 'Ajouter un élève', 'Inscrire un nouvel élève et créer sa fiche.'],
+					['Students/Student.php', 'Fiche élève', 'Rechercher un élève, voir et modifier sa fiche.'],
+					['Students/AssignOtherInfo.php', 'Modifier plusieurs élèves à la fois', 'Remplir le même champ pour un groupe d’élèves.']]],
+				['2 · Familles et accès', [
+					['Students/Student.php#cat', 'Personnes de récupération', 'Qui peut venir chercher l’enfant, avec photo.'],
+					['SchoolSafe/FamilyRead.php', 'Personnes de récupération', 'Qui peut venir chercher l’enfant, avec photo.'],
+					['Students/AddUsers.php', 'Relier parents et élèves', 'Rattacher le compte d’un parent à son enfant (6 au plus).'],
+					['Custom/CreateParents.php', 'Créer les comptes parents', 'Créer les comptes à partir de l’e-mail de la fiche élève.'],
+					['Custom/Registration.php', 'Formulaire d’inscription des parents', 'Ce que les parents remplissent en ligne.'],
+					['Custom/RemoveAccess.php', 'Bloquer ou rendre l’accès', 'Couper ou rétablir l’accès d’un élève et de ses parents.']]],
+				['3 · Organisation de l’école', [
+					['School_Setup/Schools.php', 'Informations de l’école', 'Nom, adresse, téléphone, logo, responsable.'],
+					['School_Setup/Calendar.php', 'Calendrier des jours de classe', 'Jours de classe, congés et fériés.'],
+					['School_Setup/MarkingPeriods.php', 'Année et périodes', 'Trimestres, périodes et examens de l’année.'],
+					['School_Setup/GradeLevels.php', 'Niveaux et passage de classe', 'Les niveaux de l’école et le niveau suivant.'],
+					['School_Setup/Periods.php', 'Tranches horaires', 'Les heures de la journée de classe.']]],
+				['4 · Réglages de la fiche élève', [
+					['Students/StudentFields.php', 'Champs de la fiche élève', 'Ajouter une information à toutes les fiches.'],
+					['Students/EnrollmentCodes.php', 'Codes d’inscription', 'Motifs d’entrée et de sortie d’un élève.']]],
+				['5 · Cartes SchoolSafe', [
+					['SchoolSafe/Studio.php', 'Studio de cartes', 'Créer et imprimer les cartes SchoolSafe.'],
+					['SchoolSafe/IssueCard.php', '', ''],
+					['SchoolSafe/PrintRequest.php', '', '']]]
+			],
+			teacher: [
+				['Mes élèves', [
+					['Students/Student.php', 'Fiche élève', 'Rechercher un élève et voir sa fiche.'],
+					['Students/AddUsers.php', 'Parents associés', 'Les parents reliés à chaque élève.']]],
+				['Mon école', [
+					['School_Setup/Schools.php', 'Informations de l’école', 'Adresse, téléphone et responsable.'],
+					['School_Setup/Calendar.php', 'Calendrier des jours de classe', 'Jours de classe, congés et fériés.'],
+					['School_Setup/MarkingPeriods.php', 'Année et périodes', 'Trimestres, périodes et examens de l’année.'],
+					['School_Setup/Periods.php', 'Tranches horaires', 'Les heures de la journée de classe.']]]
+			],
+			parent: [
+				['Mon enfant', [
+					['Students/Student.php', 'Fiche de mon enfant', 'Les informations de l’école sur votre enfant.'],
+					['Students/Student.php#cat', 'Personnes de récupération', 'Qui peut venir chercher votre enfant.'],
+					['Custom/Registration.php', 'Formulaire d’inscription', 'Les informations à remplir pour l’école.']]],
+				['L’école', [
+					['School_Setup/Schools.php', 'Informations de l’école', 'Adresse, téléphone et responsable.'],
+					['School_Setup/Calendar.php', 'Calendrier des jours de classe', 'Jours de classe, congés et fériés.'],
+					['School_Setup/MarkingPeriods.php', 'Année et périodes', 'Trimestres et périodes de l’année.']]]
+			]
+		}
+	};
+	function organizeByPlan(entries, plans) {
+		var plan = plans && plans[centralRole];
+		if (!plan) return entries;
+		var rules = {};
+		plan.forEach(function (step, s) {
+			step[1].forEach(function (row, r) {
+				rules[row[0]] = {heading: step[0], title: row[1], hint: row[2], rank: s * 100 + r};
+			});
+		});
+		var matched = 0;
+		entries.forEach(function (entry, index) {
+			var anchor = entry.item.querySelector('a[href]');
+			var rule = anchor && rules[menuKey(anchor)];
+			if (rule) {
+				matched++;
+				entry.heading = rule.heading;
+				entry.planRank = rule.rank;
+				decorateMenuLink(anchor, rule.title, rule.hint);
+			} else entry.planRank = 10000 + index;
+		});
+		if (!matched) { entries.forEach(function (entry) { delete entry.planRank; }); return entries; }
+		return entries.sort(function (a, b) { return a.planRank - b.planRank; });
 	}
 	function organizeMenu() {
 		var menu = document.querySelector('#menu .adminmenu');
@@ -229,6 +317,9 @@
 			groups[entry.branch].push({item:item, heading:entry.group, central:true});
 		});
 		if (groups.pedagogy) groups.pedagogy = organizePedagogy(groups.pedagogy);
+		Object.keys(menuPlans).forEach(function (branch) {
+			if (groups[branch]) groups[branch] = organizeByPlan(groups[branch], menuPlans[branch]);
+		});
 		branchDefinitions.forEach(function (definition) {
 			var entries = groups[definition[0]];
 			if (!entries || !entries.length) return;
@@ -268,7 +359,8 @@
 				buckets[entry.heading].push(entry);
 			});
 			var order = Object.keys(buckets);
-			if (definition[0] === 'school') {
+			var planned = entries.some(function (e) { return e.planRank !== undefined && e.planRank < 10000; });
+			if (definition[0] === 'school' && !planned) {
 				var schoolOrder = ['Élèves et inscriptions', 'Familles et accès', 'Cartes et documents', 'Cartes natives SchoolSafe', 'Certificats', 'Organisation scolaire', 'Référentiels élèves', 'Import des eleves'];
 				order.sort(function (a, b) {
 					var ai = schoolOrder.indexOf(a), bi = schoolOrder.indexOf(b);
@@ -1113,6 +1205,8 @@
 		if (typeof value !== 'string') return false;
 		// Ancre simple autorisee (04/11) : le Mode d'emploi s'ouvre sur la partie du profil (guide-pedagogie.php#parent).
 		if (/^[a-z-]+\.php(#[a-z-]+)?$/.test(value)) return true;
+		// Onglet de la fiche eleve (04/11) : « Personnes de recuperation » = Student.php&category_id=N.
+		if (/^Modules\.php\?modname=Students\/Student\.php&category_id=\d+$/.test(value)) return true;
 		if (!/^Modules\.php\?modname=SchoolSafe\/[A-Za-z]+\.php$/.test(value)) return false;
 		var allowed = ['Studio','RemediationRead','FamilyRead','ScanVerify','ScanArrival','ScanPickup','ScanFees','ArrivalAttendance','FeeModelsRead','RemediationPaymentsRead','Notifications'];
 		return allowed.includes(value.slice('Modules.php?modname=SchoolSafe/'.length, -4));
@@ -1128,6 +1222,7 @@
 					return entry.url === 'Modules.php?modname=SchoolSafe/Notifications.php';
 				}) ? 'Modules.php?modname=SchoolSafe/Notifications.php' : null;
 				if (manifest.profile && typeof manifest.profile.name === 'string' && /^Modules\.php\?modname=Users\/User\.php&category_id=1&staff_id=\d+$/.test(manifest.profile.url)) centralProfile = manifest.profile;
+				centralRole = ['admin', 'teacher', 'parent', 'student'].indexOf(manifest.role) >= 0 ? manifest.role : '';
 				centralEntries = Array.isArray(manifest.links) ? manifest.links.filter(function (entry) {
 					return branchDefinitions.some(function (definition) { return definition[0] === entry.branch; }) && schoolSafeCentralDestination(entry.url) && typeof entry.title === 'string' && typeof entry.group === 'string';
 				}) : [];

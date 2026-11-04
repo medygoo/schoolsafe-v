@@ -108,4 +108,6 @@ $profile = [
 // ProDéli keeps its separate workspace; execution still uses the native gateway.
 $scanAction = function_exists('SchoolSafeGlobalAdmin') && !SchoolSafeGlobalAdmin()
     && (int) UserSchool() > 0 ? 'scanner-native.php' : null;
-echo json_encode(['links' => $links, 'profile' => $profile, 'scanAction' => $scanAction], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+// Profil connecte (04/11) : sert seulement a ranger le menu par profil, jamais a donner un droit.
+$role = in_array(User('PROFILE'), ['admin', 'teacher', 'parent', 'student'], true) ? User('PROFILE') : '';
+echo json_encode(['links' => $links, 'profile' => $profile, 'role' => $role, 'scanAction' => $scanAction], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
