@@ -52,6 +52,19 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
             DBQuery('COMMIT');$inTx=false;
             $newId=(int)$row[1]['ID'];
             $message='Document archivé sous la référence '.$ref.' ('.($mime==='application/pdf'?'PDF':'photo').', '.number_format(strlen($bytes)/1024,0,',',' ').' Ko).';
+            // Lot 11 : le texte du document est lu sur le serveur, pour le retrouver par n'importe quel mot.
+            $ocr=SchoolSafeArchiveOcr($mime,$bytes);
+            if($ocr!==null){DBQuery("UPDATE schoolsafe_archive_documents SET OCR_TEXT=".$q($ocr).",OCR_AT=now() WHERE ID=".$newId);$message.=' Texte lu : '.count(preg_split('/\s+/u',$ocr)).' mots, retrouvables par la recherche.';}
+        }elseif(($_POST['action']??'')==='lire'){
+            // Lot 11 : lecture du texte d'un document deja archive.
+            $doc=DBGet("SELECT ID,REFERENCE,MIME,encode(CONTENT,'base64') AS B64 FROM schoolsafe_archive_documents WHERE ID=".(int)($_POST['id']??0)." AND SCHOOL_ID=".$school);
+            if(!$doc)throw new RuntimeException('Document introuvable.');
+            $ocr=SchoolSafeArchiveOcr((string)$doc[1]['MIME'],base64_decode(str_replace(["
+",""],'',(string)$doc[1]['B64'])));
+            if($ocr===null)throw new RuntimeException('Aucun texte lisible dans ce document (photo floue, écriture à la main ou image sans texte).');
+            DBQuery("UPDATE schoolsafe_archive_documents SET OCR_TEXT=".$q($ocr).",OCR_AT=now() WHERE ID=".(int)$doc[1]['ID']);
+            $newId=(int)$doc[1]['ID'];
+            $message='Texte de '.$doc[1]['REFERENCE'].' lu : '.count(preg_split('/\s+/u',$ocr)).' mots, retrouvables par la recherche.';
         }elseif(($_POST['action']??'')==='retirer'){
             $reason=trim((string)($_POST['reason']??''));
             if($reason===''||mb_strlen($reason)>300)throw new RuntimeException('Indiquez la raison du retrait (300 caractères au plus).');
@@ -66,7 +79,7 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
 }
 $text=is_string($_GET['q']??null)?$_GET['q']:'';$cat=is_string($_GET['cat']??null)&&isset($cats[$_GET['cat']])?$_GET['cat']:'';
 $ayear=isset($_GET['annee'])&&ctype_digit((string)$_GET['annee'])?(int)$_GET['annee']:0;
-$docs=$allowed?(array)DBGet("SELECT d.ID,d.REFERENCE,d.CATEGORY,d.TITLE,d.ISSUER,d.DOC_DATE,d.AMOUNT,d.CURRENCY,d.TAGS,d.MIME,d.SIZE_BYTES,d.CREATED_AT,s.FIRST_NAME,s.LAST_NAME FROM schoolsafe_archive_documents d LEFT JOIN students s ON s.STUDENT_ID=d.STUDENT_ID"
+$docs=$allowed?(array)DBGet("SELECT d.OCR_TEXT,d.ID,d.REFERENCE,d.CATEGORY,d.TITLE,d.ISSUER,d.DOC_DATE,d.AMOUNT,d.CURRENCY,d.TAGS,d.MIME,d.SIZE_BYTES,d.CREATED_AT,s.FIRST_NAME,s.LAST_NAME FROM schoolsafe_archive_documents d LEFT JOIN students s ON s.STUDENT_ID=d.STUDENT_ID"
     ." WHERE ".SchoolSafeArchiveWhere($school,$text,$cat,$ayear,$q)." ORDER BY COALESCE(d.DOC_DATE,d.CREATED_AT::date) DESC,d.ID DESC LIMIT 200"):[];
 $letters=[];
 if($allowed&&$cat===''&&($text!==''||$ayear>0)){
@@ -102,6 +115,8 @@ $money=fn($a,$c)=>$a===null||$a===''?'':number_format((float)$a,2,',',' ').' '.$
 <div class="ss-grid"><div><b>Catégorie</b><br><?=$e($cats[$fiche['CATEGORY']][0])?></div><div><b>Organisme / fournisseur</b><br><?=$e($fiche['ISSUER']?:'—')?></div>
 <div><b>Date du document</b><br><?=$e($fiche['DOC_DATE']?SchoolSafeLetterheadDate($fiche['DOC_DATE'],false):'—')?></div><div><b>Montant</b><br><?=$e($money($fiche['AMOUNT'],$fiche['CURRENCY'])?:'—')?></div>
 <div><b>Élève concerné</b><br><?=$e($fiche['FIRST_NAME']?$fiche['FIRST_NAME'].' '.$fiche['LAST_NAME']:'—')?></div><div><b>Archivé par</b><br><?=$e(trim(($fiche['BY_FIRST']??'').' '.($fiche['BY_LAST']??'')))?>, le <?=$e(SchoolSafeLetterheadDate(substr((string)$fiche['CREATED_AT'],0,10),false))?></div></div>
+<?php if(trim((string)($fiche['OCR_TEXT']??''))!==''):?><details><summary>📄 Texte lu dans le document</summary><p style="white-space:pre-wrap;font-size:14px"><?=$e($fiche['OCR_TEXT'])?></p></details>
+<?php else:?><form method="post" style="margin:0"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="lire"><input type="hidden" name="id" value="<?=(int)$fiche['ID']?>"><button class="ss-btn light" type="submit">📄 Lire le texte du document</button> <span class="ss-sub">pour le retrouver par n’importe quel mot</span></form><?php endif;?>
 <?php if($fiche['TAGS']):?><p style="margin:0"><b>Mots-clés :</b> <?=$e($fiche['TAGS'])?></p><?php endif;?><?php if($fiche['NOTES']):?><p style="margin:0"><b>Note :</b> <?=nl2br($e($fiche['NOTES']))?></p><?php endif;?>
 <?php if($fiche['WITHDRAWN_AT']):?><p class="ss-ko">Retiré le <?=$e(substr((string)$fiche['WITHDRAWN_AT'],0,10))?> : <?=$e($fiche['WITHDRAWN_REASON'])?></p><?php endif;?>
 <?php if($fiche['MIME']!=='application/pdf'):?><img class="ss-preview" src="archives.php?fichier=<?=(int)$fiche['ID']?>" alt="<?=$e($fiche['TITLE'])?>"><?php endif;?>
@@ -133,7 +148,7 @@ $money=fn($a,$c)=>$a===null||$a===''?'':number_format((float)$a,2,',',' ').' '.$
 <?php if(!$docs&&!$letters):?><p class="ss-sub">Aucun document trouvé.</p><?php else:?>
 <table class="ss-table"><thead><tr><th>Référence</th><th>Document</th><th class="hide-sm">Date</th><th class="hide-sm">Montant</th><th></th></tr></thead><tbody>
 <?php foreach($docs as $d):?><tr><td><b><?=$e($d['REFERENCE'])?></b><br><span class="ss-sub"><?=$e($cats[$d['CATEGORY']][1].' '.$cats[$d['CATEGORY']][0])?></span></td>
-<td><?=$e($d['TITLE'])?><?=$d['ISSUER']?'<br><span class="ss-sub">'.$e($d['ISSUER']).'</span>':''?><?=$d['FIRST_NAME']?'<br><span class="ss-sub">Élève : '.$e($d['FIRST_NAME'].' '.$d['LAST_NAME']).'</span>':''?></td>
+<td><?=$e($d['TITLE'])?><?php $snip=SchoolSafeArchiveSnippet($d['OCR_TEXT']??'',$text); if($snip!==''):?><br><span class="ss-sub">📄 Dans le texte : « <?=$e($snip)?> »</span><?php endif;?><?=$d['ISSUER']?'<br><span class="ss-sub">'.$e($d['ISSUER']).'</span>':''?><?=$d['FIRST_NAME']?'<br><span class="ss-sub">Élève : '.$e($d['FIRST_NAME'].' '.$d['LAST_NAME']).'</span>':''?></td>
 <td class="hide-sm"><?=$e($d['DOC_DATE']?SchoolSafeLetterheadDate($d['DOC_DATE'],false):'—')?></td><td class="hide-sm"><?=$e($money($d['AMOUNT'],$d['CURRENCY']))?></td>
 <td><div class="ss-cats"><a href="archives.php?fiche=<?=(int)$d['ID']?>">Fiche</a><a href="archives.php?fichier=<?=(int)$d['ID']?>" target="_blank" rel="noopener"><?=$d['MIME']==='application/pdf'?'PDF':'Photo'?></a></div></td></tr><?php endforeach;?>
 <?php foreach($letters as $l):?><tr><td><b><?=$e($l['REFERENCE'])?></b><br><span class="ss-sub">✉️ Courrier de l’école</span></td><td><?=$e($l['SUBJECT'])?></td><td class="hide-sm"><?=$e(SchoolSafeLetterheadDate(substr((string)$l['CREATED_AT'],0,10),false))?></td><td class="hide-sm"></td>

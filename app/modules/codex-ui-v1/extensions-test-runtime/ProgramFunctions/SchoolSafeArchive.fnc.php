@@ -93,8 +93,86 @@ function SchoolSafeArchiveWhere(int $school, string $text, string $cat, int $yea
     if ($text !== '') {
         foreach (preg_split('/\s+/u', $text) as $word) {
             $like = $q('%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $word) . '%');
-            $where .= ' AND (d.TITLE ILIKE ' . $like . ' OR d.ISSUER ILIKE ' . $like . ' OR d.TAGS ILIKE ' . $like . ' OR d.NOTES ILIKE ' . $like . ' OR d.REFERENCE ILIKE ' . $like . ')';
+            // Lot 11 : le texte lu dans la photo ou le PDF compte aussi (OCR).
+            $where .= ' AND (d.TITLE ILIKE ' . $like . ' OR d.ISSUER ILIKE ' . $like . ' OR d.TAGS ILIKE ' . $like . ' OR d.NOTES ILIKE ' . $like . ' OR d.REFERENCE ILIKE ' . $like . ' OR d.OCR_TEXT ILIKE ' . $like . ')';
         }
     }
     return $where;
+}
+
+
+/* ---------- Lecture du texte des documents (OCR, 04/11, lot 11) ----------
+   Tesseract (francais) et Poppler tournent sur le serveur : rien n'est envoye ailleurs. */
+
+/** Lance un outil avec un delai maximal ; retourne sa sortie ou null. */
+function SchoolSafeArchiveRun(array $cmd, int $timeout): ?string
+{
+    $pipes = [];
+    $proc = @proc_open($cmd, [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['file', '/dev/null', 'w']], $pipes);
+    if (!is_resource($proc)) return null;
+    stream_set_blocking($pipes[1], false);
+    $out = ''; $deadline = microtime(true) + $timeout;
+    while (true) {
+        $chunk = stream_get_contents($pipes[1]);
+        if (is_string($chunk)) $out .= $chunk;
+        $status = proc_get_status($proc);
+        if (!$status['running']) { $out .= (string) stream_get_contents($pipes[1]); break; }
+        if (microtime(true) > $deadline || strlen($out) > 400000) { proc_terminate($proc, 9); fclose($pipes[1]); proc_close($proc); return null; }
+        usleep(50000);
+    }
+    fclose($pipes[1]);
+    proc_close($proc);
+    return $out;
+}
+
+/** Texte nettoye : espaces reduits, lignes vides retirees, 20 000 caracteres au plus. */
+function SchoolSafeArchiveCleanText(string $text): string
+{
+    $text = preg_replace('/[^\P{C}\n]/u', ' ', str_replace("\r", '', $text));
+    $text = preg_replace(['/[ \t]+/u', '/\n\s*\n+/u'], [' ', "\n"], (string) $text);
+    return mb_substr(trim((string) $text), 0, 20000);
+}
+
+/** Lit le texte d'une photo ou d'un PDF (texte du PDF, sinon OCR des 3 premieres pages). null si impossible. */
+function SchoolSafeArchiveOcr(string $mime, string $bytes, int $timeout = 40): ?string
+{
+    if (!is_executable('/usr/bin/tesseract')) return null;
+    $dir = sys_get_temp_dir() . '/archive-ocr-' . bin2hex(random_bytes(6));
+    if (!@mkdir($dir, 0700)) return null;
+    $start = microtime(true);
+    $left = static function () use ($start, $timeout) { return max(3, (int) ($timeout - (microtime(true) - $start))); };
+    try {
+        if ($mime === 'application/pdf') {
+            file_put_contents($dir . '/doc.pdf', $bytes);
+            $text = is_executable('/usr/bin/pdftotext') ? (string) SchoolSafeArchiveRun(['/usr/bin/pdftotext', '-l', '10', '-enc', 'UTF-8', $dir . '/doc.pdf', '-'], $left()) : '';
+            if (mb_strlen(trim($text)) >= 30) return SchoolSafeArchiveCleanText($text);
+            if (!is_executable('/usr/bin/pdftoppm')) return null;
+            SchoolSafeArchiveRun(['/usr/bin/pdftoppm', '-r', '200', '-l', '3', '-png', $dir . '/doc.pdf', $dir . '/page'], $left());
+            $text = '';
+            foreach (glob($dir . '/page*.png') ?: [] as $page) $text .= SchoolSafeArchiveRun(['/usr/bin/tesseract', $page, 'stdout', '-l', 'fra', '--psm', '3'], $left()) . "\n";
+            return trim($text) === '' ? null : SchoolSafeArchiveCleanText($text);
+        }
+        file_put_contents($dir . '/image', $bytes);
+        $text = SchoolSafeArchiveRun(['/usr/bin/tesseract', $dir . '/image', 'stdout', '-l', 'fra', '--psm', '3'], $left());
+        return $text === null || trim($text) === '' ? null : SchoolSafeArchiveCleanText($text);
+    } finally {
+        foreach (glob($dir . '/*') ?: [] as $f) @unlink($f);
+        @rmdir($dir);
+    }
+}
+
+/** Extrait du texte lu autour du premier mot cherche (pour la liste des resultats). */
+function SchoolSafeArchiveSnippet(?string $text, string $query, int $around = 60): string
+{
+    $text = (string) $text;
+    if ($text === '' || trim($query) === '') return '';
+    foreach (preg_split('/\s+/u', trim($query)) as $word) {
+        if ($word === '') continue;
+        $pos = mb_stripos($text, $word);
+        if ($pos === false) continue;
+        $from = max(0, $pos - $around);
+        $part = mb_substr($text, $from, mb_strlen($word) + 2 * $around);
+        return ($from > 0 ? '…' : '') . trim(str_replace("\n", ' ', $part)) . ($from + mb_strlen($part) < mb_strlen($text) ? '…' : '');
+    }
+    return '';
 }
