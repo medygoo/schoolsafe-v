@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../modules/SchoolSafe/Gateway.php';
 $ssActions = [];
-foreach (['map', 'decide', 'session', 'update_session', 'reevaluate', 'billing'] as $ssAction) {
+foreach (['map', 'decide', 'session', 'update_session', 'reevaluate', 'billing', 'parent_response'] as $ssAction) {
     $ssActions[$ssAction] = SchoolSafeEndpointGateway('rattrapage.php', 'POST', '', ['action' => $ssAction]) !== 'deny';
 }
 $_SESSION['ss_remediation_csrf'] = $_SESSION['ss_remediation_csrf'] ?? bin2hex(random_bytes(32));
@@ -126,24 +126,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ssMessage = $grade ? 'Reevaluation enregistree depuis les notes SchoolSafe.' : 'Une seance tenue et une nouvelle evaluation notee dans SchoolSafe sont requises.';
     } elseif ($action === 'billing' && $ssDirector) {
         $caseId = (int) ($_POST['case_id'] ?? 0);
-        $mode = $_POST['mode'] ?? '';
-        $amount = str_replace(',', '.', trim((string) ($_POST['tariff'] ?? '0')));
-        if (!in_array($mode, ['free','paid'], true) || !preg_match('/^\d{1,12}(\.\d{1,2})?$/D', $amount)
-            || ($mode === 'paid' && (float) $amount <= 0)) { http_response_code(400); exit('Tarif invalide.'); }
+        $mode = (string) ($_POST['mode'] ?? '');
+        // Tarif juste (04/11) : reduction motivee possible ; l'accompagnement ne depend jamais du paiement.
+        try {
+            $price = SchoolSafeRemediationTariff($mode, (string) ($_POST['tariff'] ?? '0'), (string) ($_POST['reduction'] ?? '0'), (string) ($_POST['reduction_reason'] ?? ''));
+        } catch (RuntimeException $failure) { http_response_code(400); exit($failure->getMessage()); }
         if ($mode === 'paid' && !AllowEdit('Student_Billing/StudentFees.php')) { http_response_code(403); exit('Permission de facturation requise.'); }
         DBQuery('BEGIN');
         $locked = DBGet('SELECT r.* FROM schoolsafe_remediation_cases r WHERE r.id=' . $caseId . ' AND ' . $ssScope . " AND r.status IN ('approved','repeat') AND r.billing_mode IS NULL FOR UPDATE");
         if ($locked) {
             $feeId = 'NULL';
             if ($mode === 'paid') {
-                $fee = DBGet(DBQuery("INSERT INTO billing_fees(student_id,school_id,syear,title,amount,assigned_date,created_by) VALUES(" . (int) $locked[1]['STUDENT_ID'] . ',' . $ssSchool . ',' . $ssYear . ",'Rattrapage - dossier " . $caseId . "'," . $amount . ",CURRENT_DATE,'" . DBEscapeString(User('NAME')) . "') RETURNING id"));
+                $fee = DBGet(DBQuery("INSERT INTO billing_fees(student_id,school_id,syear,title,amount,assigned_date,created_by) VALUES(" . (int) $locked[1]['STUDENT_ID'] . ',' . $ssSchool . ',' . $ssYear . ",'Rattrapage - dossier " . $caseId . "'," . $price['tariff'] . ",CURRENT_DATE,'" . DBEscapeString(User('NAME')) . "') RETURNING id"));
                 $feeId = (int) $fee[1]['ID'];
             }
-            DBQuery("UPDATE schoolsafe_remediation_cases SET billing_mode='" . $mode . "',tariff=" . ($mode === 'free' ? '0' : $amount) . ',fee_id=' . $feeId . ' WHERE id=' . $caseId);
+            DBQuery("UPDATE schoolsafe_remediation_cases SET billing_mode='" . $mode . "',tariff=" . $price['tariff'] . ',base_tariff=' . ($price['base'] ?? 'NULL') . ',reduction_percent=' . ($price['reduction'] ?? 'NULL') . ',reduction_reason=' . ($price['reason'] === null ? 'NULL' : "'" . DBEscapeString($price['reason']) . "'") . ',fee_id=' . $feeId . ' WHERE id=' . $caseId);
             DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(" . $caseId . ",'billing_configured'," . $ssUser . ')');
         }
         DBQuery('COMMIT');
-        $ssMessage = $locked ? 'Tarification enregistree dans SchoolSafe.' : 'Tarification deja definie ou dossier non valide.';
+        $ssMessage = $locked ? 'Tarification enregistrée dans SchoolSafe.' : 'Tarification déjà définie ou dossier non valide.';
+    } elseif ($action === 'parent_response' && User('PROFILE') === 'parent') {
+        // Accord du parent (04/11) : une reponse par plan, parent principal de l'enfant uniquement ($ssScope).
+        $caseId = (int) ($_POST['case_id'] ?? 0);
+        $response = (string) ($_POST['response'] ?? '');
+        $note = trim((string) ($_POST['parent_note'] ?? ''));
+        if (!isset(SchoolSafeRemediationParentResponses()[$response]) || mb_strlen($note) > 1000) { http_response_code(400); exit('Réponse invalide.'); }
+        DBQuery('BEGIN');
+        $changed = DBGet(DBQuery("UPDATE schoolsafe_remediation_cases r SET parent_response='" . $response . "',parent_response_at=now(),parent_response_by=" . $ssUser . ',parent_note=' . ($note === '' ? 'NULL' : "'" . DBEscapeString($note) . "'") . ' WHERE r.id=' . $caseId . ' AND ' . $ssScope . " AND r.status IN ('approved','repeat') AND r.parent_response IS NULL RETURNING r.id"));
+        if ($changed) DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(" . $caseId . ",'parent_" . $response . "'," . $ssUser . ')');
+        DBQuery('COMMIT');
+        $ssMessage = $changed ? 'Votre réponse est enregistrée ; l’école en est informée.' : 'Réponse déjà enregistrée ou plan indisponible.';
     } else {
         http_response_code(403); exit('Operation non autorisee.');
     }
@@ -158,7 +170,7 @@ $ssTypes = ($ssManage && $ssActions['map']) ? DBGet('SELECT gt.assignment_type_i
 $ssCases = DBGet('SELECT r.*,s.first_name,s.last_name,c.title AS course_title FROM schoolsafe_remediation_cases r JOIN students s ON s.student_id=r.student_id JOIN courses c ON c.course_id=r.course_id WHERE ' . $ssScope . ' ORDER BY r.created_at DESC LIMIT 200');
 $ssLabels = ['pending'=>'En attente','approved'=>'Validé','refused'=>'Refusé','passed'=>'Réussi','repeat'=>'À reprendre','closed'=>'Clôturé'];
 $ssSessionLabels = ['scheduled'=>'programmée','held'=>'tenue','postponed'=>'reportée','cancelled'=>'annulée'];
-$ssEventLabels = ['detected'=>'Difficulté détectée','approved'=>'Dossier validé','refused'=>'Dossier refusé','session_scheduled'=>'Séance programmée','session_held'=>'Séance tenue','session_postponed'=>'Séance reportée','session_cancelled'=>'Séance annulée','reassessment_passed'=>'Réévaluation : réussi','reassessment_repeat'=>'Réévaluation : à reprendre','reassessment_closed'=>'Dossier clôturé','billing_configured'=>'Tarification définie','payment_recorded'=>'Paiement enregistré, confirmation en attente','payment_confirmed'=>'Paiement confirmé','payment_review_required'=>'Paiement à revérifier'];
+$ssEventLabels = ['detected'=>'Difficulté détectée','approved'=>'Dossier validé','refused'=>'Dossier refusé','session_scheduled'=>'Séance programmée','session_held'=>'Séance tenue','session_postponed'=>'Séance reportée','session_cancelled'=>'Séance annulée','reassessment_passed'=>'Réévaluation : réussi','reassessment_repeat'=>'Réévaluation : à reprendre','reassessment_closed'=>'Dossier clôturé','billing_configured'=>'Tarification définie','payment_recorded'=>'Paiement enregistré, confirmation en attente','payment_confirmed'=>'Paiement confirmé','payment_review_required'=>'Paiement à revérifier','parent_accepted'=>'Parent : plan accepté','parent_meeting'=>'Parent : rendez-vous demandé','parent_declined'=>'Parent : plan refusé'];
 $ssNotifications = DBGet('SELECT n.created_at,e.kind,r.id AS case_id,c.title AS course_title FROM schoolsafe_remediation_notifications n JOIN schoolsafe_remediation_events e ON e.id=n.event_id JOIN schoolsafe_remediation_cases r ON r.id=e.case_id JOIN courses c ON c.course_id=r.course_id WHERE n.recipient_id=' . $ssUser . ' AND ' . $ssScope . ' ORDER BY n.created_at DESC LIMIT 50');
 $ssWatchScope = User('PROFILE') === 'teacher' ? 'w.school_id=' . $ssSchool . ' AND w.syear=' . $ssYear . ' AND EXISTS(SELECT 1 FROM course_periods cp WHERE cp.course_id=w.course_id AND cp.teacher_id=' . $ssUser . ')' : preg_replace('/\br\./', 'w.', $ssScope);
 // Vigilance (04/11) : au moins 2 notes sous le seuil, sans dossier ; direction et enseignant de la matiere.
@@ -184,16 +196,37 @@ $ssWatch = in_array(User('PROFILE'), ['admin', 'teacher'], true) ? DBGet('SELECT
 <article class="remediation-case" id="remediation-case-<?= (int) $case['ID'] ?>">
 <h3><?= $ssEscape($case['FIRST_NAME'] . ' ' . $case['LAST_NAME']) ?> · <?= $ssEscape(ParseMLField($case['COURSE_TITLE'])) ?></h3>
 <p><?= $ssEscape($ssLabels[$case['STATUS']]) ?> · Dossier <?= (int) $case['ID'] ?></p>
+<?php $ssResponses = SchoolSafeRemediationParentResponses(); ?>
+<?php if (User('PROFILE') === 'parent'): ?>
+<?php $ssPlan = DBGet("SELECT count(*) AS total,count(*) FILTER (WHERE status='held') AS held,count(*) FILTER (WHERE status='held' AND attendance='present') AS present,min(starts_at) FILTER (WHERE status IN ('scheduled','postponed') AND starts_at>=now()) AS next FROM schoolsafe_remediation_sessions WHERE case_id=" . (int) $case['ID']); ?>
+<?php $ssPaidRows = $case['BILLING_MODE'] === 'paid' ? DBGet('SELECT COALESCE(sum(amount),0) AS paid FROM schoolsafe_remediation_payments WHERE invalidated_at IS NULL AND case_id=' . (int) $case['ID']) : []; $ssPaid = (float) ($ssPaidRows[1]['PAID'] ?? 0); ?>
+<div class="remediation-plan"><h4>Plan d’accompagnement</h4><ul>
+<li>Séances : <?= (int) $ssPlan[1]['HELD'] ?> tenue(s) sur <?= (int) $ssPlan[1]['TOTAL'] ?> programmée(s) · présent à <?= (int) $ssPlan[1]['PRESENT'] ?></li>
+<li>Prochaine séance : <?= $ssPlan[1]['NEXT'] ? $ssEscape(substr((string) $ssPlan[1]['NEXT'], 0, 16)) : 'à programmer par l’école' ?></li>
+<li>Participation : <?php if (!$case['BILLING_MODE']): ?>à définir par l’école<?php elseif ($case['BILLING_MODE'] === 'free'): ?>gratuite<?php else: ?><?= $ssEscape($case['TARIFF']) ?> · déjà payé <?= $ssEscape(number_format($ssPaid, 2, '.', '')) ?> · reste <?= $ssEscape(number_format(max(0, (float) $case['TARIFF'] - $ssPaid), 2, '.', '')) ?><?php endif; ?></li>
+<li>L’accompagnement de votre enfant ne dépend jamais du paiement.</li></ul>
+<?php if ($case['PARENT_RESPONSE']): ?><p>Votre réponse : <?= $ssEscape($ssResponses[$case['PARENT_RESPONSE']] ?? '') ?> (<?= $ssEscape(substr((string) $case['PARENT_RESPONSE_AT'], 0, 10)) ?>)</p>
+<?php elseif ($ssActions['parent_response'] && in_array($case['STATUS'], ['approved','repeat'], true)): ?>
+<form method="post"><input type="hidden" name="csrf" value="<?= $ssEscape($ssToken) ?>"><input type="hidden" name="action" value="parent_response"><input type="hidden" name="case_id" value="<?= (int) $case['ID'] ?>">
+<label>Un mot pour l’école (facultatif)<textarea name="parent_note" maxlength="1000"></textarea></label>
+<?php foreach ($ssResponses as $value => $label): ?><button name="response" value="<?= $ssEscape($value) ?>"><?= $ssEscape($label) ?></button> <?php endforeach; ?></form>
+<?php endif; ?></div>
+<?php elseif ($case['PARENT_RESPONSE']): ?><p><strong>Réponse du parent :</strong> <?= $ssEscape($ssResponses[$case['PARENT_RESPONSE']] ?? '') ?> (<?= $ssEscape(substr((string) $case['PARENT_RESPONSE_AT'], 0, 10)) ?>)<?php if ($case['PARENT_NOTE']): ?> — <?= $ssEscape($case['PARENT_NOTE']) ?><?php endif; ?></p>
+<?php elseif (in_array($case['STATUS'], ['approved','repeat'], true)): ?><p>Réponse du parent : en attente.</p>
+<?php endif; ?>
 <?php $evidenceGrades = DBGet('SELECT DISTINCT ga.assignment_id,ga.title,ga.marking_period_id,gg.points,ga.points AS maximum,mt.kind FROM schoolsafe_remediation_cases r JOIN gradebook_grades gg ON gg.student_id=r.student_id AND gg.assignment_id=ANY(r.evidence) JOIN course_periods cp ON cp.course_period_id=gg.course_period_id AND cp.course_id=r.course_id AND cp.school_id=r.school_id AND cp.syear=r.syear JOIN gradebook_assignments ga ON ga.assignment_id=gg.assignment_id AND (ga.course_id=cp.course_id OR ga.course_period_id=cp.course_period_id) LEFT JOIN schoolsafe_remediation_types mt ON mt.assignment_type_id=ga.assignment_type_id WHERE r.id=' . (int) $case['ID'] . ' ORDER BY ga.assignment_id'); ?>
 <?php if ($evidenceGrades): ?><ul aria-label="Notes justificatives du dossier">
 <?php foreach ($evidenceGrades as $evidence): ?><li><?= $ssEscape($evidence['TITLE']) ?> · <?= $ssEscape(['homework'=>'Devoir','quiz'=>'Interrogation','exam'=>'Examen'][$evidence['KIND']] ?? 'Type a reverifier') ?> · <?= $ssEscape($evidence['POINTS']) ?> / <?= $ssEscape($evidence['MAXIMUM']) ?> · P&eacute;riode <?= $ssEscape($evidence['MARKING_PERIOD_ID']) ?></li><?php endforeach; ?>
 </ul><?php endif; ?>
 <?php if ($case['BILLING_MODE'] === 'paid' && User('PROFILE') === 'admin' && AllowEdit('Student_Billing/StudentPayments.php') && SchoolSafeEndpointGateway('remediation-payments.php','GET') !== 'deny'): ?><p><a href="remediation-payments.php#remediation-case-<?= (int) $case['ID'] ?>">Paiements de ce rattrapage</a></p><?php endif; ?>
-<?php if ($case['BILLING_MODE']): ?><p>Rattrapage <?= $case['BILLING_MODE'] === 'free' ? 'gratuit' : 'payant' ?><?php if ($case['BILLING_MODE'] === 'paid'): ?> · Tarif <?= $ssEscape($case['TARIFF']) ?><?php endif; ?></p><?php endif; ?>
+<?php if ($case['BILLING_MODE']): ?><p>Rattrapage <?= $case['BILLING_MODE'] === 'free' ? 'gratuit' : 'payant' ?><?php if ($case['BILLING_MODE'] === 'paid'): ?> · Tarif <?= $ssEscape($case['TARIFF']) ?><?php if (($case['REDUCTION_PERCENT'] ?? '') !== '' && $case['REDUCTION_PERCENT'] !== null): ?> · <?= User('PROFILE') === 'parent' ? 'tarif réduit accordé' : $ssEscape('réduit de ' . (float) $case['REDUCTION_PERCENT'] . ' % (tarif de base ' . $case['BASE_TARIFF'] . ') : ' . $case['REDUCTION_REASON']) ?><?php endif; ?> · L’accompagnement ne dépend pas du paiement<?php endif; ?></p><?php endif; ?>
 <?php if ($ssDirector && $ssActions['billing'] && !$case['BILLING_MODE'] && in_array($case['STATUS'], ['approved','repeat'], true)): ?>
 <form method="post"><input type="hidden" name="csrf" value="<?= $ssEscape($ssToken) ?>"><input type="hidden" name="action" value="billing"><input type="hidden" name="case_id" value="<?= (int) $case['ID'] ?>">
 <label>Accompagnement<select name="mode"><option value="free">Gratuit</option><option value="paid">Payant</option></select></label>
-<label>Tarif dans l'unit&eacute; mon&eacute;taire SchoolSafe<input name="tariff" type="number" min="0" step="0.01" value="0" required></label><button>Enregistrer la tarification</button></form>
+<label>Tarif dans l'unit&eacute; mon&eacute;taire SchoolSafe<input name="tariff" type="number" min="0" step="0.01" value="0" required></label>
+<label>R&eacute;duction en % (facultatif)<input name="reduction" type="number" min="0" max="100" step="0.01" value="0"></label>
+<label>Motif de la r&eacute;duction<input name="reduction_reason" maxlength="500" placeholder="ex. famille en difficult&eacute;, fratrie"></label>
+<p>Le tarif est suivi par l'&eacute;conomat ; l'accompagnement ne d&eacute;pend jamais du paiement et l'entr&eacute;e de l'&eacute;l&egrave;ve n'est pas bloqu&eacute;e.</p><button>Enregistrer la tarification</button></form>
 <?php endif; ?>
 <?php if ($case['EVIDENCE_VALID'] !== 't'): ?><p>Les notes ont chang&eacute; : les preuves doivent &ecirc;tre rev&eacute;rifi&eacute;es avant validation.</p><?php endif; ?>
 <?php if ($ssDirector && $ssActions['decide'] && $case['STATUS'] === 'pending' && $case['EVIDENCE_VALID'] === 't'): ?>

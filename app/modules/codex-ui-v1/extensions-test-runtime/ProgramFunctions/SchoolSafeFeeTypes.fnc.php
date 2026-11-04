@@ -154,12 +154,13 @@ function SchoolSafeFeeTypesClassify( array $fees, int $paidCents, array $types, 
     return [ 'color' => $result ? $worst : null, 'types' => array_values( $result ) ];
 }
 
+// Rattrapage exclu (04/11) : jamais bloquant pour l'enfant, suivi dans ses propres paiements.
 // Lecture native : frais nets des remises (avec titre et echeance) et total paye net, pour un eleve.
 function SchoolSafeFeeTypesLedger( int $student, int $school, int $year, callable $get ): array
 {
     $where = 'STUDENT_ID=' . $student . ' AND SCHOOL_ID=' . $school . ' AND SYEAR=' . $year;
-    $rows = $get( "SELECT 'fee' AS KIND,ID,TITLE,AMOUNT,WAIVED_FEE_ID,DUE_DATE FROM billing_fees WHERE " . $where
-        . " UNION ALL SELECT 'payment' AS KIND,ID,NULL AS TITLE,AMOUNT,NULL AS WAIVED_FEE_ID,NULL AS DUE_DATE FROM billing_payments WHERE " . $where );
+    $rows = $get( "SELECT 'fee' AS KIND,ID,TITLE,AMOUNT,WAIVED_FEE_ID,DUE_DATE FROM billing_fees WHERE " . $where . " AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_cases rc WHERE rc.fee_id IN (billing_fees.id,billing_fees.waived_fee_id))"
+        . " UNION ALL SELECT 'payment' AS KIND,ID,NULL AS TITLE,AMOUNT,NULL AS WAIVED_FEE_ID,NULL AS DUE_DATE FROM billing_payments WHERE " . $where . " AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_payment_purpose rp WHERE rp.payment_id IN (billing_payments.id,billing_payments.refunded_payment_id))" );
     if ( ! is_array( $rows ) ) throw new RuntimeException( 'FEE_READ_UNAVAILABLE' );
     $fees = []; $adjust = []; $paid = 0;
     foreach ( $rows as $row )

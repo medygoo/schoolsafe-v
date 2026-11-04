@@ -96,3 +96,31 @@ function SchoolSafeRemediationTeacherAllowed(array $s, bool $teachesCourse): boo
 {
     return empty($s['other_teacher']) || !$teachesCourse;
 }
+
+/**
+ * Tarif du rattrapage (04/11) : gratuit, ou payant avec reduction motivee (famille en difficulte...).
+ * Retourne des montants SQL surs ; une reduction de 100 % equivaut a la gratuite.
+ */
+function SchoolSafeRemediationTariff(string $mode, string $amount, string $reduction, string $reason): array
+{
+    if (!in_array($mode, ['free', 'paid'], true)) throw new RuntimeException('Mode de tarification invalide.');
+    if ($mode === 'free') return ['tariff' => '0', 'base' => null, 'reduction' => null, 'reason' => null];
+    $amount = str_replace(',', '.', trim($amount));
+    $reduction = str_replace(',', '.', trim($reduction));
+    if ($reduction === '') $reduction = '0';
+    $reason = trim(preg_replace('/\s+/u', ' ', $reason) ?? '');
+    if (!preg_match('/^\d{1,12}(\.\d{1,2})?$/D', $amount) || (float) $amount <= 0) throw new RuntimeException('Tarif invalide.');
+    if (!preg_match('/^\d{1,3}(\.\d{1,2})?$/D', $reduction) || (float) $reduction > 100) throw new RuntimeException('Réduction invalide : entre 0 et 100 %.');
+    if ((float) $reduction > 0 && $reason === '') throw new RuntimeException('Indiquez le motif de la réduction.');
+    if (mb_strlen($reason) > 500) throw new RuntimeException('Motif trop long (500 caractères au plus).');
+    $final = round((float) $amount * (100 - (float) $reduction) / 100, 2);
+    if ($final <= 0) throw new RuntimeException('Une réduction de 100 % revient à la gratuité : choisissez « Gratuit ».');
+    return ['tariff' => number_format($final, 2, '.', ''), 'base' => number_format((float) $amount, 2, '.', ''),
+        'reduction' => (float) $reduction > 0 ? number_format((float) $reduction, 2, '.', '') : null, 'reason' => (float) $reduction > 0 ? $reason : null];
+}
+
+/** Reponses possibles du parent au plan. */
+function SchoolSafeRemediationParentResponses(): array
+{
+    return ['accepted' => 'J’accepte le plan', 'meeting' => 'Je souhaite un rendez-vous', 'declined' => 'Je refuse le plan'];
+}

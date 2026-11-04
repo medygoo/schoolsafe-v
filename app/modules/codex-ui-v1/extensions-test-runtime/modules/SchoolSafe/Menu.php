@@ -24,7 +24,7 @@ $ss_sections = [
 	],
 	'Rattrapage' => [
 		'RemediationRead', 'RemediationMap', 'RemediationDecide', 'RemediationSchedule',
-		'RemediationFollowup', 'RemediationReassess',
+		'RemediationFollowup', 'RemediationReassess', 'RemediationParentReply',
 	],
 	'Frais & Paiements' => [
 		'FeeModelsRead', 'FeeModelsManage', 'RemediationBilling',

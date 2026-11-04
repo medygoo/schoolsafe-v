@@ -42,13 +42,14 @@ function SchoolSafeFeeConsultResult(array $verify,array $ctx,array $ledger,array
 }
 
 // One native SQL statement supplies fees AND payments from the same snapshot.
+// Rattrapage (04/11, valide) : ses frais et paiements sont exclus, le paiement ne bloque jamais l'enfant.
 // Reused inside the arrival transaction, with no nested BEGIN or audit write.
 function SchoolSafeFeeLedgerRead(int $student,int $school,int $year,callable $get,string $day): array
 {
     if($student<1||$school<1||$year<1||preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/D',$day)!==1)throw new RuntimeException('INVALID_CONTEXT');
     $where='STUDENT_ID='.$student.' AND SCHOOL_ID='.$school.' AND SYEAR='.$year;
-    $rows=$get("SELECT 'fee' AS LEDGER_KIND,ID,AMOUNT,WAIVED_FEE_ID,NULL AS REFUNDED_PAYMENT_ID,DUE_DATE FROM billing_fees WHERE ".$where
-        ." UNION ALL SELECT 'payment' AS LEDGER_KIND,ID,AMOUNT,NULL AS WAIVED_FEE_ID,REFUNDED_PAYMENT_ID,NULL AS DUE_DATE FROM billing_payments WHERE ".$where);
+    $rows=$get("SELECT 'fee' AS LEDGER_KIND,ID,AMOUNT,WAIVED_FEE_ID,NULL AS REFUNDED_PAYMENT_ID,DUE_DATE FROM billing_fees WHERE ".$where." AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_cases rc WHERE rc.fee_id IN (billing_fees.id,billing_fees.waived_fee_id))"
+        ." UNION ALL SELECT 'payment' AS LEDGER_KIND,ID,AMOUNT,NULL AS WAIVED_FEE_ID,REFUNDED_PAYMENT_ID,NULL AS DUE_DATE FROM billing_payments WHERE ".$where." AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_payment_purpose rp WHERE rp.payment_id IN (billing_payments.id,billing_payments.refunded_payment_id))");
     if(!is_array($rows))throw new RuntimeException('FEE_READ_UNAVAILABLE');
     $total=0;$waiverTotal=0;$paid=0;$fees=[];$adjustments=[];
     $billedPositive=0;$paymentsPositive=0;$refundAdjustments=0;$feeAdjustments=0;$paymentAdjustments=0;
