@@ -1,0 +1,497 @@
+{
+  "schema": 1,
+  "width": 1023,
+  "height": 1537,
+  "source": "V12 verrouillée — copies WebP (04/11), PNG intacts",
+  "actions": [
+    "noseScratch",
+    "intro",
+    "thumbsUp",
+    "deepThink",
+    "pointLeft",
+    "pointRight",
+    "attentive",
+    "surpriseGesture",
+    "footTap",
+    "heelPlay",
+    "toePlay",
+    "sideStep",
+    "angry",
+    "compliment",
+    "guide",
+    "reassure",
+    "jump",
+    "walk",
+    "joySway",
+    "curtsy",
+    "talkContinuous",
+    "idle",
+    "fidget",
+    "hips",
+    "balance",
+    "yes",
+    "no",
+    "beam",
+    "insight",
+    "sendStanding",
+    "sendKneeling",
+    "blink",
+    "wink",
+    "wave",
+    "clap",
+    "think",
+    "explain",
+    "shy",
+    "proud",
+    "sad",
+    "laughing",
+    "grateful",
+    "relieved",
+    "embarrassed",
+    "confused",
+    "worried",
+    "tired"
+  ],
+  "files": {
+    "references/repos.png": {
+      "url": "webp/originals-rest.webp",
+      "sha256": "2235926f5f87e568e06beacd1ece988a848ab2e2fd27097641c64c0ca77fc88c",
+      "bytes": 74204
+    },
+    "images/intermediaire-bas.png": {
+      "url": "webp/intermediaire-bas.webp",
+      "sha256": "4226788e92f87b5096d28c6c34931b97307619b338790f8bf090542fe2f39f31",
+      "bytes": 80424
+    },
+    "images/intermediaire-exterieur.png": {
+      "url": "webp/intermediaire-exterieur.webp",
+      "sha256": "90b458ceaddacbb89e61f138de316641aa76632391f70745b7a1090e3c3e63d7",
+      "bytes": 79858
+    },
+    "images/preparer-salut.png": {
+      "url": "webp/preparer-salut.webp",
+      "sha256": "2999180e0f4bc172ede97859f328a750e84f028a72b3f47977c93c61373f18aa",
+      "bytes": 89732
+    },
+    "images/salut.png": {
+      "url": "webp/originals-wave.webp",
+      "sha256": "63d652b009f4bace21dd635ea3d7510b664ff043c610e3fbeecd5adca079dadd",
+      "bytes": 82014
+    },
+    "images/jupe-deux-mains.png": {
+      "url": "webp/jupe-deux-mains.webp",
+      "sha256": "54fadc45be48c8c8081327b0a8f5e0dcecb79f772e9be0add9a1b9dbbce8fb80",
+      "bytes": 79908
+    },
+    "references/presenter.png": {
+      "url": "webp/presenter.webp",
+      "sha256": "de753a7fdd46b44e3d2b41991d7f13ec2143718ce2dc9958b1785df4d5404615",
+      "bytes": 88168
+    },
+    "references/guider.png": {
+      "url": "webp/originals-guide.webp",
+      "sha256": "1b5a8f9d2912c96d4b7fd3aecd94c7daab33e51a0ac4d82678f386dbed57462b",
+      "bytes": 89104
+    },
+    "references/pointer.png": {
+      "url": "webp/pointer.webp",
+      "sha256": "ef06d9351d9b1f66ee8fd5802bd3d012dfcd5bdd7b059a5bddd2c82cff0e42ce",
+      "bytes": 84738
+    },
+    "images/preparer-hanches.png": {
+      "url": "webp/preparer-hanches.webp",
+      "sha256": "fede75f349b0c8161af3948c5471807fbd86d580082a2702906f0a1c24538971",
+      "bytes": 81552
+    },
+    "images/mains-hanches.png": {
+      "url": "webp/mains-hanches.webp",
+      "sha256": "fd376f2830bd69bf9ec252f590d5f2740ade41bc26f90ee36a5beab88500b2a6",
+      "bytes": 84134
+    },
+    "images/preparer-equilibre.png": {
+      "url": "webp/preparer-equilibre.webp",
+      "sha256": "780887071c3bdbce256739cb2274a6e1f812d14d8b44335c381e9582e7f6af0b",
+      "bytes": 82692
+    },
+    "images/equilibre-un-pied.png": {
+      "url": "webp/equilibre-un-pied.webp",
+      "sha256": "aa784a687dd6f8b8620366331784de10adadc806bc47ead4fb14ba4147bbf36e",
+      "bytes": 74354
+    },
+    "images/jumpPrep.png": {
+      "url": "webp/jumpPrep.webp",
+      "sha256": "e6de1689c9f43e96c1375aba8228208f97ba46a848a5b6bb439ed577b3fb3939",
+      "bytes": 76944
+    },
+    "images/jumpLift.png": {
+      "url": "webp/jumpLift.webp",
+      "sha256": "913c75a4a5735e7a28c2fce031511cbcaa123b1e7709c3144661d28b42fa2044",
+      "bytes": 74382
+    },
+    "images/jumpAir.png": {
+      "url": "webp/jumpAir.webp",
+      "sha256": "160b4960fe82c18cc3b96350cae57518864a701032f76b0aa0838b42e20bf235",
+      "bytes": 77434
+    },
+    "images/walkHalfL.png": {
+      "url": "webp/walkHalfL.webp",
+      "sha256": "b0831e9eeb65ed040d55a59e9d2afdb455d038a89503bb68595734f69a84e5d1",
+      "bytes": 72834
+    },
+    "images/walkL.png": {
+      "url": "webp/walkL.webp",
+      "sha256": "0e0aa048a9ec755852610d4a29b6f3de0b65fc8db0899dbba007dee76ac39d0a",
+      "bytes": 76018
+    },
+    "images/walkHalfR.png": {
+      "url": "webp/walkHalfR.webp",
+      "sha256": "1e77f7a1aabd1036d0723688bf3eb3fe7e3846975e384035e75a15f5ec6f0dfa",
+      "bytes": 74688
+    },
+    "images/walkR.png": {
+      "url": "webp/walkR.webp",
+      "sha256": "45803527d3a8cc3409a9f47a2e75ea5f139315a40e3f284b585a8db0e5291fd9",
+      "bytes": 76344
+    },
+    "images/attentiveBody.png": {
+      "url": "webp/originals-attentiveBody.webp",
+      "sha256": "e6d24f4ec2b1fb85699bb796d553362b2e2df6fe3700d324fea494b1e05cc3d3",
+      "bytes": 81532
+    },
+    "images/chin1.png": {
+      "url": "webp/originals-chin1.webp",
+      "sha256": "8e28739a44303430d0c39d15debc4c7efb9caa159d5da72e5d30c404993ae3b3",
+      "bytes": 71484
+    },
+    "images/chin2.png": {
+      "url": "webp/chin2.webp",
+      "sha256": "8e28739a44303430d0c39d15debc4c7efb9caa159d5da72e5d30c404993ae3b3",
+      "bytes": 71484
+    },
+    "images/chin3.png": {
+      "url": "webp/chin3.webp",
+      "sha256": "538d4ff189376ecd08c56e88ec5197b03ac50d448c9481378a7b5db66b380d7e",
+      "bytes": 79154
+    },
+    "images/thumb1.png": {
+      "url": "webp/thumb1.webp",
+      "sha256": "76eca2837ba0ae608f7e905630e415047fa5d54d775097b6536aedf37c4c12f5",
+      "bytes": 77030
+    },
+    "images/thumb2.png": {
+      "url": "webp/originals-thumb2.webp",
+      "sha256": "e539d380f4cc4cfed42745d51229e156aaf366b73291a4871995bc34335af391",
+      "bytes": 78576
+    },
+    "images/thumb3.png": {
+      "url": "webp/thumb3.webp",
+      "sha256": "f32b84d42c2f87eac5f3fe54a31007b158e6ca07bebf40be3bb4b68a57385f4b",
+      "bytes": 76928
+    },
+    "images/worried1.png": {
+      "url": "webp/originals-worried1.webp",
+      "sha256": "1719a0fa259243c58c9da2a72a96e15649e54ca329ced8b2999a94b46ee6dc54",
+      "bytes": 75682
+    },
+    "images/worried2.png": {
+      "url": "webp/worried2.webp",
+      "sha256": "4a6373b6561c68785385638971fa838c8287ff72808ab798b4973e3063bfe4a7",
+      "bytes": 76448
+    },
+    "images/worried3.png": {
+      "url": "webp/worried3.webp",
+      "sha256": "0be83aa495f089c956d5ddf5136d49f4d93392067eb59cb510f7d1b301efa860",
+      "bytes": 74632
+    },
+    "images/smileMid.png": {
+      "url": "webp/smileMid.webp",
+      "sha256": "eb77add9519f7a665731efdda4b01fb5fc3ce58f12e331ea23028924cd28b7d8",
+      "bytes": 80344
+    },
+    "images/grand-sourire.png": {
+      "url": "webp/grand-sourire.webp",
+      "sha256": "711033649ca4153db07790e66d09be72e2966c58054f9b27269aa3d6bd0fc3b3",
+      "bytes": 77674
+    },
+    "references/paupières-fermées.png": {
+      "url": "webp/eyelids-closed.webp",
+      "sha256": "c3a4382761bab670bb7e9de62d1a7f67c861ebf40deddaaa22491ed73840b3f9",
+      "bytes": 76006
+    },
+    "images/bowPrep.png": {
+      "url": "webp/images-bowPrep.webp",
+      "sha256": "28b983179f113387c6ebffe1a1094397d241b20b5522aa44ac6efead5cb0d1e7",
+      "bytes": 72006
+    },
+    "images/bow.png": {
+      "url": "webp/images-bow.webp",
+      "sha256": "32e1fd9185bc52482ef4524fe79479df31fb65d71c6a141ff8bd3c037a9ddbc1",
+      "bytes": 68272
+    },
+    "images/cupsHalf.png": {
+      "url": "webp/images-cupsHalf.webp",
+      "sha256": "edc43020a9857a555a4816aca0e08767f96aa7d938b2ab20674d57db6260a4c9",
+      "bytes": 79012
+    },
+    "images/kneelStart.png": {
+      "url": "webp/images-kneelStart.webp",
+      "sha256": "2d2080ca83189e08d7bd5eecbcd717a0987d34893ff15b9b710af5504c14644a",
+      "bytes": 79778
+    },
+    "images/crossPrep.png": {
+      "url": "webp/images-crossPrep.webp",
+      "sha256": "b72abf22672075408454b4b217b78802546212177555801c0e5b1b95b0a81951",
+      "bytes": 79908
+    },
+    "images/crossArms.png": {
+      "url": "webp/images-crossArms.webp",
+      "sha256": "48ba0f3fdc9d967b556350e9527d7bcb26580a9d7c527e7db19888a873b45d82",
+      "bytes": 73334
+    },
+    "images/crossBack.png": {
+      "url": "webp/images-crossBack.webp",
+      "sha256": "5f0dff0dc928ced186ab4565c290a90cda4730566ee4c67787dea2063b5ebf69",
+      "bytes": 73242
+    },
+    "images/preparer-genou.png": {
+      "url": "webp/images-preparer-genou.webp",
+      "sha256": "a56ed83962998e8e7f488d6c702cacd303407595743c2fccb1ea731bb1bfc518",
+      "bytes": 75056
+    },
+    "images/mains-reunies.png": {
+      "url": "webp/images-mains-reunies.webp",
+      "sha256": "d0b6265705ab4d7dc8f73faf7c2b1a74d3d015e15a7390f24918bb646e68fcdb",
+      "bytes": 75876
+    },
+    "images/non-main.png": {
+      "url": "webp/images-non-main.webp",
+      "sha256": "605404cb2db9aa6fa458ce093aceaf8f548323757969e8cfdafb096fcbcbb3c4",
+      "bytes": 79078
+    },
+    "images/un-genou-sol.png": {
+      "url": "webp/images-un-genou-sol.webp",
+      "sha256": "cacda346243a9d78e9a7e32165499b5ed49d3a9b7dee99897c5c61e46281c5ea",
+      "bytes": 67034
+    },
+    "images/attente-main-jupe.png": {
+      "url": "webp/images-attente-main-jupe.webp",
+      "sha256": "99b3c920eb5c42f0b7ac955bcbb1d26a4f9c562cab042e1373bbe191e3d61493",
+      "bytes": 80730
+    },
+    "images/reflechir.png": {
+      "url": "webp/images-reflechir.webp",
+      "sha256": "3fbd0088c576b1e14acbd14e6f316cfd5f642cbcbcd628f7fcead61b537f9190",
+      "bytes": 81118
+    },
+    "images/applaudir-ouvert.png": {
+      "url": "webp/images-applaudir-ouvert.webp",
+      "sha256": "888b3d13dd4e42e957caa263bb634e3f1056819fab7b380f598a909eb44f4178",
+      "bytes": 78596
+    },
+    "images/applaudir-contact.png": {
+      "url": "webp/images-applaudir-contact.webp",
+      "sha256": "e7a40b5a8841164b13d1269be497742425225b85e821efc1bf81162b075d8605",
+      "bytes": 78474
+    },
+    "references/expliquer.png": {
+      "url": "webp/references-expliquer.webp",
+      "sha256": "4bb4f51a2cd2c15d17f96ae63dcb021484837b2759a3c4fe92929fd90bf2074c",
+      "bytes": 81836
+    },
+    "images/shy1.png": {
+      "url": "webp/images-shy1.webp",
+      "sha256": "83387eeae1e106cb66afa08ce985c5662670a8b940cef57795d8b4f077a59294",
+      "bytes": 75352
+    },
+    "images/shy2.png": {
+      "url": "webp/images-shy2.webp",
+      "sha256": "eaa584556eac8cc7d876fe77e6845c07538f954329c25ec3aafe64a5921278e4",
+      "bytes": 76700
+    },
+    "images/shy3.png": {
+      "url": "webp/images-shy3.webp",
+      "sha256": "2953b1f0bf2203f24fa2a11a5c0a7fcedc1adc31046c0fe7fa0dc7cf978114a6",
+      "bytes": 82426
+    },
+    "images/proud1.png": {
+      "url": "webp/images-proud1.webp",
+      "sha256": "86e2958cad75ee6d53c8dc17e1c42fedcc6eb93564fe1a916a38f7e55a0ca53d",
+      "bytes": 79378
+    },
+    "images/proud2.png": {
+      "url": "webp/images-proud2.webp",
+      "sha256": "2a0d0464a83e6bc3dca32eff4b292ec3122a9af6d461dec9934806233d3ffbe8",
+      "bytes": 82664
+    },
+    "images/proud3.png": {
+      "url": "webp/images-proud3.webp",
+      "sha256": "be1d593d8ad56cdfed2faaa019f60bd235fb1606cd2eecf1b24e6bf51c7b1769",
+      "bytes": 81046
+    },
+    "images/sad1.png": {
+      "url": "webp/images-sad1.webp",
+      "sha256": "b863f2d282478747176487e1fb666ec2d74336c7bfc2f861fb0530df14eb48fb",
+      "bytes": 75222
+    },
+    "images/sad2.png": {
+      "url": "webp/images-sad2.webp",
+      "sha256": "8e3677c08afc0dd36eece973ea0286abd74111627b99a0f772d859389193a240",
+      "bytes": 75856
+    },
+    "images/sad3.png": {
+      "url": "webp/images-sad3.webp",
+      "sha256": "dba1f3e3e1047846a54a4bff8b70d7a238e485ebb02b54848284c553c493f3bb",
+      "bytes": 73626
+    },
+    "images/laughing1.png": {
+      "url": "webp/images-laughing1.webp",
+      "sha256": "d80c2844e2f5cc8c942bed7323fba67ed9d43c4d956635fd7ef6a52d83265fc5",
+      "bytes": 77050
+    },
+    "images/laughing2.png": {
+      "url": "webp/images-laughing2.webp",
+      "sha256": "2a695d33a4ea8fe70cd615c02ae0752201cdb27684b6ba77e32d59e0dacdc62b",
+      "bytes": 84180
+    },
+    "images/laughing3.png": {
+      "url": "webp/images-laughing3.webp",
+      "sha256": "6b02b065672b30a7fcb8a879bda9a1a20b10f626ea90ec302e24289e0dcfe4dd",
+      "bytes": 81506
+    },
+    "images/grateful1.png": {
+      "url": "webp/images-grateful1.webp",
+      "sha256": "39e1591be0e59e57b2d178a65debb6bd62399e5fa255bc2f32088cf2efe2cfee",
+      "bytes": 73128
+    },
+    "images/grateful2.png": {
+      "url": "webp/images-grateful2.webp",
+      "sha256": "809e8ac9371b265019dfea9fc07969ce13c7aaf4654b79dbc71d5dd05c7f0ad6",
+      "bytes": 75710
+    },
+    "images/grateful3.png": {
+      "url": "webp/images-grateful3.webp",
+      "sha256": "c00002cb26126acc52173993db22357acc6aa209e06a5e576f3ebb87fc94071b",
+      "bytes": 75366
+    },
+    "images/relieved1.png": {
+      "url": "webp/images-relieved1.webp",
+      "sha256": "e160b790ce6f8573efd29b6b5912e3f96da2927c4f27bec10c7349eb16379f4b",
+      "bytes": 73646
+    },
+    "images/relieved2.png": {
+      "url": "webp/images-relieved2.webp",
+      "sha256": "f1a8b6d1f5ad2b9142edebe09232921ce33a98b467792b16c1a95f0dc534ef2a",
+      "bytes": 74950
+    },
+    "images/relieved3.png": {
+      "url": "webp/images-relieved3.webp",
+      "sha256": "089545e72689b77eaed1ad6818de5474e75a7d8a43f8a7bba4c0165aa5f1633f",
+      "bytes": 84518
+    },
+    "images/embarrassed1.png": {
+      "url": "webp/images-embarrassed1.webp",
+      "sha256": "ce448191bafd1b2246d8c5953c1eadd9c4b71e862927ec92035631e4cbb49e1c",
+      "bytes": 77636
+    },
+    "images/embarrassed2.png": {
+      "url": "webp/images-embarrassed2.webp",
+      "sha256": "7d6f017ec99a330319175678ad5923c1c2162b5fcfdda6ccdbac24eca4a59d36",
+      "bytes": 83130
+    },
+    "images/embarrassed3.png": {
+      "url": "webp/images-embarrassed3.webp",
+      "sha256": "7373e4b831e85ce89cf90376822b4c493d46fd14df092209a601c84f83753251",
+      "bytes": 78470
+    },
+    "images/confused1.png": {
+      "url": "webp/images-confused1.webp",
+      "sha256": "493b09e0918434fdc5732bf951a34fe8c19fe7e16a689491311f0a16f5934ad7",
+      "bytes": 72872
+    },
+    "images/confused2.png": {
+      "url": "webp/images-confused2.webp",
+      "sha256": "37742ffa61604d18750e839450ee8ca5805dd0fde1fbf292d41e1339a01c4668",
+      "bytes": 77628
+    },
+    "images/confused3.png": {
+      "url": "webp/images-confused3.webp",
+      "sha256": "145eff6993ef68bbf8e77e9e701c5998e48f4b120bb0e9aa1823e8fd6169949e",
+      "bytes": 79384
+    },
+    "images/tired1.png": {
+      "url": "webp/images-tired1.webp",
+      "sha256": "76e5864d5280033d4d94508778ee96048b7380989dbb1c3d0ab34fabeae4e7fa",
+      "bytes": 72398
+    },
+    "images/tired2.png": {
+      "url": "webp/images-tired2.webp",
+      "sha256": "5345d40acd163db8592ad4d2c19a0e97997be23b0034d14401527419ed5e771b",
+      "bytes": 72350
+    },
+    "images/tired3.png": {
+      "url": "webp/images-tired3.webp",
+      "sha256": "759e75e80531e03c72c4637a28fb4688fcef0070656bca53ebf0b95bd77d6368",
+      "bytes": 75866
+    },
+    "images/noseTouch.png": {
+      "url": "webp/images-noseTouch.webp",
+      "sha256": "2dd2f64fdcb0458dfb8a2295e194d496eadd91ffe302f25e3692c1497fbdcc22",
+      "bytes": 71768
+    },
+    "images/noseScratch.png": {
+      "url": "webp/images-noseScratch.webp",
+      "sha256": "41c726cfaa93eae85ed4ac0e84dfce1332c28196b8345ab785dd1b281598f16b",
+      "bytes": 71776
+    },
+    "images/introSelf.png": {
+      "url": "webp/images-introSelf.webp",
+      "sha256": "bebc4faa6ea3c69479c0ee134809d812d1e3f5017d8ab560d9e8e0538f775d4f",
+      "bytes": 76964
+    },
+    "images/introOpen.png": {
+      "url": "webp/images-introOpen.webp",
+      "sha256": "0e040f2c9c4e8d160702f58b4e04f8d09a61f62f17675211fe8b6db19828ebf6",
+      "bytes": 80826
+    },
+    "images/surprisePrep.png": {
+      "url": "webp/images-surprisePrep.webp",
+      "sha256": "908693169361488db0fe56414bc26db18ff28bc667e639b937fb23eef173791a",
+      "bytes": 82920
+    },
+    "images/surpriseBody.png": {
+      "url": "webp/images-surpriseBody.webp",
+      "sha256": "ca71def41784953e06c9ef8e73a8ec188d1f74b7ee967e385a44d376cf708edc",
+      "bytes": 79782
+    },
+    "images/pointerRight.png": {
+      "url": "webp/images-pointerRight.webp",
+      "sha256": "ae2c027c4c55cd5ac316df49ca569e6dbe3dc2ac78223a34b9874eb7b9d1729b",
+      "bytes": 80216
+    },
+    "images/yesDown.png": {
+      "url": "webp/images-yesDown.webp",
+      "sha256": "76961dc96b7e10cfd9d82149d339f808d7dd79ef5b3251d0449e47aebdf34b18",
+      "bytes": 76544
+    },
+    "images/yesUp.png": {
+      "url": "webp/images-yesUp.webp",
+      "sha256": "87640c2aa1741322720afe2fbad8ac7ac20d8b22e098a91d4e9374b81475ec0f",
+      "bytes": 77148
+    },
+    "images/noIndex.png": {
+      "url": "webp/images-noIndex.webp",
+      "sha256": "08fcdfb571ad62f00fd46ee173a7dccf646e464451ec44ddee05e9599dbf1fa5",
+      "bytes": 84810
+    },
+    "images/noIndexLeft.png": {
+      "url": "webp/images-noIndexLeft.webp",
+      "sha256": "703ee5bf7ca7f83c4afa64c0dec1798bd191d574a2990aef0533caa7720b2644",
+      "bytes": 85218
+    },
+    "images/noIndexRight.png": {
+      "url": "webp/images-noIndexRight.webp",
+      "sha256": "219a2e05cbabe95e79da2531d47bddd9e023edf0d14c0753c24bf7a8c97f789a",
+      "bytes": 85520
+    }
+  }
+}

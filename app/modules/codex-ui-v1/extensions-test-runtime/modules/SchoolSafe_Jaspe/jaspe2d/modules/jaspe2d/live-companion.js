@@ -62,7 +62,8 @@ export async function mountLiveCompanion(box,host,{
     const bytes=await response.arrayBuffer();
     const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');
     if(hash!==entry.sha256)throw new Error('V12 photo changed');
-    const image=new Image(),url=URL.createObjectURL(new Blob([bytes],{type:'image/png'}));
+    // 04/11 : copies WebP (20x plus legeres) verifiees par leur propre empreinte ; PNG d'origine intacts.
+    const image=new Image(),url=URL.createObjectURL(new Blob([bytes],{type:/\.webp$/i.test(entry.url)?'image/webp':'image/png'}));
     try {
       image.src=url;await image.decode();
       const canvas=makeCanvas(),ctx=canvas.getContext('2d',{willReadFrequently:true});

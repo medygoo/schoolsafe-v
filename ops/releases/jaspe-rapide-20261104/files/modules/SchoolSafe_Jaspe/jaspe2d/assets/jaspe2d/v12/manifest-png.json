@@ -1,0 +1,497 @@
+{
+  "schema": 1,
+  "width": 1023,
+  "height": 1537,
+  "source": "V12 verrouillée",
+  "actions": [
+    "noseScratch",
+    "intro",
+    "thumbsUp",
+    "deepThink",
+    "pointLeft",
+    "pointRight",
+    "attentive",
+    "surpriseGesture",
+    "footTap",
+    "heelPlay",
+    "toePlay",
+    "sideStep",
+    "angry",
+    "compliment",
+    "guide",
+    "reassure",
+    "jump",
+    "walk",
+    "joySway",
+    "curtsy",
+    "talkContinuous",
+    "idle",
+    "fidget",
+    "hips",
+    "balance",
+    "yes",
+    "no",
+    "beam",
+    "insight",
+    "sendStanding",
+    "sendKneeling",
+    "blink",
+    "wink",
+    "wave",
+    "clap",
+    "think",
+    "explain",
+    "shy",
+    "proud",
+    "sad",
+    "laughing",
+    "grateful",
+    "relieved",
+    "embarrassed",
+    "confused",
+    "worried",
+    "tired"
+  ],
+  "files": {
+    "references/repos.png": {
+      "url": "../originals/rest.png",
+      "sha256": "5a9d45502948158dff4bf66e2d688e111ca14dd4259097f1d5d67b60d6378bf4",
+      "bytes": 1514386
+    },
+    "images/intermediaire-bas.png": {
+      "url": "intermediaire-bas.png",
+      "sha256": "1e539d04f2b480453602c26ac0e60376edc2dfd0c886886be2cacfc47a469fc7",
+      "bytes": 1633799
+    },
+    "images/intermediaire-exterieur.png": {
+      "url": "intermediaire-exterieur.png",
+      "sha256": "9d5ccf9e5c7fada3a09e85e5a0303a5bcdfda38f5692aac676c41b568e027206",
+      "bytes": 1598620
+    },
+    "images/preparer-salut.png": {
+      "url": "preparer-salut.png",
+      "sha256": "c4ab74c83a843cfb53d5b1cfd28b7cfb5382704687329a57a5a59afb3eecb790",
+      "bytes": 1629016
+    },
+    "images/salut.png": {
+      "url": "../originals/wave.png",
+      "sha256": "9465a164ffff3452c05dc6b97f535b5c57c30c3c144fdccdd1736dfc579ecd99",
+      "bytes": 1611578
+    },
+    "images/jupe-deux-mains.png": {
+      "url": "jupe-deux-mains.png",
+      "sha256": "b7a6653b05e48b125b7aca92656ae06b60a30c599554a9d141f078a40da2d95d",
+      "bytes": 1640614
+    },
+    "references/presenter.png": {
+      "url": "presenter.png",
+      "sha256": "4564c92ad7840043209fe161a9fbac3b18854c9f1a170fcfb94dbab056ff54e0",
+      "bytes": 1649119
+    },
+    "references/guider.png": {
+      "url": "../originals/guide.png",
+      "sha256": "8eaba3b2608a043f500145ec5bcb0d76e8a1f482bc0e97cd9c9a4e4428a5af04",
+      "bytes": 1589711
+    },
+    "references/pointer.png": {
+      "url": "pointer.png",
+      "sha256": "ca65548c80083cfb6cb0461fe8d4db311142070111ce6a3c27bc794daeff3ac1",
+      "bytes": 1647766
+    },
+    "images/preparer-hanches.png": {
+      "url": "preparer-hanches.png",
+      "sha256": "e592a5c938717bf41673eac78f18c9b8330f56b2c8f81ee939a8c0ce017c99c5",
+      "bytes": 1635973
+    },
+    "images/mains-hanches.png": {
+      "url": "mains-hanches.png",
+      "sha256": "f0cc39eb3af49315d832f4ebfc8b25ec5e32aef6ec1f6803edb44e38b96bfedb",
+      "bytes": 1587507
+    },
+    "images/preparer-equilibre.png": {
+      "url": "preparer-equilibre.png",
+      "sha256": "0c82ea9c4e4d35f3e7cfeab563d5b3a27988786fc3af8df8f5327e138a1e6c4b",
+      "bytes": 1559876
+    },
+    "images/equilibre-un-pied.png": {
+      "url": "equilibre-un-pied.png",
+      "sha256": "59990aa85342997db87861e8e324749594d4ec6a5fb668e50312af30680df342",
+      "bytes": 1585808
+    },
+    "images/jumpPrep.png": {
+      "url": "jumpPrep.png",
+      "sha256": "3125cf4a0afb7444898028481c2912789ad37ce3007293a50145b83465770b24",
+      "bytes": 1539595
+    },
+    "images/jumpLift.png": {
+      "url": "jumpLift.png",
+      "sha256": "286a4a95bb3d70f88a63f8b892c6d5984f1dd5f7252b0207facf917feeeace6e",
+      "bytes": 1534910
+    },
+    "images/jumpAir.png": {
+      "url": "jumpAir.png",
+      "sha256": "e2c873250c1a04ade207b22ccd1593175541a6d33d41795c72f8f9e47ff0707a",
+      "bytes": 1556946
+    },
+    "images/walkHalfL.png": {
+      "url": "walkHalfL.png",
+      "sha256": "2964064778ac6081bf966be31ed281d6e9c11dff955053a67296c8983a5bef99",
+      "bytes": 1547194
+    },
+    "images/walkL.png": {
+      "url": "walkL.png",
+      "sha256": "957e0b194e7a767707a7075a5d2c718eb277c65ee8078aaf9526beaa226a0edd",
+      "bytes": 1609271
+    },
+    "images/walkHalfR.png": {
+      "url": "walkHalfR.png",
+      "sha256": "bde9d66c81bb3f66317ec96184939d70dd4495c9c7cc54a754d23b6699c93056",
+      "bytes": 1567668
+    },
+    "images/walkR.png": {
+      "url": "walkR.png",
+      "sha256": "fade3bf6f788358df05e75e61bdb333bbf560f9fd83848dd4665b3d1ee949aa3",
+      "bytes": 1537639
+    },
+    "images/attentiveBody.png": {
+      "url": "../originals/attentiveBody.png",
+      "sha256": "9ff79e8b361c1edadaee3e5684dbe8ebbae6dfe7b45751e3edb95e43e7851aa2",
+      "bytes": 1631823
+    },
+    "images/chin1.png": {
+      "url": "../originals/chin1.png",
+      "sha256": "b7621372998d3cc024d1083add38e61285d607331c98c19760d2da2ee6f9a197",
+      "bytes": 1593664
+    },
+    "images/chin2.png": {
+      "url": "chin2.png",
+      "sha256": "b7621372998d3cc024d1083add38e61285d607331c98c19760d2da2ee6f9a197",
+      "bytes": 1593664
+    },
+    "images/chin3.png": {
+      "url": "chin3.png",
+      "sha256": "458768ce77f9bd7a5a6d10cc93d53711ae726a655a561be2ea92303ee425eab7",
+      "bytes": 1624032
+    },
+    "images/thumb1.png": {
+      "url": "thumb1.png",
+      "sha256": "1092b60d00e70cb5d092138cb23e015d26eb646ea9db01934f7ba80375698bdf",
+      "bytes": 1536263
+    },
+    "images/thumb2.png": {
+      "url": "../originals/thumb2.png",
+      "sha256": "a0e0c8eb9e59c11df06f2f761b98dcad7f8387201f4659b6c82ac5d1b0c186cb",
+      "bytes": 1611002
+    },
+    "images/thumb3.png": {
+      "url": "thumb3.png",
+      "sha256": "68b7fdac9ec1b5c3fad2b0ffee69a9c105f1341502a077cfcb92ecd4f9557ea6",
+      "bytes": 1544388
+    },
+    "images/worried1.png": {
+      "url": "../originals/worried1.png",
+      "sha256": "a6f8706132273d68c347ca79f6c5aa083689a4cdc31b75c159901e1ec98b54ea",
+      "bytes": 1595520
+    },
+    "images/worried2.png": {
+      "url": "worried2.png",
+      "sha256": "5d9b6ce2d24193a5ac79ac4494205e184e7406e0067b8079b351ee888ce539e4",
+      "bytes": 1543486
+    },
+    "images/worried3.png": {
+      "url": "worried3.png",
+      "sha256": "9aa22c43198bb05cc4d36ab8f0e874450e437c0135ef95eff4959959f2446cd4",
+      "bytes": 1616361
+    },
+    "images/smileMid.png": {
+      "url": "smileMid.png",
+      "sha256": "55b4bf9a91bb4675031e84c3d82106f35dbe9e9bd50b5890dc70326dd09b293e",
+      "bytes": 1589642
+    },
+    "images/grand-sourire.png": {
+      "url": "grand-sourire.png",
+      "sha256": "0ce1f7f8b751bc8d97e728563eace6bbdc30ece01c90fb0b51bbb3763549a2e1",
+      "bytes": 1582994
+    },
+    "references/paupières-fermées.png": {
+      "url": "eyelids-closed.png",
+      "sha256": "a638e4f41852234595451ae28b5b6b56f5ab15d399892cfbeecf9c93560b6f3e",
+      "bytes": 1559852
+    },
+    "images/bowPrep.png": {
+      "url": "images/bowPrep.png",
+      "sha256": "b584942968b956404410dd718b3ed79799cc4412689c40539ca0642151bff9f1",
+      "bytes": 1473932
+    },
+    "images/bow.png": {
+      "url": "images/bow.png",
+      "sha256": "9eb721c94a23e78d443b729f4bb3bb5efe216dabfafbcb92a85c0058ef02256d",
+      "bytes": 1539792
+    },
+    "images/cupsHalf.png": {
+      "url": "images/cupsHalf.png",
+      "sha256": "ccc6f91c61698ce0f8ca8d6381dbe91d6655643f4ba76db68351a924130e4da1",
+      "bytes": 1517387
+    },
+    "images/kneelStart.png": {
+      "url": "images/kneelStart.png",
+      "sha256": "d7019544beae163128fb0550a0d0504f1e6f5609a255623670c2eeeece0bc5f5",
+      "bytes": 1575513
+    },
+    "images/crossPrep.png": {
+      "url": "images/crossPrep.png",
+      "sha256": "d38cc3f4e05d0eaa25fb3d7330103ea0d2ba0a8eee707ab19466acda3f123b42",
+      "bytes": 1602806
+    },
+    "images/crossArms.png": {
+      "url": "images/crossArms.png",
+      "sha256": "f7f46ccd0ad363e1bcdc75e6232e7e49c7b03b0731b7cc872129a232b8d8fe0b",
+      "bytes": 1500459
+    },
+    "images/crossBack.png": {
+      "url": "images/crossBack.png",
+      "sha256": "3c9ec636af70a7703ae4922e8538493298053a08fab6d0b1cffcea76318e74dd",
+      "bytes": 1496293
+    },
+    "images/preparer-genou.png": {
+      "url": "images/preparer-genou.png",
+      "sha256": "97eaf7fe76a2f759f329fbbd1d367feb4ec60bffda2c7a2b3561986c8a43dd12",
+      "bytes": 1516346
+    },
+    "images/mains-reunies.png": {
+      "url": "images/mains-reunies.png",
+      "sha256": "cca11b930419292fafd05524ed1740d3ff03d88cb3028dd7dc846bc2b2029696",
+      "bytes": 1543092
+    },
+    "images/non-main.png": {
+      "url": "images/non-main.png",
+      "sha256": "e38405fd5b0613af66abe53fdaabba3b68e67cc6974f18e5c4e558b190bf5a42",
+      "bytes": 1550607
+    },
+    "images/un-genou-sol.png": {
+      "url": "images/un-genou-sol.png",
+      "sha256": "fc0e9ffe773d5597612543be193b688deb3674fd87bfd7b3a439c74647c974f4",
+      "bytes": 1496283
+    },
+    "images/attente-main-jupe.png": {
+      "url": "images/attente-main-jupe.png",
+      "sha256": "be64dad373ed469d7e12f67d321351dd11b207e5382566b28c9a174eee01f969",
+      "bytes": 1649641
+    },
+    "images/reflechir.png": {
+      "url": "images/reflechir.png",
+      "sha256": "7a8a7422da70a139352d18247708d1722f63cf11d103ba3af20dc7b59100df6b",
+      "bytes": 1534059
+    },
+    "images/applaudir-ouvert.png": {
+      "url": "images/applaudir-ouvert.png",
+      "sha256": "5f885d8225e5740325d7050ea2815a39d3c72ee544ccada24d52a3e52447116b",
+      "bytes": 1714287
+    },
+    "images/applaudir-contact.png": {
+      "url": "images/applaudir-contact.png",
+      "sha256": "2eb7b92fdc22e300e0d45be6ccf93644ba95425564f4a27f8b3430c6497ba858",
+      "bytes": 1711570
+    },
+    "references/expliquer.png": {
+      "url": "references/expliquer.png",
+      "sha256": "c40d5f4ac1bb0c0c5cad296b39288bb4f5ec54d769301c7f2f049e9c86cf58cd",
+      "bytes": 1569747
+    },
+    "images/shy1.png": {
+      "url": "images/shy1.png",
+      "sha256": "b121836a427bd84977e423b1a1f6c6aae0b7525524a514e76bce0baf0de44c9f",
+      "bytes": 1545251
+    },
+    "images/shy2.png": {
+      "url": "images/shy2.png",
+      "sha256": "129df0090ca0182b30b1ede17fd5a72da500518ee090be0f730aaded942fed28",
+      "bytes": 1584490
+    },
+    "images/shy3.png": {
+      "url": "images/shy3.png",
+      "sha256": "ae23e4445a3907fbf078122511d8c389606d8e654719b0d004fafaad9b61e826",
+      "bytes": 1650544
+    },
+    "images/proud1.png": {
+      "url": "images/proud1.png",
+      "sha256": "b9e5b496c44d205acfd24fb800e8bc9bd3d4cf65a87847ad1fe795d1a97d388b",
+      "bytes": 1501644
+    },
+    "images/proud2.png": {
+      "url": "images/proud2.png",
+      "sha256": "5f0cc914b4db4222ba85d080b4a4b949fa33bdd6957ca6fc1df2cd36b68c3d16",
+      "bytes": 1654682
+    },
+    "images/proud3.png": {
+      "url": "images/proud3.png",
+      "sha256": "44db791ba39982777f3ccfc6993f72d481a3c9486b7749370bb7aa1bb8d02a55",
+      "bytes": 1681410
+    },
+    "images/sad1.png": {
+      "url": "images/sad1.png",
+      "sha256": "eda2da16ce4b7c4c8d23354ef2fcd2acda61bed5c1472a49136bb1686014b75b",
+      "bytes": 1601168
+    },
+    "images/sad2.png": {
+      "url": "images/sad2.png",
+      "sha256": "32320e72de17355ba256594dedd8cab4d9c3f38f9dcd4218f85f9e3cf061fe64",
+      "bytes": 1600852
+    },
+    "images/sad3.png": {
+      "url": "images/sad3.png",
+      "sha256": "66324b7964515d67d617f30e0cd3970e02397260ea686ff4529b8e93fed9e31d",
+      "bytes": 1530695
+    },
+    "images/laughing1.png": {
+      "url": "images/laughing1.png",
+      "sha256": "cdd3a5c43761d6c6c199a41b987290c4ed2d65b03de0bd7018cbc6d382901282",
+      "bytes": 1729360
+    },
+    "images/laughing2.png": {
+      "url": "images/laughing2.png",
+      "sha256": "d2affae152de2017efbc219a4cc7128e75cf729f599e09843d1d765f3a5cd018",
+      "bytes": 1625331
+    },
+    "images/laughing3.png": {
+      "url": "images/laughing3.png",
+      "sha256": "1d57173983f46deeb964170fd5fc99db9229aae1195122850b45591c86855e26",
+      "bytes": 1576037
+    },
+    "images/grateful1.png": {
+      "url": "images/grateful1.png",
+      "sha256": "29a9bc2f4d966c420e0a66763f078b675e5e892cd51ec0091fe24f51c3adc6d5",
+      "bytes": 1544774
+    },
+    "images/grateful2.png": {
+      "url": "images/grateful2.png",
+      "sha256": "74c41b6d02838ca2e6739a17a6be8cd8621aff5bedf810544d8737053172c393",
+      "bytes": 1567449
+    },
+    "images/grateful3.png": {
+      "url": "images/grateful3.png",
+      "sha256": "a7bedb514f0658e4df64b553ae816d9d98bd95376c48350d5d8260763c2b90dc",
+      "bytes": 1626244
+    },
+    "images/relieved1.png": {
+      "url": "images/relieved1.png",
+      "sha256": "82bb8f35e395599aee4e8e3749e107725f1c2fe31d6efb958a30debd9f352cef",
+      "bytes": 1528490
+    },
+    "images/relieved2.png": {
+      "url": "images/relieved2.png",
+      "sha256": "69b6bd6a3a0b37b99148010a2fb60f8bccbb510f2f77540a066b4278b43422c4",
+      "bytes": 1528421
+    },
+    "images/relieved3.png": {
+      "url": "images/relieved3.png",
+      "sha256": "09616a1d9f09d315a89427c0752d6acf6b558cc42659211411e9d8ca6a8cdbde",
+      "bytes": 1665690
+    },
+    "images/embarrassed1.png": {
+      "url": "images/embarrassed1.png",
+      "sha256": "dbd4ede6501388770ef49fb40c4c9c98a9c6b29571a6b9eb092aa8fd0d42074e",
+      "bytes": 1495209
+    },
+    "images/embarrassed2.png": {
+      "url": "images/embarrassed2.png",
+      "sha256": "6a48e6e825f50664bc8268c6773aae6c030a9b97e4899a80e87f9a7a0db77d3e",
+      "bytes": 1648919
+    },
+    "images/embarrassed3.png": {
+      "url": "images/embarrassed3.png",
+      "sha256": "f265132f644181a31d0a5f7a622f307b3a1d52839a4bb17621f6c00c2e99f3c2",
+      "bytes": 1602020
+    },
+    "images/confused1.png": {
+      "url": "images/confused1.png",
+      "sha256": "da49d143e9f46055fa4a6b8e6a16b79b2984eb480e65c3028d0d4b599defd552",
+      "bytes": 1581271
+    },
+    "images/confused2.png": {
+      "url": "images/confused2.png",
+      "sha256": "192ce16caaa138376f1e749b864c7cd0ebe073459bf7b55dabcdec323cbdc4da",
+      "bytes": 1545804
+    },
+    "images/confused3.png": {
+      "url": "images/confused3.png",
+      "sha256": "3306274f1c4e5832457359c1768f344716ea4fb056fd6ecd8cb3dd687a0e286d",
+      "bytes": 1591454
+    },
+    "images/tired1.png": {
+      "url": "images/tired1.png",
+      "sha256": "b5e7610723cfd5c9a674f1eb72c633b3d20b8d50bc96db4220b77f3d44fb5df2",
+      "bytes": 1510724
+    },
+    "images/tired2.png": {
+      "url": "images/tired2.png",
+      "sha256": "62f46d090fb610bd14fffaf8bb014a5a27df873dcd7f8b9045b3bbc7261d9f8e",
+      "bytes": 1542166
+    },
+    "images/tired3.png": {
+      "url": "images/tired3.png",
+      "sha256": "2375ca3a7362a60fc231f00bbac4a44826b9e16a54d06c393f504422aaebbbd7",
+      "bytes": 1601465
+    },
+    "images/noseTouch.png": {
+      "url": "images/noseTouch.png",
+      "sha256": "20eeab9be8abbb24c8e288ef7bf5773ef942d08fb1e945ee515c342253e3994b",
+      "bytes": 1510396
+    },
+    "images/noseScratch.png": {
+      "url": "images/noseScratch.png",
+      "sha256": "71ba6d94495bb5cbc7a418c0ba5dd9246b4b24b0f8f4d5dfb42d43506c08779a",
+      "bytes": 1522430
+    },
+    "images/introSelf.png": {
+      "url": "images/introSelf.png",
+      "sha256": "16d58adacca6c889a3d1803318ad8336452f2f960524ef2fc6cbb3fdf7e41e60",
+      "bytes": 1595602
+    },
+    "images/introOpen.png": {
+      "url": "images/introOpen.png",
+      "sha256": "fbaed4ef78bbaad6ecece0cdcb94055c01b1928f4cfb8df1e6c56f8b2ea98d47",
+      "bytes": 1637664
+    },
+    "images/surprisePrep.png": {
+      "url": "images/surprisePrep.png",
+      "sha256": "990e2d7e84d467ae5d8e7429c4313c854008741b644b218ebedcb747a3b38e01",
+      "bytes": 1570322
+    },
+    "images/surpriseBody.png": {
+      "url": "images/surpriseBody.png",
+      "sha256": "ca2a658eb171821a1885edb4b2c17b25aa424bcad48713daceb2ddae2748dd64",
+      "bytes": 1604082
+    },
+    "images/pointerRight.png": {
+      "url": "images/pointerRight.png",
+      "sha256": "6c27b17d531210dff4e89bb745a394b87b58adaf81f8ddc2baa7a48866dc88b0",
+      "bytes": 1646632
+    },
+    "images/yesDown.png": {
+      "url": "images/yesDown.png",
+      "sha256": "9dc9517f436dafb220f2807863dc13d4e7e5783f4bf0b74323a344703e346cc1",
+      "bytes": 1542879
+    },
+    "images/yesUp.png": {
+      "url": "images/yesUp.png",
+      "sha256": "f98248332883ccafac85c2353d5eb035a40ae82d707803d2ff05644ce2d7d64b",
+      "bytes": 1493231
+    },
+    "images/noIndex.png": {
+      "url": "images/noIndex.png",
+      "sha256": "7ec3f22cde11c1cae2d16400803426043cb237bb875444e8453f29c322e25a0f",
+      "bytes": 1619213
+    },
+    "images/noIndexLeft.png": {
+      "url": "images/noIndexLeft.png",
+      "sha256": "38216d0e1af872c20f172b6c53aec5a24b7bf0e12a995f868147af9d9563847d",
+      "bytes": 1593345
+    },
+    "images/noIndexRight.png": {
+      "url": "images/noIndexRight.png",
+      "sha256": "eda7c4292fbce74cc0faaf61741d92f829540137cf56bbfe15a83f1837519bb3",
+      "bytes": 1555233
+    }
+  }
+}

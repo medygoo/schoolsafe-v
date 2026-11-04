@@ -20,6 +20,14 @@ if (!$jaspeCompanion && !empty($RosarioPlugins['Setup_Assistant']) && AllowUse('
 <link rel="stylesheet" href="modules/SchoolSafe_Jaspe/assistant.css?v=dialogue-6">
 <link rel="stylesheet" href="modules/SchoolSafe_Jaspe/daisyui-chat.min.css?v=1">
 <link rel="stylesheet" href="modules/SchoolSafe_Jaspe/jaspe2d.css">
+<style>
+/* 04/11 : plus d'image d'attente ni d'ancienne JASPE avant la vraie : un indicateur discret, puis JASPE en fondu. */
+html body #jaspe-native #jaspe-stage>*{transition:opacity .45s ease}
+html body #jaspe-native:not([data-jaspe-engine="v12"]):not(.jaspe-engine-secours) #jaspe-stage>*{opacity:0!important}
+html body #jaspe-native:not([data-jaspe-engine="v12"]):not(.jaspe-engine-secours) #jaspe-stage::after{content:"";position:absolute;left:50%;top:45%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:3px solid rgba(8,118,107,.22);border-top-color:#08766b;animation:jaspeArrive .9s linear infinite}
+@keyframes jaspeArrive{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){html body #jaspe-native #jaspe-stage::after{animation:none}}
+</style>
 <section class="jaspe-native" id="jaspe-native">
     <input type="hidden" id="jaspe-token" value="<?php echo htmlspecialchars($_SESSION['schoolsafe_jaspe_token'], ENT_QUOTES, 'UTF-8'); ?>">
     <input type="hidden" id="jaspe-rosario-token" value="<?php echo htmlspecialchars($_SESSION['token'], ENT_QUOTES, 'UTF-8'); ?>">
@@ -47,8 +55,8 @@ if (!$jaspeCompanion && !empty($RosarioPlugins['Setup_Assistant']) && AllowUse('
 <script src="modules/SchoolSafe_Jaspe/orientation.js"></script>
 <script src="modules/SchoolSafe_Jaspe/draft.js"></script>
 <script src="modules/SchoolSafe_Jaspe/jaspe2d/modules/jaspe2d/jaspe2d.js"></script>
-<script src="modules/SchoolSafe_Jaspe/assistant.js?v=dialogue-16"></script>
-<script src="modules/SchoolSafe_Jaspe/voice.js?v=10"></script>
+<script src="modules/SchoolSafe_Jaspe/assistant.js?v=dialogue-17"></script>
+<script src="modules/SchoolSafe_Jaspe/voice.js?v=11-ecoute"></script>
 <?php if ($jaspeCompanion) : ?>
 <link rel="stylesheet" href="modules/SchoolSafe_Jaspe/companion-bulles.css?v=7">
 <script src="modules/SchoolSafe_Jaspe/companion-bulles.js?v=13"></script>
@@ -300,6 +308,7 @@ html body #jaspe-native #jaspe-log.jaspe-ecriture p[data-speaker] {
   opacity: .30 !important;
 }
 </style>
-    <script type="module" src="modules/SchoolSafe_Jaspe/v12-rosario.js?v=sans-calque-1"></script>
+    <script>setTimeout(function(){var h=document.getElementById('jaspe-native');if(h&&h.dataset.jaspeEngine!=='v12')h.classList.add('jaspe-engine-secours');},12000);</script>
+    <script type="module" src="modules/SchoolSafe_Jaspe/v12-rosario.js?v=webp-3"></script>
 <?php
 unset($jaspeActions, $jaspeDraft);

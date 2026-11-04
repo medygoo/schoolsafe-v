@@ -58,7 +58,13 @@ try {
         $sendMessage = SchoolSafeJaspeMask((string) $payload['message'], $studentNames);
         $maskedNames = SchoolSafeJaspeMaskedNames((string) $payload['message'], $studentNames);
         $sendHistory = SchoolSafeJaspeMaskHistory($history, $studentNames);
-        try {
+        // 04/11 : le service rapide (Groq, ~0,5 s) repond d'abord ; Cloudflare (jusqu'a 30 s) devient le secours.
+        // Memes donnees envoyees (noms d'eleves masques), meme format de reponse.
+        session_write_close();
+        require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeFallbackLLM.fnc.php';
+        $result = SchoolSafeJaspeFallbackLLM($sendMessage, $sendHistory, $preamble);
+        if ($result !== null) $result['state'] = 'SPEAKING';
+        if ($result === null) try {
             // SchoolSafe : repli sur la table config si la variable d'environnement est absente.
             $secret = getenv('JASPE_WORKER_HMAC_SECRET') ?: (string) Config('JASPE_WORKER_SECRET');
             $sessionKey = hash_hmac('sha256', implode(':', [
@@ -70,12 +76,7 @@ try {
             $result = SchoolSafeJaspeCloudflare($sendMessage, $sessionKey,
                 $workerUrl, $secret, null, $sendHistory, $preamble);
         } catch (RuntimeException $error) {
-            require_once __DIR__ . '/ProgramFunctions/SchoolSafeJaspeFallbackLLM.fnc.php';
-            $fallback = SchoolSafeJaspeFallbackLLM($sendMessage, $sendHistory, $preamble);
-            if ($fallback !== null) {
-                error_log('JASPE fallback LLM used.');
-                $result = $fallback;
-            } else {
+            {
             $messages = [
                 'CLOUDFLARE_NOT_CONFIGURED'=>'La conversation Cloudflare n\'est pas configuree dans SchoolSafe local.',
                 'CLOUDFLARE_TIMEOUT'=>'Cloudflare met trop de temps a repondre. Vous pouvez reessayer.',

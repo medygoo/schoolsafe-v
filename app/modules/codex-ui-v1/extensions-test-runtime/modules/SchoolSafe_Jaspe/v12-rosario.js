@@ -1,4 +1,4 @@
-import {mountLiveCompanion} from './jaspe2d/modules/jaspe2d/live-companion.js?v=sans-calque-1';
+import {mountLiveCompanion} from './jaspe2d/modules/jaspe2d/live-companion.js?v=webp-1';
 import {createPresentationController} from './jaspe2d/modules/jaspe2d/presentation-controller.js?v=gestes-4';
 
 const host=document.getElementById('jaspe-native');
@@ -64,7 +64,7 @@ if(host&&stage&&fallback) {
     const kind=event?.detail?.kind;
     if(typeof kind!=='string'||!kind)return;
     if(presentation.dispatch({kind,source:'conversation',replace:true})){
-      motionUntil=performance.now()+(Number(event.detail.holdMs)||4200);
+      motionUntil=performance.now()+(Number(event.detail.holdMs)||1800); // 04/11 : le geste precede la parole sans la masquer
       host.dataset.motionIntent=kind;
     }
   });

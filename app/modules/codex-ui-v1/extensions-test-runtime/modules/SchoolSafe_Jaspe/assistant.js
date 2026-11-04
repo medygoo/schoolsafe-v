@@ -91,6 +91,8 @@
         activeRequest = controller;
         var timeout = setTimeout(function () { controller.abort(); }, 65000);
         message('user', question);
+        // 04/11 : JASPE reflechit visiblement pendant qu'elle prepare sa reponse.
+        if (presenter) presenter.setState('THINKING');
         champ.value = '';
         monterPendantEcriture();
         show([]);
