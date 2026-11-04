@@ -41,6 +41,7 @@ $toDo=array_values(array_filter($homework,static function($h)use($today){return 
 .ss-empty{color:#556777;margin:0}</style></head>
 <body><header><strong>SchoolSafe</strong><a href="Modules.php?modname=misc/Portal.php">Tableau de bord</a></header>
 <main class="ss-kid"><h1>Travail de <?=$child?$e($child['FIRST_NAME']):'mon enfant'?></h1>
+<?php if($child):?><div class="ss-act"><a href="dossier-annee.php?enfant=<?=$sid?>">📚 Dossier de l’année (tous les travaux, bilan, PDF)</a></div><?php endif;?>
 <?php if(count($children)>1):?><nav class="ss-kids" aria-label="Choisir l’enfant"><?php foreach($children as $c):?><a href="travail-enfant.php?enfant=<?=(int)$c['STUDENT_ID']?>" class="<?=(int)$c['STUDENT_ID']===$sid?'on':''?>"><?=$e($c['FIRST_NAME'])?></a><?php endforeach;?></nav><?php endif;?>
 <?php if(!$child):?><p class="ss-empty">Aucun enfant inscrit cette année dans cette école n’est rattaché à votre compte.</p><?php else:?>
 <p class="ss-sub"><?=$e($child['FIRST_NAME'].' '.$child['LAST_NAME'])?><?=$child['LEVEL_TITLE']?' · '.$e($t($child['LEVEL_TITLE'])):''?> · <?=$e($schoolName)?> · <?=$e(ucfirst(SchoolSafeLetterheadDate($today)))?></p>

@@ -26,7 +26,7 @@ if($school>0&&$year>0){
         ." JOIN students s ON s.STUDENT_ID=sc.STUDENT_ID JOIN courses c ON c.COURSE_ID=cp.COURSE_ID"
         ." LEFT JOIN gradebook_assignment_types t ON t.ASSIGNMENT_TYPE_ID=ga.ASSIGNMENT_TYPE_ID LEFT JOIN staff st ON st.STAFF_ID=ga.STAFF_ID"
         ." LEFT JOIN gradebook_grades gg ON gg.ASSIGNMENT_ID=ga.ASSIGNMENT_ID AND gg.STUDENT_ID=sc.STUDENT_ID"
-        ." WHERE ga.ASSIGNMENT_ID=".$assignment." AND cp.SCHOOL_ID=".$school." AND cp.SYEAR=".$year." ORDER BY sc.START_DATE DESC LIMIT 1");
+        ." WHERE ga.ASSIGNMENT_ID=".$assignment." AND cp.SCHOOL_ID=".$school." ORDER BY sc.START_DATE DESC LIMIT 1");
     $row=$r[1]??null;
 }
 // Qui peut voir : le parent de l'enfant, l'eleve lui-meme, l'enseignant du devoir, la direction.

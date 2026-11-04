@@ -70,6 +70,8 @@ if (SchoolSafeNativePermission('SchoolSafe/RemediationPaymentsRead.php')) {
 // Travail de mon enfant (04/11) : devoirs, notes, presences, cahier de textes sur une seule page.
 if (in_array(User('PROFILE'), ['parent', 'student'], true)) {
     $add('communication', 'Suivi de mon enfant', 'Travail de mon enfant', 'travail-enfant.php');
+    // Dossier de l'annee (04/11) : tous les travaux de l'annee, bilan et PDF.
+    $add('communication', 'Suivi de mon enfant', 'Dossier de l’année', 'dossier-annee.php');
 }
 if (User('PROFILE') === 'parent') {
     $add('communication', 'Suivi de mon enfant', 'Signaler une absence ou un retard', 'signaler-absence.php');

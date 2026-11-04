@@ -1,0 +1,102 @@
+<?php
+header('Cache-Control: no-store');
+header('X-Content-Type-Options: nosniff');
+header('Content-Type: application/json; charset=utf-8');
+if ($_SERVER['REQUEST_METHOD'] !== 'GET' || $_GET || $_POST) {
+    http_response_code(400); exit('{}');
+}
+chdir(__DIR__);
+$_REQUEST = ['modname' => 'misc/Portal.php', 'modfunc' => ''];
+$level = ob_get_level(); ob_start(); require_once __DIR__ . '/Warehouse.php';
+while (ob_get_level() > $level) ob_end_clean();
+if (!User('STAFF_ID')) { http_response_code(401); exit('{}'); }
+require_once __DIR__ . '/modules/SchoolSafe/Permissions.php';
+$links = [];
+$add = static function ($branch, $group, $title, $url) use (&$links) {
+    $links[] = compact('branch', 'group', 'title', 'url');
+};
+if (SchoolSafeNativePermission('SchoolSafe/Studio.php')) {
+    $add('school', 'Cartes SchoolSafe', 'Studio de cartes', 'Modules.php?modname=SchoolSafe/Studio.php');
+}
+// Preparer l'annee (03/11) : etapes de preparation de l'annee, administrateur avec la configuration de l'ecole.
+if (User('PROFILE') === 'admin' && AllowEdit('School_Setup/Configuration.php')) {
+    $add('pedagogy', 'Organisation pédagogique', 'Préparer l’année', 'preparer-annee.php');
+    // Papier de l'ecole (04/11) : en-tete, pied de page et dispositions des documents.
+    $add('school', 'Organisation scolaire', 'Papier de l’école', 'papier-ecole.php');
+    // Archives de l'ecole (04/11) : documents deposes par photo ou PDF, classes et retrouvables.
+    $add('school', 'Organisation scolaire', 'Archives de l’école', 'archives.php');
+}
+// Suivi pedagogique (04/11, lot 9) : direction avec la configuration de l'ecole ou les bulletins.
+if (User('PROFILE') === 'admin' && (AllowEdit('School_Setup/Configuration.php') || AllowUse('Grades/ReportCards.php'))) {
+    $add('pedagogy', 'Organisation pédagogique', 'Suivi pédagogique', 'suivi-pedagogique.php');
+}
+// Convocations et courriers (04/11) : modeles remplis, registre numerote, impression, envoi aux parents.
+if (User('PROFILE') === 'admin' && AllowUse('Students/Student.php')) {
+    $add('communication', 'Courriers', 'Convocations et courriers', 'courriers.php');
+}
+// Ma journee de classe (04/11) : classes du jour, appel rapide, cahier de textes.
+if (User('PROFILE') === 'teacher') {
+    $add('pedagogy', 'Ma journée', 'Ma journée de classe', 'ma-journee.php');
+    $add('pedagogy', 'Ma journée', 'Devoirs et travaux', 'devoirs-travaux.php');
+}
+if (SchoolSafeNativePermission('SchoolSafe/RemediationRead.php')) {
+    $add('pedagogy', 'Accompagnement', 'Rattrapage', 'Modules.php?modname=SchoolSafe/RemediationRead.php');
+}
+// These are entry points, not grants. Each service independently checks its capabilities.
+if (SchoolSafeNativePermission('SchoolSafe/FamilyRead.php')) {
+    // Onglet « Famille et récupération » de la fiche élève (catégorie native) ;
+    // repli sur l'ancien formulaire si la catégorie n'existe pas.
+    $familyCategory = (int) DBGetOne("SELECT ID FROM student_field_categories WHERE INCLUDE='SchoolSafe/FamilyTab'");
+    $add('school', 'Familles et acc\u00e8s', 'Personnes de r\u00e9cup\u00e9ration', $familyCategory > 0
+        ? 'Modules.php?modname=Students/Student.php&category_id=' . $familyCategory
+        : 'Modules.php?modname=SchoolSafe/FamilyRead.php');
+}
+foreach (['SchoolSafe/ScanVerify.php', 'SchoolSafe/ScanArrival.php',
+    'SchoolSafe/ScanPickup.php', 'SchoolSafe/ScanFees.php'] as $scanProgram) {
+    if (!SchoolSafeNativeCommandPermission($scanProgram)) continue;
+    $add('security', 'Contr\u00f4les SchoolSafe', 'Scanner les cartes', 'Modules.php?modname=' . $scanProgram);
+    break;
+}
+require_once __DIR__ . '/schoolsafe-attendance/ArrivalRead.php';
+if (SchoolSafeArrivalViewPermission()) {
+    $add('pedagogy', 'Pr\u00e9sences', 'Arriv\u00e9es \u00e0 l\u2019\u00e9cole', 'Modules.php?modname=SchoolSafe/ArrivalAttendance.php');
+}
+if (SchoolSafeNativePermission('SchoolSafe/FeeModelsRead.php')) {
+    $add('finance', 'Frais et mod\u00e8les', 'Contr\u00f4le des frais', 'Modules.php?modname=SchoolSafe/FeeModelsRead.php');
+}
+if (SchoolSafeNativePermission('SchoolSafe/RemediationPaymentsRead.php')) {
+    $add('finance', 'Rattrapage', 'Paiements de rattrapage', 'Modules.php?modname=SchoolSafe/RemediationPaymentsRead.php');
+}
+// Travail de mon enfant (04/11) : devoirs, notes, presences, cahier de textes sur une seule page.
+if (in_array(User('PROFILE'), ['parent', 'student'], true)) {
+    $add('communication', 'Suivi de mon enfant', 'Travail de mon enfant', 'travail-enfant.php');
+    // Dossier de l'annee (04/11) : tous les travaux de l'annee, bilan et PDF.
+    $add('communication', 'Suivi de mon enfant', 'Dossier de l’année', 'dossier-annee.php');
+}
+if (User('PROFILE') === 'parent') {
+    $add('communication', 'Suivi de mon enfant', 'Signaler une absence ou un retard', 'signaler-absence.php');
+}
+if (SchoolSafeNativePermission('SchoolSafe/Notifications.php')) {
+    $add('communication', 'Suivi de mon enfant', 'Notifications', 'Modules.php?modname=SchoolSafe/Notifications.php');
+}
+// Decode the ASCII source labels before JSON serialization.
+foreach ($links as &$link) {
+    foreach (['group', 'title'] as $key) {
+        $link[$key] = json_decode('"' . $link[$key] . '"');
+    }
+}
+unset($link);
+$identity = DBGet('SELECT FIRST_NAME, LAST_NAME, ROLLOVER_ID FROM staff WHERE STAFF_ID=' . (int) User('STAFF_ID'));
+require_once __DIR__ . '/ProgramFunctions/SchoolSafeStaffPhoto.fnc.php';
+$photo = SchoolSafeStaffPhotoUrl($UserPicturesPath, (int) UserSyear(), (int) User('STAFF_ID'),
+    (int) ($identity[1]['ROLLOVER_ID'] ?? 0));
+$profile = [
+    'name' => trim(($identity[1]['FIRST_NAME'] ?? '') . ' ' . ($identity[1]['LAST_NAME'] ?? '')),
+    'photo' => $photo,
+    'url' => 'Modules.php?modname=Users/User.php&category_id=1&staff_id=' . (int) User('STAFF_ID'),
+];
+// Visible school navigation for every authenticated profile, NOT a capability.
+// ProDéli keeps its separate workspace; execution still uses the native gateway.
+$scanAction = function_exists('SchoolSafeGlobalAdmin') && !SchoolSafeGlobalAdmin()
+    && (int) UserSchool() > 0 ? 'scanner-native.php' : null;
+echo json_encode(['links' => $links, 'profile' => $profile, 'scanAction' => $scanAction], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
