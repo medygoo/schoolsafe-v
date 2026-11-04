@@ -69,8 +69,12 @@ function DBGet( $QI, $functions = [], $index = [] )
 
 	$results = [];
 
+	// SchoolSafe (04/11) : les requetes INSERT/UPDATE/DELETE/WITH ... RETURNING passees en texte sont aussi
+	// executees (avant, elles provoquaient une erreur : creation d'un devoir, d'un courrier, d'une archive,
+	// cahier de textes, branches). Le comportement des SELECT ne change pas.
 	if ( is_string( $QI )
-		&& stripos( $QI, 'SELECT' ) === 0 )
+		&& ( stripos( $QI, 'SELECT' ) === 0
+			|| preg_match( '/^\s*(SELECT|INSERT|UPDATE|DELETE|WITH)\b/i', $QI ) ) )
 	{
 		// Can omit DBQuery call.
 		$QI = DBQuery( $QI );
