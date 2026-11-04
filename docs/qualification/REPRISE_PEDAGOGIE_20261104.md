@@ -32,7 +32,7 @@ Puis mise en page commune des pages (tableaux lisibles sur téléphone, une tail
 **Suite décidée** : appliquer la méthode « fusion » (`docs/DECISIONS.md`, 4 novembre 2026) aux autres menus, un par lot :
 École, Sécurité et contrôle, Finance, Communication, Personnel, Vie et bien-être, Stock, Comptabilité,
 Administration, Rapports, Utilisateurs. Montrer l’analyse page par page au propriétaire avant tout changement.
-**École : fait et en production** (image `menu-ecole-20261105`, `docs/qualification/FUSION_MENU_ECOLE_20261104.md`). **Sécurité et contrôle : fait et en production** (image `menu-securite-20261105`, `docs/qualification/FUSION_MENU_SECURITE_20261105.md`). **Finance : fait et en production** (image `menu-finance-20261105`, `docs/qualification/FUSION_MENU_FINANCE_20261105.md` ; couvre aussi Comptabilité, qui n’est pas un menu séparé). Prochain menu : Communication.
+**École : fait et en production** (image `menu-ecole-20261105`, `docs/qualification/FUSION_MENU_ECOLE_20261104.md`). **Sécurité et contrôle : fait et en production** (image `menu-securite-20261105`, `docs/qualification/FUSION_MENU_SECURITE_20261105.md`). **Finance : fait et en production** (image `menu-finance-20261105`, `docs/qualification/FUSION_MENU_FINANCE_20261105.md` ; couvre aussi Comptabilité, qui n’est pas un menu séparé). **Communication : fait et en production** (image `menu-communication-20261105`, `docs/qualification/FUSION_MENU_COMMUNICATION_20261105.md`). Prochain menu : Personnel.
 
 Après chaque étape : vérifier dans la base (lecture seule) et corriger tout écart de présentation ou de fonctionnement, sans nouvelle fonctionnalité.
 
