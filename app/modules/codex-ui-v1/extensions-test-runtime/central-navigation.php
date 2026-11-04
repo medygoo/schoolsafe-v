@@ -23,6 +23,8 @@ if (User('PROFILE') === 'admin' && AllowEdit('School_Setup/Configuration.php')) 
     $add('pedagogy', 'Organisation pédagogique', 'Préparer l’année', 'preparer-annee.php');
     // Papier de l'ecole (04/11) : en-tete, pied de page et dispositions des documents.
     $add('school', 'Organisation scolaire', 'Papier de l’école', 'papier-ecole.php');
+    // Archives de l'ecole (04/11) : documents deposes par photo ou PDF, classes et retrouvables.
+    $add('school', 'Organisation scolaire', 'Archives de l’école', 'archives.php');
 }
 // Convocations et courriers (04/11) : modeles remplis, registre numerote, impression, envoi aux parents.
 if (User('PROFILE') === 'admin' && AllowUse('Students/Student.php')) {
