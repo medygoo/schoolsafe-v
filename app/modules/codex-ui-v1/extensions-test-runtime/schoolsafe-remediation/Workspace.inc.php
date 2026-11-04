@@ -12,7 +12,11 @@ $ssUser = (int) User('STAFF_ID');
 $ssManage = User('PROFILE') === 'admin' && AllowEdit('Grades/ReportCardGrades.php');
 $ssCanTeach = User('PROFILE') === 'teacher' && AllowUse('Grades/Grades.php');
 $ssDirectorTitle = DBEscapeString(json_decode('"Directeur p\u00e9dagogique"'));
-$ssDirector = $ssManage && (bool) DBGet("SELECT id FROM user_profiles WHERE id=" . (int) User('PROFILE_ID') . " AND title='" . $ssDirectorTitle . "'");
+// Lot 2 (04/11) : la decision ne depend plus du titre « Directeur pedagogique » (profil absent en production).
+// Avec le module SchoolSafe, chaque decision suit sa tache attribuable du catalogue (valider ou refuser,
+// reevaluation, tarification), verifiee par la passerelle ($ssActions et refus 403 en POST). Sans module : titre.
+$ssDirector = $ssManage && (!empty($GLOBALS['RosarioModules']['SchoolSafe'])
+    || (bool) DBGet("SELECT id FROM user_profiles WHERE id=" . (int) User('PROFILE_ID') . " AND title='" . $ssDirectorTitle . "'"));
 $ssEscape = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
 $ssScope = 'r.school_id=' . $ssSchool . ' AND r.syear=' . $ssYear;
 if (User('PROFILE') === 'teacher') {
