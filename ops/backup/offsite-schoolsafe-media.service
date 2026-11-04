@@ -1,0 +1,10 @@
+[Unit]
+Description=Copie chiffree hors site des fichiers SchoolSafe (photos, logos, pieces jointes)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/offsite-schoolsafe-media
+User=root
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true

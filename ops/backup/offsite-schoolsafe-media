@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Copie hors site chiffree des fichiers SchoolSafe (04/11, accord du proprietaire « Oui, sauvegarde-les ») :
+# photos des eleves et du personnel, logos des ecoles, pieces jointes (devoirs, rendus).
+# Meme principe que la sauvegarde de la base : archive verifiee (sha256), chiffree en AES-256 avec la cle
+# qui ne quitte pas le serveur, envoyee, taille distante controlee, 90 jours d'historique.
+# Les jetons et cles de service (state/) ne sont jamais copies.
+set -euo pipefail
+
+SRC=/opt/schoolsafe-media
+DEST=/var/backups/schoolsafe-media
+KEY=/etc/schoolsafe/backup-passphrase
+CONF=/root/.config/rclone/rclone.conf
+REMOTE="${OFFSITE_REMOTE:-r2:schoolsafe-backups}/media"
+RETAIN_DAYS="${OFFSITE_RETAIN_DAYS:-90}"
+LOCAL_KEEP=7
+
+[ -d "$SRC" ] || { echo "ECHEC: dossier des fichiers absent ($SRC)" >&2; exit 1; }
+[ -s "$KEY" ] || { echo "ECHEC: cle de chiffrement absente ($KEY)" >&2; exit 1; }
+install -d -m 700 "$DEST"
+
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+tarball="$DEST/schoolsafe-media-$stamp.tar.gz"
+tar -C "$SRC" -czf "$tarball" .
+tar -tzf "$tarball" >/dev/null
+count=$(tar -tzf "$tarball" | grep -vc '/$' || true)
+
+enc="$tarball.gpg"
+gpg --batch --yes --quiet --symmetric --cipher-algo AES256 --passphrase-file "$KEY" --output "$enc" "$tarball"
+rm -f "$tarball"
+chmod 600 "$enc"
+(cd "$DEST" && sha256sum "$(basename "$enc")" > "$(basename "$enc").sha256")
+chmod 600 "$enc.sha256"
+
+if [ ! -s "$CONF" ] && [ "${REMOTE%%:*}" = "r2" ]; then
+    echo "ECHEC: aucun remote rclone configure ($CONF) ; copie hors site inactive" >&2
+    exit 2
+fi
+
+name=$(basename "$enc")
+rclone copyto "$enc"        "$REMOTE/$name"        --config "$CONF"
+rclone copyto "$enc.sha256" "$REMOTE/$name.sha256" --config "$CONF"
+
+remote_size=$(rclone lsl "$REMOTE/$name" --config "$CONF" | awk '{print $1}')
+local_size=$(stat -c%s "$enc")
+if [ "$remote_size" != "$local_size" ]; then
+    echo "ECHEC: taille distante ($remote_size) differente de la locale ($local_size)" >&2
+    exit 3
+fi
+
+rclone delete "$REMOTE" --min-age "${RETAIN_DAYS}d" --include 'schoolsafe-media-*.tar.gz.gpg*' --config "$CONF" >/dev/null 2>&1 || true
+ls -t "$DEST"/schoolsafe-media-*.tar.gz.gpg 2>/dev/null | tail -n +$((LOCAL_KEEP + 1)) | while read -r old; do rm -f "$old" "$old.sha256"; done
+
+echo "OK hors site $REMOTE/$name $local_size octets (chiffre, $count fichiers)"
