@@ -131,4 +131,37 @@ document.querySelectorAll('.ss-call').forEach(function(f){
  f.querySelectorAll('[data-all]').forEach(function(b){b.addEventListener('click',function(){f.querySelectorAll('input[type=radio][value="'+b.dataset.all+'"]').forEach(function(r){r.checked=true;});});});
  f.querySelectorAll('[data-unscanned]').forEach(function(b){b.addEventListener('click',function(){f.querySelectorAll('tr[data-scan="non_scanne"] input[value="absent"]').forEach(function(r){r.checked=true;});});});
 });
-</script></body></html>
+// 04/11 (decision du proprietaire) : sans reseau, l'appel et le cahier de textes sont gardes sur le telephone
+// et envoyes tout seuls au retour du reseau. Rien n'est perdu ; la file se vide apres chaque envoi reussi.
+(function(){
+ var KEY='ssMaJourneeFile',OK=/Appel enregistré|Cahier de textes enregistré/;
+ function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){return [];}}
+ function save(q){try{if(q.length)localStorage.setItem(KEY,JSON.stringify(q));else localStorage.removeItem(KEY);}catch(e){}}
+ var bar=document.createElement('p');bar.setAttribute('role','status');bar.style.cssText='position:sticky;top:0;z-index:50;margin:0;padding:8px 12px;background:#fff4d6;border-bottom:1px solid #e9c46a;font-weight:600;display:none';
+ document.body.insertBefore(bar,document.body.firstChild);
+ function show(text){bar.textContent=text;bar.style.display=text?'block':'none';}
+ function pending(){var q=load();if(q.length)show('📴 '+q.length+' enregistrement(s) gardé(s) sur ce téléphone : envoi automatique au retour du réseau.');else show('');}
+ async function post(item){var body=new URLSearchParams();item.fields.forEach(function(p){body.append(p[0],p[1]);});
+  var r=await fetch(item.url,{method:'POST',body:body,credentials:'same-origin',headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+  var html=await r.text();return {ok:r.ok&&!r.redirected&&OK.test(html),html:html,login:r.redirected||/name="USERNAME"|id="login"/.test(html)};}
+ var flushing=false;
+ async function flush(){if(flushing||!navigator.onLine)return;flushing=true;var q=load(),sent=0;
+  try{while(q.length){var res;try{res=await post(q[0]);}catch(e){break;}
+   if(!res.ok){if(res.login)show('📴 Reconnectez-vous : '+q.length+' enregistrement(s) gardé(s) attendent votre connexion pour être envoyés.');else{q.shift();save(q);show('Un enregistrement gardé a été refusé par le serveur (session expirée ou données changées) : vérifiez l’appel.');}
+    flushing=false;return;}
+   q.shift();save(q);sent++;}
+  }finally{flushing=false;}
+  if(sent){show('✅ '+sent+' enregistrement(s) gardé(s) envoyé(s). Mise à jour…');setTimeout(function(){location.reload();},900);}else pending();}
+ document.querySelectorAll('form.ss-call,form.ss-diary').forEach(function(f){
+  f.addEventListener('submit',async function(ev){ev.preventDefault();var fields=Array.from(new FormData(f).entries()).map(function(p){return [p[0],String(p[1])];});
+   var item={url:location.href,fields:fields,at:Date.now(),kind:f.classList.contains('ss-call')?'appel':'cahier'};
+   var btn=f.querySelector('button[type=submit]');if(btn)btn.disabled=true;
+   try{if(!navigator.onLine)throw new Error('offline');var res=await post(item);
+    if(res.ok||!res.login){document.open();document.write(res.html);document.close();return;}
+    throw new Error('login');}
+   catch(e){if(e.message==='login'){show('Votre session a expiré : reconnectez-vous, l’enregistrement est gardé.');}
+    var q=load();q.push(item);save(q);pending();if(btn)btn.disabled=false;}
+  });});
+ window.addEventListener('online',flush);pending();flush();
+})();
+</script><script src="pwa-client.js" defer></script></body></html>

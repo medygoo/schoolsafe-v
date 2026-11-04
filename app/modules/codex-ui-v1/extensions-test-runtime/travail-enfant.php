@@ -80,4 +80,4 @@ $toDo=array_values(array_filter($homework,static function($h)use($today){return 
 <?php if(!$classes):?><p class="ss-empty">Pas encore placé dans une classe.</p><?php endif;?>
 <?php foreach($classes as $c):?><div class="ss-item"><b><?=$e($t($c['COURSE_TITLE']))?></b><span class="ss-sub">Enseignant : <?=$e(trim(($c['T_FIRST']??'').' '.($c['T_LAST']??'')))?></span></div><?php endforeach;?>
 <div class="ss-act"><a class="light" href="Modules.php?modname=Grades/ReportCards.php">Bulletins</a><a class="light" href="Modules.php?modname=Scheduling/Schedule.php">Emploi du temps</a><a class="light" href="Modules.php?modname=SchoolSafe/Notifications.php">Notifications</a></div></section>
-<?php endif;?></main></body></html>
+<?php endif;?></main><script src="pwa-client.js" defer></script></body></html>

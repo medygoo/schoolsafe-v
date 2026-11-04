@@ -15,10 +15,41 @@ self.addEventListener('fetch',event=>{
       }catch{return cache.match(url.pathname);}
     }));
   }else if(request.mode==='navigate'){
-    // Never persist authenticated HTML, financial responses or form submissions.
-    event.respondWith(fetch(request).catch(()=>caches.open(CACHE).then(cache=>cache.match('/schoolsafe-offline.html'))));
+    const offline=()=>caches.open(CACHE).then(cache=>cache.match('/schoolsafe-offline.html'));
+    // 04/11 (decision du proprietaire) : connexion et deconnexion effacent toujours les pages gardees.
+    if(url.pathname==='/'||url.pathname==='/index.php'){
+      event.respondWith(caches.delete(PRIVATE).catch(()=>{}).then(()=>fetch(request)).catch(offline));
+      return;
+    }
+    // Seules les pages de suivi listees sont gardees (jamais les frais, les PDF ni les formulaires envoyes),
+    // pour etre relues hors connexion avec la date de la derniere version.
+    if(OFFLINE_PAGES.includes(url.pathname)&&!url.searchParams.has('pdf')&&!url.searchParams.has('copie')&&!url.searchParams.has('fichier')){
+      event.respondWith((async()=>{
+        try{
+          const response=await fetch(request);
+          if(response.ok&&!response.redirected&&(response.headers.get('content-type')||'').includes('text/html'))
+            await caches.open(PRIVATE).then(cache=>cache.put(request.url,response.clone())).catch(()=>{});
+          return response;
+        }catch{
+          const hit=await caches.open(PRIVATE).then(cache=>cache.match(request.url)).catch(()=>null);
+          if(!hit)return offline();
+          const when=hit.headers.get('date'),html=await hit.text();
+          const banner='<div role="status" style="position:sticky;top:0;z-index:99999;background:#fff4d6;color:#5a4100;border-bottom:1px solid #e9c46a;padding:8px 12px;font:14px Arial,sans-serif">📴 Hors connexion : dernière version enregistrée'
+            +(when?' le '+new Date(when).toLocaleString('fr-FR',{dateStyle:'medium',timeStyle:'short'}):'')+'. Elle se mettra à jour au retour du réseau.</div>';
+          return new Response(html.replace(/<body[^>]*>/i,m=>m+banner),{headers:{'Content-Type':'text/html; charset=utf-8'}});
+        }
+      })());
+      return;
+    }
+    // Les autres pages connectees ne sont jamais gardees sur le telephone.
+    event.respondWith(fetch(request).catch(offline));
   }
 });
+// Pages de suivi gardees hors connexion (04/11) et nouvelle version active tout de suite.
+const PRIVATE='schoolsafe-private-v1';
+const OFFLINE_PAGES=['/travail-enfant.php','/note-devoir.php','/dossier-annee.php','/bulletin.php','/ma-journee.php'];
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 // ===== Cache des bibliotheques et fichiers statiques (ajout 2026-10-27) =====
 // Strategies type Workbox en vanilla (StaleWhileRevalidate / CacheFirst) :
 // meme comportement, sans dependance au CDN Workbox (ferme).

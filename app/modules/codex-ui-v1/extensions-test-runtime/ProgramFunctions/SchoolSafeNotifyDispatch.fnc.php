@@ -14,7 +14,7 @@ function SchoolSafeNotifyDispatchGet($connection,string $sql): array
 
 function SchoolSafeNotifyDispatchClaim($connection,string $channel): ?array
 {
-    if(!in_array($channel,['all','feed','email','push','whatsapp'],true)
+    if(!in_array($channel,['all','feed','email','push','whatsapp','sms'],true)
         ||pg_transaction_status($connection)!==PGSQL_TRANSACTION_IDLE)throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
     $token=bin2hex(random_bytes(16));
     // One statement, autocommitted BEFORE any network/provider work.
@@ -52,7 +52,7 @@ function SchoolSafeNotifyDispatchRecipient($connection,array $row): array
             ||($payload['observation']['syear']??null)!==$year||($payload['observation']['student']['id']??null)!==$student))throw new RuntimeException('RECIPIENT_FORBIDDEN');
     }
     if(($row['audience']??null)==='parent'&&!SchoolSafeNotifyParentCurrent($parent,$school,$year,$student,$db))throw new RuntimeException('RECIPIENT_FORBIDDEN');
-    $staff=$query('SELECT STAFF_ID,PROFILE,SCHOOLS,USERNAME,EMAIL,FIRST_NAME,LAST_NAME'.($row['channel']==='whatsapp'?',CUSTOM_200000001':'').' FROM staff WHERE STAFF_ID='.$parent.' AND SYEAR='.$year);
+    $staff=$query('SELECT STAFF_ID,PROFILE,SCHOOLS,USERNAME,EMAIL,FIRST_NAME,LAST_NAME'.(in_array($row['channel'],['whatsapp','sms'],true)?',CUSTOM_200000001':'').' FROM staff WHERE STAFF_ID='.$parent.' AND SYEAR='.$year);
     if(count($staff)!==1)throw new RuntimeException('RECIPIENT_FORBIDDEN');
     $staff=$staff[1];
     if(($row['audience']??null)==='parent'&&($staff['PROFILE']??null)!=='parent')throw new RuntimeException('RECIPIENT_FORBIDDEN');
@@ -73,4 +73,32 @@ function SchoolSafeNotifyDispatchFinish($connection,array $row,string $status,st
         ." WHERE id=$1 AND dispatch_claim_token=$2 AND status='pending' RETURNING id",
         [(int)$row['id'],$row['dispatch_claim_token'],$status,substr($error,0,500),substr($provider,0,128)]);
     if($result===false||pg_num_rows($result)!==1)throw new RuntimeException('DISPATCH_RESULT_UNAVAILABLE');
+}
+
+// SMS de secours (04/11, decision du proprietaire) : texte court, sans lien (parents sans internet), 2 SMS au plus.
+function SchoolSafeNotifySmsText(array $payload, string $school): string
+{
+    $title = trim((string) ($payload['title'] ?? ''));
+    $message = (string) ($payload['message'] ?? '');
+    // Liens retires avec leur libelle (« Voir : https://… ») ; emojis et selecteurs de variante retires.
+    $message = preg_replace(['#[^\n.:!?]{0,40}:\s*https?://\S+#u', '#https?://\S+#u', '/[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}\x{FE0F}\x{200D}]/u', '/\s+/u'], ['', '', '', ' '], $message);
+    $message = trim(preg_replace('/\s*—\s*[^—]*SchoolSafe[^—]*$/u', '', (string) $message));
+    $text = 'SchoolSafe - ' . ($school !== '' ? $school . ' : ' : '') . ($title !== '' ? $title . '. ' : '') . $message;
+    return mb_substr(trim($text), 0, 300);
+}
+
+// Evenements qui meritent un SMS : absence, alerte de securite, convocation ou conseil de discipline.
+function SchoolSafeNotifySmsMirrorSql(): string
+{
+    return "INSERT INTO schoolsafe_notify_deliveries(event_id,school_id,syear,audience,recipient_staff_id,channel)"
+        . " SELECT DISTINCT d.event_id,d.school_id,d.syear,d.audience,d.recipient_staff_id,'sms'"
+        . " FROM schoolsafe_notify_deliveries d JOIN schoolsafe_notify_events e ON e.id=d.event_id AND e.school_id=d.school_id AND e.syear=d.syear"
+        . " WHERE d.audience='parent' AND d.channel='email' AND d.status='failed' AND d.last_error='PRE_SEND:NO_RECIPIENT_EMAIL'"
+        . " AND e.created_at>CURRENT_TIMESTAMP-interval '2 hours'"
+        . " AND (e.event_type IN ('absence.detected','security.p1') OR (e.event_type='school.announcement' AND e.payload->>'source'='letter'"
+        . "  AND EXISTS (SELECT 1 FROM schoolsafe_letters l WHERE l.id::text=e.payload->>'letter_id' AND l.kind IN ('convocation','discipline'))))"
+        . " AND NOT EXISTS (SELECT 1 FROM schoolsafe_notify_deliveries w WHERE w.event_id=d.event_id AND w.recipient_staff_id=d.recipient_staff_id"
+        . "  AND w.channel='whatsapp' AND w.status IN ('pending','accepted','sent','delivered','read'))"
+        . " AND (EXISTS (SELECT 1 FROM schoolsafe_sms_lines WHERE status='active') OR EXISTS (SELECT 1 FROM config WHERE school_id=0 AND title='SMS_SIMULATE' AND config_value='Y'))"
+        . " ON CONFLICT(event_id,audience,recipient_staff_id,channel) DO NOTHING";
 }

@@ -98,4 +98,4 @@ $e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
 <p class="bu-sub">Les notes de chaque devoir restent visibles dans « Travail de mon enfant ». En cas de difficulté, adressez-vous à la direction.</p></section>
 <?php elseif($family&&$access['reason']==='pending'):?><section class="bu-card"><p>Le bulletin n’est pas encore publié : le titulaire le prépare et la direction le valide. Vous serez prévenu dès qu’il sera disponible.</p></section>
 <?php else:?><section class="bu-card"><p>Pas encore de bulletin pour cette classe.</p></section><?php endif;?>
-<p class="bu-sub"><?=$e($schoolName)?> · SchoolSafe · Un enfant protégé, un parent informé</p></main></body></html>
+<p class="bu-sub"><?=$e($schoolName)?> · SchoolSafe · Un enfant protégé, un parent informé</p></main><script src="pwa-client.js" defer></script></body></html>

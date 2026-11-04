@@ -145,4 +145,4 @@ $course=ParseMLField((string)$row['COURSE_TITLE']);
 <?php elseif(!$seen):?><p class="ss-sub">Pas encore vu.</p><?php endif;?>
 </section>
 <p class="ss-sub"><?=$e($schoolName)?> · SchoolSafe · Un enfant protégé, un parent informé</p>
-</main></body></html>
+</main><script src="pwa-client.js" defer></script></body></html>

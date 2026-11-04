@@ -16,7 +16,7 @@ foreach($argv as$arg){
     if(str_starts_with($arg,'--limit='))$limit=max(1,min(500,(int)substr($arg,8)));
     if(str_starts_with($arg,'--channel='))$channel=substr($arg,10);
 }
-if(!$once||!in_array($channel,['all','feed','email','push','whatsapp'],true)){
+if(!$once||!in_array($channel,['all','feed','email','push','whatsapp','sms'],true)){
     fwrite(STDERR,"Usage: php schoolsafe-notify-dispatch.php --once [--limit=50] [--channel=all|feed|email|push|whatsapp] [--retry-failed] [--retry-bounded] [--release-stale]\n");exit(2);
 }
 $host=getenv('SCHOOLSAFE_DB_HOST')?:'db';$port=getenv('SCHOOLSAFE_DB_PORT')?:'5432';
@@ -24,6 +24,15 @@ $user=getenv('POSTGRES_USER')?:'schoolsafe';$pass=getenv('POSTGRES_PASSWORD')?:'
 $conn=@pg_connect("host=$host port=$port dbname=$dbname user=$user password=$pass connect_timeout=5");
 if($conn===false){fwrite(STDERR,"DB_UNAVAILABLE\n");exit(1);}
 SchoolSafeNotifyCliInit($conn);
+// SMS de secours (04/11) : fonctions de base de l'application utilisees par l'envoi SMS, absentes en ligne de commande.
+// Chaque valeur est echappee ici (le texte d'un SMS peut contenir une apostrophe).
+if(!function_exists('DBGetOne')){function DBGetOne($sql){$rows=DBGet($sql);if(!$rows)return false;$row=reset($rows);return reset($row);}}
+if(!function_exists('DBInsert')){function DBInsert($table,$columns,$return='true'){
+    $fields=[];$values=[];
+    foreach((array)$columns as $column=>$value){if(!is_string($column)||!preg_match('/^[a-z_][a-z0-9_]*$/i',$column)||(string)$value==='')continue;$fields[]=$column;$values[]="'".pg_escape_string($GLOBALS['schoolsafe_notify_connection'],(string)$value)."'";}
+    if(!$fields||!preg_match('/^[a-z_][a-z0-9_]*$/i',$table))return false;
+    $rows=DBGet('INSERT INTO '.$table.'('.implode(',',$fields).') VALUES('.implode(',',$values).')'.($return==='id'?' RETURNING id AS ID':''));
+    return $return==='id'?(int)($rows[1]['ID']??0):true;}}
 // Missing migration is unavailable, never permission to run the old unclaimed path.
 $ready=pg_query($conn,"SELECT dispatch_claim_token,dispatch_claimed_at FROM schoolsafe_notify_deliveries LIMIT 0");
 if($ready===false){fwrite(STDERR,"DISPATCH_CLAIM_UNAVAILABLE\n");exit(1);}
@@ -78,6 +87,11 @@ if($channel==='all'||$channel==='whatsapp'){
         ." AND e.event_type IN ('".implode("','",SchoolSafeNotifyWaEventTypes())."')"
         .' ON CONFLICT(event_id,audience,recipient_staff_id,channel) DO NOTHING');
     if($mirror===false){fwrite(STDERR,"WA_MIRROR_UNAVAILABLE\n");exit(1);}
+}
+// SMS de secours (04/11) : alertes importantes, parents sans e-mail que WhatsApp n'a pas joints, ligne active.
+if($channel==='all'||$channel==='sms'){
+    $smsMirror=pg_query($conn,SchoolSafeNotifySmsMirrorSql());
+    if($smsMirror===false)fwrite(STDERR,"SMS_MIRROR_UNAVAILABLE\n");
 }
 $transports=$GLOBALS['schoolsafe_notify_transports']??[];
 if(!is_array($transports)||array_diff(array_keys($transports),['email','push','waha','evolution','status']))throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
@@ -145,6 +159,16 @@ for($i=0;$i<$limit;$i++){
                 if(!$proof||$proof['engine']==='simulated'||trim($proof['provider_msg_id'])==='')throw new RuntimeException('ACCEPTANCE_UNKNOWN');
                 $provider=$proof['provider_msg_id'];$status='accepted';
             }else{throw new RuntimeException('ACCEPTANCE_UNKNOWN');}
+        }elseif($row['channel']==='sms'){
+            $to=SchoolSafeSmsNormalize($staff['CUSTOM_200000001']??'');
+            if($to===false)throw new RuntimeException('NO_RECIPIENT_PHONE');
+            $text=SchoolSafeNotifySmsText($payload,(string)$row['school_title']);
+            $attempted=true;
+            $out=SchoolSafeSmsSend($to,$text,['school_id'=>(int)$row['school_id'],'actor'=>'native-notify-dispatch','dedup_key'=>'notify:delivery:'.$row['id'],'purpose'=>'alert']);
+            if(($out['status']??'')==='accepted'){$provider='sms:'.(int)($out['outbox_id']??0);$status='accepted';}
+            elseif(($out['status']??'')==='blocked'){$attempted=false;throw new RuntimeException(($out['error']??'')==='NO_SMS_LINE'?'NO_SMS_LINE':'SMS_BLOCKED');}
+            elseif(($out['status']??'')==='failed'){$attempted=false;throw new RuntimeException('SMS_FAILED');}
+            else throw new RuntimeException('ACCEPTANCE_UNKNOWN');
         }elseif($row['channel']==='push'){
             $sub=pg_query_params($conn,'SELECT endpoint FROM schoolsafe_notification_push_subscriptions WHERE staff_id=$1 ORDER BY created_at DESC LIMIT 1',[(int)$row['recipient_staff_id']]);
             if($sub===false)throw new RuntimeException('PUSH_UNAVAILABLE');
@@ -165,7 +189,7 @@ for($i=0;$i<$limit;$i++){
         if($attempted){$status='pending';$uncertain=true;$error='ACCEPTANCE_UNKNOWN';}
         else{
             $known=['FORCED_FAILURE','RECIPIENT_FORBIDDEN','RECIPIENT_UNAVAILABLE','NO_RECIPIENT_EMAIL','NO_EMAIL_PROVIDER',
-                'RECIPIENT_CHANGED','SMTP_UNAVAILABLE','NO_RECIPIENT_PHONE','SIMULATION_ONLY','CONSENT_REQUIRED','NO_WA_SESSION','WA_COPY_UNAVAILABLE','WA_BLOCKED','WA_FAILED','PUSH_UNAVAILABLE','NO_PUSH_PROVIDER','SUBSCRIPTION_EXPIRED'];
+                'RECIPIENT_CHANGED','SMTP_UNAVAILABLE','NO_RECIPIENT_PHONE','SIMULATION_ONLY','CONSENT_REQUIRED','NO_WA_SESSION','WA_COPY_UNAVAILABLE','WA_BLOCKED','WA_FAILED','PUSH_UNAVAILABLE','NO_PUSH_PROVIDER','SUBSCRIPTION_EXPIRED','NO_SMS_LINE','SMS_BLOCKED','SMS_FAILED'];
             $code=in_array($failure->getMessage(),$known,true)?$failure->getMessage():'CONTEXT_UNAVAILABLE';
             $error='PRE_SEND:'.$code;$status='failed';
         }

@@ -100,4 +100,4 @@ if($pdf){
 <td><div class="pf-chips"><a href="schoolsafe-homework.php?assignment_id=<?=$a?>&amp;student=<?=$sid?>&amp;download=1">Fiche</a><a href="note-devoir.php?devoir=<?=$a?>&amp;eleve=<?=$sid?>">Correction<?=$w['HAS_COPY']?' 📷':''?></a></div></td></tr>
 <?php endforeach;?></tbody></table><?php endforeach;?></details></section><?php endforeach;?>
 <?php endif;?>
-<p class="pf-sub"><?=$e($schoolName)?> · SchoolSafe · Un enfant protégé, un parent informé</p></main></body></html>
+<p class="pf-sub"><?=$e($schoolName)?> · SchoolSafe · Un enfant protégé, un parent informé</p></main><script src="pwa-client.js" defer></script></body></html>
