@@ -323,3 +323,23 @@ authentification parallèle, aucune session, aucun droit, aucune donnée déplac
 reste sur disque et se remet en service en une ligne dans `index.php`. Motif : une seule
 application SchoolSafe/Rosario, avec l'identité visuelle demandée et une authentification native
 stable.
+
+## 4 novembre 2026 — méthode « fusion » des menus : un parcours par profil, aucun outil caché
+
+Décision du propriétaire, appliquée d'abord à Pédagogie (image `pedagogie-menu-2-20261104`), à appliquer
+ensuite à **chaque menu** de l'application, un menu par lot :
+
+1. **Inventaire réel** : relever toutes les pages du menu pour chaque profil (écran réel et code).
+2. **Analyse** : pour chaque page, ce qu'elle fait, si une page SchoolSafe fait déjà la même chose, et son
+   usage réel dans la base (lecture seule).
+3. **Décision page par page** :
+   - **garder** dans le parcours, sous un nom clair ;
+   - **réunir** : la page reste ouverte depuis la page du parcours qui l'utilise, et sort du menu ;
+   - **retirer du menu** : page en double ou jamais utilisée (aucune donnée).
+4. **Présentation** : peu d'étapes numérotées dans l'ordre d'usage, et sous chaque lien **une phrase qui dit à
+   quoi il sert**. **Aucun outil caché** derrière un repli ou un bloc « Autres outils ».
+5. **Garde-fous** : aucune page effacée, aucun droit changé ; un profil sans le parcours SchoolSafe garde son
+   menu d'origine ; la décision page par page est écrite dans un document de qualification.
+
+Motif : l'application doit être facile à utiliser. Une page cachée ou en double n'est ni trouvée ni comprise.
+Une première version qui repliait les outils a été refusée par le propriétaire pour cette raison.
