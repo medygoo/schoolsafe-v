@@ -65,6 +65,13 @@ $closed = 0; $detected = 0; $skipped = 0; $caughtUp = 0;
 if (is_array($schools)) foreach ($schools as $s) {
     if (!isset($s['ID'])) continue;
     $school = (int) $s['ID'];
+    // Interrupteur de l'ecole (04/11) : absences automatiques seulement si l'ecole les a activees (ecran Horaires
+    // d'arrivee), et jamais pour un jour anterieur a l'activation : aucun faux message aux parents.
+    try {
+        $activation = $db['get']("SELECT CONFIG_VALUE FROM config WHERE SCHOOL_ID=" . $school . " AND TITLE='SCHOOLSAFE_ABSENCE_AUTO' LIMIT 1");
+    } catch (Throwable $e) { $skipped++; continue; }
+    $since = is_array($activation) && isset($activation[1]) ? trim((string) $activation[1]['CONFIG_VALUE']) : '';
+    if (!preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/D', $since)) { $skipped++; continue; }
     // Portees reglees (03/11) : un horaire par niveau (ecran Horaires d'arrivee) et/ou un horaire general.
     $scopes = [];
     try {
@@ -84,7 +91,7 @@ if (is_array($schools)) foreach ($schools as $s) {
         $nowTime = $nowOverride !== '' ? $nowOverride : (new DateTime('now', new DateTimeZone($tz)))->format('H:i');
     } catch (Throwable $e) { $skipped++; continue; }
     // Jour courant : pour chaque portee, cloture puis detection si dues (heure toleree, heure rouge).
-    foreach ($scopes as [$scopeKind, $scopeRef]) {
+    if (strcmp($today, $since) >= 0) foreach ($scopes as [$scopeKind, $scopeRef]) {
         try {
             $c = SchoolSafeAttendanceClosure($school, $year, $today, $scopeKind, $scopeRef, $nowTime, $db, true);
             if (($c['status'] ?? '') === 'CLOSED') $closed++;
@@ -98,6 +105,7 @@ if (is_array($schools)) foreach ($schools as $s) {
             $day = (new DateTime($today))->modify("-$back day")->format('Y-m-d');
         } catch (Throwable $e) { break; }
         try {
+            if (strcmp($day, $since) < 0) continue; // jamais avant l'activation
             if (!SchoolSafeAttendanceIsSchoolDay($school, $year, $day, $db)) continue;
             // Rattrapage : registre complete, mais aucune alerte aux parents pour un jour passe.
             foreach ($scopes as [$scopeKind, $scopeRef]) {
