@@ -985,7 +985,7 @@ if ( ! $_REQUEST['modfunc'] )
 	do_action( 'Grades/Assignments.php|header' );
 	if ( ! empty( $_REQUEST['assignment_id'] ) && ctype_digit( (string) $_REQUEST['assignment_id'] ) && (int) $_REQUEST['assignment_id'] > 0 )
 	{
-		DrawHeader( '<a href="schoolsafe-homework.php?assignment_id=' . (int) $_REQUEST['assignment_id'] . '&amp;download=1">' . SchoolSafeT( 'Download A4 homework', 'Télécharger le devoir A4' ) . '</a>' );
+		DrawHeader( '<a href="schoolsafe-homework.php?assignment_id=' . (int) $_REQUEST['assignment_id'] . '&amp;download=1">' . SchoolSafeT( 'Download A4 homework', 'Télécharger le devoir A4' ) . '</a> · <a href="schoolsafe-homework.php?assignment_id=' . (int) $_REQUEST['assignment_id'] . '" target="_blank" rel="noopener">' . SchoolSafeT( 'A4 layout', 'Mise en page A4' ) . '</a>' );
 	}
 
 	if ( $header )
