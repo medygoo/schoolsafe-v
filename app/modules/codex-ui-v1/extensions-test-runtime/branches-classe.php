@@ -23,7 +23,13 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
         if(!is_string($_POST['csrf']??null)||!hash_equals($csrf,$_POST['csrf']))throw new RuntimeException('Session expirée : rechargez la page.');
         $action=is_string($_POST['action']??null)?$_POST['action']:'';
         $postLevel=isset($_POST['niveau'])&&is_string($_POST['niveau'])&&ctype_digit($_POST['niveau'])&&isset($levels[(int)$_POST['niveau']])?(int)$_POST['niveau']:0;
-        if($action==='liste'){
+        if($action==='mode'){
+            // Francais + anglais d'une meme branche : moyenne (par defaut) ou somme.
+            $mode=($_POST['mode']??'')==='somme'?'somme':'moyenne';
+            $done=DBGet("UPDATE config SET CONFIG_VALUE='".$mode."' WHERE SCHOOL_ID=".$school." AND TITLE='SCHOOLSAFE_BULLETIN_LANG_MODE' RETURNING TITLE");
+            if(!$done)DBQuery("INSERT INTO config(SCHOOL_ID,TITLE,CONFIG_VALUE) VALUES(".$school.",'SCHOOLSAFE_BULLETIN_LANG_MODE','".$mode."')");
+            $message=$mode==='somme'?'Les notes de français et d’anglais d’une branche seront additionnées (sur le double du maxima).':'Les notes de français et d’anglais d’une branche feront une moyenne.';
+        }elseif($action==='liste'){
             if(!$postLevel)throw new RuntimeException('Choisissez un niveau.');
             $rows=SchoolSafeBranchValidateRows($_POST);
             DBQuery('BEGIN');$inTx=true;
@@ -88,6 +94,11 @@ $isOn=fn($v)=>in_array((string)$v,['t','1','true','Y'],true);
 <datalist id="br-domains"><?php foreach(['Langues','Mathématiques','Sciences et technologie','Univers social','Arts','Développement personnel','Sciences','Sciences humaines','Formation générale'] as $d):?><option value="<?=$e($d)?>"><?php endforeach;?></datalist>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="br-btn" type="submit">Enregistrer la liste de <?=$e($levels[$lvl]??'')?></button><button class="br-btn light" type="button" id="br-add">+ Ajouter une ligne</button></div>
 <p class="br-sub">Laissez la branche vide pour ignorer une ligne. Une branche décochée puis désactivée reste dans les bulletins déjà faits.</p></form></section>
+<section class="br-box"><h2>Français et anglais d’une même branche</h2>
+<?php $langMode=(string)(DBGetOne("SELECT CONFIG_VALUE FROM config WHERE SCHOOL_ID=".$school." AND TITLE='SCHOOLSAFE_BULLETIN_LANG_MODE'")?:'moyenne'); ?>
+<form method="post" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="mode">
+<label><input type="radio" name="mode" value="moyenne"<?=$langMode!=='somme'?' checked':''?>> Moyenne des deux notes (ex. 8 et 6 sur 10 → 7/10)</label>
+<label><input type="radio" name="mode" value="somme"<?=$langMode==='somme'?' checked':''?>> Somme (8 + 6 → 14/20)</label><button class="br-btn light" type="submit">Enregistrer</button></form></section>
 <section class="br-box"><h2>2. Appliquer aux classes</h2>
 <?php if(!$classes):?><p>Aucune classe cette année.</p><?php endif;?>
 <?php foreach($classes as $c): $cid=(int)$c['COURSE_PERIOD_ID']; $clsLevel=(int)($c['GRADE_LEVEL']?:$lvl); $isPrev=$preview&&$preview['classe']===$cid; ?>

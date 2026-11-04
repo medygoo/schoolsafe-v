@@ -23,6 +23,8 @@ if (User('PROFILE') === 'admin' && AllowEdit('School_Setup/Configuration.php')) 
     $add('pedagogy', 'Organisation pédagogique', 'Préparer l’année', 'preparer-annee.php');
     // Branches et maxima du bulletin (04/11) : liste par niveau, appliquee aux classes.
     $add('pedagogy', 'Organisation pédagogique', 'Branches et maxima', 'branches-classe.php');
+    // Synthese du bulletin (04/11) : la direction valide les bulletins proposes par les titulaires.
+    $add('pedagogy', 'Organisation pédagogique', 'Synthèse du bulletin', 'synthese-bulletin.php');
     // Papier de l'ecole (04/11) : en-tete, pied de page et dispositions des documents.
     $add('school', 'Organisation scolaire', 'Papier de l’école', 'papier-ecole.php');
     // Archives de l'ecole (04/11) : documents deposes par photo ou PDF, classes et retrouvables.
@@ -40,6 +42,9 @@ if (User('PROFILE') === 'admin' && AllowUse('Students/Student.php')) {
 if (User('PROFILE') === 'teacher') {
     $add('pedagogy', 'Ma journée', 'Ma journée de classe', 'ma-journee.php');
     $add('pedagogy', 'Ma journée', 'Devoirs et travaux', 'devoirs-travaux.php');
+    // Bulletin (04/11) : notes de periode et d'examen ; synthese pour le titulaire.
+    $add('pedagogy', 'Ma journée', 'Notes du bulletin', 'notes-bulletin.php');
+    $add('pedagogy', 'Ma journée', 'Synthèse du bulletin', 'synthese-bulletin.php');
 }
 if (SchoolSafeNativePermission('SchoolSafe/RemediationRead.php')) {
     $add('pedagogy', 'Accompagnement', 'Rattrapage', 'Modules.php?modname=SchoolSafe/RemediationRead.php');
