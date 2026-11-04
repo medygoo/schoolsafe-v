@@ -88,9 +88,13 @@ function SchoolSafeYearSetupSteps(int $school, int $year, callable $get): array
     // 7. Baremes de notes
     $scales = $all("SELECT TITLE FROM report_card_grade_scales WHERE SCHOOL_ID=$s AND SYEAR=$y ORDER BY SORT_ORDER");
     $enScales = array_values(array_filter($scales, static function ($g) { return SchoolSafeYearSetupEnglish((string) $g['TITLE']); }));
+    // Bareme americain d'installation (A+ a F, moyenne sur 4, reussite a 60 %) : a remplacer par celui de l'ecole.
+    $letters = array_column($all("SELECT TITLE FROM report_card_grades WHERE SCHOOL_ID=$s AND SYEAR=$y"), 'TITLE');
+    $american = in_array('A+', $letters, true) && in_array('F', $letters, true);
     $steps[] = ['id' => 'baremes', 'title' => 'Barèmes de notation', 'url' => 'Modules.php?modname=Grades/ReportCardGrades.php',
-        'state' => !$scales ? 'todo' : ($enScales ? 'warn' : 'ok'),
-        'detail' => !$scales ? 'Aucun barème.' : count($scales) . ' barème(s) : ' . implode(', ', array_column($scales, 'TITLE')) . ($enScales ? ' (nom anglais à traduire).' : '.'),
+        'state' => !$scales ? 'todo' : ($enScales || $american ? 'warn' : 'ok'),
+        'detail' => !$scales ? 'Aucun barème.' : count($scales) . ' barème(s) : ' . implode(', ', array_column($scales, 'TITLE')) . ($enScales ? ' (nom anglais à traduire)' : '')
+            . ($american ? ' — barème américain d’installation (A+ à F, réussite à 60 %) : choisissez celui de votre école.' : '.'),
         'help' => 'Échelle des notes (sur 10, sur 20, en pourcentage) et mentions. Les bulletins et le rattrapage (moins de 50 %) l’utilisent.'];
 
     // 8. Types de devoirs
