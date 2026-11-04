@@ -8,6 +8,8 @@ if(array_diff(array_keys($_GET),['classe','trimestre','eleve'])){http_response_c
 chdir(__DIR__);$_REQUEST=['modname'=>'misc/Portal.php','modfunc'=>''];
 $level=ob_get_level();ob_start();require_once __DIR__.'/Warehouse.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeBulletin.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeBulletinDoc.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeNotify.fnc.php';
 $school=(int)UserSchool();$year=(int)UserSyear();$staff=(int)User('STAFF_ID');$profile=(string)User('PROFILE');
 $isDirection=$profile==='admin'&&$school>0&&(AllowEdit('School_Setup/Configuration.php')||AllowUse('Grades/ReportCards.php'));
 $get=function($sql){return DBGet($sql);};
@@ -25,7 +27,7 @@ $termReq=$_GET['trimestre']??'';
 $term=$termReq==='annee'?'annee':(ctype_digit((string)$termReq)&&isset($terms[(int)$termReq])?(int)$termReq:(int)(array_key_first($terms)??0));
 $mp=$term==='annee'?$fy:(int)$term;
 $isTitulaire=$classCp&&(int)($classes[$classCp]['TEACHER_ID']??0)===$staff;
-$message='';$error='';$inTx=false;
+$message='';$error='';$inTx=false;$notify=false;
 $students=$classCp?SchoolSafeBulletinStudents($classCp,$get):[];
 if($allowed&&$classCp&&$mp&&$_SERVER['REQUEST_METHOD']==='POST'){
     try{
@@ -59,9 +61,42 @@ if($allowed&&$classCp&&$mp&&$_SERVER['REQUEST_METHOD']==='POST'){
         }elseif($action==='valider'||$action==='rouvrir'){
             if(!$isDirection)throw new RuntimeException('Seule la direction valide ou rouvre un bulletin.');
             foreach($students as $sid=>$name)$upsert($sid,$action==='valider'?['STATUS'=>"'valide'",'VALIDATED_BY'=>$staff,'VALIDATED_AT'=>'now()']:['STATUS'=>"'brouillon'",'VALIDATED_BY'=>'NULL','VALIDATED_AT'=>'NULL']);
-            $message=$action==='valider'?'Bulletins validés : les notes de ce trimestre sont verrouillées.':'Bulletins rouverts : le titulaire et les enseignants peuvent de nouveau modifier.';
+            $message=$action==='valider'?'Bulletins validés : les notes de ce trimestre sont verrouillées. Chaque parent est prévenu ; le bulletin s’ouvre selon les frais.':'Bulletins rouverts : le titulaire et les enseignants peuvent de nouveau modifier.';
+            $notify=$action==='valider';
+        }elseif($action==='debloquer'){
+            // Ouverture exceptionnelle malgre les frais (indigent, arrangement) : raison gardee.
+            if(!$isDirection)throw new RuntimeException('Seule la direction peut ouvrir un bulletin malgré les frais.');
+            $sid=(int)($_POST['eleve']??0);$reason=trim((string)($_POST['raison']??''));
+            if(!isset($students[$sid]))throw new RuntimeException('Élève inconnu dans cette classe.');
+            if(mb_strlen($reason)<3||mb_strlen($reason)>300)throw new RuntimeException('Indiquez la raison de l’ouverture (3 à 300 caractères).');
+            DBQuery("INSERT INTO schoolsafe_bulletin_unlocks(SCHOOL_ID,SYEAR,CLASS_COURSE_PERIOD_ID,STUDENT_ID,MARKING_PERIOD_ID,REASON,UNLOCKED_BY) VALUES(".$school.",".$year.",".$classCp.",".$sid.",".$mp.",'".DBEscapeString($reason)."',".$staff.") ON CONFLICT DO NOTHING");
+            $message='Bulletin de '.$students[$sid].' ouvert malgré les frais. La raison est gardée.';
+        }elseif($action==='frais'){
+            if(!$isDirection)throw new RuntimeException('Réglage réservé à la direction.');
+            $value=($_POST['frais']??'')==='N'?'N':'Y';
+            $done=DBGet("UPDATE config SET CONFIG_VALUE='".$value."' WHERE SCHOOL_ID=".$school." AND TITLE='SCHOOLSAFE_BULLETIN_FEES' RETURNING TITLE");
+            if(!$done)DBQuery("INSERT INTO config(SCHOOL_ID,TITLE,CONFIG_VALUE) VALUES(".$school.",'SCHOOLSAFE_BULLETIN_FEES','".$value."')");
+            $message=$value==='Y'?'Le bulletin s’ouvre au parent quand les frais dus sont payés.':'Le bulletin s’ouvre au parent dès sa validation, sans condition de frais.';
         }else throw new RuntimeException('Action inconnue.');
         DBQuery('COMMIT');$inTx=false;
+        if($notify){
+            // Avis aux parents (une fois par eleve et par trimestre) ; un envoi en echec n'annule pas la validation.
+            $tz=new DateTimeZone('Africa/Kinshasa');$day=(new DateTime('now',$tz))->format('Y-m-d');
+            $db=['get'=>$get,'exec'=>function($sql){DBQuery($sql);}];
+            $base=rtrim(trim((string)getenv('SCHOOLSAFE_ASSETS_BASE_URL'))?:'https://app.shoolsafe.tech','/');
+            $label=$term==='annee'?'l’année '.$year.'-'.($year+1):mb_strtolower((string)($terms[$term]['title']??''));
+            $fees=SchoolSafeBulletinFeesRequired($school,$get);
+            $first=[];foreach((array)DBGet("SELECT s.STUDENT_ID,s.FIRST_NAME FROM students s JOIN schedule sc ON sc.STUDENT_ID=s.STUDENT_ID AND sc.COURSE_PERIOD_ID=".$classCp) as $r)$first[(int)$r['STUDENT_ID']]=(string)$r['FIRST_NAME'];
+            foreach($students as $sid=>$name){
+                try{
+                    $acc=SchoolSafeBulletinAccess($sid,$school,$year,$day,$get);
+                    $msg=SchoolSafeBulletinNotice($first[$sid]??'',$label,$base.'/bulletin.php?eleve='.$sid,$acc['open']?0:(int)$acc['remaining'],$fees,(string)SchoolInfo('TITLE'));
+                    $rec=SchoolSafeNotifyResolveRecipients('school.announcement',$school,$year,$sid,$db);
+                    if($rec)SchoolSafeNotifyEmit(['school_id'=>$school,'syear'=>$year,'student_id'=>$sid,'actor_staff_id'=>$staff,'event_type'=>'school.announcement',
+                        'dedup_key'=>'bulletin:'.$classCp.':'.$sid.':'.$mp,'payload'=>['source'=>'bulletin','title'=>$msg[0],'message'=>$msg[1]]],$rec,$db,true);
+                }catch(Throwable $x){error_log('SchoolSafe bulletin notice: '.$x->getMessage());}
+            }
+        }
     }catch(Throwable $failure){
         if($inTx)DBQuery('ROLLBACK');
         $error=$failure instanceof RuntimeException?$failure->getMessage():'Enregistrement impossible.';
@@ -97,7 +132,7 @@ $readOnly=static function($sid)use($status,$mp,$isDirection,$isTitulaire){return
 <section class="sb-box"><h2><?=$e($term==='annee'?'Année — total général et décision':($terms[$term]['title']??''))?> · <?=count($students)?> élève(s)</h2>
 <p class="sb-sub"><?=$isDirection?'Direction : vous pouvez tout modifier, valider (verrouille les notes) ou rouvrir.':($isTitulaire?'Titulaire : remplissez l’application, la conduite'.($term==='annee'?' et la décision':'').', puis proposez à la direction.':'Lecture seule.')?> Les totaux, pourcentages et places se calculent à partir des notes des enseignants.</p>
 <form method="post"><input type="hidden" name="csrf" value="<?=$e($csrf)?>">
-<div class="sb-wrap"><table class="sb-table"><thead><tr><th>Élève</th><th>Total</th><th>%</th><th>Place</th><th>Manquantes</th><th>Application</th><th>Conduite</th><?php if($term==='annee'):?><th>Décision</th><th>Précision</th><th>Mot du titulaire</th><?php endif;?><th>Statut</th></tr></thead><tbody>
+<div class="sb-wrap"><table class="sb-table"><thead><tr><th>Élève</th><th>Total</th><th>%</th><th>Place</th><th>Manquantes</th><th>Application</th><th>Conduite</th><?php if($term==='annee'):?><th>Décision</th><th>Précision</th><th>Mot du titulaire</th><?php endif;?><th>Statut</th><th>Bulletin</th></tr></thead><tbody>
 <?php foreach($calc['students'] as $sid=>$r): $t=$r['totals'][$key]??[0,0,false]; $st=$status[$sid][$mp]??[]; $ro=$readOnly($sid); $miss=$term==='annee'?array_sum($r['missing']):($r['missing'][$term]??0); ?>
 <tr><td class="l"><a href="synthese-bulletin.php?<?=$e(http_build_query(['classe'=>$classCp,'trimestre'=>$term,'eleve'=>$sid]))?>#detail"><?=$e($r['name'])?></a></td>
 <td><?=$t[2]?$e($n($t[0]).' / '.$n($t[1])):'—'?></td><td><?=$e($r['pct'][$key]!==null?$n($r['pct'][$key]).' %':'—')?></td><td><?=isset($r['rank'][$key])?(int)$r['rank'][$key].' / '.$calc['count']:'—'?></td>
@@ -107,11 +142,20 @@ $readOnly=static function($sid)use($status,$mp,$isDirection,$isTitulaire){return
 <?php if($term==='annee'):?><td><select name="decision[<?=$sid?>]"<?=$ro?' disabled':''?>><option value="">—</option><?php foreach(SchoolSafeBulletinDecisions() as $k=>$lab):?><option value="<?=$e($k)?>"<?=($st['DECISION']??'')===$k?' selected':''?>><?=$e($lab)?></option><?php endforeach;?></select></td>
 <td><input type="text" name="decision_note[<?=$sid?>]" value="<?=$e($st['DECISION_NOTE']??'')?>" maxlength="300" placeholder="ex. repêchage en calcul"<?=$ro?' disabled':''?>></td>
 <td><input type="text" name="titulaire_note[<?=$sid?>]" value="<?=$e($st['TITULAIRE_NOTE']??'')?>" maxlength="600"<?=$ro?' disabled':''?>></td><?php endif;?>
-<td><?=$e($labels[$st['STATUS']??'brouillon'])?></td></tr><?php endforeach;?>
+<td><?=$e($labels[$st['STATUS']??'brouillon'])?></td>
+<td><a href="bulletin.php?<?=$e(http_build_query(['eleve'=>$sid,'pdf'=>1]))?>" target="_blank" rel="noopener">PDF</a><?php if($isDirection): $acc=SchoolSafeBulletinAccess($sid,$school,$year,date('Y-m-d'),$get); ?><br><span class="sb-sub"><?=$acc['reason']==='fees'?'frais : reste '.$e(SchoolSafeFeeFormatCents((int)$acc['remaining'])):($acc['reason']==='unlocked'?'ouvert (exception)':($acc['open']?'ouvert':'non publié'))?></span><?php endif;?></td></tr><?php endforeach;?>
 </tbody></table></div>
 <datalist id="sb-mentions"><?php foreach($mentions as $m):?><option value="<?=$e($m)?>"><?php endforeach;?></datalist>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><?php if($isTitulaire||$isDirection):?><button class="sb-btn light" name="action" value="enregistrer" type="submit">Enregistrer</button><button class="sb-btn" name="action" value="proposer" type="submit">Proposer à la direction</button><?php endif;?>
 <?php if($isDirection):?><button class="sb-btn" name="action" value="valider" type="submit">Valider (verrouiller)</button><button class="sb-btn light" name="action" value="rouvrir" type="submit">Rouvrir</button><?php endif;?></div></form></section>
+<?php if($isDirection): $feesOn=SchoolSafeBulletinFeesRequired($school,$get); ?><section class="sb-box"><h2>Accès des parents au bulletin</h2>
+<form method="post" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="frais">
+<label><input type="radio" name="frais" value="Y"<?=$feesOn?' checked':''?>> S’ouvre quand les frais dus sont payés (automatique)</label><label><input type="radio" name="frais" value="N"<?=!$feesOn?' checked':''?>> S’ouvre dès la validation</label>
+<button class="sb-btn light" type="submit">Enregistrer</button></form>
+<form method="post" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="debloquer">
+<label>Ouvrir malgré les frais<select name="eleve"><?php foreach($students as $sid=>$name):?><option value="<?=$sid?>"><?=$e($name)?></option><?php endforeach;?></select></label>
+<label>Raison<input type="text" name="raison" maxlength="300" required placeholder="ex. famille indigente, arrangement de paiement"></label><button class="sb-btn light" type="submit">Ouvrir ce bulletin</button></form>
+<p class="sb-sub">Les notes de chaque devoir restent toujours visibles par le parent ; seul le bulletin dépend des frais. Les alertes de sécurité ne dépendent jamais des frais.</p></section><?php endif;?>
 <?php if($detail): $r=$calc['students'][$detail]; ?>
 <section class="sb-box" id="detail"><h2>Détail — <?=$e($r['name'])?></h2>
 <div class="sb-wrap"><table class="sb-table"><thead><tr><th>Branche</th><?php foreach($calc['slots'] as $k=>$s): if($term!=='annee'&&$s['term']!==$term) continue; ?><th><?=$e($s['label'])?></th><?php endforeach;?></tr></thead><tbody>
