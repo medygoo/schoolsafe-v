@@ -4,7 +4,7 @@
 if ( ($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET' ) { http_response_code(405); exit; }
 $id = filter_input(INPUT_GET, 'assignment_id', FILTER_VALIDATE_INT);
 if (!$id || $id<1) { http_response_code(400); exit('Devoir invalide.'); }
-if (array_diff(array_keys($_GET), ['assignment_id','download','layout','lines','box','style','demande','jaspe','student'])) { http_response_code(400); exit('Requête invalide.'); }
+if (array_diff(array_keys($_GET), ['assignment_id','download','layout','lines','box','style','demande','jaspe','student','img','bulle'])) { http_response_code(400); exit('Requête invalide.'); }
 header('Cache-Control: no-store'); header('X-Content-Type-Options: nosniff');
 chdir(__DIR__);
 $_REQUEST=['modname'=>'misc/Portal.php','modfunc'=>''];
@@ -63,6 +63,9 @@ $layout=isset($_GET['layout'])&&is_string($_GET['layout'])&&isset($layouts[$_GET
 $lines=isset($_GET['lines'])&&ctype_digit((string)$_GET['lines'])?min(30,(int)$_GET['lines']):($layout==='devoir'?12:0);
 $box=isset($_GET['box'])?$_GET['box']==='1':true;
 $style=isset($_GET['style'])&&is_string($_GET['style'])?SchoolSafeLetterheadStyleEncode(SchoolSafeLetterheadStyleDecode($_GET['style'])):(string)$identity['style'];
+// Image de JASPE (04/11) : ajoutee ou retiree librement, avec un message libre dans sa bulle.
+if(isset($_GET['img'])&&is_string($_GET['img'])&&in_array($_GET['img'],['aucune','salut','debout'],true)){$styleParts=SchoolSafeLetterheadStyleDecode($style);$styleParts['jaspe']=$_GET['img'];$style=SchoolSafeLetterheadStyleEncode($styleParts);}
+$bubble=isset($_GET['bulle'])&&is_string($_GET['bulle'])?mb_substr(trim($_GET['bulle']),0,90):'';
 // JASPE (04/11) : la demande devient des reglages permis (jamais de retrait d'information), puis retour a l'apercu.
 if(isset($_GET['demande'])&&is_string($_GET['demande'])&&trim($_GET['demande'])!==''&&($_GET['download']??'')!=='1'){
  $now=time();$hits=array_values(array_filter($_SESSION['jaspe_ai_hits']??[],static function($h)use($now){return is_int($h)&&$now-$h<60;}));
@@ -71,7 +74,7 @@ if(isset($_GET['demande'])&&is_string($_GET['demande'])&&trim($_GET['demande'])!
  require_once 'ProgramFunctions/SchoolSafeJaspePrompt.fnc.php';
  $demande=SchoolSafeJaspeMask(mb_substr($_GET['demande'],0,300),SchoolSafeJaspeStudentNames($school,$year,static function($sql){return DBGet($sql);}));
  $r=SchoolSafeLetterheadAsk($demande,$layout,SchoolSafeLetterheadStyleDecode($style),$ask);
- header('Location: schoolsafe-homework.php?'.http_build_query(['assignment_id'=>$id,'layout'=>$r['layout'],'lines'=>$lines,'box'=>$box?'1':'0','style'=>SchoolSafeLetterheadStyleEncode($r['style']),'jaspe'=>$r['by']?:'aucun']));
+ header('Location: schoolsafe-homework.php?'.http_build_query(['assignment_id'=>$id,'layout'=>$r['layout'],'lines'=>$lines,'box'=>$box?'1':'0','style'=>SchoolSafeLetterheadStyleEncode($r['style']),'jaspe'=>$r['by']?:'aucun']+($child>0?['student'=>$child]:[])+($bubble!==''?['bulle'=>$bubble]:[])));
  exit;
 }
 $extra=DBGet("SELECT t.TITLE AS TYPE_TITLE,st.FIRST_NAME,st.LAST_NAME FROM gradebook_assignments ga LEFT JOIN gradebook_assignment_types t ON t.ASSIGNMENT_TYPE_ID=ga.ASSIGNMENT_TYPE_ID LEFT JOIN staff st ON st.STAFF_ID=ga.STAFF_ID WHERE ga.ASSIGNMENT_ID=".(int)$id);
@@ -92,9 +95,9 @@ $opts=[
   ['Donné le',SchoolSafeLetterheadDate($assignment['ASSIGNED_DATE']??'')],['À rendre le',SchoolSafeLetterheadDate($assignment['DUE_DATE']??'')]],
  'body'=>SchoolSafeLetterheadContent((string)($assignment['DESCRIPTION']??''),$local),
  'student_box'=>$box,'points'=>$points!==''&&$points!=='0'?$points:'','answer_lines'=>$lines,'style'=>$style,
- 'student_name'=>$pupilName,'student_class'=>$pupilClass,
+ 'student_name'=>$pupilName,'student_class'=>$pupilClass,'jaspe_text'=>$bubble,
 ];
-$query=static function(array $more)use($id,$layout,$lines,$box,$style,$child){return 'schoolsafe-homework.php?'.http_build_query(['assignment_id'=>$id,'layout'=>$layout,'lines'=>$lines,'box'=>$box?'1':'0','style'=>$style]+($child>0?['student'=>$child]:[])+$more);};
+$query=static function(array $more)use($id,$layout,$lines,$box,$style,$child,$bubble){return 'schoolsafe-homework.php?'.http_build_query(['assignment_id'=>$id,'layout'=>$layout,'lines'=>$lines,'box'=>$box?'1':'0','style'=>$style]+($child>0?['student'=>$child]:[])+($bubble!==''?['bulle'=>$bubble]:[])+$more);};
 if(($_GET['download']??'')!=='1'){
  $e='SchoolSafeLetterheadEscape';
  $choice='';foreach($layouts as $key=>$label)$choice.='<option value="'.$e($key).'"'.($key===$layout?' selected':'').'>'.$e($label[0]).'</option>';
@@ -102,6 +105,8 @@ if(($_GET['download']??'')!=='1'){
   .'<label>Disposition <select name="layout">'.$choice.'</select></label>'
   .'<label>Lignes de réponse <input type="number" name="lines" min="0" max="30" value="'.(int)$lines.'" style="width:64px"></label>'
   .'<label><input type="hidden" name="box" value="0"><input type="checkbox" name="box" value="1"'.($box?' checked':'').'> Cadre nom, classe, note</label>'
+  .(static function()use($e,$style,$bubble){$cur=SchoolSafeLetterheadStyleDecode($style)['jaspe']??'aucune';$o='';foreach(['aucune'=>'Sans JASPE','salut'=>'JASPE qui salue (en haut)','debout'=>'JASPE debout (en bas)'] as $k=>$v)$o.='<option value="'.$k.'"'.($k===$cur?' selected':'').'>'.$v.'</option>';
+   return '<label>Image de JASPE <select name="img">'.$o.'</select></label><label>Message de JASPE <input type="text" name="bulle" maxlength="90" value="'.$e($bubble).'" placeholder="ex. Courage, tu vas y arriver !"></label>';})()
   .'<input type="hidden" name="style" value="'.$e($style).'"><button type="submit">Voir</button><a class="ss-pdf" href="'.$e($query(['download'=>'1'])).'">Télécharger le PDF</a>'
   .'<label style="flex:1 1 100%">Demander à JASPE de changer la disposition <input type="text" name="demande" maxlength="300" style="width:100%" placeholder="ex. logo à droite, titre centré, texte plus grand, en bleu"></label>'
   .'<span style="flex:1 1 100%;color:#405064">Disposition actuelle : '.$e(SchoolSafeLetterheadStyleText(SchoolSafeLetterheadStyleDecode($style)))

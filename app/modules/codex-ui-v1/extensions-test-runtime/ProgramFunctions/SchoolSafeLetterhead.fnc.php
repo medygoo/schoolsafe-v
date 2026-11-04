@@ -289,7 +289,9 @@ function SchoolSafeLetterheadPage(array $identity, string $layout, array $opts):
         . '<table class="ss-frame"><tfoot><tr><td><div class="ss-foot-space"></div></td></tr></tfoot><tbody><tr><td>'
         . SchoolSafeLetterheadHeader($identity, $layout)
         . '<h1 class="ss-title">' . $e($opts['title'] ?? '') . '</h1>' . ($meta !== '' ? '<div class="ss-meta">' . $meta . '</div>' : '')
-        . $box . '<section class="ss-body">' . ($opts['body'] ?? '') . '</section>' . $answer
+        . $box . (($custom['jaspe'] ?? '') === 'salut' ? SchoolSafeLetterheadJaspeFigure('salut', (string) ($opts['jaspe_text'] ?? '')) : '')
+        . '<section class="ss-body">' . ($opts['body'] ?? '') . '</section>' . $answer
+        . (($custom['jaspe'] ?? '') === 'debout' ? SchoolSafeLetterheadJaspeFigure('debout', (string) ($opts['jaspe_text'] ?? '')) : '')
         . '</td></tr></tbody></table>' . SchoolSafeLetterheadFooter($identity) . '</article></body></html>';
 }
 
@@ -308,7 +310,21 @@ function SchoolSafeLetterheadStyleSpec(): array
         'interligne' => ['serre' => 'lignes serrées', 'normal' => 'interligne normal', 'aere' => 'lignes aérées'],
         'couleur' => ['ecole' => 'couleur de l’école', 'vert' => 'vert', 'bleu' => 'bleu', 'rouge' => 'rouge', 'violet' => 'violet', 'orange' => 'orange', 'noir' => 'noir et gris'],
         'pied' => ['centre' => 'pied de page centré', 'gauche' => 'pied de page à gauche'],
+        'jaspe' => ['aucune' => 'sans image de JASPE', 'salut' => 'JASPE qui salue, en haut', 'debout' => 'JASPE debout, en bas'],
     ];
+}
+
+/** Image de JASPE pour les documents (copie legere de ses poses) avec une bulle de message libre. */
+function SchoolSafeLetterheadJaspeFigure(string $mode, string $text): string
+{
+    $files = ['salut' => 'jaspe-salut.png', 'debout' => 'jaspe-debout.png'];
+    if (!isset($files[$mode])) return '';
+    $file = __DIR__ . '/../assets/documents/' . $files[$mode];
+    if (!is_file($file) || filesize($file) > 300000) return '';
+    $text = trim(preg_replace('/\s+/u', ' ', $text) ?? '');
+    if ($text === '') $text = $mode === 'salut' ? 'Bonjour ! Lis bien chaque consigne.' : 'Bon travail, tu vas y arriver !';
+    return '<div class="ss-jaspe ss-jaspe-' . $mode . '"><div class="ss-bubble">' . SchoolSafeLetterheadEscape(mb_substr($text, 0, 90)) . '</div>'
+        . '<img alt="JASPE" src="data:image/png;base64,' . base64_encode((string) file_get_contents($file)) . '"></div>';
 }
 
 function SchoolSafeLetterheadPalette(): array
@@ -369,6 +385,9 @@ function SchoolSafeLetterheadCustomCss(array $c, string $accent): string
     $lineHeight = ['serre' => '1.3', 'normal' => '1.55', 'aere' => '1.85'];
     if (isset($c['interligne'], $lineHeight[$c['interligne']])) $css .= 'body{line-height:' . $lineHeight[$c['interligne']] . '}';
     if (($c['pied'] ?? '') === 'gauche') $css .= '.ss-foot{text-align:left}.ss-foot .ss-brand{justify-content:flex-start}';
+    if (in_array($c['jaspe'] ?? '', ['salut', 'debout'], true)) $css .= '.ss-jaspe{display:flex;align-items:flex-end;gap:2mm;page-break-inside:avoid;break-inside:avoid}'
+        . '.ss-jaspe img{height:36mm;width:auto}.ss-jaspe-salut{float:right;margin:0 0 3mm 4mm}.ss-jaspe-debout{justify-content:flex-end;margin-top:5mm;clear:both}'
+        . '.ss-bubble{background:#fff;border:1.5px solid ' . $accent . ';border-radius:4mm;padding:2mm 3mm;font-size:9.5pt;max-width:52mm;color:#142234;font-weight:600;margin-bottom:14mm}';
     return $css;
 }
 
@@ -424,6 +443,11 @@ function SchoolSafeLetterheadGuess(string $request): array
     elseif (preg_match('/(serre|compact)/', $t)) $out['interligne'] = 'serre';
     foreach (['bleu', 'rouge', 'violet', 'orange', 'vert', 'noir'] as $color) if (preg_match('/\b' . $color . '/', $t)) { $out['couleur'] = $color; break; }
     if (preg_match('/pied[^.,;]{0,25}gauche/', $t)) $out['pied'] = 'gauche';
+    if (preg_match('/jaspe/', $t)) {
+        if (preg_match('/(enleve|retire|supprime|sans|cache|plus de) [^.,;]{0,15}jaspe|jaspe[^.,;]{0,15}(enleve|retire|supprime)/', $t)) $out['jaspe'] = 'aucune';
+        elseif (preg_match('/jaspe[^.,;]{0,25}(bas|fin|debout)|(bas|fin)[^.,;]{0,25}jaspe/', $t)) $out['jaspe'] = 'debout';
+        else $out['jaspe'] = 'salut';
+    }
     if (preg_match('/officiel|rdc|ministere/', $t)) $out['disposition'] = 'officielle';
     elseif (preg_match('/moderne/', $t)) $out['disposition'] = 'moderne';
     elseif (preg_match('/(compacte|economi)/', $t)) $out['disposition'] = 'compacte';
