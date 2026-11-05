@@ -404,3 +404,21 @@ Décisions du propriétaire, à la suite de la décision « FC et USD » du mêm
   une recharge payée en USD est convertie en FC au taux du jour, et la conversion est notée sur l'opération.
 - **Rattrapage : monnaie choisie pour chaque dossier** (USD ou FC) au moment de la tarification ; le frais est
   créé dans cette monnaie ; le paiement accepte les deux monnaies (taux du jour).
+
+## 5 novembre 2026 — Communication : application et WhatsApp, deux canaux complets
+
+Décisions du propriétaire (décisions C6 et C7 de `docs/qualification/ANALYSE_COMMUNICATION_20261105.md`) :
+- **Deux canaux, toujours tous les deux** : chaque message de l'école (notes, devoirs, absences, arrivées et
+  départs, frais, convocations, annonces) part **dans l'application** (fil + notification sur le téléphone, que
+  l'application soit ouverte ou fermée) **et sur WhatsApp**, de façon indépendante. WhatsApp sert aux parents qui
+  consultent peu l'application ; recevoir l'information deux fois est voulu.
+- **Contenu complet sur WhatsApp** : le même message que dans l'application (le fournisseur WhatsApp voit le
+  contenu ; choix assumé du propriétaire).
+- **E-mail** seulement si le parent a une adresse (plus d'envois voués à l'échec).
+- **Activation à l'école** : les agents de l'école installent l'application sur le téléphone du parent et activent
+  WhatsApp, avec une page guidée « Activer une famille » : installer (code QR), connexion par le parent lui-même
+  (l'agent ne voit ni ne garde le mot de passe), notifications autorisées, WhatsApp activé avec message d'essai.
+- **Accord WhatsApp** donné par le parent devant l'agent, enregistré avec la date et le nom de l'agent ; le parent
+  peut l'arrêter à tout moment, notamment en répondant « STOP ».
+- **Suivi** : tableau de la direction (application installée, notifications actives, WhatsApp actif) par famille.
+- **Conservation** : texte des messages WhatsApp gardé 90 jours, puis seulement la date et l'état de l'envoi.
