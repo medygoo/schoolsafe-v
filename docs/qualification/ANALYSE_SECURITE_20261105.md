@@ -62,3 +62,18 @@ présences et journal.
 2. **Lot S2 cohérence et mise en page** : B2, B3, C4, D.
 3. **Lot S3 données**, après accord : C1 (codes de présence et formulaire d'incident en français).
 4. **Décisions** : C2 (prévenir les parents), C3 (mode hors connexion).
+
+## Réalisation — lot S1 (5 novembre 2026)
+
+- Réalisés : S1 à S6, S8 à S10. Commit `3df4e44` ; les deux fichiers Entry_Exit (exclus de git) sont conservés
+  dans `ops/releases/securite-s1-20261105`.
+- **En production** (confirmation du propriétaire) : image `schoolsafe-rosario:securite-s1-20261105`, service sain,
+  0 erreur PHP. À l'écran : Pointage manuel fonctionnel (bouton dans le formulaire ; personnel, date, heure, motif),
+  et 7 autres pages ouvertes sans erreur.
+- **Reportés** :
+  - S7 (Signaler un incident qui enregistre malgré une valeur invalide) ;
+  - S11 (journal des actions : un ajout, à décider) ;
+  - B1 (message « Entrée non autorisée » du scanner, introuvable dans les fichiers attendus).
+- Non rejoué : un vrai pointage, un ajout d'absences, une suppression.
+- Reste : lot S2 (cohérence, mise en page), lot S3 (codes de présence et formulaire d'incident en français),
+  décisions C2 (prévenir les parents) et C3 (mode hors connexion).
