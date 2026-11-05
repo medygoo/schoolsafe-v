@@ -92,3 +92,18 @@ Non vérifié : ce que le fournisseur WhatsApp garde de son côté.
 - Non rejoué : vrai vote, vrai signalement, vrai envoi (rien n'est enregistré par l'assistant).
 - Reste : décisions C6 (contenu WhatsApp, durée de conservation) et C7 (accord du parent) ; lot K2 (dont B1,
   validation des signalements par l'école) ; lot K3.
+
+## Décisions C6 et C7 (5 novembre 2026) et nouveau découpage du lot K2
+
+Décisions du propriétaire (`docs/DECISIONS.md`) : deux canaux complets et indépendants (application et WhatsApp),
+contenu complet sur WhatsApp, e-mail seulement avec une adresse, activation à l'école par les agents, accord daté
+avec « STOP », textes WhatsApp gardés 90 jours.
+
+1. **K2a — chaque message dans les deux canaux** : tous les types de messages (notes, devoirs, absences, arrivées,
+   départs, frais, convocations, annonces) visibles dans « Messages de l'école » (B2) et envoyés sur WhatsApp de
+   façon indépendante (B3) ; plus d'e-mail sans adresse (N2) ; annonces avec « Prévenir les parents » (B4) ;
+   effacement des textes WhatsApp après 90 jours.
+2. **K2b — activer une famille** : page guidée pour les agents (code QR, connexion par le parent, notifications,
+   WhatsApp avec message d'essai et accord daté), retrait par « STOP », tableau de suivi de la direction.
+3. **K2c — retours des parents** : page « Signalements des parents » à valider par l'école (B1), accusé de lecture
+   des convocations (N1), boîte du parent par pages et filtres complets (N3, B6).
