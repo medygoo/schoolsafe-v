@@ -77,3 +77,18 @@ propriétaire.**
 4. **Lot K3 textes et mise en page** : D1 à D3.
 
 Non vérifié : ce que le fournisseur WhatsApp garde de son côté.
+
+## Réalisation — lot K1 sécurité (5 novembre 2026)
+
+- **En production** (accord du propriétaire) : image `schoolsafe-rosario:communication-k1-20261105`, commit
+  `ac3063a` (6 fichiers). Service sain, 0 erreur PHP.
+- Réalisés : C1, C2 (« Notifier les parents » désactivée, fichier gardé), C3, C4 (sondages : vote seulement si le
+  sondage est visible, choix existants une seule fois, questions limitées à l'école), C5 (signalement du parent :
+  jamais de remplacement du motif de l'école, retard sans retrait de l'alerte, 10 jours au plus, mention « à
+  confirmer par l'école »), C8 (courriers : droit de modifier, confirmation, classe non cochée par défaut), B5.
+- Vérifié à l'écran : « Notifier les parents » affiche l'explication ; l'ancienne messagerie affiche « Cette page
+  n'existe plus » (au lieu d'une erreur serveur) ; annonces, sondages, tableau de bord, courriers sans erreur.
+  Tri des votes essayé dans l'image (doublons et choix inexistants écartés).
+- Non rejoué : vrai vote, vrai signalement, vrai envoi (rien n'est enregistré par l'assistant).
+- Reste : décisions C6 (contenu WhatsApp, durée de conservation) et C7 (accord du parent) ; lot K2 (dont B1,
+  validation des signalements par l'école) ; lot K3.
