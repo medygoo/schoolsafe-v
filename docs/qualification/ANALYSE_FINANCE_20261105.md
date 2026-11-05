@@ -154,3 +154,21 @@ sinon des FC et des USD seraient additionnés.
 
 **Question ouverte** : les 3 frais et le paiement existants (données d'essai « TEST essai barème ») sont-ils en USD
 ou en FC ?
+
+## Réalisation — lots F4a et F4b, deux monnaies (5 novembre 2026)
+
+- **En production** (accord du propriétaire) :
+  - script `ops/releases/finance-f4a-20261105/fix.sql` appliqué en transaction : monnaie des frais et des paiements
+    (USD par défaut), montant reçu et taux, table `schoolsafe_exchange_rates`, format français (`75 000,00 USD`),
+    reçu calculé par monnaie ; retour arrière : `rollback.sql` (monnaies gardées dans des tables de sauvegarde) ;
+  - image `finance-f4a-20261105` (commit `e6d4afa`) : page « Taux du jour », saisie de la monnaie sur les frais
+    et paiements (simples et groupés), conversion au taux du jour, refus clair sans taux, reçu à deux monnaies ;
+  - image `finance-f4b-20261105` (commit `ff87168`) : tous les totaux par monnaie (tableaux de bord, contrôle des
+    frais au scan, bulletin, caisse du jour, soldes, export, trésorerie). Service sain, 0 erreur PHP.
+- Vérifié : essais à blanc du script et du retour arrière ; tests fee-scan, scan-entry, scan-pickup verts ; copie
+  d'essai de la base avec frais et paiement en FC (comptes, couleur au scan et reste du bulletin justes par monnaie,
+  copie supprimée) ; 10 pages de Finance ouvertes sans erreur, montants au format `75 000,00 USD`.
+- Défaut vu à l'écran : sur écran étroit, les listes de monnaie étaient coupées dans la case du montant.
+  Correctif `finance-f4b2-20261105` (commit après `ff87168`) préparé : une colonne par monnaie.
+- Limites connues : la règle rouge et le blocage au scan restent en USD (une dette en FC s'affiche sans bloquer) ;
+  tri des soldes alphabétique ; recherche par solde en USD ; rattrapage, paie, trésorerie et cantine en USD (lot F4c).
