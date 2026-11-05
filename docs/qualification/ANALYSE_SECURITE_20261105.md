@@ -86,4 +86,7 @@ présences et journal.
     Parents prévenus par la direction, Commentaires, avec leurs choix en français.
 - L'effet des codes est inchangé, et aucun incident n'existait. Sauvegardes `schoolsafe_bak_s3_*` ; retour
   arrière : `ops/releases/securite-s3-20261105/rollback.sql` (commit `ba0c911`).
+- Contrôle à l'écran : un libellé restait en anglais, « Parents Contacted By Teacher » (B majuscule, une autre
+  ligne de `discipline_fields`). Traduit aussi, dans une transaction ; plus aucun titre anglais dans la table.
+  Script complété (commit `45dd94b`).
 - Reste pour Sécurité : lot S2 (cohérence, mise en page), points reportés S7, S11, B1, et décisions C2, C3.
