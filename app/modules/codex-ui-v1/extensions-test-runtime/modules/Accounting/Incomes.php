@@ -2,6 +2,8 @@
 
 require_once 'ProgramFunctions/FileUpload.fnc.php';
 require_once 'modules/Accounting/functions.inc.php';
+// Lot F1 (05/11) : colonnes autorisées, montant positif, pas de doublon.
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
 
 $_REQUEST['print_statements'] = issetVal( $_REQUEST['print_statements'], '' );
 
@@ -38,6 +40,24 @@ if ( $_REQUEST['modfunc'] === 'save'
 
 	foreach ( (array) $_REQUEST['values'] as $id => $columns )
 	{
+		// F3 / F4 (lot F1, 05/11) : seules les colonnes du formulaire ; montant strictement positif.
+		$columns = SchoolSafeMoneyColumns( $columns, [ 'TITLE', 'CATEGORY_ID', 'AMOUNT', 'ASSIGNED_DATE', 'COMMENTS' ] );
+
+		if ( isset( $columns['AMOUNT'] ) && trim( (string) $columns['AMOUNT'] ) !== '' )
+		{
+			if ( $problem = SchoolSafeMoneyAmountProblem( $columns['AMOUNT'] ) )
+			{
+				$error[] = $problem;
+				continue;
+			}
+
+			$columns['AMOUNT'] = SchoolSafeMoneyAmount( $columns['AMOUNT'] );
+		}
+		elseif ( $id !== 'new' )
+		{
+			unset( $columns['AMOUNT'] );
+		}
+
 		if ( isset( $columns['CATEGORY_ID'] )
 			&& $columns['CATEGORY_ID'] === '0' )
 		{
@@ -69,6 +89,19 @@ if ( $_REQUEST['modfunc'] === 'save'
 			&& ! empty( $columns['ASSIGNED_DATE'] )
 			&& $columns['TITLE'] )
 		{
+			// F11 : double clic ou formulaire renvoyé.
+			if ( SchoolSafeMoneyRecentDuplicate( 'accounting_incomes', [
+				'SCHOOL_ID' => (int) UserSchool(),
+				'SYEAR' => (int) UserSyear(),
+				'TITLE' => $columns['TITLE'],
+				'AMOUNT' => $columns['AMOUNT'],
+				'ASSIGNED_DATE' => $columns['ASSIGNED_DATE'],
+			] ) )
+			{
+				$error[] = 'Cette recette vient déjà d’être enregistré(e). Il/elle n’a pas été ajouté(e) une seconde fois.';
+				continue;
+			}
+
 			$insert_columns = [ 'SYEAR' => UserSyear(), 'SCHOOL_ID' => UserSchool() ];
 
 			$columns['FILE_ATTACHED'] = _saveIncomesFile( $id );

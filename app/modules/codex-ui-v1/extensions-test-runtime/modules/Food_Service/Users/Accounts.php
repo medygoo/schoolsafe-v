@@ -99,12 +99,17 @@ if ( $_REQUEST['modfunc'] === 'update' )
 	}
 }
 
-if ( $_REQUEST['modfunc'] === 'delete' )
+// Lot F1 (F8, 05/11) : suppression réservée à qui a le droit de modifier, et seulement d'un compte à solde nul
+// (comme le bouton affiché) ; avant, une adresse directe suffisait.
+if ( $_REQUEST['modfunc'] === 'delete'
+	&& AllowEdit()
+	&& UserStaffID() )
 {
 	if ( DeletePrompt( _( 'User Account' ) ) )
 	{
 		DBQuery( "DELETE FROM food_service_staff_accounts
-			WHERE STAFF_ID='" . UserStaffID() . "'" );
+			WHERE STAFF_ID='" . UserStaffID() . "'
+			AND COALESCE(BALANCE,0)=0" );
 
 		// Unset modfunc & redirect URL.
 		RedirectURL( 'modfunc' );

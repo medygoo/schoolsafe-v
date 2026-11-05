@@ -40,6 +40,9 @@ else
 	{
 		$SESSION_student_id_save = UserStudentID();
 
+		// Lot F1 (F13, 05/11) : l'école en cours est rétablie après l'impression « toutes écoles ».
+		$SESSION_school_save = UserSchool();
+
 		$handle = PDFStart();
 
 		$user_schools = trim( (string) User( 'SCHOOLS' ), ',' ) ?
@@ -113,6 +116,8 @@ else
 		}
 
 		$_SESSION['student_id'] = $SESSION_student_id_save;
+
+		$_SESSION['UserSchool'] = $SESSION_school_save;
 
 		PDFStop( $handle );
 	}

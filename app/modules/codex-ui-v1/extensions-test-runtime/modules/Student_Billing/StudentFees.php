@@ -2,6 +2,8 @@
 
 require_once 'ProgramFunctions/FileUpload.fnc.php';
 require_once 'modules/Student_Billing/functions.inc.php';
+// Lot F1 (05/11) : colonnes autorisées, montants, doublons, école en cours.
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
 
 if ( empty( $_REQUEST['print_statements'] ) )
 {
@@ -30,8 +32,14 @@ if ( $_REQUEST['modfunc'] === 'save'
 
 	foreach ( (array) $_REQUEST['values'] as $id => $columns )
 	{
+		// F3 : seules les colonnes du formulaire sont écrites.
+		$columns = SchoolSafeMoneyColumns( $columns, [ 'TITLE', 'AMOUNT', 'DUE_DATE', 'COMMENTS' ] );
+
 		if ( $id !== 'new' )
 		{
+			// Le montant d'un frais existant ne se modifie pas ici (exemption ou nouveau frais).
+			unset( $columns['AMOUNT'] );
+
 			$columns['FILE_ATTACHED'] = _saveFeesFile( $id );
 
 			if ( ! $columns['FILE_ATTACHED'] )
@@ -57,11 +65,35 @@ if ( $_REQUEST['modfunc'] === 'save'
 			);
 		}
 
-		// New: check for Title & Amount.
-		elseif ( $columns['TITLE']
-			&& isset( $columns['AMOUNT'] )
-			&& is_numeric( $columns['AMOUNT'] ) )
+		// F4 : un nouveau frais exige un titre et un montant positif.
+		elseif ( trim( (string) ( $columns['AMOUNT'] ?? '' ) ) === ''
+			&& trim( (string) ( $columns['TITLE'] ?? '' ) ) === '' )
 		{
+			// Ligne vide : rien à ajouter.
+		}
+		elseif ( trim( (string) ( $columns['TITLE'] ?? '' ) ) === '' )
+		{
+			$error[] = 'Frais refusé : indiquez son titre (par exemple « Scolarité – tranche 1 »).';
+		}
+		elseif ( $problem = SchoolSafeMoneyAmountProblem( $columns['AMOUNT'] ?? '' ) )
+		{
+			$error[] = $problem;
+		}
+		elseif ( SchoolSafeMoneyRecentDuplicate( 'billing_fees', [
+			'STUDENT_ID' => (int) UserStudentID(),
+			'SCHOOL_ID' => (int) UserSchool(),
+			'SYEAR' => (int) UserSyear(),
+			'TITLE' => $columns['TITLE'],
+			'AMOUNT' => SchoolSafeMoneyAmount( $columns['AMOUNT'] ),
+		] ) )
+		{
+			// F11 : double clic ou formulaire renvoyé.
+			$error[] = 'Ce frais vient déjà d’être ajouté. Il n’a pas été ajouté une seconde fois.';
+		}
+		else
+		{
+			$columns['AMOUNT'] = SchoolSafeMoneyAmount( $columns['AMOUNT'] );
+
 			$insert_columns = [
 				'STUDENT_ID' => UserStudentID(),
 				'SCHOOL_ID' => UserSchool(),
@@ -94,6 +126,7 @@ if ( $_REQUEST['modfunc'] === 'remove'
 			FROM billing_fees
 			WHERE ID='" . (int) $_REQUEST['id'] . "'
 			AND STUDENT_ID='" . UserStudentID() . "'
+			AND SCHOOL_ID='" . UserSchool() . "'
 			AND SYEAR='" . UserSyear() . "'" );
 
 		// Delete File Attached.
@@ -103,11 +136,13 @@ if ( $_REQUEST['modfunc'] === 'remove'
 		$delete_sql = "DELETE FROM billing_fees
 			WHERE ID='" . (int) $_REQUEST['id'] . "'
 			AND STUDENT_ID='" . UserStudentID() . "'
+			AND SCHOOL_ID='" . UserSchool() . "'
 			AND SYEAR='" . UserSyear() . "';";
 
 		$delete_sql .= "DELETE FROM billing_fees
 			WHERE WAIVED_FEE_ID='" . (int) $_REQUEST['id'] . "'
 			AND STUDENT_ID='" . UserStudentID() . "'
+			AND SCHOOL_ID='" . UserSchool() . "'
 			AND SYEAR='" . UserSyear() . "';";
 
 		DBQuery( $delete_sql );
@@ -122,10 +157,24 @@ if ( $_REQUEST['modfunc'] === 'waive'
 {
 	if ( DeletePrompt( _( 'Fee' ), _( 'Waive' ) ) )
 	{
-		$fee_RET = DBGet( "SELECT TITLE,AMOUNT
-			FROM billing_fees
-			WHERE ID='" . (int) $_REQUEST['id'] . "'" );
+		// F2 : le frais doit être celui de cet élève, dans l'école et l'année en cours,
+		// ne pas être lui-même une exemption, et ne pas être déjà exempté.
+		$fee_RET = DBGet( "SELECT f.TITLE,f.AMOUNT
+			FROM billing_fees f
+			WHERE f.ID='" . (int) $_REQUEST['id'] . "'
+			AND f.STUDENT_ID='" . UserStudentID() . "'
+			AND f.SCHOOL_ID='" . UserSchool() . "'
+			AND f.SYEAR='" . UserSyear() . "'
+			AND f.WAIVED_FEE_ID IS NULL
+			AND f.AMOUNT>0
+			AND NOT EXISTS(SELECT 1 FROM billing_fees w WHERE w.WAIVED_FEE_ID=f.ID)" );
 
+		if ( empty( $fee_RET[1] ) )
+		{
+			$error[] = 'Exemption impossible : ce frais n’appartient pas à cet élève, ou il est déjà exempté.';
+			RedirectURL( [ 'modfunc', 'id' ] );
+		}
+		else
 		DBInsert(
 			'billing_fees',
 			[
@@ -169,7 +218,7 @@ if ( UserStudentID()
 		CREATED_BY,CREATED_AT
 		FROM billing_fees f
 		WHERE f.STUDENT_ID='" . UserStudentID() . "'
-		AND f.SYEAR='" . UserSyear() . "'
+		AND f.SCHOOL_ID='" . UserSchool() . "' AND f.SYEAR='" . UserSyear() . "'
 		AND f.WAIVED_FEE_ID IS NOT NULL", $functions, [ 'WAIVED_FEE_ID' ] );
 
 	$fees_RET = DBGet( "SELECT '' AS REMOVE,f.ID,f.TITLE,f.ASSIGNED_DATE,
@@ -177,7 +226,7 @@ if ( UserStudentID()
 		CREATED_BY,CREATED_AT
 		FROM billing_fees f
 		WHERE f.STUDENT_ID='" . UserStudentID() . "'
-		AND f.SYEAR='" . UserSyear() . "'
+		AND f.SCHOOL_ID='" . UserSchool() . "' AND f.SYEAR='" . UserSyear() . "'
 		AND f.WAIVED_FEE_ID IS NULL
 		ORDER BY f.ASSIGNED_DATE", $functions );
 
@@ -292,7 +341,7 @@ if ( UserStudentID()
 		$payments_total = DBGetOne( "SELECT SUM(p.AMOUNT) AS TOTAL
 			FROM billing_payments p
 			WHERE p.STUDENT_ID='" . UserStudentID() . "'
-			AND p.SYEAR='" . UserSyear() . "'" );
+			AND p.SCHOOL_ID='" . UserSchool() . "' AND p.SYEAR='" . UserSyear() . "'" );
 
 		$table = '<table class="align-right student-billing-totals"><tr><td>' . _( 'Total from Fees' ) . ': ' . '</td><td>' . Currency( $fees_total ) . '</td></tr>';
 

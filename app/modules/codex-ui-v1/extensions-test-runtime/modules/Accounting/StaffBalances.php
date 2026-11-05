@@ -16,12 +16,15 @@ SchoolSafeCard(
 // SQL remove SCHOOL_ID join: fix when "Search All Schools" is checked
 $extra['SELECT'] = ',COALESCE(f.TOTAL,0)-COALESCE(p.TOTAL,0) AS BALANCE';
 
+// F10 (lot F1, 05/11) : salaires et paiements de l'école en cours seulement.
 $extra['FROM'] = ' LEFT JOIN (SELECT STAFF_ID,SYEAR,SUM(AMOUNT) AS TOTAL
 	FROM accounting_salaries
+	WHERE SCHOOL_ID=' . (int) UserSchool() . '
 	GROUP BY STAFF_ID,SYEAR) f ON f.STAFF_ID=s.STAFF_ID
 	AND f.SYEAR=s.SYEAR
 LEFT JOIN (SELECT STAFF_ID,SYEAR,SUM(AMOUNT) AS TOTAL
 	FROM accounting_payments
+	WHERE SCHOOL_ID=' . (int) UserSchool() . '
 	GROUP BY STAFF_ID,SYEAR) p ON p.STAFF_ID=s.STAFF_ID
 	AND p.SYEAR=s.SYEAR';
 

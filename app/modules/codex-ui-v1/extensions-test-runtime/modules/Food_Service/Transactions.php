@@ -92,12 +92,8 @@ function is_money( $value )
 
 	if ( $value > 0 )
 	{
-		if ( ! mb_strpos( $value, '.' )
-			&& $value >= 100 )
-		{
-			// We deduce value was entered without decimal point, add it.
-			$value = $value / 100;
-		}
+		// Lot F1 (F5, 05/11) : le montant est pris tel qu'il est saisi. L'ancienne règle divisait par 100
+		// tout montant entier ≥ 100 (2 500 FC devenait 25,00), ce qui rendait la cantine inutilisable en francs.
 
 		// Fix SQL error:
 		// A field with precision 9, scale 2 must round to an absolute value less than 10^7.

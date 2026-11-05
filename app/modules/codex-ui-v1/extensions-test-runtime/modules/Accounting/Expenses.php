@@ -2,6 +2,8 @@
 
 require_once 'ProgramFunctions/FileUpload.fnc.php';
 require_once 'modules/Accounting/functions.inc.php';
+// Lot F1 (05/11) : colonnes autorisées, montant positif, pas de doublon.
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
 
 $_REQUEST['print_statements'] = issetVal( $_REQUEST['print_statements'], '' );
 
@@ -38,6 +40,24 @@ if ( $_REQUEST['modfunc'] === 'save'
 
 	foreach ( (array) $_REQUEST['values'] as $id => $columns )
 	{
+		// F3 / F4 (lot F1, 05/11) : seules les colonnes du formulaire ; montant strictement positif.
+		$columns = SchoolSafeMoneyColumns( $columns, [ 'TITLE', 'CATEGORY_ID', 'AMOUNT', 'PAYMENT_DATE', 'COMMENTS' ] );
+
+		if ( isset( $columns['AMOUNT'] ) && trim( (string) $columns['AMOUNT'] ) !== '' )
+		{
+			if ( $problem = SchoolSafeMoneyAmountProblem( $columns['AMOUNT'] ) )
+			{
+				$error[] = $problem;
+				continue;
+			}
+
+			$columns['AMOUNT'] = SchoolSafeMoneyAmount( $columns['AMOUNT'] );
+		}
+		elseif ( $id !== 'new' )
+		{
+			unset( $columns['AMOUNT'] );
+		}
+
 		if ( isset( $columns['CATEGORY_ID'] )
 			&& $columns['CATEGORY_ID'] === '0' )
 		{
@@ -52,6 +72,12 @@ if ( $_REQUEST['modfunc'] === 'save'
 			if ( ! $columns['FILE_ATTACHED'] )
 			{
 				unset( $columns['FILE_ATTACHED'] );
+			}
+
+			// F7 : la page Dépenses ne touche jamais un paiement du personnel.
+			if ( DBGetOne( "SELECT 1 FROM accounting_payments WHERE ID='" . (int) $id . "' AND STAFF_ID IS NOT NULL" ) )
+			{
+				continue;
 			}
 
 			DBUpdate(
@@ -69,6 +95,20 @@ if ( $_REQUEST['modfunc'] === 'save'
 			&& $columns['PAYMENT_DATE']
 			&& $columns['TITLE'] )
 		{
+			// F11 : double clic ou formulaire renvoyé.
+			if ( SchoolSafeMoneyRecentDuplicate( 'accounting_payments', [
+				'STAFF_ID' => null,
+				'SCHOOL_ID' => (int) UserSchool(),
+				'SYEAR' => (int) UserSyear(),
+				'TITLE' => $columns['TITLE'],
+				'AMOUNT' => $columns['AMOUNT'],
+				'PAYMENT_DATE' => $columns['PAYMENT_DATE'],
+			] ) )
+			{
+				$error[] = 'Cette dépense vient déjà d’être enregistré(e). Il/elle n’a pas été ajouté(e) une seconde fois.';
+				continue;
+			}
+
 			$insert_columns = [ 'SYEAR' => UserSyear(), 'SCHOOL_ID' => UserSchool() ];
 
 			$columns['FILE_ATTACHED'] = _saveExpensesFile( $id );
@@ -93,6 +133,7 @@ if ( $_REQUEST['modfunc'] === 'remove'
 		$file_attached = DBGetOne( "SELECT FILE_ATTACHED
 			FROM accounting_payments
 			WHERE ID='" . (int) $_REQUEST['id'] . "'
+			AND STAFF_ID IS NULL
 			AND SYEAR='" . UserSyear() . "'
 			AND SCHOOL_ID='" . UserSchool() . "'" );
 
@@ -102,6 +143,7 @@ if ( $_REQUEST['modfunc'] === 'remove'
 
 		DBQuery( "DELETE FROM accounting_payments
 			WHERE ID='" . (int) $_REQUEST['id'] . "'
+			AND STAFF_ID IS NULL
 			AND SYEAR='" . UserSyear() . "'
 			AND SCHOOL_ID='" . UserSchool() . "'" );
 

@@ -1,4 +1,6 @@
 <?php
+// Lot F1 (05/11) : montant positif, titre obligatoire, école en cours, pas de doublon.
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
 
 if ( $_REQUEST['modfunc'] === 'save' )
 {
@@ -7,29 +9,50 @@ if ( $_REQUEST['modfunc'] === 'save' )
 	{
 		//FJ fix SQL bug invalid amount
 
-		if ( is_numeric( $_REQUEST['amount'] ) )
+		if ( trim( (string) issetVal( $_REQUEST['title'], '' ) ) === '' )
 		{
+			$error[] = 'Indiquez le titre du frais (par exemple « Scolarité – tranche 1 »).';
+		}
+		elseif ( $problem = SchoolSafeMoneyAmountProblem( $_REQUEST['amount'] ) )
+		{
+			$error[] = $problem;
+		}
+		else
+		{
+			$_REQUEST['amount'] = SchoolSafeMoneyAmount( $_REQUEST['amount'] );
 			$due_date = RequestedDate( 'due', '' );
 
 			$student_ids = $_REQUEST['student'];
 
-			if ( User( 'SCHOOLS' ) )
-			{
-				// @since 12.9 Security fix #376 IDOR: Unauthorized Cross-School Data Assignment
-				$students_list = implode( ',', array_map( 'intval', $_REQUEST['student'] ) );
+			// F9 (lot F1, 05/11) : seuls les élèves inscrits dans l'école en cours, quel que soit le compte.
+			$students_list = implode( ',', array_map( 'intval', (array) $_REQUEST['student'] ) );
 
-				$students_RET = DBGet( "SELECT DISTINCT STUDENT_ID
-					FROM student_enrollment
-					WHERE SYEAR='" . UserSyear() . "'
-					AND SCHOOL_ID IN(" . mb_substr( str_replace( ',', "','", User( 'SCHOOLS' ) ), 2, -2 ) . ")
-					AND STUDENT_ID IN(" . $students_list . ")",
-					[], [ 'STUDENT_ID' ] );
+			$students_RET = $students_list === '' ? [] : DBGet( "SELECT DISTINCT STUDENT_ID
+				FROM student_enrollment
+				WHERE SYEAR='" . UserSyear() . "'
+				AND SCHOOL_ID='" . UserSchool() . "'
+				AND STUDENT_ID IN(" . $students_list . ")",
+				[], [ 'STUDENT_ID' ] );
 
-				$student_ids = empty( $students_RET ) ? [] : array_keys( $students_RET );
-			}
+			$student_ids = empty( $students_RET ) ? [] : array_keys( $students_RET );
+
+			$skipped = 0;
 
 			foreach ( (array) $student_ids as $student_id )
 			{
+				// F11 : le même frais vient d'être ajouté à cet élève (double clic).
+				if ( SchoolSafeMoneyRecentDuplicate( 'billing_fees', [
+					'STUDENT_ID' => (int) $student_id,
+					'SCHOOL_ID' => (int) UserSchool(),
+					'SYEAR' => (int) UserSyear(),
+					'TITLE' => $_REQUEST['title'],
+					'AMOUNT' => $_REQUEST['amount'],
+				] ) )
+				{
+					$skipped++;
+					continue;
+				}
+
 				$inserted = DBInsert(
 					'billing_fees',
 					[
@@ -51,10 +74,16 @@ if ( $_REQUEST['modfunc'] === 'save' )
 			{
 				$note[] = button( 'check' ) . '&nbsp;' . _( 'That fee has been added to the selected students.' );
 			}
-		}
-		else
-		{
-			$error[] = _( 'Please enter a valid Amount.' );
+
+			if ( $skipped )
+			{
+				$error[] = $skipped . ' élève(s) avai(en)t déjà reçu ce frais à l’instant : il n’a pas été ajouté une seconde fois.';
+			}
+
+			if ( empty( $student_ids ) )
+			{
+				$error[] = 'Aucun des élèves choisis n’est inscrit dans l’école en cours.';
+			}
 		}
 	}
 	else

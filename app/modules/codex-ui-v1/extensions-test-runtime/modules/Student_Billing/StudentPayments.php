@@ -2,6 +2,8 @@
 
 require_once 'ProgramFunctions/FileUpload.fnc.php';
 require_once 'modules/Student_Billing/functions.inc.php';
+// Lot F1 (05/11) : colonnes autorisées, montants, doublons, trop-perçu, école en cours.
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
 if (isset($_SESSION['schoolsafe_payment_draft']) && ($_SESSION['schoolsafe_payment_draft']['expires']??0)<time()) unset($_SESSION['schoolsafe_payment_draft']);
 if ($_REQUEST['modfunc']==='save' && isset($_POST['schoolsafe_payment_draft_id'])
  && (User('PROFILE')!=='admin'||!AllowEdit())) {
@@ -56,8 +58,27 @@ if ( $_REQUEST['modfunc'] === 'save'
 
 	foreach ( (array) $_REQUEST['values'] as $id => $columns )
 	{
+		// F3 : seules les colonnes du formulaire sont écrites (jamais école, élève, auteur, remboursement, fichier).
+		$columns = SchoolSafeMoneyColumns( $columns, [ 'AMOUNT', 'PAYMENT_DATE', 'COMMENTS', 'LUNCH_PAYMENT' ] );
+
 		if ( $id !== 'new' )
 		{
+			// F4 : un montant modifié doit rester un nombre positif.
+			if ( isset( $columns['AMOUNT'] ) )
+			{
+				$problem = SchoolSafeMoneyAmountProblem( $columns['AMOUNT'] );
+
+				if ( $problem )
+				{
+					$error[] = $problem;
+					unset( $columns['AMOUNT'] );
+				}
+				else
+				{
+					$columns['AMOUNT'] = SchoolSafeMoneyAmount( $columns['AMOUNT'] );
+				}
+			}
+
 			$columns['FILE_ATTACHED'] = _savePaymentsFile( $id );
 
 			if ( ! $columns['FILE_ATTACHED'] )
@@ -83,9 +104,45 @@ if ( $_REQUEST['modfunc'] === 'save'
 			);
 		}
 		elseif ( isset( $columns['AMOUNT'] )
-			&& is_numeric( $columns['AMOUNT'] )
-			&& $columns['PAYMENT_DATE'] )
+			&& trim( (string) $columns['AMOUNT'] ) !== ''
+			&& ( $problem = SchoolSafeMoneyAmountProblem( $columns['AMOUNT'] ) ) )
 		{
+			// F4 : montant négatif, nul ou illisible refusé (le remboursement reste un bouton à part).
+			$error[] = $problem;
+		}
+		elseif ( isset( $columns['AMOUNT'] )
+			&& trim( (string) $columns['AMOUNT'] ) !== ''
+			&& empty( $columns['PAYMENT_DATE'] ) )
+		{
+			$error[] = 'Indiquez la date du paiement.';
+		}
+		elseif ( isset( $columns['AMOUNT'] )
+			&& trim( (string) $columns['AMOUNT'] ) !== ''
+			&& SchoolSafeMoneyRecentDuplicate( 'billing_payments', [
+				'STUDENT_ID' => (int) UserStudentID(),
+				'SCHOOL_ID' => (int) UserSchool(),
+				'SYEAR' => (int) UserSyear(),
+				'AMOUNT' => SchoolSafeMoneyAmount( $columns['AMOUNT'] ),
+				'PAYMENT_DATE' => $columns['PAYMENT_DATE'],
+			] ) )
+		{
+			// F11 : double clic ou formulaire renvoyé.
+			$error[] = 'Ce paiement vient déjà d’être enregistré (même montant, même date). Il n’a pas été ajouté une seconde fois.';
+		}
+		elseif ( isset( $columns['AMOUNT'] )
+			&& trim( (string) $columns['AMOUNT'] ) !== ''
+			&& (float) SchoolSafeMoneyAmount( $columns['AMOUNT'] ) > max( 0, SchoolSafeMoneyStudentBalance( UserStudentID() ) )
+			&& empty( $_POST['ss_overpay_ok'] ) )
+		{
+			// F12 : trop-perçu seulement après confirmation.
+			$error[] = 'Le montant dépasse le reste dû (' . Currency( max( 0, SchoolSafeMoneyStudentBalance( UserStudentID() ) ) ) .
+				'). Pour enregistrer quand même le surplus comme crédit, cochez « Accepter un trop-perçu » puis enregistrez à nouveau.';
+		}
+		elseif ( isset( $columns['AMOUNT'] )
+			&& trim( (string) $columns['AMOUNT'] ) !== '' )
+		{
+			$columns['AMOUNT'] = SchoolSafeMoneyAmount( $columns['AMOUNT'] );
+
 			$insert_columns = [
 				'STUDENT_ID' => UserStudentID(),
 				'SCHOOL_ID' => UserSchool(),
@@ -119,6 +176,7 @@ if ( $_REQUEST['modfunc'] === 'remove'
 			FROM billing_payments
 			WHERE ID='" . (int) $_REQUEST['id'] . "'
 			AND STUDENT_ID='" . UserStudentID() . "'
+			AND SCHOOL_ID='" . UserSchool() . "'
 			AND SYEAR='" . UserSyear() . "'" );
 
 		// Delete File Attached.
@@ -129,6 +187,7 @@ if ( $_REQUEST['modfunc'] === 'remove'
 			WHERE (ID='" . (int) $_REQUEST['id'] . "'
 			OR REFUNDED_PAYMENT_ID='" . (int) $_REQUEST['id'] . "')
 			AND STUDENT_ID='" . UserStudentID() . "'
+			AND SCHOOL_ID='" . UserSchool() . "'
 			AND SYEAR='" . UserSyear() . "'" );
 
 		// Unset modfunc & ID & redirect URL.
@@ -142,9 +201,25 @@ if ( $_REQUEST['modfunc'] === 'refund'
 {
 	if ( DeletePrompt( _( 'Payment' ), _( 'Refund' ) ) )
 	{
-		$payment_RET = DBGet( "SELECT COMMENTS,AMOUNT
-			FROM billing_payments
-			WHERE ID='" . (int) $_REQUEST['id'] . "'" );
+		// F2 : le paiement doit être celui de cet élève, dans l'école et l'année en cours,
+		// ne pas être lui-même un remboursement, et ne pas être déjà remboursé.
+		$payment_RET = DBGet( "SELECT p.COMMENTS,p.AMOUNT
+			FROM billing_payments p
+			WHERE p.ID='" . (int) $_REQUEST['id'] . "'
+			AND p.STUDENT_ID='" . UserStudentID() . "'
+			AND p.SCHOOL_ID='" . UserSchool() . "'
+			AND p.SYEAR='" . UserSyear() . "'
+			AND p.REFUNDED_PAYMENT_ID IS NULL
+			AND p.AMOUNT>0
+			AND NOT EXISTS(SELECT 1 FROM billing_payments r WHERE r.REFUNDED_PAYMENT_ID=p.ID)" );
+
+		if ( empty( $payment_RET[1] ) )
+		{
+			$error[] = 'Remboursement impossible : ce paiement n’appartient pas à cet élève, ou il est déjà remboursé.';
+			RedirectURL( [ 'modfunc', 'id' ] );
+		}
+		else
+		{
 
 		$comments = $payment_RET[1]['COMMENTS'] ?
 			$payment_RET[1]['COMMENTS'] . ' &mdash; ' . _( 'Refund' ) :
@@ -167,6 +242,7 @@ if ( $_REQUEST['modfunc'] === 'refund'
 
 		// Unset modfunc & ID & redirect URL.
 		RedirectURL( [ 'modfunc', 'id' ] );
+		}
 	}
 }
 
@@ -192,6 +268,7 @@ if ( UserStudentID()
 		CREATED_BY,CREATED_AT
 		FROM billing_payments
 		WHERE STUDENT_ID='" . UserStudentID() . "'
+		AND SCHOOL_ID='" . UserSchool() . "'
 		AND SYEAR='" . UserSyear() . "'
 		AND (REFUNDED_PAYMENT_ID IS NOT NULL)", $functions, [ 'REFUNDED_PAYMENT_ID' ] );
 
@@ -200,6 +277,7 @@ if ( UserStudentID()
 		CREATED_BY,CREATED_AT
 		FROM billing_payments
 		WHERE STUDENT_ID='" . UserStudentID() . "'
+		AND SCHOOL_ID='" . UserSchool() . "'
 		AND SYEAR='" . UserSyear() . "'
 		AND REFUNDED_PAYMENT_ID IS NULL ORDER BY ID", $functions );
 
@@ -300,7 +378,8 @@ if ( UserStudentID()
 				_( 'Original View' ) . '</a>';
 			}
 
-			DrawHeader( $expanded_view_header, SubmitButton() );
+			// F12 : confirmation explicite d'un trop-perçu.
+			DrawHeader( $expanded_view_header, '<label class="nobr"><input type="checkbox" name="ss_overpay_ok" value="1"> Accepter un trop-perçu</label> ' . SubmitButton() );
 
 			$options['valign-middle'] = true;
 		}
@@ -327,6 +406,7 @@ if ( UserStudentID()
 	$fees_total = DBGetOne( "SELECT SUM(f.AMOUNT) AS TOTAL
 		FROM billing_fees f
 		WHERE f.STUDENT_ID='" . UserStudentID() . "'
+		AND f.SCHOOL_ID='" . UserSchool() . "'
 		AND f.SYEAR='" . UserSyear() . "'" );
 
 	$table = '<table class="align-right student-billing-totals"><tr>

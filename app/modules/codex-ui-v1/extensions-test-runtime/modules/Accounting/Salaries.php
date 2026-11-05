@@ -2,6 +2,8 @@
 
 require_once 'ProgramFunctions/FileUpload.fnc.php';
 require_once 'modules/Accounting/functions.inc.php';
+// Lot F1 (05/11) : colonnes autorisées, montant positif, pas de doublon.
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
 
 if ( User( 'PROFILE' ) === 'teacher' ) //limit to teacher himself
 {
@@ -35,6 +37,24 @@ if ( $_REQUEST['modfunc'] === 'save'
 
 	foreach ( (array) $_REQUEST['values'] as $id => $columns )
 	{
+		// F3 / F4 (lot F1, 05/11) : seules les colonnes du formulaire ; montant strictement positif.
+		$columns = SchoolSafeMoneyColumns( $columns, [ 'TITLE', 'AMOUNT', 'DUE_DATE', 'COMMENTS' ] );
+
+		if ( isset( $columns['AMOUNT'] ) && trim( (string) $columns['AMOUNT'] ) !== '' )
+		{
+			if ( $problem = SchoolSafeMoneyAmountProblem( $columns['AMOUNT'] ) )
+			{
+				$error[] = $problem;
+				continue;
+			}
+
+			$columns['AMOUNT'] = SchoolSafeMoneyAmount( $columns['AMOUNT'] );
+		}
+		elseif ( $id !== 'new' )
+		{
+			unset( $columns['AMOUNT'] );
+		}
+
 		if ( $id !== 'new' )
 		{
 			$columns['FILE_ATTACHED'] = _saveSalariesFile( $id );
@@ -61,6 +81,19 @@ if ( $_REQUEST['modfunc'] === 'save'
 			&& isset( $columns['AMOUNT'] )
 			&& is_numeric( $columns['AMOUNT'] ) )
 		{
+			// F11 : double clic ou formulaire renvoyé.
+			if ( SchoolSafeMoneyRecentDuplicate( 'accounting_salaries', [
+				'STAFF_ID' => (int) UserStaffID(),
+				'SCHOOL_ID' => (int) UserSchool(),
+				'SYEAR' => (int) UserSyear(),
+				'TITLE' => $columns['TITLE'],
+				'AMOUNT' => $columns['AMOUNT'],
+			] ) )
+			{
+				$error[] = 'Ce salaire vient déjà d’être enregistré(e). Il/elle n’a pas été ajouté(e) une seconde fois.';
+				continue;
+			}
+
 			$insert_columns = [
 				'STAFF_ID' => UserStaffID(),
 				'SYEAR' => UserSyear(),
