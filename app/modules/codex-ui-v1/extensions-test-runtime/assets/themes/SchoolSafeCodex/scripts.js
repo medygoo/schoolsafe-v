@@ -417,6 +417,60 @@
 				['School_Setup/CopySchool.php', 'Copier une école', 'Créer une école à partir des réglages d’une autre.']]]
 		]
 	};
+	// Controle et rapports (05/11, docs/qualification/FUSION_MENU_RAPPORTS_20261105.md).
+	// Hors menu (joignables par adresse) : circuits vides ou doubles par le parcours SchoolSafe.
+	var reportsOut = [
+		['Students/Letters.php', null, ''],
+		['Scheduling/PrintRequests.php', null, ''], ['Scheduling/RequestsReport.php', null, ''],
+		['Grades/StudentGrades.php', null, ''], ['Grades/ProgressReports.php', null, ''],
+		['Grades/TeacherCompletion.php', null, ''], ['Grades/GradeBreakdown.php', null, ''],
+		['Grades/FinalGrades.php', null, ''], ['Grades/GPARankList.php', null, ''],
+		['Attendance/TeacherCompletion.php', null, ''],
+		['Eligibility/StudentList.php', null, ''], ['Eligibility/TeacherCompletion.php', null, '']
+	];
+	menuPlans.reports = {
+		admin: [
+			['1 · Élèves', [
+				['Students/AdvancedReport.php', 'Rechercher et lister des élèves', 'Choisir des critères, afficher, imprimer ou exporter.'],
+				['Students/StudentBreakdown.php', 'Répartition des élèves', 'Combien d’élèves par niveau, sexe ou autre champ.'],
+				['Students/AddDrop.php', 'Arrivées et départs d’élèves', 'Inscriptions et sorties sur une période.'],
+				['Students/PrintStudentInfo.php', 'Imprimer des fiches élèves', 'La fiche complète d’un ou plusieurs élèves.'],
+				['Students/StudentLabels.php', 'Imprimer des étiquettes', 'Étiquettes nominatives (cahiers, enveloppes).']]],
+			['2 · Classes et horaires', [
+				['Scheduling/PrintClassLists.php', 'Listes de classe', 'La liste des élèves de chaque classe, à imprimer.'],
+				['Scheduling/PrintClassPictures.php', 'Trombinoscope', 'Les photos des élèves de chaque classe.'],
+				['Scheduling/PrintSchedules.php', 'Emplois du temps', 'L’emploi du temps d’un élève ou d’une classe, à imprimer.'],
+				['Scheduling/ScheduleReport.php', 'Effectifs par cours', 'Combien d’élèves suivent chaque cours.'],
+				['Scheduling/IncompleteSchedules.php', 'Élèves sans cours', 'Les élèves qui ne sont inscrits à aucun cours.'],
+				['Scheduling/AddDrop.php', 'Changements de cours', 'Les élèves ajoutés ou retirés d’un cours.']]],
+			['3 · Présences', [
+				['Attendance/Percent.php', 'Taux de présence', 'La présence moyenne par jour et par classe.'],
+				['Attendance/DailySummary.php', 'Absences jour par jour', 'Le tableau des présences de chaque élève.'],
+				['Custom/AttendanceSummary.php', 'Bilan des absences par élève', 'Absences et retards cumulés de chaque élève.']]],
+			['4 · Discipline', [
+				['Discipline/ReferralLog.php', 'Journal des incidents', 'Tous les incidents, à imprimer.'],
+				['Discipline/CategoryBreakdown.php', 'Incidents par type', 'Combien d’incidents de chaque sorte.'],
+				['Discipline/CategoryBreakdownTime.php', 'Incidents dans le temps', 'L’évolution des incidents mois par mois.'],
+				['Discipline/StudentFieldBreakdown.php', 'Incidents par groupe d’élèves', 'Par niveau, sexe ou autre champ.']]],
+			['5 · Cantine', [
+				['Food_Service/ActivityReport.php', 'Repas servis', 'Les repas servis, jour par jour.'],
+				['Food_Service/MenuReports.php', 'Repas par menu', 'Combien de repas de chaque menu.'],
+				['Food_Service/Reminders.php', 'Rappels cantine', 'Prévenir les familles dont le solde cantine est bas.']].concat(reportsOut)]
+		],
+		teacher: [
+			['Mes classes', [
+				['Students/AdvancedReport.php', 'Rechercher et lister mes élèves', 'Choisir des critères, afficher ou imprimer.'],
+				['Scheduling/PrintClassLists.php', 'Listes de classe', 'La liste des élèves de chaque classe, à imprimer.'],
+				['Scheduling/PrintClassPictures.php', 'Trombinoscope', 'Les photos des élèves de chaque classe.'],
+				['Scheduling/PrintSchedules.php', 'Emplois du temps', 'L’emploi du temps d’un élève ou d’une classe, à imprimer.'],
+				['Students/StudentLabels.php', 'Imprimer des étiquettes', 'Étiquettes nominatives (cahiers, enveloppes).']].concat(reportsOut)]
+		],
+		parent: [
+			['Mon enfant', [
+				['Scheduling/PrintSchedules.php', 'Emploi du temps', 'L’emploi du temps de votre enfant, à imprimer.'],
+				['Scheduling/PrintClassPictures.php', 'Photos de la classe', 'Les camarades de classe de votre enfant.']].concat(reportsOut)]
+		]
+	};
 	function organizeByPlan(entries, plans) {
 		var plan = plans && plans[centralRole];
 		if (!plan) return entries;
