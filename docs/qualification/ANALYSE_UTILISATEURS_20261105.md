@@ -140,3 +140,21 @@ mis en ligne par image vérifiée, après accord.
 - **B9** : sans session, l'assistant `/ecoles/{id}/utilisateurs…` renvoie vers `index.php` en adresse relative.
   Le navigateur aboutit à `/ecoles/3/utilisateurs/index.php`, qui répond « Not Found ». Correction : renvoyer
   vers `/index.php`. Défaut ancien, sans lien avec U1.
+
+## Réalisation — lot U2 cohérence et clarté (5 novembre 2026)
+
+- Réalisés : B1 à B4, B6 à B10, C1 à C4. Commit `61ea90b` (worktree `SchoolSafeProdDrift-20261103`).
+- **B10, défaut grave trouvé pendant le lot** : sous son adresse `/ecoles/{id}/utilisateurs/nouveau`, l'assistant
+  envoyait la création vers `Modules.php` en adresse relative, qui aboutissait à `/ecoles/3/utilisateurs/Modules.php`
+  (404). L'assistant ne pouvait donc pas créer de compte. Tous ses liens sont maintenant absolus.
+- B3 vaut pour tous les menus : le titre d'une page reprend le nom donné par le plan du menu (`menuTitleForPage`).
+- Image candidate : syntaxe PHP correcte pour les 6 fichiers. Test séparé : « Ajouter un utilisateur » mène à
+  l'assistant quand l'école est connue, et garde le lien d'origine sinon.
+- **En production** : image `schoolsafe-rosario:utilisateurs-u2-20261105`. Contrôle `verify` : service sain, 200,
+  0 erreur PHP, autres services inchangés. Sans session, l'assistant renvoie bien vers `/index.php`.
+- **Non vérifié** : l'écran connecté (la session avait expiré). À contrôler à la reconnexion : menu Utilisateurs,
+  assistant, fiche (Postnom, civilité) et Mes préférences d'un enseignant.
+
+Reste : le **lot U3 (données, après accord)** — renommer les profils en français, « Gardien » → « Tuteur », vider
+le « Jr » de Medy Lomela, retirer le profil « Obsolète », corriger le compte sans école. Restent aussi les
+**décisions** A8 et C5, et les **ajouts** de la partie 3.
