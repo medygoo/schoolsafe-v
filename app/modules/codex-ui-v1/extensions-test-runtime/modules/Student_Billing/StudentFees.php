@@ -33,7 +33,17 @@ if ( $_REQUEST['modfunc'] === 'save'
 	foreach ( (array) $_REQUEST['values'] as $id => $columns )
 	{
 		// F3 : seules les colonnes du formulaire sont écrites.
-		$columns = SchoolSafeMoneyColumns( $columns, [ 'TITLE', 'AMOUNT', 'DUE_DATE', 'COMMENTS' ] );
+		$columns = SchoolSafeMoneyColumns( $columns, [ 'TITLE', 'AMOUNT', 'DUE_DATE', 'COMMENTS', 'CURRENCY' ] );
+
+		// Lot F4a : monnaie du frais (USD par défaut) ; elle ne change pas sur un frais existant.
+		if ( $id !== 'new' || ! SchoolSafeMoneyCurrencyReady() )
+		{
+			unset( $columns['CURRENCY'] );
+		}
+		else
+		{
+			$columns['CURRENCY'] = SchoolSafeMoneyCurrency( $columns['CURRENCY'] ?? 'USD' );
+		}
 
 		if ( $id !== 'new' )
 		{
@@ -85,7 +95,7 @@ if ( $_REQUEST['modfunc'] === 'save'
 			'SYEAR' => (int) UserSyear(),
 			'TITLE' => $columns['TITLE'],
 			'AMOUNT' => SchoolSafeMoneyAmount( $columns['AMOUNT'] ),
-		] ) )
+		] + ( isset( $columns['CURRENCY'] ) ? [ 'CURRENCY' => $columns['CURRENCY'] ] : [] ) ) )
 		{
 			// F11 : double clic ou formulaire renvoyé.
 			$error[] = 'Ce frais vient déjà d’être ajouté. Il n’a pas été ajouté une seconde fois.';
@@ -122,7 +132,7 @@ if ( $_REQUEST['modfunc'] === 'save'
 if ( $_REQUEST['modfunc'] === 'remove'
 	&& AllowEdit() )
 {
-	$fee_RET = DBGet( "SELECT f.TITLE,f.AMOUNT
+	$fee_RET = DBGet( "SELECT f.TITLE,f.AMOUNT" . ( SchoolSafeMoneyCurrencyReady() ? ',f.CURRENCY' : '' ) . "
 		FROM billing_fees f
 		WHERE f.ID='" . (int) $_REQUEST['id'] . "'
 		AND f.STUDENT_ID='" . UserStudentID() . "'
@@ -152,7 +162,7 @@ if ( $_REQUEST['modfunc'] === 'remove'
 				'ASSIGNED_DATE' => DBDate(),
 				'COMMENTS' => DBEscapeString( 'Annulation : ' . $reason ),
 				'CREATED_BY' => DBEscapeString( User( 'NAME' ) ),
-			]
+			] + ( isset( $fee_RET[1]['CURRENCY'] ) ? [ 'CURRENCY' => $fee_RET[1]['CURRENCY'] ] : [] )
 		);
 
 		// Unset modfunc & ID & redirect URL.
@@ -167,7 +177,7 @@ if ( $_REQUEST['modfunc'] === 'waive'
 	{
 		// F2 : le frais doit être celui de cet élève, dans l'école et l'année en cours,
 		// ne pas être lui-même une exemption, et ne pas être déjà exempté.
-		$fee_RET = DBGet( "SELECT f.TITLE,f.AMOUNT
+		$fee_RET = DBGet( "SELECT f.TITLE,f.AMOUNT" . ( SchoolSafeMoneyCurrencyReady() ? ',f.CURRENCY' : '' ) . "
 			FROM billing_fees f
 			WHERE f.ID='" . (int) $_REQUEST['id'] . "'
 			AND f.STUDENT_ID='" . UserStudentID() . "'
@@ -196,7 +206,7 @@ if ( $_REQUEST['modfunc'] === 'waive'
 				'COMMENTS' => DBEscapeString( _( 'Waiver' ) ),
 				// @since 11.2 Add CREATED_BY column to billing_fees & billing_payments tables
 				'CREATED_BY' => DBEscapeString( User( 'NAME' ) ),
-			]
+			] + ( isset( $fee_RET[1]['CURRENCY'] ) ? [ 'CURRENCY' => $fee_RET[1]['CURRENCY'] ] : [] )
 		);
 
 		// Unset modfunc & ID & redirect URL.
@@ -211,6 +221,9 @@ if ( UserStudentID()
 {
 	$fees_total = 0;
 
+	// Lot F4a : monnaie de chaque frais.
+	$ss_currency_column = SchoolSafeMoneyCurrencyReady() ? 'f.CURRENCY,' : '';
+
 	$functions = [
 		'REMOVE' => '_makeFeesRemove',
 		'ASSIGNED_DATE' => 'ProperDate',
@@ -222,7 +235,7 @@ if ( UserStudentID()
 	];
 
 	$waived_fees_RET = DBGet( "SELECT '' AS REMOVE,f.ID,f.TITLE,f.ASSIGNED_DATE,
-		f.DUE_DATE,f.COMMENTS,f.AMOUNT,f.WAIVED_FEE_ID,f.FILE_ATTACHED,
+		f.DUE_DATE,f.COMMENTS,f.AMOUNT," . $ss_currency_column . "f.WAIVED_FEE_ID,f.FILE_ATTACHED,
 		CREATED_BY,CREATED_AT
 		FROM billing_fees f
 		WHERE f.STUDENT_ID='" . UserStudentID() . "'
@@ -230,7 +243,7 @@ if ( UserStudentID()
 		AND f.WAIVED_FEE_ID IS NOT NULL", $functions, [ 'WAIVED_FEE_ID' ] );
 
 	$fees_RET = DBGet( "SELECT '' AS REMOVE,f.ID,f.TITLE,f.ASSIGNED_DATE,
-		f.DUE_DATE,f.COMMENTS,f.AMOUNT,f.WAIVED_FEE_ID,f.FILE_ATTACHED,
+		f.DUE_DATE,f.COMMENTS,f.AMOUNT," . $ss_currency_column . "f.WAIVED_FEE_ID,f.FILE_ATTACHED,
 		CREATED_BY,CREATED_AT
 		FROM billing_fees f
 		WHERE f.STUDENT_ID='" . UserStudentID() . "'
@@ -294,7 +307,7 @@ if ( UserStudentID()
 		$link['add']['html'] = [
 			'REMOVE' => button( 'add' ),
 			'TITLE' => _makeFeesTextInput( '', 'TITLE' ),
-			'AMOUNT' => _makeFeesTextInput( '', 'AMOUNT' ),
+			'AMOUNT' => _makeFeesTextInput( '', 'AMOUNT' ) . ( SchoolSafeMoneyCurrencyReady() ? ' ' . SchoolSafeMoneyCurrencySelect( 'values[new][CURRENCY]', 'USD' ) : '' ),
 			'ASSIGNED_DATE' => ProperDate( DBDate() ),
 			'DUE_DATE' => _makeFeesDateInput( '', 'DUE_DATE' ),
 			'COMMENTS' => _makeFeesTextInput( '', 'COMMENTS' ),
@@ -346,20 +359,8 @@ if ( UserStudentID()
 
 	if ( empty( $_REQUEST['print_statements'] ) )
 	{
-		$payments_total = DBGetOne( "SELECT SUM(p.AMOUNT) AS TOTAL
-			FROM billing_payments p
-			WHERE p.STUDENT_ID='" . UserStudentID() . "'
-			AND p.SCHOOL_ID='" . UserSchool() . "' AND p.SYEAR='" . UserSyear() . "'" );
-
-		$table = '<table class="align-right student-billing-totals"><tr><td>' . _( 'Total from Fees' ) . ': ' . '</td><td>' . Currency( $fees_total ) . '</td></tr>';
-
-		$table .= '<tr><td>' . _( 'Less' ) . ': ' . _( 'Total from Payments' ) . ': ' . '</td><td>' . Currency( $payments_total ) . '</td></tr>';
-
-		$table .= '<tr><td>' . _( 'Balance' ) . ': </td>
-			<td><b>' . Currency(  ( $fees_total - $payments_total ), 'CR' ) .
-			'</b></td></tr></table>';
-
-		DrawHeader( $table );
+		// Lot F4a : totaux par monnaie (frais, payé, reste).
+		DrawHeader( SchoolSafeMoneyTotalsTable( UserStudentID() ) );
 
 		echo '</form>';
 	}

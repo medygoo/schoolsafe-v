@@ -20,6 +20,9 @@ if ( $_REQUEST['modfunc'] === 'save' )
 		else
 		{
 			$_REQUEST['amount'] = SchoolSafeMoneyAmount( $_REQUEST['amount'] );
+
+			// Lot F4a : monnaie du frais (USD par défaut).
+			$ss_currency = SchoolSafeMoneyCurrencyReady() ? [ 'CURRENCY' => SchoolSafeMoneyCurrency( $_POST['currency'] ?? 'USD' ) ] : [];
 			$due_date = RequestedDate( 'due', '' );
 
 			$student_ids = $_REQUEST['student'];
@@ -47,7 +50,7 @@ if ( $_REQUEST['modfunc'] === 'save' )
 					'SYEAR' => (int) UserSyear(),
 					'TITLE' => $_REQUEST['title'],
 					'AMOUNT' => $_REQUEST['amount'],
-				] ) )
+				] + $ss_currency ) )
 				{
 					$skipped++;
 					continue;
@@ -66,7 +69,7 @@ if ( $_REQUEST['modfunc'] === 'save' )
 						'COMMENTS' => $_REQUEST['comments'],
 						// @since 11.2 Add CREATED_BY column to billing_fees & billing_payments tables
 						'CREATED_BY' => DBEscapeString( User( 'NAME' ) ),
-					]
+					] + $ss_currency
 				);
 			}
 
@@ -134,8 +137,13 @@ SchoolSafeCard(
 			'',
 			'amount',
 			_( 'Amount' ),
-			' type="number" step="0.01" max="999999999999" min="-999999999999" required'
+			' type="number" step="0.01" max="999999999999" min="0.01" required'
 		) . '</td></tr>';
+
+		if ( SchoolSafeMoneyCurrencyReady() )
+		{
+			echo '<tr><td>' . SchoolSafeMoneyCurrencySelect( 'currency', 'USD', 'Monnaie du frais' ) . '</td></tr>';
+		}
 
 		echo '<tr><td>' . DateInput( '', 'due', _( 'Due Date' ), false ) . '</td></tr>';
 

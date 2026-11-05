@@ -69,6 +69,10 @@ if (SchoolSafeArrivalViewPermission()) {
 if (SchoolSafeNativePermission('SchoolSafe/FeeModelsRead.php')) {
     $add('finance', 'Frais et mod\u00e8les', 'Contr\u00f4le des frais', 'Modules.php?modname=SchoolSafe/FeeModelsRead.php');
 }
+// Lot F4a (05/11) : deux monnaies FC et USD ; le taux du jour sert aux paiements dans l'autre monnaie.
+if (User('PROFILE') === 'admin' && AllowUse('Student_Billing/StudentPayments.php')) {
+    $add('finance', '6 · Réglages', 'Taux du jour', 'taux-du-jour.php');
+}
 if (SchoolSafeNativePermission('SchoolSafe/RemediationPaymentsRead.php')) {
     $add('finance', 'Rattrapage', 'Paiements de rattrapage', 'Modules.php?modname=SchoolSafe/RemediationPaymentsRead.php');
 }

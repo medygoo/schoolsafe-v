@@ -77,6 +77,10 @@ function SchoolSafeReceiptHtml( array $receipt )
 <tr><td>Paiements avant ce versement</td><td class="amount"><?= $money($data['previous_paid'] ?? 0) ?></td></tr>
 <?php endif; ?>
 <tr class="current"><td>Paiement reçu</td><td class="amount"><?= $money($data['amount']) ?></td></tr>
+<?php /* Lot F4a (05/11) : payé dans l'autre monnaie : ce qui a été réellement reçu et le taux appliqué. */
+if(!empty($data['rate'])&&!empty($data['paid_currency'])&&$data['paid_currency']!==($data['currency']??'')): ?>
+<tr><td>Montant reçu en <?= $escape($data['paid_currency']) ?> (1 USD = <?= $escape(number_format((float)$data['rate'],2,',',' ')) ?> FC)</td><td class="amount"><?= $escape(number_format((float)$data['paid_amount'],2,',',' ').' '.$data['paid_currency']) ?></td></tr>
+<?php endif; ?>
 <tr><td><?= ($data['balance_kind'] ?? '') === 'canteen_credit' ? 'Solde cantine après recharge' : ((float)$data['balance'] < 0 ? 'Crédit disponible après versement' : 'Reste à payer après versement') ?></td><td class="amount"><?= $money(abs((float)$data['balance'])) ?></td></tr>
 </table></div>
 <div>Enregistré par : <?= $escape($data['cashier'] ?? '') ?></div>

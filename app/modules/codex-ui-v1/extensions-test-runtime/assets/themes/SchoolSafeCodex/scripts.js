@@ -313,6 +313,7 @@
 				['Food_Service/TransactionsReport.php', 'Bilan cantine', 'Toutes les transactions de la cantine sur une période.']]],
 			['6 · Réglages', [
 				['SchoolSafe/FeeModelsRead.php', 'Contrôle des frais', 'Seuils vert, jaune, rouge des frais payés (scan et rappels).'],
+				['taux-du-jour.php', 'Taux du jour', 'Combien de francs congolais pour 1 dollar, chaque jour (paiements en FC ou en USD).'],
 				['Accounting/Categories.php', 'Catégories de trésorerie', 'Les rubriques de recettes et de dépenses.']]]
 		],
 		teacher: [

@@ -18,7 +18,34 @@ if ( $_REQUEST['modfunc'] === 'save' )
 		{
 			$_REQUEST['amount'] = SchoolSafeMoneyAmount( $_REQUEST['amount'] );
 
-			if ( $date )
+			// Lot F4a : monnaie reçue et compte réglé ; conversion au taux du jour de la date du paiement.
+			$ss_currency = [];
+			$ss_rate_missing = false;
+
+			if ( SchoolSafeMoneyCurrencyReady() )
+			{
+				$paid_currency = SchoolSafeMoneyCurrency( $_POST['paid_currency'] ?? 'USD' );
+				$account_currency = SchoolSafeMoneyCurrency( $_POST['currency'] ?? $paid_currency );
+				$rate = $paid_currency === $account_currency ? 0 : SchoolSafeMoneyRate( $date );
+				$converted = SchoolSafeMoneyConvert( $_REQUEST['amount'], $paid_currency, $account_currency, $rate );
+
+				if ( $converted === false || $converted <= 0 )
+				{
+					$ss_rate_missing = true;
+				}
+				else
+				{
+					$ss_currency = [ 'CURRENCY' => $account_currency, 'PAID_CURRENCY' => $paid_currency, 'PAID_AMOUNT' => $_REQUEST['amount'] ]
+						+ ( $rate > 0 ? [ 'RATE' => $rate ] : [] );
+					$_REQUEST['amount'] = number_format( $converted, 2, '.', '' );
+				}
+			}
+
+			if ( $ss_rate_missing )
+			{
+				$error[] = 'Paiement refusé : aucun taux du jour pour cette date. Saisissez le taux (Finance, Réglages, « Taux du jour ») ou encaissez dans la monnaie du compte.';
+			}
+			elseif ( $date )
 			{
 				$student_ids = $_REQUEST['student'];
 
@@ -45,7 +72,7 @@ if ( $_REQUEST['modfunc'] === 'save' )
 						'SYEAR' => (int) UserSyear(),
 						'AMOUNT' => $_REQUEST['amount'],
 						'PAYMENT_DATE' => $date,
-					] ) )
+					] + ( isset( $ss_currency['CURRENCY'] ) ? [ 'CURRENCY' => $ss_currency['CURRENCY'] ] : [] ) ) )
 					{
 						$skipped++;
 						continue;
@@ -62,7 +89,7 @@ if ( $_REQUEST['modfunc'] === 'save' )
 							'COMMENTS' => $_REQUEST['comments'],
 							// @since 11.2 Add CREATED_BY column to billing_fees & billing_payments tables
 							'CREATED_BY' => DBEscapeString( User( 'NAME' ) ),
-						]
+						] + $ss_currency
 					);
 				}
 
@@ -129,8 +156,14 @@ SchoolSafeCard(
 			'',
 			'amount',
 			_( 'Amount' ),
-			'  type="number" step="0.01" max="999999999999" min="-999999999999" required'
+			'  type="number" step="0.01" max="999999999999" min="0.01" required'
 		) . '</td></tr>';
+
+		if ( SchoolSafeMoneyCurrencyReady() )
+		{
+			echo '<tr><td>' . SchoolSafeMoneyCurrencySelect( 'paid_currency', 'USD', 'Monnaie reçue' ) . ' '
+				. SchoolSafeMoneyCurrencySelect( 'currency', 'USD', 'Porté au compte' ) . '</td></tr>';
+		}
 
 		echo '<tr><td>' . DateInput(
 			DBDate(),

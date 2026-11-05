@@ -59,7 +59,52 @@ if ( $_REQUEST['modfunc'] === 'save'
 	foreach ( (array) $_REQUEST['values'] as $id => $columns )
 	{
 		// F3 : seules les colonnes du formulaire sont écrites (jamais école, élève, auteur, remboursement, fichier).
-		$columns = SchoolSafeMoneyColumns( $columns, [ 'AMOUNT', 'PAYMENT_DATE', 'COMMENTS', 'LUNCH_PAYMENT' ] );
+		$columns = SchoolSafeMoneyColumns( $columns, [ 'AMOUNT', 'PAYMENT_DATE', 'COMMENTS', 'LUNCH_PAYMENT', 'CURRENCY', 'PAID_CURRENCY' ] );
+
+		// Lot F4a (05/11) : deux monnaies. Le caissier saisit ce qu'il reçoit (montant et monnaie) et le compte réglé
+		// (USD ou FC). Dans l'autre monnaie, le montant est converti au taux du jour de la date du paiement ;
+		// le montant reçu, sa monnaie et le taux restent gardés avec le paiement et figurent sur le reçu.
+		if ( $id === 'new'
+			&& SchoolSafeMoneyCurrencyReady()
+			&& trim( (string) ( $columns['AMOUNT'] ?? '' ) ) !== ''
+			&& ! SchoolSafeMoneyAmountProblem( $columns['AMOUNT'] ) )
+		{
+			$paid_currency = SchoolSafeMoneyCurrency( $columns['PAID_CURRENCY'] ?? 'USD' );
+			$account_currency = SchoolSafeMoneyCurrency( $columns['CURRENCY'] ?? $paid_currency );
+			$paid_amount = SchoolSafeMoneyAmount( $columns['AMOUNT'] );
+			$rate = $paid_currency === $account_currency ? 0 : SchoolSafeMoneyRate( $columns['PAYMENT_DATE'] ?? '' );
+			$converted = SchoolSafeMoneyConvert( $paid_amount, $paid_currency, $account_currency, $rate );
+
+			if ( $converted === false )
+			{
+				$error[] = 'Paiement refusé : aucun taux du jour pour le ' . ProperDate( $columns['PAYMENT_DATE'] ?? '' ) .
+					'. Saisissez le taux (Finance, Réglages, « Taux du jour ») ou encaissez dans la monnaie du compte.';
+
+				continue;
+			}
+
+			if ( $converted <= 0 )
+			{
+				$error[] = 'Paiement refusé : le montant converti est nul.';
+
+				continue;
+			}
+
+			$columns['AMOUNT'] = number_format( $converted, 2, '.', '' );
+			$columns['CURRENCY'] = $account_currency;
+			$columns['PAID_CURRENCY'] = $paid_currency;
+			$columns['PAID_AMOUNT'] = $paid_amount;
+
+			if ( $rate > 0 )
+			{
+				$columns['RATE'] = $rate;
+			}
+		}
+		else
+		{
+			// La monnaie d'un paiement existant ne change pas.
+			unset( $columns['CURRENCY'], $columns['PAID_CURRENCY'] );
+		}
 
 		if ( $id !== 'new' )
 		{
@@ -124,18 +169,19 @@ if ( $_REQUEST['modfunc'] === 'save'
 				'SYEAR' => (int) UserSyear(),
 				'AMOUNT' => SchoolSafeMoneyAmount( $columns['AMOUNT'] ),
 				'PAYMENT_DATE' => $columns['PAYMENT_DATE'],
-			] ) )
+			] + ( isset( $columns['CURRENCY'] ) ? [ 'CURRENCY' => $columns['CURRENCY'] ] : [] ) ) )
 		{
 			// F11 : double clic ou formulaire renvoyé.
 			$error[] = 'Ce paiement vient déjà d’être enregistré (même montant, même date). Il n’a pas été ajouté une seconde fois.';
 		}
 		elseif ( isset( $columns['AMOUNT'] )
 			&& trim( (string) $columns['AMOUNT'] ) !== ''
-			&& (float) SchoolSafeMoneyAmount( $columns['AMOUNT'] ) > max( 0, SchoolSafeMoneyStudentBalance( UserStudentID() ) )
+			&& (float) SchoolSafeMoneyAmount( $columns['AMOUNT'] ) > max( 0, SchoolSafeMoneyStudentBalance( UserStudentID(), $columns['CURRENCY'] ?? null ) )
 			&& empty( $_POST['ss_overpay_ok'] ) )
 		{
-			// F12 : trop-perçu seulement après confirmation.
-			$error[] = 'Le montant dépasse le reste dû (' . Currency( max( 0, SchoolSafeMoneyStudentBalance( UserStudentID() ) ) ) .
+			// F12 : trop-perçu seulement après confirmation (lot F4a : dans la monnaie du compte réglé).
+			$error[] = 'Le montant porté au compte (' . SchoolSafeMoneyFormat( $columns['AMOUNT'], $columns['CURRENCY'] ?? 'USD' ) . ') dépasse le reste dû (' .
+				SchoolSafeMoneyFormat( max( 0, SchoolSafeMoneyStudentBalance( UserStudentID(), $columns['CURRENCY'] ?? null ) ), $columns['CURRENCY'] ?? 'USD' ) .
 				'). Pour enregistrer quand même le surplus comme crédit, cochez « Accepter un trop-perçu » puis enregistrez à nouveau.';
 		}
 		elseif ( isset( $columns['AMOUNT'] )
@@ -172,7 +218,7 @@ if ( $_REQUEST['modfunc'] === 'remove'
 	// @since 8.5 Admin Student Payments Delete restriction.
 	&& AllowEdit( 'Student_Billing/StudentPayments.php&modfunc=remove' ) )
 {
-	$payment_RET = DBGet( "SELECT p.AMOUNT
+	$payment_RET = DBGet( "SELECT p.AMOUNT" . ( SchoolSafeMoneyCurrencyReady() ? ',p.CURRENCY' : '' ) . "
 		FROM billing_payments p
 		WHERE p.ID='" . (int) $_REQUEST['id'] . "'
 		AND p.STUDENT_ID='" . UserStudentID() . "'
@@ -201,7 +247,7 @@ if ( $_REQUEST['modfunc'] === 'remove'
 				'COMMENTS' => DBEscapeString( 'Annulation : ' . $reason ),
 				'REFUNDED_PAYMENT_ID' => (int) $_REQUEST['id'],
 				'CREATED_BY' => DBEscapeString( User( 'NAME' ) ),
-			]
+			] + ( isset( $payment_RET[1]['CURRENCY'] ) ? [ 'CURRENCY' => $payment_RET[1]['CURRENCY'] ] : [] )
 		);
 
 		$note[] = button( 'check' ) . '&nbsp;Paiement annulé. Il reste visible, avec le motif ; son reçu indique « Paiement annulé ».';
@@ -219,7 +265,7 @@ if ( $_REQUEST['modfunc'] === 'refund'
 	{
 		// F2 : le paiement doit être celui de cet élève, dans l'école et l'année en cours,
 		// ne pas être lui-même un remboursement, et ne pas être déjà remboursé.
-		$payment_RET = DBGet( "SELECT p.COMMENTS,p.AMOUNT
+		$payment_RET = DBGet( "SELECT p.COMMENTS,p.AMOUNT" . ( SchoolSafeMoneyCurrencyReady() ? ',p.CURRENCY' : '' ) . "
 			FROM billing_payments p
 			WHERE p.ID='" . (int) $_REQUEST['id'] . "'
 			AND p.STUDENT_ID='" . UserStudentID() . "'
@@ -253,7 +299,7 @@ if ( $_REQUEST['modfunc'] === 'refund'
 				'REFUNDED_PAYMENT_ID' => (int) $_REQUEST['id'],
 				// @since 11.2 Add CREATED_BY column to billing_fees & billing_payments tables
 				'CREATED_BY' => DBEscapeString( User( 'NAME' ) ),
-			]
+			] + ( isset( $payment_RET[1]['CURRENCY'] ) ? [ 'CURRENCY' => $payment_RET[1]['CURRENCY'] ] : [] )
 		);
 
 		// Unset modfunc & ID & redirect URL.
@@ -270,6 +316,9 @@ if ( UserStudentID()
 
 	$payments_total = 0;
 
+	// Lot F4a : monnaie du compte, et ce qui a été réellement reçu.
+	$ss_currency_columns = SchoolSafeMoneyCurrencyReady() ? 'CURRENCY,PAID_CURRENCY,PAID_AMOUNT,RATE,' : '';
+
 	$functions = [
 		'REMOVE' => '_makePaymentsRemove',
 		'AMOUNT' => '_makePaymentsAmount',
@@ -281,7 +330,7 @@ if ( UserStudentID()
 	];
 
 	$refunded_payments_RET = DBGet( "SELECT '' AS REMOVE,ID,REFUNDED_PAYMENT_ID,
-		AMOUNT,PAYMENT_DATE,COMMENTS,LUNCH_PAYMENT,FILE_ATTACHED,
+		AMOUNT," . $ss_currency_columns . "PAYMENT_DATE,COMMENTS,LUNCH_PAYMENT,FILE_ATTACHED,
 		CREATED_BY,CREATED_AT
 		FROM billing_payments
 		WHERE STUDENT_ID='" . UserStudentID() . "'
@@ -290,7 +339,7 @@ if ( UserStudentID()
 		AND (REFUNDED_PAYMENT_ID IS NOT NULL)", $functions, [ 'REFUNDED_PAYMENT_ID' ] );
 
 	$payments_RET = DBGet( "SELECT '' AS REMOVE,ID,REFUNDED_PAYMENT_ID,
-		AMOUNT,PAYMENT_DATE,COMMENTS,LUNCH_PAYMENT,FILE_ATTACHED,
+		AMOUNT," . $ss_currency_columns . "PAYMENT_DATE,COMMENTS,LUNCH_PAYMENT,FILE_ATTACHED,
 		CREATED_BY,CREATED_AT
 		FROM billing_payments
 		WHERE STUDENT_ID='" . UserStudentID() . "'
@@ -386,7 +435,10 @@ if ( UserStudentID()
 		if ($local_draft) echo '<p role="status">Brouillon repris : vérifiez les informations avant de confirmer le paiement.</p>';
 		$link['add']['html'] = [
 			'REMOVE' => button( 'add' ),
-			'AMOUNT' => $local_draft ? TextInput($local_draft['amount'],'values[new][AMOUNT]','',' type="number" step="0.01" min="0.01"',false) : _makePaymentsTextInput('', 'AMOUNT'),
+			'AMOUNT' => ( $local_draft ? TextInput($local_draft['amount'],'values[new][AMOUNT]','',' type="number" step="0.01" min="0.01"',false) : _makePaymentsTextInput('', 'AMOUNT') )
+				// Lot F4a : monnaie reçue et compte réglé (USD par défaut) ; conversion au taux du jour si elles diffèrent.
+				. ( SchoolSafeMoneyCurrencyReady() && ! $local_draft ? '<div class="ss-pay-currency">' . SchoolSafeMoneyCurrencySelect( 'values[new][PAID_CURRENCY]', 'USD', 'Monnaie reçue' )
+					. ' ' . SchoolSafeMoneyCurrencySelect( 'values[new][CURRENCY]', 'USD', 'Porté au compte' ) . '</div>' : '' ),
 			'PAYMENT_DATE' => $local_draft ? DateInput($local_draft['date'],'values[new][PAYMENT_DATE]','',false,false) : _makePaymentsDateInput(DBDate(), 'PAYMENT_DATE'),
 			'COMMENTS' => $local_draft ? TextInput($local_draft['comment'],'values[new][COMMENTS]','','maxlength="250"',false) : _makePaymentsCommentsInput('', 'COMMENTS'),
 			'LUNCH_PAYMENT' => _lunchInput( '', 'LUNCH_PAYMENT' ),
@@ -446,24 +498,8 @@ if ( UserStudentID()
 
 	echo '<br />';
 
-	$fees_total = DBGetOne( "SELECT SUM(f.AMOUNT) AS TOTAL
-		FROM billing_fees f
-		WHERE f.STUDENT_ID='" . UserStudentID() . "'
-		AND f.SCHOOL_ID='" . UserSchool() . "'
-		AND f.SYEAR='" . UserSyear() . "'" );
-
-	$table = '<table class="align-right student-billing-totals"><tr>
-		<td>' . _( 'Total from Fees' ) . ': </td>
-		<td>' . Currency( $fees_total ) . '</td></tr>';
-
-	$table .= '<tr><td>' . _( 'Less' ) . ': ' . _( 'Total from Payments' ) . ': </td>
-		<td>' . Currency( $payments_total ) . '</td></tr>';
-
-	$table .= '<tr><td>' . _( 'Balance' ) . ': </td>
-		<td><b>' . Currency(  ( $fees_total - $payments_total ), 'CR' ) . '</b></td>
-		</tr></table>';
-
-	DrawHeader( $table );
+	// Lot F4a : totaux par monnaie (frais, payé, reste).
+	DrawHeader( SchoolSafeMoneyTotalsTable( UserStudentID() ) );
 
 	if ( empty( $_REQUEST['print_statements'] )
 		&& AllowEdit() )

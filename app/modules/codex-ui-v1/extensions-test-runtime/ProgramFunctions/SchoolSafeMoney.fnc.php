@@ -92,17 +92,21 @@ function SchoolSafeMoneyStudentInSchool( $student_id )
 /**
  * F12 : reste dû d'un élève dans l'école et l'année en cours (frais moins paiements).
  */
-function SchoolSafeMoneyStudentBalance( $student_id )
+function SchoolSafeMoneyStudentBalance( $student_id, $currency = null )
 {
+	// Lot F4a : reste dû dans une monnaie (frais et paiements de cette monnaie seulement).
+	$in_currency = $currency !== null && SchoolSafeMoneyCurrencyReady() ?
+		" AND CURRENCY='" . SchoolSafeMoneyCurrency( $currency ) . "'" : '';
+
 	$fees = (float) DBGetOne( "SELECT COALESCE(SUM(AMOUNT),0) FROM billing_fees
 		WHERE STUDENT_ID='" . (int) $student_id . "'
 		AND SCHOOL_ID='" . UserSchool() . "'
-		AND SYEAR='" . UserSyear() . "'" );
+		AND SYEAR='" . UserSyear() . "'" . $in_currency );
 
 	$payments = (float) DBGetOne( "SELECT COALESCE(SUM(AMOUNT),0) FROM billing_payments
 		WHERE STUDENT_ID='" . (int) $student_id . "'
 		AND SCHOOL_ID='" . UserSchool() . "'
-		AND SYEAR='" . UserSyear() . "'" );
+		AND SYEAR='" . UserSyear() . "'" . $in_currency );
 
 	return round( $fees - $payments, 2 );
 }
@@ -200,4 +204,179 @@ function SchoolSafeMoneyCancelPrompt( $what, $table, $extra_where = '' )
 	}
 
 	return true;
+}
+
+/* ---------------------------------------------------------------------------------------------------------
+ * Lot F4a (05/11) : deux monnaies, franc congolais (FC) et dollar (USD). Décision du propriétaire,
+ * docs/DECISIONS.md : chaque frais et chaque paiement porte sa monnaie ; un paiement dans l'autre monnaie est
+ * converti au taux du jour (FC pour 1 USD) ; USD par défaut.
+ * --------------------------------------------------------------------------------------------------------- */
+
+/** Monnaies acceptées, dans l'ordre d'affichage (USD par défaut). */
+function SchoolSafeMoneyCurrencies()
+{
+	return [ 'USD' => 'USD (dollar)', 'FC' => 'FC (franc congolais)' ];
+}
+
+/** Les colonnes de monnaie existent-elles (script F4a appliqué) ? */
+function SchoolSafeMoneyCurrencyReady()
+{
+	static $ready = null;
+
+	if ( $ready === null )
+	{
+		$ready = (bool) DBGetOne( "SELECT 1 FROM information_schema.columns
+			WHERE table_name='billing_payments' AND column_name='paid_currency'" );
+	}
+
+	return $ready;
+}
+
+/** Monnaie valide, sinon USD. */
+function SchoolSafeMoneyCurrency( $currency )
+{
+	$currency = strtoupper( trim( (string) $currency ) );
+
+	return isset( SchoolSafeMoneyCurrencies()[ $currency ] ) ? $currency : 'USD';
+}
+
+/** Montant au format français avec sa monnaie : « 75 000,00 USD », « -20 000,00 FC ». */
+function SchoolSafeMoneyFormat( $amount, $currency = 'USD' )
+{
+	$amount = (float) $amount;
+
+	return ( $amount < 0 ? '-' : '' ) . number_format( abs( $amount ), 2, ',', "\u{00A0}" ) . "\u{00A0}" . SchoolSafeMoneyCurrency( $currency );
+}
+
+/** Taux du jour de l'école (FC pour 1 USD) à une date, ou 0 s'il n'est pas saisi. */
+function SchoolSafeMoneyRate( $date )
+{
+	if ( ! SchoolSafeMoneyCurrencyReady() || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) $date ) )
+	{
+		return 0.0;
+	}
+
+	return (float) DBGetOne( "SELECT RATE FROM schoolsafe_exchange_rates
+		WHERE SCHOOL_ID='" . UserSchool() . "'
+		AND RATE_DATE='" . $date . "'" );
+}
+
+/**
+ * Convertit un montant reçu dans la monnaie du compte réglé.
+ *
+ * @return float|false Montant converti, ou false si le taux du jour manque.
+ */
+function SchoolSafeMoneyConvert( $amount, $from, $to, $rate )
+{
+	$from = SchoolSafeMoneyCurrency( $from );
+	$to = SchoolSafeMoneyCurrency( $to );
+
+	if ( $from === $to )
+	{
+		return round( (float) $amount, 2 );
+	}
+
+	if ( (float) $rate <= 0 )
+	{
+		return false;
+	}
+
+	return round( $from === 'FC' ? (float) $amount / (float) $rate : (float) $amount * (float) $rate, 2 );
+}
+
+/**
+ * Restes dus d'un élève par monnaie, dans l'école et l'année en cours.
+ *
+ * @return array [ 'USD' => reste, 'FC' => reste ] (seulement les monnaies utilisées ; USD si aucune).
+ */
+function SchoolSafeMoneyStudentBalances( $student_id )
+{
+	if ( ! SchoolSafeMoneyCurrencyReady() )
+	{
+		return [ 'USD' => SchoolSafeMoneyStudentBalance( $student_id ) ];
+	}
+
+	$rows = DBGet( "SELECT CURRENCY, SUM(AMOUNT) AS TOTAL FROM (
+		SELECT CURRENCY, AMOUNT FROM billing_fees
+			WHERE STUDENT_ID='" . (int) $student_id . "' AND SCHOOL_ID='" . UserSchool() . "' AND SYEAR='" . UserSyear() . "'
+		UNION ALL
+		SELECT CURRENCY, -AMOUNT FROM billing_payments
+			WHERE STUDENT_ID='" . (int) $student_id . "' AND SCHOOL_ID='" . UserSchool() . "' AND SYEAR='" . UserSyear() . "'
+		) t GROUP BY CURRENCY" );
+
+	$balances = [];
+
+	foreach ( (array) $rows as $row )
+	{
+		$balances[ SchoolSafeMoneyCurrency( $row['CURRENCY'] ) ] = round( (float) $row['TOTAL'], 2 );
+	}
+
+	uksort( $balances, function ( $a, $b ) { return $a === 'USD' ? -1 : ( $b === 'USD' ? 1 : 0 ); } );
+
+	return $balances ? $balances : [ 'USD' => 0.0 ];
+}
+
+/** « 145 000,00 USD et 30 000,00 FC ». */
+function SchoolSafeMoneyBalancesText( $balances )
+{
+	$parts = [];
+
+	foreach ( (array) $balances as $currency => $amount )
+	{
+		$parts[] = SchoolSafeMoneyFormat( $amount, $currency );
+	}
+
+	return implode( ' et ', $parts );
+}
+
+/** Liste de choix de la monnaie pour un formulaire (USD par défaut). */
+function SchoolSafeMoneyCurrencySelect( $name, $value = 'USD', $title = '' )
+{
+	$html = ( $title !== '' ? '<label>' . $title . '<br>' : '' ) . '<select name="' . AttrEscape( $name ) . '">';
+
+	foreach ( SchoolSafeMoneyCurrencies() as $code => $label )
+	{
+		$html .= '<option value="' . $code . '"' . ( $code === SchoolSafeMoneyCurrency( $value ) ? ' selected' : '' ) . '>' . $label . '</option>';
+	}
+
+	return $html . '</select>' . ( $title !== '' ? '</label>' : '' );
+}
+
+/**
+ * Lot F4a : tableau des totaux d'un élève, une ligne par monnaie (frais, paiements, reste).
+ */
+function SchoolSafeMoneyTotalsTable( $student_id )
+{
+	$rows = SchoolSafeMoneyCurrencyReady() ? DBGet( "SELECT CURRENCY,
+		SUM(CASE WHEN K='F' THEN AMOUNT ELSE 0 END) AS FEES,
+		SUM(CASE WHEN K='P' THEN AMOUNT ELSE 0 END) AS PAID
+		FROM (SELECT 'F' AS K, CURRENCY, AMOUNT FROM billing_fees
+			WHERE STUDENT_ID='" . (int) $student_id . "' AND SCHOOL_ID='" . UserSchool() . "' AND SYEAR='" . UserSyear() . "'
+		UNION ALL SELECT 'P', CURRENCY, AMOUNT FROM billing_payments
+			WHERE STUDENT_ID='" . (int) $student_id . "' AND SCHOOL_ID='" . UserSchool() . "' AND SYEAR='" . UserSyear() . "') t
+		GROUP BY CURRENCY ORDER BY CASE WHEN CURRENCY='USD' THEN 0 ELSE 1 END" ) : DBGet( "SELECT 'USD' AS CURRENCY,
+		(SELECT COALESCE(SUM(AMOUNT),0) FROM billing_fees WHERE STUDENT_ID='" . (int) $student_id . "' AND SCHOOL_ID='" . UserSchool() . "' AND SYEAR='" . UserSyear() . "') AS FEES,
+		(SELECT COALESCE(SUM(AMOUNT),0) FROM billing_payments WHERE STUDENT_ID='" . (int) $student_id . "' AND SCHOOL_ID='" . UserSchool() . "' AND SYEAR='" . UserSyear() . "') AS PAID" );
+
+	$html = '<table class="align-right student-billing-totals"><tr><th></th><th>Frais</th><th>Payé</th><th>Reste à payer</th></tr>';
+
+	foreach ( (array) $rows as $row )
+	{
+		$balance = (float) $row['FEES'] - (float) $row['PAID'];
+
+		$html .= '<tr><td><b>' . SchoolSafeMoneyCurrency( $row['CURRENCY'] ) . '</b></td>
+			<td>' . SchoolSafeMoneyFormat( $row['FEES'], $row['CURRENCY'] ) . '</td>
+			<td>' . SchoolSafeMoneyFormat( $row['PAID'], $row['CURRENCY'] ) . '</td>
+			<td><b>' . ( $balance < 0 ?
+				'Crédit ' . SchoolSafeMoneyFormat( -$balance, $row['CURRENCY'] ) :
+				SchoolSafeMoneyFormat( $balance, $row['CURRENCY'] ) ) . '</b></td></tr>';
+	}
+
+	return $html . '</table>';
+}
+
+/** Lot F4a : « 1 USD = 2 850,00 FC ». */
+function SchoolSafeMoneyRateText( $rate )
+{
+	return '1 USD = ' . number_format( (float) $rate, 2, ',', "\u{00A0}" ) . "\u{00A0}FC";
 }

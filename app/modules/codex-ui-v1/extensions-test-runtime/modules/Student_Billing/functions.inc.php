@@ -1,4 +1,6 @@
 <?php
+// Lot F4a (05/11) : montants affichés avec la monnaie de chaque ligne (FC ou USD).
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
 
 function _makeFeesRemove( $value, $column )
 {
@@ -163,11 +165,12 @@ function _makeFeesDateInput( $value, $name )
 
 function _makeFeesAmount( $value, $column )
 {
-	global $fees_total;
+	global $fees_total,
+		$THIS_RET;
 
 	$fees_total += $value;
 
-	return Currency( $value );
+	return isset( $THIS_RET['CURRENCY'] ) ? SchoolSafeMoneyFormat( $value, $THIS_RET['CURRENCY'] ) : Currency( $value );
 }
 
 function _makePaymentsTextInput( $value, $name )
@@ -281,11 +284,26 @@ function _makePaymentsDateInput( $value, $name )
 
 function _makePaymentsAmount( $value, $column )
 {
-	global $payments_total;
+	global $payments_total,
+		$THIS_RET;
 
 	$payments_total += $value;
 
-	return Currency( $value );
+	if ( ! isset( $THIS_RET['CURRENCY'] ) )
+	{
+		return Currency( $value );
+	}
+
+	$html = SchoolSafeMoneyFormat( $value, $THIS_RET['CURRENCY'] );
+
+	// Lot F4a : payé dans l'autre monnaie : montant reçu et taux appliqué.
+	if ( ! empty( $THIS_RET['RATE'] ) && ! empty( $THIS_RET['PAID_CURRENCY'] ) && $THIS_RET['PAID_CURRENCY'] !== $THIS_RET['CURRENCY'] )
+	{
+		$html .= '<br><small>reçu ' . SchoolSafeMoneyFormat( $THIS_RET['PAID_AMOUNT'], $THIS_RET['PAID_CURRENCY'] )
+			. ' · ' . SchoolSafeMoneyRateText( $THIS_RET['RATE'] ) . '</small>';
+	}
+
+	return $html;
 }
 
 function _lunchInput( $value, $column )
