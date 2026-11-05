@@ -103,3 +103,37 @@ body.modules #menu .adminmenu .wp-submenu a.ss-link-with-hint .ss-link-hint {
     white-space: normal; text-transform: none; letter-spacing: 0;
 }
 html[data-ss-background="night"] body.modules #menu .adminmenu .wp-submenu a.ss-link-with-hint .ss-link-hint { color: #b6c2d3; }
+
+/* Photos des personnes (05/11) : fenêtre de cadrage. */
+dialog.ss-photo-cropper { border: 0; border-radius: 14px; padding: 18px; width: min(92vw, 480px); box-shadow: 0 20px 60px rgba(15,30,50,.35); }
+dialog.ss-photo-cropper::backdrop { background: rgba(15,30,50,.55); }
+dialog.ss-photo-cropper h2 { margin: 0 0 4px; font: 700 18px/1.3 system-ui, sans-serif; color: #172333; }
+dialog.ss-photo-cropper p { margin: 0 0 12px; font: 400 14px/1.4 system-ui, sans-serif; color: #5d6b7e; }
+dialog.ss-photo-cropper canvas { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 10px; background: #eef2f6; cursor: grab; touch-action: none; }
+dialog.ss-photo-cropper canvas:active { cursor: grabbing; }
+.ss-photo-zoom { display: flex; align-items: center; gap: 10px; margin: 12px 0; font: 600 14px system-ui, sans-serif; color: #172333; }
+.ss-photo-zoom input { flex: 1; }
+.ss-photo-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.ss-photo-actions button { min-height: 42px; padding: 0 16px; border-radius: 8px; border: 1px solid #c9d3e0; background: #fff; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+.ss-photo-actions .ss-photo-ok { background: #08766b; border-color: #08766b; color: #fff; }
+img.ss-photo-preview { display: block; width: 96px; height: 96px; margin-top: 8px; border-radius: 50%; object-fit: cover; border: 2px solid #dbe2ec; }
+
+/* Pages Utilisateurs (05/11, mise en page moderne) : le nom du champ au-dessus de sa valeur,
+   la valeur dans un cadre lisible. Présentation seulement. */
+#body[data-ss-users] .postbox table td { padding: 8px 10px; vertical-align: top; }
+#body[data-ss-users] .postbox .onclick { display: flex; flex-direction: column-reverse; gap: 4px; cursor: pointer; }
+#body[data-ss-users] .postbox .onclick br { display: none; }
+#body[data-ss-users] .postbox .legend-gray { display: block; font: 600 11px/1.3 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .04em; color: #5d6b7e; }
+#body[data-ss-users] .postbox .onclick .uld,
+#body[data-ss-users] .postbox td > .uld { display: block; min-height: 38px; box-sizing: border-box; padding: 9px 12px; border: 1px solid #dbe2ec; border-radius: 8px; background: #f7f9fb; color: #172333; font: 400 15px/1.35 system-ui, sans-serif; text-decoration: none; }
+#body[data-ss-users] .postbox .onclick:hover .uld,
+#body[data-ss-users] .postbox .onclick:focus-visible .uld { border-color: #08766b; background: #fff; }
+#body[data-ss-users] .postbox input[type="text"],
+#body[data-ss-users] .postbox input[type="email"],
+#body[data-ss-users] .postbox input[type="password"],
+#body[data-ss-users] .postbox select { min-height: 40px; box-sizing: border-box; padding: 8px 10px; border: 1px solid #b9c6d4; border-radius: 8px; font: 400 15px system-ui, sans-serif; max-width: 100%; }
+#body[data-ss-users] .postbox hr { border: 0; border-top: 1px solid #e3e9f0; margin: 14px 0; }
+/* Champs en lecture seule : même ordre (nom au-dessus), valeur en texte appuyé, sans cadre. */
+#body[data-ss-users] .postbox td:has(> .legend-gray) { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 4px; }
+#body[data-ss-users] .postbox td:has(> .legend-gray) > br { display: none; }
+#body[data-ss-users] .postbox .no-input-value { font: 600 15px/1.35 system-ui, sans-serif; color: #172333; }

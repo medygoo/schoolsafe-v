@@ -304,18 +304,35 @@ $profile_rows = DBGet( "SELECT ID,TITLE,PROFILE FROM user_profiles ORDER BY PROF
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Utilisateurs — <?php echo htmlspecialchars( (string) $school_title, ENT_QUOTES, 'UTF-8' ); ?> | SchoolSafe</title>
 <style>
-body{font-family:system-ui,sans-serif;margin:0;background:#f4f7fa;color:#172d40}
-main{max-width:56rem;margin:0 auto;padding:1.25rem}
-nav.top{background:#0b3b7a;color:#fff;padding:.6rem 1.25rem}
-nav.top a{color:#fff;margin-right:1rem}
-.card{background:#fff;border-radius:.75rem;padding:1.25rem;margin:1rem 0}
-table{border-collapse:collapse;width:100%}
-th,td{border:1px solid #dfe7ef;padding:.4rem;text-align:left;font-size:.9rem}
-.status{background:#e8f5e9;border-radius:.5rem;padding:.7rem}
-.alert{background:#fdecea;border-radius:.5rem;padding:.7rem}
-label{display:block;margin:.5rem 0}
-input,select{padding:.5rem;font-size:1rem;max-width:100%}
-small{color:#456}
+/* Mise en page moderne (05/11, demande du propriétaire) : couleurs et cartes de SchoolSafe. */
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;background:#f4f8f6;color:#17263b;font-size:15px;line-height:1.45}
+nav.top{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:6px;background:#0b4f48;padding:10px 16px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+nav.top a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.4);border-radius:18px;padding:6px 12px;font-size:14px}
+nav.top a:hover,nav.top a:focus-visible{background:#fff;color:#0b4f48}
+main{max-width:56rem;margin:0 auto;padding:18px 14px 48px}
+h1{margin:6px 0 4px;font-size:24px;color:#0b4f48}
+h2{margin:0 0 12px;font-size:19px;color:#0b4f48}
+h3{font-size:16px;color:#0b4f48}
+.card{background:#fff;border:1px solid #d6e4df;border-radius:12px;padding:18px;margin:16px 0;box-shadow:0 1px 3px rgba(23,38,59,.05)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{background:#eef7f4;color:#0b4f48;text-align:left}
+th,td{border-bottom:1px solid #e3ece8;padding:8px}
+.status{background:#e9f7f2;border:1px solid #bfe3d6;border-radius:10px;padding:10px 12px}
+.alert{background:#fdeeee;border:1px solid #f0c8c0;border-radius:10px;padding:10px 12px}
+label{display:block;margin:12px 0;font-weight:600;color:#17263b}
+input:not([type=checkbox]):not([type=radio]),select{display:block;width:100%;box-sizing:border-box;min-height:42px;margin-top:6px;padding:8px 10px;border:1px solid #b9cbc5;border-radius:8px;background:#fff;font:400 15px system-ui,sans-serif}
+input:focus,select:focus{outline:2px solid rgba(8,118,107,.35);border-color:#08766b}
+fieldset{border:1px solid #d6e4df;border-radius:10px;padding:10px 14px;margin:12px 0}
+fieldset label,label:has(> input[type=checkbox]){font-weight:400;display:flex;gap:8px;align-items:flex-start}
+button{min-height:44px;padding:0 18px;border:0;border-radius:8px;background:#08766b;color:#fff;font:600 15px system-ui,sans-serif;cursor:pointer}
+button:hover{filter:brightness(1.06)}
+ul{padding-left:18px}
+ul li{margin:4px 0}
+small{color:#556777}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px}
+dt{font-weight:600;color:#556777}
+dd{margin:0}
+code{font-size:17px;background:#eef7f4;border:1px dashed #08766b;border-radius:6px;padding:2px 8px}
 </style>
 </head>
 <body>

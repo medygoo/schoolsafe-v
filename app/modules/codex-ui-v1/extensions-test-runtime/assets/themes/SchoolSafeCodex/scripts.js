@@ -734,9 +734,104 @@
 				presentPageHeading(body);
 				presentFormLayout(body);
 			}
+			enhancePhotoInputs(body);
 		}
 		markOpen();
 		if (menuIsNarrow()) setMobilePanel('');
+	}
+	// Photos des personnes (05/11, demande du propriétaire) : à la sélection, une fenêtre permet
+	// de cadrer (déplacer, zoomer, tourner). Le navigateur envoie un carré de 450 px (taille gardée
+	// par le serveur), au même champ « photo » : les contrôles du serveur restent inchangés.
+	var PHOTO_SIZE = 450;
+	function enhancePhotoInputs(root) {
+		root.querySelectorAll('input[type="file"][name="photo"]:not([data-ss-cropper])').forEach(function (input) {
+			input.setAttribute('data-ss-cropper', '1');
+			input.addEventListener('change', function () {
+				var file = input.files && input.files[0];
+				if (!file || !/^image\//.test(file.type) || !window.DataTransfer || !HTMLCanvasElement.prototype.toBlob) return;
+				openPhotoCropper(file, input);
+			});
+		});
+	}
+	function openPhotoCropper(file, input) {
+		var url = URL.createObjectURL(file);
+		var img = new Image();
+		var state = {x: 0, y: 0, zoom: 1, turn: 0};
+		var dialog = document.createElement('dialog');
+		dialog.className = 'ss-photo-cropper';
+		dialog.setAttribute('aria-label', 'Cadrer la photo');
+		dialog.innerHTML = '<h2>Cadrer la photo</h2><p>Faites glisser la photo pour la placer dans le carré, puis réglez le zoom.</p>'
+			+ '<canvas width="' + PHOTO_SIZE + '" height="' + PHOTO_SIZE + '" tabindex="0" aria-label="Zone de cadrage : flèches du clavier pour déplacer"></canvas>'
+			+ '<label class="ss-photo-zoom">Zoom <input type="range" min="1" max="4" step="0.01" value="1"></label>'
+			+ '<div class="ss-photo-actions"><button type="button" data-act="turn">↻ Tourner</button>'
+			+ '<button type="button" data-act="cancel">Annuler</button>'
+			+ '<button type="button" data-act="ok" class="ss-photo-ok">Utiliser cette photo</button></div>';
+		document.body.appendChild(dialog);
+		var canvas = dialog.querySelector('canvas'), ctx = canvas.getContext('2d'), zoom = dialog.querySelector('input[type="range"]');
+		function dims() {
+			var rotated = state.turn % 2 === 1;
+			var w = rotated ? img.height : img.width, h = rotated ? img.width : img.height;
+			var scale = Math.max(PHOTO_SIZE / w, PHOTO_SIZE / h) * state.zoom;
+			return {w: w * scale, h: h * scale, scale: scale};
+		}
+		function draw() {
+			var d = dims();
+			state.x = Math.max(-(d.w - PHOTO_SIZE) / 2, Math.min((d.w - PHOTO_SIZE) / 2, state.x));
+			state.y = Math.max(-(d.h - PHOTO_SIZE) / 2, Math.min((d.h - PHOTO_SIZE) / 2, state.y));
+			ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, PHOTO_SIZE, PHOTO_SIZE);
+			ctx.save();
+			ctx.translate(PHOTO_SIZE / 2 + state.x, PHOTO_SIZE / 2 + state.y);
+			ctx.rotate(state.turn * Math.PI / 2);
+			ctx.drawImage(img, -img.width * d.scale / 2, -img.height * d.scale / 2, img.width * d.scale, img.height * d.scale);
+			ctx.restore();
+		}
+		function close(keep) {
+			if (!keep) input.value = '';
+			URL.revokeObjectURL(url);
+			dialog.close(); dialog.remove();
+		}
+		var drag = null;
+		canvas.addEventListener('pointerdown', function (event) {
+			var ratio = PHOTO_SIZE / canvas.getBoundingClientRect().width;
+			drag = {x: event.clientX, y: event.clientY, sx: state.x, sy: state.y, ratio: ratio};
+			canvas.setPointerCapture(event.pointerId);
+		});
+		canvas.addEventListener('pointermove', function (event) {
+			if (!drag) return;
+			state.x = drag.sx + (event.clientX - drag.x) * drag.ratio;
+			state.y = drag.sy + (event.clientY - drag.y) * drag.ratio;
+			draw();
+		});
+		canvas.addEventListener('pointerup', function () { drag = null; });
+		canvas.addEventListener('keydown', function (event) {
+			var step = {ArrowLeft: [-10, 0], ArrowRight: [10, 0], ArrowUp: [0, -10], ArrowDown: [0, 10]}[event.key];
+			if (!step) return;
+			event.preventDefault(); state.x += step[0]; state.y += step[1]; draw();
+		});
+		zoom.addEventListener('input', function () { state.zoom = Number(zoom.value); draw(); });
+		dialog.addEventListener('cancel', function (event) { event.preventDefault(); close(false); });
+		dialog.addEventListener('click', function (event) {
+			var act = event.target.getAttribute && event.target.getAttribute('data-act');
+			if (act === 'turn') { state.turn = (state.turn + 1) % 4; state.x = 0; state.y = 0; draw(); }
+			if (act === 'cancel') close(false);
+			if (act === 'ok') {
+				canvas.toBlob(function (blob) {
+					if (!blob) { close(false); return; }
+					var name = (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg';
+					var transfer = new DataTransfer();
+					transfer.items.add(new File([blob], name, {type: 'image/jpeg'}));
+					input.files = transfer.files;
+					var preview = input.parentElement.querySelector('.ss-photo-preview') || document.createElement('img');
+					preview.className = 'ss-photo-preview'; preview.alt = 'Aperçu de la photo cadrée';
+					preview.src = canvas.toDataURL('image/jpeg', 0.9);
+					if (!preview.parentElement) input.insertAdjacentElement('afterend', preview);
+					close(true);
+				}, 'image/jpeg', 0.9);
+			}
+		});
+		img.onload = function () { dialog.showModal(); draw(); canvas.focus(); };
+		img.onerror = function () { close(false); };
+		img.src = url;
 	}
 	// Lot U2 (B3, 05/11) : le titre de la page reprend le nom donné par le plan du menu,
 	// pour qu'une page porte partout le même nom (ex. « Fiche d'un utilisateur »).
@@ -759,7 +854,10 @@
 		var logo = document.createElement('img');
 		logo.src = '/schoolsafe-card-bridge/studio-validated-20261008/logo-schoolsafe.png';
 		logo.alt = 'SchoolSafe'; logo.width = 40; logo.height = 40;
-		var label = document.createElement('h2'); label.textContent = menuTitleForPage() || title.textContent.trim();
+		var menuTitle = menuTitleForPage();
+		var label = document.createElement('h2'); label.textContent = menuTitle || title.textContent.trim();
+		// Onglet du navigateur : même nom que le menu (« Fiche d'un utilisateur | … »).
+		if (menuTitle) document.title = menuTitle + document.title.replace(/^[^|]*/, ' ').replace(/^ +\|/, ' |').replace(/^ +$/, '');
 		var back = document.createElement('button');
 		back.type = 'button';
 		back.className = 'ss-page-back';
