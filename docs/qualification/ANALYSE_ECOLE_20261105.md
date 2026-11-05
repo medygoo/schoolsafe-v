@@ -132,3 +132,11 @@ image candidate, puis mis en ligne après votre accord.
 - Non fait : C4 (champ **Commune**, nouveau champ en base : décision à part ; « Ville » devient « Ville ou
   commune »), B5 (droit sur l'onglet Famille : changement de droit).
 - Reste : lot E3 (codes d'inscription RDC), décision C6 (« Ethnie »), ajouts proposés.
+
+## Réalisation — lot E3 codes d'inscription RDC (5 novembre 2026)
+
+- Appliqué en production (accord du propriétaire) : 7 codes RDC — Nouvelle inscription, Réinscription, Transfert
+  entrant, Transfert sortant, Abandon, Exclusion, Fin de cycle. Les 2 codes utilisés gardent leur numéro et leur sens ;
+  les 10 inscriptions restent rattachées. Sauvegarde `schoolsafe_bak_e3_enrollment_codes` ; retour arrière :
+  `ops/releases/ecole-e3-20261105/rollback.sql` (commit `670f163`).
+- Reste pour École : décisions C4 (champ Commune), C6 (« Ethnie »), B5 (droit sur l'onglet Famille), et les ajouts.
