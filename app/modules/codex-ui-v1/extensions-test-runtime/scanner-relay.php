@@ -324,6 +324,10 @@ try {
      $student=filter_var($result['data']['nativeStudentId'],FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);
      if($student===false||!DBGet("SELECT 1 FROM student_enrollment WHERE STUDENT_ID=".$student." AND SCHOOL_ID=".$school." AND SYEAR=".$year))throw new RuntimeException('NATIVE_STUDENT_NOT_ACCESSIBLE');
      $where=" WHERE STUDENT_ID=".$student." AND SCHOOL_ID=".$school." AND SYEAR=".$year;
+     // Lot F4b (05/11) : le modèle du pont compare un seul montant à un seuil en USD : frais et paiements en USD
+     // seulement, jamais additionnés aux FC (les dettes en FC sont signalées par la consultation native des frais).
+     require_once __DIR__.'/ProgramFunctions/SchoolSafeMoney.fnc.php';
+     if(SchoolSafeMoneyCurrencyReady())$where.=" AND CURRENCY='USD'";
      $billing=DBGet("SELECT (SELECT COUNT(*) FROM billing_fees".$where.") AS FEE_COUNT,(SELECT COALESCE(SUM(AMOUNT),0) FROM billing_fees".$where.") AS FEE_TOTAL,(SELECT COALESCE(SUM(AMOUNT),0)::numeric(14,2) FROM billing_payments".$where.") AS PAID");
      if(!isset($billing[1]['FEE_COUNT'],$billing[1]['FEE_TOTAL'],$billing[1]['PAID']))throw new RuntimeException('NATIVE_BILLING_UNAVAILABLE');
      [$status,$result]=$relay('fees',(object)['action'=>'result','qr_payload'=>$input->qr_payload,'modelId'=>$result['data']['modelId'],'paid'=>(string)$billing[1]['PAID'],'hasData'=>(int)$billing[1]['FEE_COUNT']>0&&(float)$billing[1]['FEE_TOTAL']>0]);

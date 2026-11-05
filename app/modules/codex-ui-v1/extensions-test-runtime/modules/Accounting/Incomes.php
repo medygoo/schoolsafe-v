@@ -274,9 +274,29 @@ if ( ! $_REQUEST['modfunc'] )
 			WHERE p.SYEAR='" . UserSyear() . "'
 			AND p.SCHOOL_ID='" . UserSchool() . "'
 			AND p.PAYMENT_DATE BETWEEN '" . $start_date_sql . "'
-			AND '" . $end_date . "'" );
+			AND '" . $end_date . "'" .
+			// Lot F4b (05/11) : le solde général est en USD : seuls les paiements des élèves en USD y entrent.
+			( SchoolSafeMoneyCurrencyReady() ? " AND p.CURRENCY='USD'" : '' ) );
 
 		$table .= '<tr><td>& ' . _( 'Total from Student Payments' ) . ': ' . '</td><td>' . Currency( $student_payments_total ) . '</td></tr>';
+
+		if ( SchoolSafeMoneyCurrencyReady() )
+		{
+			// Lot F4b (05/11) : paiements des élèves en FC, sur une ligne à part, hors du solde en USD.
+			$student_payments_total_fc = DBGetOne( "SELECT SUM(p.AMOUNT) AS TOTAL
+				FROM billing_payments p
+				WHERE p.SYEAR='" . UserSyear() . "'
+				AND p.SCHOOL_ID='" . UserSchool() . "'
+				AND p.PAYMENT_DATE BETWEEN '" . $start_date_sql . "'
+				AND '" . $end_date . "'
+				AND p.CURRENCY='FC'" );
+
+			if ( (float) $student_payments_total_fc )
+			{
+				$table .= '<tr><td colspan="2">Dont paiements des élèves en FC : ' .
+					SchoolSafeMoneyFormat( $student_payments_total_fc, 'FC' ) . ', non inclus dans le solde en USD.</td></tr>';
+			}
+		}
 	}
 	else
 	{

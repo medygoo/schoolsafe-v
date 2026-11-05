@@ -94,7 +94,7 @@ $e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
 <?php if($explanation!==''):?><p style="white-space:pre-wrap;background:#f4fbf8;border-radius:8px;padding:10px;margin:0"><?=$e($explanation)?></p><p class="bu-sub">Explication proposée par JASPE (<?=$e($explainLang)?>). En cas de doute, la note et le bulletin en français font foi.</p><?php elseif($explainError!==''):?><p class="bu-sub"><?=$e($explainError)?></p><?php endif;?></section>
 
 <?php elseif($family&&$access['reason']==='fees'):?><section class="bu-card bu-warn"><h2>Bulletin disponible après régularisation des frais</h2>
-<p>Le bulletin est prêt. Il s’ouvrira automatiquement dès que les frais scolaires dus seront payés.</p><p><b>Reste à payer : <?=$e(SchoolSafeFeeFormatCents((int)$access['remaining']))?></b></p>
+<p>Le bulletin est prêt. Il s’ouvrira automatiquement dès que les frais scolaires dus seront payés.</p><p><b>Reste à payer : <?=$e(($access['remaining_text']??'')!==''?$access['remaining_text']:SchoolSafeFeeFormatCents((int)$access['remaining']))?></b></p>
 <p class="bu-sub">Les notes de chaque devoir restent visibles dans « Travail de mon enfant ». En cas de difficulté, adressez-vous à la direction.</p></section>
 <?php elseif($family&&$access['reason']==='pending'):?><section class="bu-card"><p>Le bulletin n’est pas encore publié : le titulaire le prépare et la direction le valide. Vous serez prévenu dès qu’il sera disponible.</p></section>
 <?php else:?><section class="bu-card"><p>Pas encore de bulletin pour cette classe.</p></section><?php endif;?>

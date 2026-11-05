@@ -94,7 +94,7 @@ if($allowed&&$classCp&&$mp&&$_SERVER['REQUEST_METHOD']==='POST'){
             foreach($students as $sid=>$name){
                 try{
                     $acc=SchoolSafeBulletinAccess($sid,$school,$year,$day,$get);
-                    $msg=SchoolSafeBulletinNotice($first[$sid]??'',$label,$base.'/bulletin.php?eleve='.$sid,$acc['open']?0:(int)$acc['remaining'],$fees,(string)SchoolInfo('TITLE'));
+                    $msg=SchoolSafeBulletinNotice($first[$sid]??'',$label,$base.'/bulletin.php?eleve='.$sid,$acc['open']?0:(int)$acc['remaining'],$fees,(string)SchoolInfo('TITLE'),$acc['open']?'':(string)($acc['remaining_text']??''));
                     $rec=SchoolSafeNotifyResolveRecipients('school.announcement',$school,$year,$sid,$db);
                     if($rec)SchoolSafeNotifyEmit(['school_id'=>$school,'syear'=>$year,'student_id'=>$sid,'actor_staff_id'=>$staff,'event_type'=>'school.announcement',
                         'dedup_key'=>'bulletin:'.$classCp.':'.$sid.':'.$mp,'payload'=>['source'=>'bulletin','title'=>$msg[0],'message'=>$msg[1]]],$rec,$db,true);
@@ -167,7 +167,7 @@ $readOnly=static function($sid)use($status,$mp,$isDirection,$isTitulaire){return
 <td><input type="text" name="decision_note[<?=$sid?>]" value="<?=$e($st['DECISION_NOTE']??'')?>" maxlength="300" placeholder="ex. repêchage en calcul"<?=$ro?' disabled':''?>></td>
 <td><input type="text" name="titulaire_note[<?=$sid?>]" value="<?=$e($drafts[$sid]??($st['TITULAIRE_NOTE']??''))?>" maxlength="600"<?=$ro?' disabled':''?><?=isset($drafts[$sid])?' style="background:#fff8ec"':''?>></td><?php endif;?>
 <td><?=$e($labels[$st['STATUS']??'brouillon'])?></td>
-<td><a href="bulletin.php?<?=$e(http_build_query(['eleve'=>$sid,'pdf'=>1]))?>" target="_blank" rel="noopener">PDF</a><?php if($isDirection): $acc=SchoolSafeBulletinAccess($sid,$school,$year,date('Y-m-d'),$get); ?><br><span class="sb-sub"><?=$acc['reason']==='fees'?'frais : reste '.$e(SchoolSafeFeeFormatCents((int)$acc['remaining'])):($acc['reason']==='unlocked'?'ouvert (exception)':($acc['open']?'ouvert':'non publié'))?></span><?php endif;?></td></tr><?php endforeach;?>
+<td><a href="bulletin.php?<?=$e(http_build_query(['eleve'=>$sid,'pdf'=>1]))?>" target="_blank" rel="noopener">PDF</a><?php if($isDirection): $acc=SchoolSafeBulletinAccess($sid,$school,$year,date('Y-m-d'),$get); ?><br><span class="sb-sub"><?=$acc['reason']==='fees'?'frais : reste '.$e(($acc['remaining_text']??'')!==''?$acc['remaining_text']:SchoolSafeFeeFormatCents((int)$acc['remaining'])):($acc['reason']==='unlocked'?'ouvert (exception)':($acc['open']?'ouvert':'non publié'))?></span><?php endif;?></td></tr><?php endforeach;?>
 </tbody></table></div>
 <datalist id="sb-mentions"><?php foreach($mentions as $m):?><option value="<?=$e($m)?>"><?php endforeach;?></datalist>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><?php if($isTitulaire||$isDirection):?><button class="sb-btn light" name="action" value="enregistrer" type="submit">Enregistrer</button><button class="sb-btn" name="action" value="proposer" type="submit">Proposer à la direction</button><?php endif;?>

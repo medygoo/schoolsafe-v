@@ -203,7 +203,54 @@ if ( ! empty( $_REQUEST['staff_payroll'] ) )
 if ( ! empty( $_REQUEST['student_billing'] )
 	&& $RosarioModules['Student_Billing'] )
 {
+	require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+	// Lot F4b (05/11) : le total général est en USD. Les frais et paiements des élèves en FC sont affichés
+	// dans leur monnaie, comptés à part ($billing_fc_totals) et jamais ajoutés aux totaux USD.
+	$billing_multi_currency = SchoolSafeMoneyCurrencyReady();
+
+	$billing_fc_totals = [ 'DEBIT' => 0, 'CREDIT' => 0 ];
+
+	$billing_row = function( $row ) use ( $billing_multi_currency, &$billing_fc_totals )
+	{
+		if ( ! $billing_multi_currency )
+		{
+			return $row;
+		}
+
+		$is_fc = SchoolSafeMoneyCurrency( $row['SS_CURRENCY'] ?? 'USD' ) === 'FC';
+
+		foreach ( [ 'DEBIT', 'CREDIT' ] as $amount_column )
+		{
+			$value = $row[ $amount_column ] ?? '';
+
+			if ( ! $is_fc )
+			{
+				// Même mise en forme et même total que _makeCurrency().
+				$row[ $amount_column ] = _makeCurrency( $value, $amount_column );
+
+				continue;
+			}
+
+			if ( $value === '' || $value === null )
+			{
+				continue;
+			}
+
+			$billing_fc_totals[ $amount_column ] += (float) $value;
+
+			$row[ $amount_column ] = SchoolSafeMoneyFormat( $value, 'FC' );
+		}
+
+		return $row;
+	};
+
 	$fees_extra = $extra;
+
+	if ( $billing_multi_currency )
+	{
+		unset( $fees_extra['functions']['DEBIT'], $fees_extra['functions']['CREDIT'] );
+	}
 
 	// Fix PostgreSQL error ORDER BY "full_name" is ambiguous
 	$name_col_sql = DisplayNameSQL( 's' ) . " AS FULL_NAME,";
@@ -222,7 +269,8 @@ if ( ! empty( $_REQUEST['student_billing'] )
 	$fees_extra['FROM'] = issetVal( $fees_extra['FROM'], '' );
 	$fees_extra['WHERE'] = issetVal( $fees_extra['WHERE'], '' );
 
-	$fees_extra['SELECT_ONLY'] .= $name_col_sql . "f.AMOUNT AS DEBIT,'' AS CREDIT,CONCAT(f.TITLE,' ',COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID";
+	$fees_extra['SELECT_ONLY'] .= $name_col_sql . "f.AMOUNT AS DEBIT,'' AS CREDIT,CONCAT(f.TITLE,' ',COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID" .
+		( $billing_multi_currency ? ",f.CURRENCY AS SS_CURRENCY" : '' );
 
 	$fees_extra['FROM'] .= ',billing_fees f';
 
@@ -236,16 +284,22 @@ if ( ! empty( $_REQUEST['student_billing'] )
 
 	foreach ( (array) $fees_RET as $fee )
 	{
-		$RET[$i++] = $fee;
+		$RET[$i++] = $billing_row( $fee );
 	}
 
 	$student_payments_extra = $extra;
+
+	if ( $billing_multi_currency )
+	{
+		unset( $student_payments_extra['functions']['DEBIT'], $student_payments_extra['functions']['CREDIT'] );
+	}
 
 	$student_payments_extra['SELECT_ONLY'] = issetVal( $student_payments_extra['SELECT_ONLY'], '' );
 	$student_payments_extra['FROM'] = issetVal( $student_payments_extra['FROM'], '' );
 	$student_payments_extra['WHERE'] = issetVal( $student_payments_extra['WHERE'], '' );
 
-	$student_payments_extra['SELECT_ONLY'] .= $name_col_sql . "'' AS DEBIT,p.AMOUNT AS CREDIT,COALESCE(p.COMMENTS,' ') AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID";
+	$student_payments_extra['SELECT_ONLY'] .= $name_col_sql . "'' AS DEBIT,p.AMOUNT AS CREDIT,COALESCE(p.COMMENTS,' ') AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID" .
+		( $billing_multi_currency ? ",p.CURRENCY AS SS_CURRENCY" : '' );
 
 	$student_payments_extra['FROM'] .= ',billing_payments p';
 
@@ -267,7 +321,7 @@ if ( ! empty( $_REQUEST['student_billing'] )
 
 	foreach ( (array) $student_payments_RET as $student_payment )
 	{
-		$RET[$i++] = $student_payment;
+		$RET[$i++] = $billing_row( $student_payment );
 	}
 
 	$credit_col[] = _( 'Fee' );
@@ -314,6 +368,15 @@ $link['add']['html'] = [
 	'FULL_NAME' => ( empty( $name_col ) ? '' : _( 'Total' ) . ': ' ) .
 		'<b>' . Currency( $totals['CREDIT'] - $totals['DEBIT'] ) . '</b>',
 ];
+
+if ( ! empty( $billing_multi_currency )
+	&& ( $billing_fc_totals['DEBIT'] || $billing_fc_totals['CREDIT'] ) )
+{
+	// Lot F4b (05/11) : frais et paiements des élèves en FC, hors du total en USD.
+	$link['add']['html']['FULL_NAME'] .= '<br>Dont paiements des élèves en FC : ' .
+		SchoolSafeMoneyFormat( $billing_fc_totals['CREDIT'], 'FC' ) .
+		' (frais en FC : ' . SchoolSafeMoneyFormat( $billing_fc_totals['DEBIT'], 'FC' ) . '), non inclus dans le solde en USD.';
+}
 
 if ( isset( $_REQUEST['staff_payroll'], $_REQUEST['student_billing'] ) )
 {

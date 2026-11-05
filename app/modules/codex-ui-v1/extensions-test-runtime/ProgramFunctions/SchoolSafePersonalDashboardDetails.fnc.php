@@ -47,8 +47,22 @@ function SchoolSafePersonalDashboardDetails(string $profile): string
         $columns.=',COALESCE(p.total,0) AS paid';
         $joins.=" LEFT JOIN (SELECT student_id,SUM(amount) AS total FROM billing_payments WHERE school_id=$school AND syear=$year GROUP BY student_id) p ON p.student_id=s.student_id";
     }
+    // Lot F4b (05/11) : avec les deux monnaies, les montants sont lus par élève ET par monnaie (jamais additionnés).
+    require_once __DIR__.'/SchoolSafeMoney.fnc.php';
+    $multiCurrency=SchoolSafeMoneyCurrencyReady();
+    if ($multiCurrency) { $columns=''; $joins=''; }
     $rows=DBGet("SELECT DISTINCT s.student_id,s.first_name,s.last_name$columns FROM students s
         JOIN student_enrollment en ON en.student_id=s.student_id $joins WHERE $active AND $scope ORDER BY s.last_name,s.first_name,s.student_id");
+    $byCurrency=[];
+    if ($multiCurrency && $rows) {
+        $ids=implode(',',array_map(static function($row){return (int)$row['STUDENT_ID'];},$rows));
+        $sources=[];
+        if ($fees) $sources[]="SELECT student_id,currency,amount AS fees,0 AS paid FROM billing_fees WHERE school_id=$school AND syear=$year AND student_id IN ($ids)";
+        if ($payments) $sources[]="SELECT student_id,currency,0 AS fees,amount AS paid FROM billing_payments WHERE school_id=$school AND syear=$year AND student_id IN ($ids)";
+        $sums=DBGet("SELECT student_id,currency,SUM(fees) AS fees,SUM(paid) AS paid FROM (".implode(' UNION ALL ',$sources).") t
+            GROUP BY student_id,currency ORDER BY student_id,CASE WHEN currency='USD' THEN 0 ELSE 1 END");
+        foreach ($sums as $sum) $byCurrency[(int)$sum['STUDENT_ID']][SchoolSafeMoneyCurrency($sum['CURRENCY'])]=$sum;
+    }
     $html='<section class="ss-personal-details ss-personal-finance"><h3>'.($profile==='parent'?'Frais de mes enfants':'Mes frais scolaires').'</h3><div class="ss-personal-table-scroll"><table><thead><tr><th scope="col">Élève</th>';
     if ($fees) $html.='<th scope="col">Facture</th>';
     if ($payments) $html.='<th scope="col">Paye</th>';
@@ -56,11 +70,24 @@ function SchoolSafePersonalDashboardDetails(string $profile): string
     $html.='<th scope="col">Détails</th></tr></thead><tbody>';
     foreach ($rows as $row) {
         $html.='<tr><th scope="row">'.$e($row['FIRST_NAME'].' '.$row['LAST_NAME']).'</th>';
+        if ($multiCurrency) {
+            // Lot F4b (05/11) : une ligne par monnaie dans chaque case (USD d'abord, USD seul si aucun mouvement).
+            $cells=[];
+            foreach ($byCurrency[(int)$row['STUDENT_ID']] ?? ['USD'=>['FEES'=>0,'PAID'=>0]] as $currency=>$sum) {
+                $amounts=[];
+                if ($fees) $amounts[]=$sum['FEES'];
+                if ($payments) $amounts[]=$sum['PAID'];
+                if ($fees && $payments) $amounts[]=(float)$sum['FEES']-(float)$sum['PAID'];
+                foreach ($amounts as $i=>$amount) $cells[$i]=(isset($cells[$i])?$cells[$i].'<br>':'').$e(SchoolSafeMoneyFormat($amount,$currency));
+            }
+            foreach ($cells as $cell) $html.='<td>'.$cell.'</td>';
+        } else {
         $amounts=[];
         if ($fees) $amounts[]=$row['FEES'];
         if ($payments) $amounts[]=$row['PAID'];
         if ($fees && $payments) $amounts[]=(float)$row['FEES']-(float)$row['PAID'];
         foreach ($amounts as $amount) $html.='<td>'.$e(html_entity_decode(strip_tags(Currency($amount)),ENT_QUOTES,'UTF-8')).'</td>';
+        }
         $route=$fees?'StudentFees.php':'StudentPayments.php';
         $html.='<td><a href="Modules.php?modname=Student_Billing/'.$route.'&amp;student_id='.(int)$row['STUDENT_ID'].'">Consulter</a></td></tr>';
     }

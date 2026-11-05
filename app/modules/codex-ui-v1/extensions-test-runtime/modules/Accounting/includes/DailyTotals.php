@@ -88,18 +88,44 @@ if ( ! empty( $_REQUEST['staff_payroll'] ) )
 if ( ! empty( $_REQUEST['student_billing'] )
 	&& $RosarioModules['Student_Billing'] )
 {
+	require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+	// Lot F4b (05/11) : le solde général est en USD ; seuls les frais et paiements des élèves en USD y entrent.
+	// Ceux en FC sont lus à part et affichés sur une ligne séparée.
+	$billing_multi_currency = SchoolSafeMoneyCurrencyReady();
+
+	$billing_currency_where = $billing_multi_currency ? " AND CURRENCY='USD'" : '';
+
 	$billing_payments = DBGetOne( "SELECT sum(AMOUNT) AS AMOUNT
 		FROM billing_payments
 		WHERE SYEAR='" . UserSyear() . "'
 		AND SCHOOL_ID='" . UserSchool() . "'
 		AND PAYMENT_DATE BETWEEN '" . $start_date . "'
-		AND '" . $end_date . "'" );
+		AND '" . $end_date . "'" . $billing_currency_where );
 
 	$billing_fees = DBGetOne( "SELECT sum(f.AMOUNT) AS AMOUNT
 		FROM billing_fees f
 		WHERE f.SCHOOL_ID='" . UserSchool() . "'
 		AND f.ASSIGNED_DATE BETWEEN '" . $start_date . "'
-		AND '" . $end_date . "'" );
+		AND '" . $end_date . "'" . $billing_currency_where );
+
+	if ( $billing_multi_currency )
+	{
+		$billing_payments_fc = DBGetOne( "SELECT sum(AMOUNT) AS AMOUNT
+			FROM billing_payments
+			WHERE SYEAR='" . UserSyear() . "'
+			AND SCHOOL_ID='" . UserSchool() . "'
+			AND PAYMENT_DATE BETWEEN '" . $start_date . "'
+			AND '" . $end_date . "'
+			AND CURRENCY='FC'" );
+
+		$billing_fees_fc = DBGetOne( "SELECT sum(f.AMOUNT) AS AMOUNT
+			FROM billing_fees f
+			WHERE f.SCHOOL_ID='" . UserSchool() . "'
+			AND f.ASSIGNED_DATE BETWEEN '" . $start_date . "'
+			AND '" . $end_date . "'
+			AND f.CURRENCY='FC'" );
+	}
 }
 
 echo '<br />';
@@ -151,6 +177,14 @@ if ( ! empty( $_REQUEST['student_billing'] )
 
 echo '<tr><td><b>' . _( 'Total' ) . ': ' . '</b></td>' .
 	'<td><b>' . Currency( $total ) . '</b></td></tr>';
+
+if ( ! empty( $billing_multi_currency )
+	&& ( (float) $billing_payments_fc || (float) $billing_fees_fc ) )
+{
+	// Lot F4b (05/11) : frais et paiements des élèves en FC, hors du solde en USD.
+	echo '<tr><td colspan="2">Dont paiements des élèves en FC : ' . SchoolSafeMoneyFormat( $billing_payments_fc, 'FC' ) .
+		' (frais en FC : ' . SchoolSafeMoneyFormat( $billing_fees_fc, 'FC' ) . '), non inclus dans le solde en USD.</td></tr>';
+}
 
 echo '</table>';
 

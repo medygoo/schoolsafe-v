@@ -405,7 +405,86 @@ if ( isset( $_REQUEST['search_modfunc'] )
 		];
 	}
 
+	require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
 	if ( $RosarioModules['Student_Billing']
+		&& AllowUse( 'Student_Billing/StudentFees.php' )
+		&& SchoolSafeMoneyCurrencyReady() )
+	{
+		// Lot F4b (05/11) : solde, paiements et frais par monnaie (« 145,00 USD et 30 000,00 FC »), jamais additionnés.
+		// Chaque colonne est lue sous la forme « USD|FC » (partie vide = aucun mouvement), puis mise en forme.
+		$sb_fields = array_intersect( [ 'SB_BALANCE', 'SB_PAYMENTS', 'SB_FEES' ], array_keys( array_filter( (array) ( $_REQUEST['fields'] ?? [] ) ) ) );
+
+		if ( $sb_fields )
+		{
+			foreach ( [ 'f' => 'billing_fees', 'p' => 'billing_payments' ] as $sb_alias => $sb_table )
+			{
+				$extra['FROM'] .= ' LEFT JOIN (SELECT STUDENT_ID,SYEAR,
+					SUM(CASE WHEN CURRENCY=\'USD\' THEN AMOUNT END) AS USD,
+					SUM(CASE WHEN CURRENCY=\'FC\' THEN AMOUNT END) AS FC
+					FROM ' . $sb_table . '
+					GROUP BY STUDENT_ID,SYEAR) ' . $sb_alias . ' ON ' . $sb_alias . '.STUDENT_ID=ssm.STUDENT_ID
+					AND ' . $sb_alias . '.SYEAR=ssm.SYEAR';
+			}
+		}
+
+		if ( ! function_exists( 'SchoolSafeExportMoneyText' ) )
+		{
+			/**
+			 * Lot F4b (05/11) : « USD|FC » => « 145,00 USD et 30 000,00 FC » (USD seul si aucun mouvement).
+			 */
+			function SchoolSafeExportMoneyText( $value, $column = '' )
+			{
+				list( $usd, $fc ) = array_pad( explode( '|', (string) $value, 2 ), 2, '' );
+
+				$amounts = [];
+
+				if ( $usd !== '' || $fc === '' )
+				{
+					$amounts['USD'] = (float) $usd;
+				}
+
+				if ( $fc !== '' )
+				{
+					$amounts['FC'] = (float) $fc;
+				}
+
+				return SchoolSafeMoneyBalancesText( $amounts );
+			}
+		}
+
+		if ( ! empty( $_REQUEST['fields']['SB_BALANCE'] ) )
+		{
+			// Add Balance field to Advanced Report (payments minus fees, as before), per currency.
+			$extra['SELECT'] .= ",CONCAT(
+				CASE WHEN p.USD IS NULL AND f.USD IS NULL THEN '' ELSE (COALESCE(p.USD,0)-COALESCE(f.USD,0))::text END,
+				'|',
+				CASE WHEN p.FC IS NULL AND f.FC IS NULL THEN '' ELSE (COALESCE(p.FC,0)-COALESCE(f.FC,0))::text END) AS SB_BALANCE";
+
+			$extra['functions'] += [ 'SB_BALANCE' => 'SchoolSafeExportMoneyText' ];
+
+			$fields_list += [ 'SB_BALANCE' => _( 'Student Billing' ) . ' ' . _( 'Balance' ) ];
+		}
+
+		if ( ! empty( $_REQUEST['fields']['SB_PAYMENTS'] ) )
+		{
+			$extra['SELECT'] .= ",CONCAT(COALESCE(p.USD::text,''),'|',COALESCE(p.FC::text,'')) AS SB_PAYMENTS";
+
+			$extra['functions'] += [ 'SB_PAYMENTS' => 'SchoolSafeExportMoneyText' ];
+
+			$fields_list += [ 'SB_PAYMENTS' => _( 'Total from Payments' ) ];
+		}
+
+		if ( ! empty( $_REQUEST['fields']['SB_FEES'] ) )
+		{
+			$extra['SELECT'] .= ",CONCAT(COALESCE(f.USD::text,''),'|',COALESCE(f.FC::text,'')) AS SB_FEES";
+
+			$extra['functions'] += [ 'SB_FEES' => 'SchoolSafeExportMoneyText' ];
+
+			$fields_list += [ 'SB_FEES' => _( 'Total from Fees' ) ];
+		}
+	}
+	elseif ( $RosarioModules['Student_Billing']
 		&& AllowUse( 'Student_Billing/StudentFees.php' ) )
 	{
 		if ( ! empty( $_REQUEST['fields']['SB_BALANCE'] ) )

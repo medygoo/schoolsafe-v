@@ -37,6 +37,13 @@ function SchoolSafeFeeConsultResult(array $verify,array $ctx,array $ledger,array
         $result['balance']=SchoolSafeFeeFormatCents($ledger['balance_cents']);
         $result['fee_count']=$ledger['fee_count'];$result['overdue_count']=$ledger['overdue_count'];
         $result['overdue_basis']='nominal_unallocated';
+        // Lot F4b (05/11) : fee_total, paid_total et balance sont en USD ; détail de chaque monnaie à part.
+        if(isset($ledger['by_currency'])&&is_array($ledger['by_currency'])){
+            $result['currency']='USD';$result['by_currency']=[];
+            foreach($ledger['by_currency'] as $code=>$part)$result['by_currency'][$code]=['status'=>$part['status'],
+                'fee_total'=>SchoolSafeFeeFormatCents($part['fee_cents']),'paid_total'=>SchoolSafeFeeFormatCents($part['paid_cents']),
+                'balance'=>SchoolSafeFeeFormatCents($part['balance_cents'])];
+        }
     }
     return $result;
 }
@@ -48,9 +55,60 @@ function SchoolSafeFeeLedgerRead(int $student,int $school,int $year,callable $ge
 {
     if($student<1||$school<1||$year<1||preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/D',$day)!==1)throw new RuntimeException('INVALID_CONTEXT');
     $where='STUDENT_ID='.$student.' AND SCHOOL_ID='.$school.' AND SYEAR='.$year;
-    $rows=$get("SELECT 'fee' AS LEDGER_KIND,ID,AMOUNT,WAIVED_FEE_ID,NULL AS REFUNDED_PAYMENT_ID,DUE_DATE FROM billing_fees WHERE ".$where." AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_cases rc WHERE rc.fee_id IN (billing_fees.id,billing_fees.waived_fee_id))"
-        ." UNION ALL SELECT 'payment' AS LEDGER_KIND,ID,AMOUNT,NULL AS WAIVED_FEE_ID,REFUNDED_PAYMENT_ID,NULL AS DUE_DATE FROM billing_payments WHERE ".$where." AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_payment_purpose rp WHERE rp.payment_id IN (billing_payments.id,billing_payments.refunded_payment_id))");
+    // Lot F4b (05/11) : avec les deux monnaies, chaque ligne porte sa monnaie et le calcul se fait par monnaie.
+    $multiCurrency=SchoolSafeFeeCurrencyReady($get);
+    $currency=$multiCurrency?',CURRENCY':'';
+    $rows=$get("SELECT 'fee' AS LEDGER_KIND,ID,AMOUNT,WAIVED_FEE_ID,NULL AS REFUNDED_PAYMENT_ID,DUE_DATE".$currency." FROM billing_fees WHERE ".$where." AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_cases rc WHERE rc.fee_id IN (billing_fees.id,billing_fees.waived_fee_id))"
+        ." UNION ALL SELECT 'payment' AS LEDGER_KIND,ID,AMOUNT,NULL AS WAIVED_FEE_ID,REFUNDED_PAYMENT_ID,NULL AS DUE_DATE".$currency." FROM billing_payments WHERE ".$where." AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_payment_purpose rp WHERE rp.payment_id IN (billing_payments.id,billing_payments.refunded_payment_id))");
     if(!is_array($rows))throw new RuntimeException('FEE_READ_UNAVAILABLE');
+    if(!$multiCurrency||!$rows)return SchoolSafeFeeLedgerCompute($rows,$day);
+    $groups=['USD'=>[],'FC'=>[]];
+    foreach($rows as $row){
+        $code=is_array($row)&&strtoupper(trim((string)($row['CURRENCY']??'')))==='FC'?'FC':'USD';
+        $groups[$code][count($groups[$code])+1]=$row;
+    }
+    $ledgers=[];
+    foreach($groups as $code=>$group)if($group)$ledgers[$code]=SchoolSafeFeeLedgerCompute($group,$day);
+    // Tout en USD : résultat identique à l'unique monnaie d'avant le lot F4b.
+    if(array_keys($ledgers)===['USD'])return $ledgers['USD'];
+    return SchoolSafeFeeLedgerMerge($ledgers,$day);
+}
+
+// Lot F4b (05/11) : les colonnes de monnaie existent-elles (script F4a appliqué) ? Lu par le même accès que le grand livre.
+function SchoolSafeFeeCurrencyReady(callable $get): bool
+{
+    static $ready=null;
+    if($ready===null){
+        $found=$get("SELECT 1 AS READY FROM information_schema.columns WHERE table_name='billing_payments' AND column_name='paid_currency'");
+        $ready=is_array($found)&&isset($found[1]);
+    }
+    return $ready;
+}
+
+// Lot F4b (05/11) : réunit les grands livres par monnaie sans jamais additionner FC et USD.
+// Les montants principaux (fee_cents, paid_cents, balance_cents) restent ceux du USD : la règle d'accès financière
+// et l'historique des consultations sont en USD. Le statut est le pire des monnaies (une dette en FC rend le
+// dossier « exigible » ou « partiel ») ; les nombres de frais et d'échéances dépassées sont comptés toutes monnaies.
+// 'by_currency' garde le détail de chaque monnaie.
+function SchoolSafeFeeLedgerMerge(array $ledgers,string $day): array
+{
+    $main=$ledgers['USD']??SchoolSafeFeeLedgerCompute([],$day);
+    $rank=['no_data'=>0,'exempt'=>1,'paid'=>1,'partial'=>2,'due'=>3];
+    $main['has_data']=false;$main['fee_count']=0;$main['overdue_count']=0;$status=$main['status'];
+    foreach($ledgers as $code=>$ledger){
+        $main['has_data']=$main['has_data']||$ledger['has_data'];
+        $main['fee_count']+=$ledger['fee_count'];$main['overdue_count']+=$ledger['overdue_count'];
+        if(($rank[$ledger['status']]??0)>($rank[$status]??0))$status=$ledger['status'];
+        foreach(['nominal_due_from'=>-1,'nominal_due_to'=>1] as $key=>$direction)
+            if($ledger[$key]!==null&&($main[$key]===null||strcmp($ledger[$key],$main[$key])*$direction>0))$main[$key]=$ledger[$key];
+    }
+    $main['status']=$status;$main['currency']='USD';$main['by_currency']=$ledgers;
+    return $main;
+}
+
+// Calcul d'un grand livre (une seule monnaie) à partir des lignes lues ; inchangé avant le lot F4b.
+function SchoolSafeFeeLedgerCompute(array $rows,string $day): array
+{
     $total=0;$waiverTotal=0;$paid=0;$fees=[];$adjustments=[];
     $billedPositive=0;$paymentsPositive=0;$refundAdjustments=0;$feeAdjustments=0;$paymentAdjustments=0;
     foreach($rows as $row){

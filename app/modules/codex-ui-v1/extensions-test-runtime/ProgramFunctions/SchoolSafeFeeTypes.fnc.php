@@ -159,20 +159,59 @@ function SchoolSafeFeeTypesClassify( array $fees, int $paidCents, array $types, 
 function SchoolSafeFeeTypesLedger( int $student, int $school, int $year, callable $get ): array
 {
     $where = 'STUDENT_ID=' . $student . ' AND SCHOOL_ID=' . $school . ' AND SYEAR=' . $year;
-    $rows = $get( "SELECT 'fee' AS KIND,ID,TITLE,AMOUNT,WAIVED_FEE_ID,DUE_DATE FROM billing_fees WHERE " . $where . " AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_cases rc WHERE rc.fee_id IN (billing_fees.id,billing_fees.waived_fee_id))"
-        . " UNION ALL SELECT 'payment' AS KIND,ID,NULL AS TITLE,AMOUNT,NULL AS WAIVED_FEE_ID,NULL AS DUE_DATE FROM billing_payments WHERE " . $where . " AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_payment_purpose rp WHERE rp.payment_id IN (billing_payments.id,billing_payments.refunded_payment_id))" );
+    // Lot F4b (05/11) : avec les deux monnaies, frais et paiements sont aussi regroupés par monnaie ('by_currency').
+    // 'fees' et 'paid_cents' ne gardent alors que le USD (jamais d'addition FC + USD).
+    $multiCurrency = SchoolSafeFeeCurrencyReady( $get );
+    $currency = $multiCurrency ? ',CURRENCY' : '';
+    $rows = $get( "SELECT 'fee' AS KIND,ID,TITLE,AMOUNT,WAIVED_FEE_ID,DUE_DATE" . $currency . " FROM billing_fees WHERE " . $where . " AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_cases rc WHERE rc.fee_id IN (billing_fees.id,billing_fees.waived_fee_id))"
+        . " UNION ALL SELECT 'payment' AS KIND,ID,NULL AS TITLE,AMOUNT,NULL AS WAIVED_FEE_ID,NULL AS DUE_DATE" . $currency . " FROM billing_payments WHERE " . $where . " AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_payment_purpose rp WHERE rp.payment_id IN (billing_payments.id,billing_payments.refunded_payment_id))" );
     if ( ! is_array( $rows ) ) throw new RuntimeException( 'FEE_READ_UNAVAILABLE' );
-    $fees = []; $adjust = []; $paid = 0;
+    $fees = []; $adjust = []; $paid = [];
     foreach ( $rows as $row )
     {
+        $code = $multiCurrency && strtoupper( trim( (string) ( $row['CURRENCY'] ?? '' ) ) ) === 'FC' ? 'FC' : 'USD';
         $cents = SchoolSafeFeeSignedCents( (string) $row['AMOUNT'] );
-        if ( $row['KIND'] === 'payment' ) { $paid += $cents; continue; }
+        if ( $row['KIND'] === 'payment' ) { $paid[ $code ] = ( $paid[ $code ] ?? 0 ) + $cents; continue; }
+        // Une remise suit la monnaie du frais qu'elle réduit (même élève, même écriture d'origine).
         if ( isset( $row['WAIVED_FEE_ID'] ) && $row['WAIVED_FEE_ID'] !== '' ) { $adjust[ (int) $row['WAIVED_FEE_ID'] ] = ( $adjust[ (int) $row['WAIVED_FEE_ID'] ] ?? 0 ) + $cents; continue; }
         $fees[ (int) $row['ID'] ] = [ 'id' => (int) $row['ID'], 'title' => (string) $row['TITLE'], 'cents' => $cents,
-            'due' => is_string( $row['DUE_DATE'] ) && $row['DUE_DATE'] !== '' ? substr( $row['DUE_DATE'], 0, 10 ) : null ];
+            'due' => is_string( $row['DUE_DATE'] ) && $row['DUE_DATE'] !== '' ? substr( $row['DUE_DATE'], 0, 10 ) : null, 'currency' => $code ];
     }
     foreach ( $adjust as $id => $cents ) if ( isset( $fees[ $id ] ) ) $fees[ $id ]['cents'] += $cents;
-    return [ 'fees' => array_values( $fees ), 'paid_cents' => $paid, 'has_data' => (bool) $rows ];
+    if ( ! $multiCurrency || ! in_array( 'FC', array_merge( array_column( $fees, 'currency' ), array_keys( $paid ) ), true ) )
+    {
+        // Comportement d'origine (une seule monnaie, ou aucune ligne en FC) : lignes de frais sans clé de monnaie.
+        foreach ( $fees as $id => $fee ) unset( $fees[ $id ]['currency'] );
+        return [ 'fees' => array_values( $fees ), 'paid_cents' => $paid['USD'] ?? 0, 'has_data' => (bool) $rows ];
+    }
+    $byCurrency = [];
+    foreach ( $fees as $fee ) $byCurrency[ $fee['currency'] ]['fees'][] = $fee;
+    foreach ( $paid as $code => $cents ) $byCurrency[ $code ]['paid_cents'] = $cents;
+    foreach ( $byCurrency as $code => $part ) $byCurrency[ $code ] += [ 'fees' => [], 'paid_cents' => 0 ];
+    uksort( $byCurrency, fn( $a, $b ) => ( $a === 'USD' ? 0 : 1 ) <=> ( $b === 'USD' ? 0 : 1 ) );
+    return [ 'fees' => $byCurrency['USD']['fees'] ?? [], 'paid_cents' => $byCurrency['USD']['paid_cents'] ?? 0,
+        'has_data' => (bool) $rows, 'by_currency' => $byCurrency ];
+}
+
+// Lot F4b (05/11) : classement par monnaie (frais d'une monnaie contre paiements de la même monnaie), puis pour
+// chaque type la pire couleur des monnaies (rouge > jaune > vert). Même structure que SchoolSafeFeeTypesClassify ;
+// chaque type porte en plus 'currency' (monnaie dont viennent ses montants).
+function SchoolSafeFeeTypesClassifyByCurrency( array $byCurrency, array $types, string $day ): array
+{
+    $rank = [ 'green' => 0, 'yellow' => 1, 'red' => 2 ];
+    $merged = []; $worst = null;
+    foreach ( $byCurrency as $code => $part )
+    {
+        $result = SchoolSafeFeeTypesClassify( $part['fees'] ?? [], (int) ( $part['paid_cents'] ?? 0 ), $types, $day );
+        if ( $result['color'] !== null && ( $worst === null || $rank[ $result['color'] ] > $rank[ $worst ] ) ) $worst = $result['color'];
+        foreach ( $result['types'] as $type )
+            if ( ! isset( $merged[ $type['id'] ] ) || $rank[ $type['color'] ] > $rank[ $merged[ $type['id'] ]['color'] ] )
+                $merged[ $type['id'] ] = $type + [ 'currency' => $code ];
+    }
+    // Ordre d'origine : types du barème, puis « Autres frais ».
+    $order = array_flip( array_merge( array_column( $types, 'id' ), [ 'autres' ] ) );
+    uksort( $merged, fn( $a, $b ) => ( $order[ $a ] ?? PHP_INT_MAX ) <=> ( $order[ $b ] ?? PHP_INT_MAX ) );
+    return [ 'color' => $merged ? $worst : null, 'types' => array_values( $merged ) ];
 }
 
 // Etat des frais par type d'un eleve (null si aucun bareme par type n'est regle).
@@ -182,6 +221,8 @@ function SchoolSafeFeeTypesStatus( int $student, int $school, int $year, callabl
     if ( ! $config['types'] ) return null;
     $ledger = SchoolSafeFeeTypesLedger( $student, $school, $year, $get );
     if ( ! $ledger['has_data'] ) return [ 'color' => null, 'types' => [] ];
+    // Lot F4b (05/11) : deux monnaies => classement par monnaie, pire couleur gardée pour chaque type.
+    if ( isset( $ledger['by_currency'] ) ) return SchoolSafeFeeTypesClassifyByCurrency( $ledger['by_currency'], $config['types'], $day );
     return SchoolSafeFeeTypesClassify( $ledger['fees'], $ledger['paid_cents'], $config['types'], $day );
 }
 
@@ -193,6 +234,8 @@ function SchoolSafeFeeTypesSummary( ?array $status, bool $detail ): array
     {
         $row = [ 'label' => $type['label'], 'color' => $type['color'], 'block_service' => $type['block_service'] ];
         if ( $detail ) $row += [ 'percent' => $type['percent'], 'remaining' => SchoolSafeFeeFormatCents( $type['remaining_cents'] ), 'next_due' => $type['next_due'] ];
+        // Lot F4b (05/11) : monnaie du reste affiché (seulement quand les deux monnaies sont en service).
+        if ( $detail && isset( $type['currency'] ) ) $row['currency'] = $type['currency'];
         $out[] = $row;
     }
     return $out;
@@ -233,7 +276,8 @@ function SchoolSafeFeeTypesAlert( int $student, int $school, int $year, array $s
         $out = SchoolSafeNotifyEmit( [ 'school_id' => $school, 'syear' => $year, 'student_id' => $student, 'actor_staff_id' => $actor ?: null,
             'event_type' => 'fee.reminder', 'dedup_key' => 'fee:' . $school . ':' . $student . ':' . $type['id'] . ':' . $week . ':' . $type['color'],
             'payload' => [ 'source' => 'fee_types', 'title' => $type['color'] === 'red' ? 'Frais en retard' : 'Rappel de frais', 'message' => $message,
-                'staff_note' => $full . ' : ' . $label . ', ' . $type['percent'] . ' % de la part échue payé (reste ' . SchoolSafeFeeFormatCents( $type['remaining_cents'] ) . ').' ] ],
+                // Lot F4b (05/11) : la monnaie du reste est précisée quand elle est connue.
+                'staff_note' => $full . ' : ' . $label . ', ' . $type['percent'] . ' % de la part échue payé (reste ' . SchoolSafeFeeFormatCents( $type['remaining_cents'] ) . ( isset( $type['currency'] ) ? ' ' . $type['currency'] : '' ) . ').' ] ],
             $recipients, $db, true );
         if ( is_array( $out ) && ( $out['created'] ?? false ) ) $sent++;
     }
@@ -279,7 +323,9 @@ function SchoolSafeFeeTypesTraceRows( array $status, string $day ): array
     foreach ( (array) ( $status['types'] ?? [] ) as $type )
         $rows[] = [ 'id' => $type['id'], 'label' => $type['label'], 'color' => $type['color'], 'percent' => $type['percent'],
             'due' => SchoolSafeFeeFormatCents( $type['due_cents'] ), 'covered' => SchoolSafeFeeFormatCents( $type['covered_cents'] ),
-            'remaining' => SchoolSafeFeeFormatCents( $type['remaining_cents'] ), 'next_due' => $type['next_due'], 'block_service' => $type['block_service'] ];
+            'remaining' => SchoolSafeFeeFormatCents( $type['remaining_cents'] ), 'next_due' => $type['next_due'], 'block_service' => $type['block_service'] ]
+            // Lot F4b (05/11) : monnaie des montants de la ligne (deux monnaies en service seulement).
+            + ( isset( $type['currency'] ) ? [ 'currency' => $type['currency'] ] : [] );
     return [ 'day' => $day, 'color' => $status['color'] ?? null, 'types' => $rows ];
 }
 

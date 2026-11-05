@@ -79,8 +79,17 @@ if ( ! function_exists( 'DashboardAccountingAdmin' ) )
 			ORDER BY YEAR_MONTH_DATE DESC
 			LIMIT 2", [], [ 'YEAR_MONTH_DATE' ] );
 
+		require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+		// Lot F4b (05/11) : le solde général est en USD ; seuls les paiements des élèves en USD y entrent.
+		// Les paiements en FC sont lus à part (TOTAL_STUDENT_PAYMENTS_FC) et affichés sur une ligne séparée.
+		$student_payments_sql = SchoolSafeMoneyCurrencyReady() ?
+			"SUM(CASE WHEN CURRENCY='USD' THEN AMOUNT END) AS TOTAL_STUDENT_PAYMENTS,
+			SUM(CASE WHEN CURRENCY='FC' THEN AMOUNT END) AS TOTAL_STUDENT_PAYMENTS_FC" :
+			"SUM(AMOUNT) AS TOTAL_STUDENT_PAYMENTS";
+
 		$student_payments_RET = DBGet( "SELECT CAST(PAYMENT_DATE AS char(7)) AS YEAR_MONTH_DATE,
-			SUM(AMOUNT) AS TOTAL_STUDENT_PAYMENTS
+			" . $student_payments_sql . "
 			FROM billing_payments
 			WHERE SYEAR='" . UserSyear() . "'
 			AND SCHOOL_ID='" . UserSchool() . "'
@@ -120,6 +129,15 @@ if ( ! function_exists( 'DashboardAccountingAdmin' ) )
 		}
 
 		$accounting_data[_( 'General Balance' )] = Currency( $general_balance );
+
+		if ( ! empty( $accounting_RET[date( 'Y-m' )][1]['TOTAL_STUDENT_PAYMENTS_FC'] ) )
+		{
+			// Lot F4b (05/11) : paiements des élèves en FC du mois, hors du solde en USD.
+			$accounting_data['Dont paiements des élèves en FC'] = SchoolSafeMoneyFormat(
+				$accounting_RET[date( 'Y-m' )][1]['TOTAL_STUDENT_PAYMENTS_FC'],
+				'FC'
+			) . ', non inclus dans le solde en USD';
+		}
 
 		foreach ( (array) $accounting_RET as $year_month => $accounting )
 		{
@@ -175,6 +193,15 @@ if ( ! function_exists( 'DashboardAccountingAdmin' ) )
 				$accounting_data_month .= NoInput(
 					Currency( $accounting[1]['TOTAL_STUDENT_PAYMENTS'] ),
 					_( 'Student Payments' )
+				) . '<br />';
+			}
+
+			if ( ! empty( $accounting[1]['TOTAL_STUDENT_PAYMENTS_FC'] ) )
+			{
+				// Lot F4b (05/11) : paiements des élèves en FC, non ajoutés au solde du mois (en USD).
+				$accounting_data_month .= NoInput(
+					SchoolSafeMoneyFormat( $accounting[1]['TOTAL_STUDENT_PAYMENTS_FC'], 'FC' ),
+					'Dont paiements des élèves en FC, non inclus dans le solde en USD'
 				) . '<br />';
 			}
 

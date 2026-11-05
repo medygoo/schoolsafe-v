@@ -58,10 +58,21 @@ $extra['functions'] = [
 // Include Students active as of Timeframe end date.
 $extra['DATE'] = $end_date;
 
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+// Lot F4b (05/11) : chaque ligne est affichée dans sa monnaie ; les totaux sont faits par monnaie (USD, FC).
+$daily_multi_currency = SchoolSafeMoneyCurrencyReady();
+
+if ( $daily_multi_currency )
+{
+	unset( $extra['functions']['DEBIT'], $extra['functions']['CREDIT'] );
+}
+
 $fees_extra = $extra;
 
 $fees_extra['SELECT'] = issetVal( $fees_extra['SELECT'], '' );
-$fees_extra['SELECT'] .= ",f.AMOUNT AS DEBIT,'' AS CREDIT,CONCAT(f.TITLE, ' ', COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID,f.CREATED_BY,f.CREATED_AT";
+$fees_extra['SELECT'] .= ",f.AMOUNT AS DEBIT,'' AS CREDIT,CONCAT(f.TITLE, ' ', COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID,f.CREATED_BY,f.CREATED_AT" .
+	( $daily_multi_currency ? ",f.CURRENCY AS SS_CURRENCY" : '' );
 
 $fees_extra['FROM'] = issetVal( $fees_extra['FROM'], '' );
 $fees_extra['FROM'] .= ',billing_fees f';
@@ -77,7 +88,8 @@ $fees_sql_count = $_ROSARIO['SQLLimitForList']['sql_count'];
 $payments_extra = $extra;
 
 $payments_extra['SELECT'] = issetVal( $payments_extra['SELECT'], '' );
-$payments_extra['SELECT'] .= ",'' AS DEBIT,p.AMOUNT AS CREDIT,COALESCE(p.COMMENTS,'') AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID,p.CREATED_BY,p.CREATED_AT";
+$payments_extra['SELECT'] .= ",'' AS DEBIT,p.AMOUNT AS CREDIT,COALESCE(p.COMMENTS,'') AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID,p.CREATED_BY,p.CREATED_AT" .
+	( $daily_multi_currency ? ",p.CURRENCY AS SS_CURRENCY" : '' );
 
 $payments_extra['FROM'] = issetVal( $payments_extra['FROM'], '' );
 $payments_extra['FROM'] .= ',billing_payments p';
@@ -136,6 +148,57 @@ $link['add']['html'] = [
 	'DEBIT' => '<b>' . Currency( $totals['DEBIT'] ) . '</b>',
 	'CREDIT' => '<b>' . Currency( $totals['CREDIT'] ) . '</b>',
 ];
+
+if ( $daily_multi_currency )
+{
+	// Lot F4b (05/11) : montant de chaque ligne dans sa monnaie, totaux par monnaie (USD d'abord, USD seul si vide).
+	$totals_by_currency = [];
+
+	foreach ( (array) $RET as $i => $transaction )
+	{
+		$currency = SchoolSafeMoneyCurrency( $transaction['SS_CURRENCY'] ?? 'USD' );
+
+		$totals_by_currency += [ $currency => [ 'DEBIT' => 0, 'CREDIT' => 0 ] ];
+
+		foreach ( [ 'DEBIT', 'CREDIT' ] as $amount_column )
+		{
+			$value = $transaction[ $amount_column ] ?? '';
+
+			if ( $value === '' || $value === null )
+			{
+				continue;
+			}
+
+			$totals_by_currency[ $currency ][ $amount_column ] += (float) $value;
+
+			$RET[ $i ][ $amount_column ] = SchoolSafeMoneyFormat( $value, $currency );
+		}
+	}
+
+	$totals_lines = [ 'FULL_NAME' => [], 'DEBIT' => [], 'CREDIT' => [] ];
+
+	foreach ( array_keys( SchoolSafeMoneyCurrencies() ) as $currency )
+	{
+		if ( ! isset( $totals_by_currency[ $currency ] )
+			&& ( $currency !== 'USD' || $totals_by_currency ) )
+		{
+			continue;
+		}
+
+		$currency_totals = $totals_by_currency[ $currency ] ?? [ 'DEBIT' => 0, 'CREDIT' => 0 ];
+
+		$totals_lines['FULL_NAME'][] = SchoolSafeMoneyFormat( $currency_totals['CREDIT'] - $currency_totals['DEBIT'], $currency );
+		$totals_lines['DEBIT'][] = SchoolSafeMoneyFormat( $currency_totals['DEBIT'], $currency );
+		$totals_lines['CREDIT'][] = SchoolSafeMoneyFormat( $currency_totals['CREDIT'], $currency );
+	}
+
+	$link['add']['html'] = [
+		'FULL_NAME' => _( 'Total' ) . ': ' .
+			'<b>' . implode( '<br>', $totals_lines['FULL_NAME'] ) . '</b>',
+		'DEBIT' => '<b>' . implode( '<br>', $totals_lines['DEBIT'] ) . '</b>',
+		'CREDIT' => '<b>' . implode( '<br>', $totals_lines['CREDIT'] ) . '</b>',
+	];
+}
 
 // Force display of $link['add'] on PDF, Export or if not allowed to edit
 $options['add'] = true;

@@ -26,6 +26,33 @@ function SchoolSafeBulletinFeesRemaining(int $student, int $school, int $year, s
 }
 
 /**
+ * Lot F4b (05/11) : reste à payer par monnaie (centimes, seulement les monnaies où il reste quelque chose).
+ * Une dette dans l'une OU l'autre monnaie garde le bulletin fermé ; on n'additionne jamais FC et USD.
+ */
+function SchoolSafeBulletinFeesRemainingByCurrency(int $student, int $school, int $year, string $day, callable $get): array
+{
+    require_once __DIR__ . '/SchoolSafeFeeTypes.fnc.php';
+    $ledger = SchoolSafeFeeTypesLedger($student, $school, $year, $get);
+    $parts = $ledger['by_currency'] ?? ['USD' => ['fees' => $ledger['fees'], 'paid_cents' => $ledger['paid_cents']]];
+    $remaining = [];
+    foreach ($parts as $code => $part) {
+        $due = 0;
+        foreach ($part['fees'] as $fee) if ((int) $fee['cents'] > 0 && ($fee['due'] === null || strcmp($fee['due'], $day) <= 0)) $due += (int) $fee['cents'];
+        $left = max(0, $due - (int) $part['paid_cents']);
+        if ($left > 0) $remaining[$code] = $left;
+    }
+    return $remaining;
+}
+
+/** Lot F4b : « 145.00 USD et 30000.00 FC » à partir des restes par monnaie. */
+function SchoolSafeBulletinRemainingText(array $byCurrency): string
+{
+    $parts = [];
+    foreach ($byCurrency as $code => $cents) $parts[] = SchoolSafeFeeFormatCents((int) $cents) . ' ' . $code;
+    return implode(' et ', $parts);
+}
+
+/**
  * Ce que le parent peut voir pour un eleve : classe a bulletin, trimestres valides, frais, ouverture.
  * 'open' : le bulletin s'ouvre ; sinon 'reason' explique pourquoi.
  */
@@ -40,9 +67,13 @@ function SchoolSafeBulletinAccess(int $student, int $school, int $year, string $
     if (!$validated) return ['class' => $classCp, 'open' => false, 'validated' => [], 'reason' => 'pending', 'remaining' => 0];
     if (!SchoolSafeBulletinFeesRequired($school, $get)) return ['class' => $classCp, 'open' => true, 'validated' => $validated, 'reason' => '', 'remaining' => 0];
     $unlocked = (bool) $get("SELECT 1 FROM schoolsafe_bulletin_unlocks WHERE CLASS_COURSE_PERIOD_ID=" . $classCp . " AND STUDENT_ID=" . $student . " AND MARKING_PERIOD_ID IN (" . implode(',', $validated) . ") LIMIT 1");
-    $remaining = SchoolSafeBulletinFeesRemaining($student, $school, $year, $day, $get);
-    if ($remaining === 0 || $unlocked) return ['class' => $classCp, 'open' => true, 'validated' => $validated, 'reason' => $unlocked && $remaining ? 'unlocked' : '', 'remaining' => $remaining];
-    return ['class' => $classCp, 'open' => false, 'validated' => $validated, 'reason' => 'fees', 'remaining' => $remaining];
+    // Lot F4b (05/11) : dette dans l'une ou l'autre monnaie ; 'remaining' garde le reste en USD (centimes),
+    // 'remaining_text' donne le reste lisible par monnaie.
+    $byCurrency = SchoolSafeBulletinFeesRemainingByCurrency($student, $school, $year, $day, $get);
+    $remaining = (int) ($byCurrency['USD'] ?? 0);
+    $text = SchoolSafeBulletinRemainingText($byCurrency);
+    if (!$byCurrency || $unlocked) return ['class' => $classCp, 'open' => true, 'validated' => $validated, 'reason' => $unlocked && $byCurrency ? 'unlocked' : '', 'remaining' => $remaining, 'remaining_text' => $text];
+    return ['class' => $classCp, 'open' => false, 'validated' => $validated, 'reason' => 'fees', 'remaining' => $remaining, 'remaining_text' => $text];
 }
 
 /** Branches groupees par maxima de periode (croissants), ordre de la liste conserve dans chaque groupe. */
@@ -142,11 +173,12 @@ function SchoolSafeBulletinHtml(array $v): string
 }
 
 /** Message aux parents quand la direction valide un trimestre. */
-function SchoolSafeBulletinNotice(string $first, string $term, string $link, int $remaining, bool $feesRequired, string $school): array
+function SchoolSafeBulletinNotice(string $first, string $term, string $link, int $remaining, bool $feesRequired, string $school, string $remainingText = ''): array
 {
     $who = $first !== '' ? $first : 'votre enfant';
-    $body = $feesRequired && $remaining > 0
-        ? '📄 Le bulletin du ' . $term . ' de ' . $who . ' est prêt. Il s’ouvrira dès la régularisation des frais scolaires (reste à payer : ' . SchoolSafeFeeFormatCents($remaining) . ').'
+    // Lot F4b (05/11) : reste lisible par monnaie quand il est fourni.
+    $body = $feesRequired && ($remaining > 0 || $remainingText !== '')
+        ? '📄 Le bulletin du ' . $term . ' de ' . $who . ' est prêt. Il s’ouvrira dès la régularisation des frais scolaires (reste à payer : ' . ($remainingText !== '' ? $remainingText : SchoolSafeFeeFormatCents($remaining)) . ').'
         : '📄 Le bulletin du ' . $term . ' de ' . $who . ' est disponible : ' . $link;
     return ['Bulletin du ' . $term, $body . "\n— " . ($school !== '' ? $school . ' · ' : '') . 'SchoolSafe · Un enfant protégé, un parent informé'];
 }
