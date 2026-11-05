@@ -169,6 +169,7 @@ ou en FC ?
   d'essai de la base avec frais et paiement en FC (comptes, couleur au scan et reste du bulletin justes par monnaie,
   copie supprimée) ; 10 pages de Finance ouvertes sans erreur, montants au format `75 000,00 USD`.
 - Défaut vu à l'écran : sur écran étroit, les listes de monnaie étaient coupées dans la case du montant.
-  Correctif `finance-f4b2-20261105` (commit après `ff87168`) préparé : une colonne par monnaie.
+  Correctif `finance-f4b2-20261105` (commit `dcb1213`) **en production** (accord du propriétaire) : colonnes
+  « Monnaie reçue » et « Compte » (paiements), « Monnaie » (frais) ; vérifié sur écran étroit, listes entières.
 - Limites connues : la règle rouge et le blocage au scan restent en USD (une dette en FC s'affiche sans bloquer) ;
   tri des soldes alphabétique ; recherche par solde en USD ; rattrapage, paie, trésorerie et cantine en USD (lot F4c).
