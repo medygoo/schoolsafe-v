@@ -84,6 +84,20 @@ function SaveEnrollment()
 
 		if ( ! empty( $columns['END_DATE'] ) )
 		{
+			// SchoolSafe lot E1 (A13, 05/11/2026) : une sortie d'élève exige son motif.
+			$ss_drop_code = ! empty( $columns['DROP_CODE'] )
+				? $columns['DROP_CODE']
+				: DBGetOne( "SELECT DROP_CODE FROM student_enrollment WHERE ID='" . (int) $id . "'" );
+
+			if ( empty( $ss_drop_code ) )
+			{
+				unset( $_REQUEST['values']['student_enrollment'][$id] );
+
+				$error[] = 'Indiquez le motif de sortie (code de retrait) en même temps que la date de sortie.';
+
+				continue;
+			}
+
 			// @since 12.2 SQL Check if student already enrolled on that date when updating END_DATE
 			$found = DBGetOne( "SELECT ID
 				FROM student_enrollment
@@ -108,33 +122,13 @@ function SaveEnrollment()
 			continue;
 		}
 
-		// @since 5.4 Delete enrollment record if start date is empty.
-		// Check first if Student has previous enrollment records.
-		$previous_enrollment_school_id = DBGetOne( "SELECT SCHOOL_ID
-			FROM student_enrollment
-			WHERE STUDENT_ID='" . UserStudentID() . "'
-			AND SYEAR='" . UserSyear() . "'
-			AND ID<>'" . (int) $id . "'
-			AND START_DATE<(SELECT START_DATE
-				FROM student_enrollment
-				WHERE ID='" . (int) $id . "')
-			ORDER BY START_DATE DESC;" );
+		// SchoolSafe lot E1 (A2, 05/11/2026) : effacer la date d'entrée supprimait
+		// l'inscription sans confirmation (et pouvait changer l'école de la session).
+		// Désormais refusé : une sortie se fait par une date de sortie et son motif.
+		unset( $_REQUEST['values']['student_enrollment'][$id] );
 
-		if ( $previous_enrollment_school_id )
-		{
-			DBQuery( "DELETE FROM student_enrollment
-				WHERE STUDENT_ID='" . UserStudentID() . "'
-				AND SYEAR='" . UserSyear() . "'
-				AND ID='" . (int) $id . "';" );
-
-			unset( $_REQUEST['values']['student_enrollment'][$id] );
-
-			if ( $previous_enrollment_school_id != UserSchool() )
-			{
-				// @since 11.5 Update current school to enrollment school.
-				$_SESSION['UserSchool'] = $previous_enrollment_school_id;
-			}
-		}
+		$error[] = 'La date d’entrée ne peut pas être effacée. Pour faire sortir un élève, indiquez sa date de '
+			. 'sortie et le motif de sortie.';
 	}
 
 	foreach ( $_REQUEST['values']['student_enrollment'] as $id => $columns )

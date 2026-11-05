@@ -15,7 +15,12 @@ if ( $_REQUEST['modfunc'] === 'save'
 
 		// SchoolSafe - regle metier : 6 parents maximum par eleve (GO 2026-10-28).
 		$ss_max_parents = 6;
-		$ss_lies = count( (array) $current_RET );
+		// SchoolSafe lot E1 (A4) : comptés sur l'année en cours (les liens des années
+		// passées ne bloquent plus la limite après le passage d'année).
+		$ss_lies = (int) DBGetOne( "SELECT COUNT(*)
+			FROM students_join_users j
+			JOIN staff st ON st.STAFF_ID=j.STAFF_ID AND st.SYEAR='" . UserSyear() . "'
+			WHERE j.STUDENT_ID='" . UserStudentID() . "'" );
 		$ss_ajoutes = 0;
 		$ss_refuses = 0;
 
@@ -97,6 +102,19 @@ if ( $_REQUEST['modfunc'] === 'delete'
 
 		echo ErrorMessage( [ 'Vous vous apprêtez à retirer à <b>' . AttrEscape( $ss_remove_parent )
 			. '</b> l’accès à cet élève : ce parent ne le verra plus et ne recevra plus ses notifications.' ], 'note' );
+
+		// SchoolSafe lot E1 (A9, 05/11/2026) : le responsable principal garde ce rôle après le
+		// retrait du lien, et ses actions échoueraient ensuite. On prévient avant.
+		$ss_is_primary = (bool) DBGetOne( "SELECT 1 FROM schoolsafe_pickup_guardians
+			WHERE STUDENT_ID='" . UserStudentID() . "'
+			AND STAFF_ID='" . (int) $_REQUEST['staff_id_remove'] . "'
+			AND IS_PRIMARY=TRUE AND IS_ACTIVE=TRUE" );
+
+		if ( $ss_is_primary )
+		{
+			echo ErrorMessage( [ '<b>Ce parent est le responsable principal de l’élève.</b> Désignez d’abord un autre '
+				. 'responsable principal dans École › Personnes de récupération, puis retirez ce lien.' ], 'warning' );
+		}
 	}
 
 	if ( DeletePrompt( _( 'student from that user' ), _( 'remove access to' ) )

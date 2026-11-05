@@ -204,11 +204,18 @@ if ( $_REQUEST['modfunc'] === 'save'
 
 					$user = $user[1];
 
-					// Use big random number for parent password generation.
-					$password = $username . rand( 1, 99999999999 );
+					// SchoolSafe lot E1 (A11, 05/11/2026) : mot de passe temporaire aléatoire
+					// (random_int), sans lien avec l'e-mail ; majuscule, chiffre et symbole
+					// gardés pour Moodle. Changement imposé à la première connexion.
+					$ss_alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+					$password = '';
 
-					// Moodle integrator / password.
-					$password = ucfirst( $password ) . '*';
+					for ( $ss_i = 0; $ss_i < 10; $ss_i++ )
+					{
+						$password .= $ss_alphabet[ random_int( 0, strlen( $ss_alphabet ) - 1 ) ];
+					}
+
+					$password = 'S' . $password . random_int( 2, 9 ) . '*';
 
 					if ( ! $test_email )
 					{
@@ -285,8 +292,15 @@ if ( $_REQUEST['modfunc'] === 'save'
 					WHERE STAFF_ID='" . (int) $id . "'
 					AND STUDENT_ID='" . (int) $student['STUDENT_ID'] . "'" );
 
+				// SchoolSafe lot E1 (A4) : 6 parents au plus par élève, comptés sur l'année en cours.
+				$ss_parents_count = (int) DBGetOne( "SELECT COUNT(*)
+					FROM students_join_users j
+					JOIN staff st ON st.STAFF_ID=j.STAFF_ID AND st.SYEAR='" . UserSyear() . "'
+					WHERE j.STUDENT_ID='" . (int) $student['STUDENT_ID'] . "'" );
+
 				if ( ! $test_email
-					&& ! $parent_associated_to_student_RET )
+					&& ! $parent_associated_to_student_RET
+					&& $ss_parents_count < 6 )
 				{
 					// Join user to student.
 					DBInsert(

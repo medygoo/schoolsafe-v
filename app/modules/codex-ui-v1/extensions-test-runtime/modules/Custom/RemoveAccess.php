@@ -13,7 +13,14 @@
 $accessfunc = empty( $_REQUEST['accessfunc'] ) ? '' : 'grant';
 
 if ( $_REQUEST['modfunc'] === 'save'
-	&& AllowEdit() )
+	&& AllowEdit()
+	// SchoolSafe lot E1 (A12, 05/11/2026) : confirmation avant d'agir.
+	&& ( empty( $_REQUEST['st_arr'] ) || Prompt(
+		$accessfunc === 'grant' ? 'Rendre l’accès' : 'Bloquer l’accès',
+		$accessfunc === 'grant'
+			? 'Rendre l’accès aux élèves sélectionnés (et à leurs parents si la case est cochée) ?'
+			: 'Bloquer l’accès des élèves sélectionnés (et de leurs parents si la case est cochée) ?'
+	) ) )
 {
 	if ( ! empty( $_REQUEST['st_arr'] ) )
 	{
@@ -25,9 +32,20 @@ if ( $_REQUEST['modfunc'] === 'save'
 
 		$st_list = implode( ',', array_map( 'intval', $_REQUEST['st_arr'] ) );
 
+		// SchoolSafe lot E1 (A12) : sans préfixe, le blocage ne faisait rien mais affichait « Done. ».
+		if ( (string) $username_prefix_add === '' && $accessfunc !== 'grant' )
+		{
+			$error[] = 'Indiquez d’abord le préfixe ajouté au nom d’utilisateur pour bloquer l’accès.';
+
+			RedirectURL( [ 'modfunc', 'st_arr' ] );
+		}
+
+		// SchoolSafe lot E1 (A12) : jamais deux fois le préfixe sur un même élève.
 		$update_sql = "UPDATE students
 			SET USERNAME=CONCAT('" . DBEscapeString( $username_prefix_add ) . "', USERNAME)
-			WHERE STUDENT_ID IN (" . $st_list . ")";
+			WHERE STUDENT_ID IN (" . $st_list . ")
+			AND LEFT(USERNAME, LENGTH('" . DBEscapeString( $username_prefix_add ) . "'))<>'"
+				. DBEscapeString( $username_prefix_add ) . "'";
 
 		if ( $accessfunc === 'grant' )
 		{
@@ -46,20 +64,40 @@ if ( $_REQUEST['modfunc'] === 'save'
 
 		if ( ! empty( $_REQUEST['parents_no_access'] ) )
 		{
-			$profile_from = $accessfunc === 'grant' ? 'none' : 'parent';
+			// SchoolSafe lot E1 (A12) : on mémorise les parents passés en « Sans accès » ici,
+			// et « Rendre l'accès » ne rétablit que ceux-là (pas un parent bloqué pour une autre raison).
+			$ss_blocked = array_filter( array_map( 'intval', explode( ',',
+				(string) ProgramConfig( 'remove_access', 'SS_BLOCKED_PARENTS' ) ) ) );
 
-			$profile_to = $accessfunc === 'grant' ? 'parent' : 'none';
+			$ss_parents = array_map( 'intval', array_column( (array) DBGet( "SELECT DISTINCT st.STAFF_ID
+				FROM staff st
+				JOIN students_join_users j ON j.STAFF_ID=st.STAFF_ID
+				WHERE j.STUDENT_ID IN (" . $st_list . ")
+				AND st.SYEAR='" . UserSyear() . "'
+				AND st.PROFILE='" . ( $accessfunc === 'grant' ? 'none' : 'parent' ) . "'" ), 'STAFF_ID' ) );
 
-			DBQuery( "UPDATE staff
-				SET PROFILE='" . $profile_to . "'
-				WHERE PROFILE='" . $profile_from . "'
-				AND STAFF_ID IN(SELECT STAFF_ID
-					FROM students_join_users
-					WHERE STUDENT_ID IN (" . $st_list . "))
-				AND SYEAR='" . UserSyear() . "'" );
+			if ( $accessfunc === 'grant' )
+			{
+				$ss_parents = array_values( array_intersect( $ss_parents, $ss_blocked ) );
+				$ss_blocked = array_diff( $ss_blocked, $ss_parents );
+			}
+			else
+			{
+				$ss_blocked = array_unique( array_merge( $ss_blocked, $ss_parents ) );
+			}
+
+			if ( $ss_parents )
+			{
+				DBQuery( "UPDATE staff
+					SET PROFILE='" . ( $accessfunc === 'grant' ? 'parent' : 'none' ) . "'
+					WHERE STAFF_ID IN (" . implode( ',', $ss_parents ) . ")
+					AND SYEAR='" . UserSyear() . "'" );
+			}
+
+			ProgramConfig( 'remove_access', 'SS_BLOCKED_PARENTS', implode( ',', $ss_blocked ) );
 		}
 
-		$note[] = button( 'check' ) . '&nbsp;' . _( 'Done.' );
+		$note[] = button( 'check' ) . '&nbsp;' . ( $accessfunc === 'grant' ? 'Accès rendu.' : 'Accès bloqué.' );
 	}
 	else
 	{

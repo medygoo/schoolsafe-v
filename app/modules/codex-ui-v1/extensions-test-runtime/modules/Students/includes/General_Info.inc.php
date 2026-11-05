@@ -114,6 +114,11 @@ echo '</td></tr><tr class="st"><td>';
 if ( $_REQUEST['student_id'] == 'new' )
 {
 	echo TextInput( '', 'assign_student_id', sprintf( _( '%s ID' ), Config( 'NAME' ) ), 'maxlength=9 size=9' );
+
+	// SchoolSafe lot E1 (A3, 05/11/2026) : à cocher seulement si SchoolSafe signale un élève
+	// du même nom et qu'il s'agit bien d'un autre enfant.
+	echo '<div><label><input type="checkbox" name="ss_homonyme_eleve_ok" value="1"> '
+		. 'Je confirme qu’il s’agit d’un autre élève (homonyme)</label></div>';
 }
 else
 {

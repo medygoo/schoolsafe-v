@@ -60,8 +60,9 @@ if ( $_REQUEST['modfunc'] === 'save'
 			if ( empty( $current_RET[$student_id] ) )
 			{
 				$ss_lies = (int) DBGetOne( "SELECT COUNT(*)
-					FROM students_join_users
-					WHERE STUDENT_ID='" . (int) $student_id . "'" );
+					FROM students_join_users j
+					JOIN staff st ON st.STAFF_ID=j.STAFF_ID AND st.SYEAR='" . UserSyear() . "'
+					WHERE j.STUDENT_ID='" . (int) $student_id . "'" );
 
 				if ( $ss_lies >= $ss_max_parents )
 				{

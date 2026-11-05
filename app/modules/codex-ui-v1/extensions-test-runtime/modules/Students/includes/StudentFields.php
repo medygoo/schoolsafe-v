@@ -39,6 +39,16 @@ if ( isset( $_POST['tables'] )
 					$columns['SELECT_OPTIONS'] = trim( $columns['SELECT_OPTIONS'] );
 				}
 
+				// SchoolSafe lot E1 (A5, 05/11/2026) : le lien technique d'un onglet SchoolSafe
+				// (ex. « Famille et récupération ») ne se modifie pas depuis cette page.
+				if ( isset( $columns['INCLUDE'] )
+					&& $id !== 'new'
+					&& strpos( (string) DBGetOne( "SELECT INCLUDE FROM student_field_categories
+						WHERE ID='" . (int) $id . "'" ), 'SchoolSafe/' ) === 0 )
+				{
+					unset( $columns['INCLUDE'] );
+				}
+
 				// FJ Fix PHP fatal error: check Include file exists.
 				if ( isset( $columns['INCLUDE'] )
 					&& $columns['INCLUDE'] )
@@ -162,6 +172,16 @@ if ( $_REQUEST['modfunc'] === 'delete'
 			// Unset modfunc & ID & redirect URL.
 			RedirectURL( [ 'modfunc', 'id' ] );
 		}
+	}
+	elseif ( isset( $_REQUEST['category_id'] )
+		&& intval( $_REQUEST['category_id'] ) > 0
+		// SchoolSafe lot E1 (A5) : ni les 4 onglets de base, ni un onglet SchoolSafe
+		// (ex. « Famille et récupération ») ne peuvent être supprimés, même par adresse forgée.
+		&& ( intval( $_REQUEST['category_id'] ) <= 4
+			|| strpos( (string) DBGetOne( "SELECT INCLUDE FROM student_field_categories
+				WHERE ID='" . (int) $_REQUEST['category_id'] . "'" ), 'SchoolSafe/' ) === 0 ) )
+	{
+		$error[] = 'Cet onglet est protégé : il ne peut pas être supprimé.';
 	}
 	elseif ( isset( $_REQUEST['category_id'] )
 		&& intval( $_REQUEST['category_id'] ) > 0 )

@@ -47,7 +47,20 @@ if ( $_REQUEST['modfunc'] === 'update'
 if ( $_REQUEST['modfunc'] === 'remove'
 	&& AllowEdit() )
 {
-	if ( DeletePrompt( _( 'Grade Level' ) ) )
+	// SchoolSafe lot E1 (A8, 05/11/2026) : contrôle sur le serveur (le bouton seul ne protège pas).
+	$ss_grade_used = (int) DBGetOne( "SELECT COUNT(*) FROM student_enrollment
+		WHERE GRADE_ID='" . (int) $_REQUEST['id'] . "'" )
+		+ (int) DBGetOne( "SELECT COUNT(*) FROM school_gradelevels
+		WHERE NEXT_GRADE_ID='" . (int) $_REQUEST['id'] . "'" );
+
+	if ( $ss_grade_used )
+	{
+		$error[] = 'Ce niveau est utilisé (élèves inscrits ou « niveau suivant » d’un autre niveau) : '
+			. 'il ne peut pas être supprimé.';
+
+		$_REQUEST['modfunc'] = false;
+	}
+	elseif ( DeletePrompt( _( 'Grade Level' ) ) )
 	{
 		DBQuery( "DELETE FROM school_gradelevels
 			WHERE ID='" . (int) $_REQUEST['id'] . "'

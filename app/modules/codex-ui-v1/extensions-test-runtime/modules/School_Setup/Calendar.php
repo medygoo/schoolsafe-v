@@ -413,7 +413,20 @@ if ( $_REQUEST['modfunc'] === 'create'
 if ( $_REQUEST['modfunc'] === 'delete_calendar'
 	&& AllowEdit() )
 {
-	if ( DeletePrompt( _( 'Calendar' ) ) )
+	// SchoolSafe lot E1 (A6, 05/11/2026) : un calendrier utilisé (inscriptions, cours) ne se supprime pas.
+	$ss_calendar_used = (int) DBGetOne( "SELECT COUNT(*) FROM student_enrollment
+		WHERE CALENDAR_ID='" . (int) $_REQUEST['calendar_id'] . "' AND SYEAR='" . UserSyear() . "'" )
+		+ (int) DBGetOne( "SELECT COUNT(*) FROM course_periods
+		WHERE CALENDAR_ID='" . (int) $_REQUEST['calendar_id'] . "' AND SYEAR='" . UserSyear() . "'" );
+
+	if ( $ss_calendar_used )
+	{
+		$error[] = 'Ce calendrier est utilisé par des élèves ou des cours : il ne peut pas être supprimé. '
+			. 'Rattachez-les d’abord à un autre calendrier.';
+
+		$_REQUEST['modfunc'] = false;
+	}
+	elseif ( DeletePrompt( _( 'Calendar' ) ) )
 	{
 		// SchoolSafe E4 : suppression limitee a l'ecole et l'annee courantes.
 		$delete_sql = "DELETE FROM attendance_calendar
@@ -433,6 +446,14 @@ if ( $_REQUEST['modfunc'] === 'delete_calendar'
 			WHERE SYEAR='" . UserSyear() . "'
 			AND SCHOOL_ID='" . UserSchool() . "'
 			AND DEFAULT_CALENDAR='Y'" );
+
+		// SchoolSafe lot E1 (A6) : plus de calendrier par défaut -> le premier restant le devient.
+		if ( ! $default_RET )
+		{
+			DBQuery( "UPDATE attendance_calendars SET DEFAULT_CALENDAR='Y'
+				WHERE CALENDAR_ID=(SELECT MIN(CALENDAR_ID) FROM attendance_calendars
+					WHERE SYEAR='" . UserSyear() . "' AND SCHOOL_ID='" . UserSchool() . "')" );
+		}
 
 		// Unset modfunc & calendar ID & redirect URL.
 		RedirectURL( [ 'modfunc', 'calendar_id' ] );

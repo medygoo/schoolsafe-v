@@ -223,6 +223,61 @@ if ( $_REQUEST['modfunc'] === 'update'
 			}
 		}
 
+		// SchoolSafe lot E1 (05/11/2026, ANALYSE_ECOLE A1, A3, A10).
+		if ( ! UserStudentID() && basename( $_SERVER['PHP_SELF'] ) !== 'index.php' )
+		{
+			// A1 — un nouvel élève est toujours inscrit : date d'entrée, niveau et calendrier.
+			$ss_new = (array) ( $_REQUEST['values']['student_enrollment']['new'] ?? [] );
+			$ss_start = ! empty( $ss_new['START_DATE'] )
+				|| ( ! empty( $_REQUEST['year_values']['student_enrollment']['new']['START_DATE'] )
+					&& ! empty( $_REQUEST['month_values']['student_enrollment']['new']['START_DATE'] )
+					&& ! empty( $_REQUEST['day_values']['student_enrollment']['new']['START_DATE'] ) );
+
+			if ( ! $ss_start || empty( $ss_new['GRADE_ID'] ) || empty( $ss_new['CALENDAR_ID'] ) )
+			{
+				$error[] = 'Un nouvel élève doit être inscrit : indiquez sa date d’entrée, son niveau et son calendrier.';
+			}
+
+			// A3 — élève déjà enregistré sous le même nom (et la même date de naissance si connue).
+			$ss_first = trim( (string) ( $_REQUEST['students']['FIRST_NAME'] ?? '' ) );
+			$ss_last = trim( (string) ( $_REQUEST['students']['LAST_NAME'] ?? '' ) );
+			$ss_birth = (string) ( $_REQUEST['students']['CUSTOM_200000004'] ?? '' );
+
+			if ( $ss_first !== '' && $ss_last !== '' && empty( $_POST['ss_homonyme_eleve_ok'] ) )
+			{
+				$ss_twin = DBGet( "SELECT s.STUDENT_ID," . DisplayNameSQL( 's' ) . " AS FULL_NAME
+					FROM students s
+					WHERE LOWER(s.FIRST_NAME)=LOWER('" . DBEscapeString( $ss_first ) . "')
+					AND LOWER(s.LAST_NAME)=LOWER('" . DBEscapeString( $ss_last ) . "')"
+					. ( $ss_birth !== '' ? " AND (s.CUSTOM_200000004 IS NULL OR s.CUSTOM_200000004='" . DBEscapeString( $ss_birth ) . "')" : '' )
+					. " LIMIT 1" );
+
+				if ( $ss_twin )
+				{
+					$error[] = 'Un élève nommé ' . AttrEscape( $ss_twin[1]['FULL_NAME'] ) . ' existe déjà (n° '
+						. (int) $ss_twin[1]['STUDENT_ID'] . '). S’il s’agit bien d’un autre enfant, cochez « Je confirme '
+						. 'qu’il s’agit d’un autre élève » et enregistrez de nouveau.';
+				}
+			}
+		}
+
+		// A10 — même règle de mot de passe que pour le personnel (lot U1).
+		if ( ! empty( $_POST['students']['PASSWORD'] ) )
+		{
+			require_once 'ProgramFunctions/SchoolSafePasswordPolicy.fnc.php';
+
+			$ss_pw_problem = SchoolSafePasswordProblem(
+				(string) $_POST['students']['PASSWORD'],
+				(string) ( $_REQUEST['students']['USERNAME'] ?? ( UserStudentID() ? DBGetOne( "SELECT USERNAME FROM students
+					WHERE STUDENT_ID='" . (int) UserStudentID() . "'" ) : '' ) )
+			);
+
+			if ( $ss_pw_problem !== '' )
+			{
+				$error[] = $ss_pw_problem;
+			}
+		}
+
 		if ( $required_error )
 		{
 			$error[] = _( 'Please fill in the required fields' );

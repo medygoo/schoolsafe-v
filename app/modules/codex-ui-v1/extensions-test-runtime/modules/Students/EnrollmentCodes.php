@@ -47,7 +47,17 @@ if ( $_REQUEST['modfunc'] === 'update'
 if ( $_REQUEST['modfunc'] === 'remove'
 	&& AllowEdit() )
 {
-	if ( DeletePrompt( _( 'Enrollment Code' ) ) )
+	// SchoolSafe lot E1 (A7, 05/11/2026) : un code utilisé (entrée ou sortie d'un élève) ne se supprime pas.
+	$ss_code_used = (int) DBGetOne( "SELECT COUNT(*) FROM student_enrollment
+		WHERE ENROLLMENT_CODE='" . (int) $_REQUEST['id'] . "' OR DROP_CODE='" . (int) $_REQUEST['id'] . "'" );
+
+	if ( $ss_code_used )
+	{
+		$error[] = 'Ce code est utilisé par ' . $ss_code_used . ' inscription(s) : il ne peut pas être supprimé.';
+
+		$_REQUEST['modfunc'] = false;
+	}
+	elseif ( DeletePrompt( _( 'Enrollment Code' ) ) )
 	{
 		DBQuery( "DELETE FROM student_enrollment_codes
 			WHERE ID='" . (int) $_REQUEST['id'] . "'
