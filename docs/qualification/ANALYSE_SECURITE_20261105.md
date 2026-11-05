@@ -77,3 +77,13 @@ présences et journal.
 - Non rejoué : un vrai pointage, un ajout d'absences, une suppression.
 - Reste : lot S2 (cohérence, mise en page), lot S3 (codes de présence et formulaire d'incident en français),
   décisions C2 (prévenir les parents) et C3 (mode hors connexion).
+
+## Réalisation — lot S3 (5 novembre 2026)
+
+- Appliqué en production (accord du propriétaire) :
+  - codes de présence : Absent, **Présent**, **Retard (R)**, **Absence justifiée (J)** ;
+  - formulaire d'incident : Faute, Retenue, Exclusion (direction seulement), Parents prévenus par l'enseignant,
+    Parents prévenus par la direction, Commentaires, avec leurs choix en français.
+- L'effet des codes est inchangé, et aucun incident n'existait. Sauvegardes `schoolsafe_bak_s3_*` ; retour
+  arrière : `ops/releases/securite-s3-20261105/rollback.sql` (commit `ba0c911`).
+- Reste pour Sécurité : lot S2 (cohérence, mise en page), points reportés S7, S11, B1, et décisions C2, C3.
