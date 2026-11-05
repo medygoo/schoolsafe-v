@@ -192,5 +192,4 @@ le « Jr » de Medy Lomela, retirer le profil « Obsolète », corriger le compt
 - **Cadrage des photos** (demande du propriétaire) : fenêtre pour déplacer, zoomer et tourner, puis envoi d'un carré
   de 450 px. Testé dans le navigateur : une photo de 1 200 × 1 600 devient un carré de 450 × 450 de 9 Ko. Vaut pour
   les fiches utilisateur et élève.
-- Image candidate `utilisateurs-moderne-20261105` construite et contrôlée. **Mise en ligne en attente d'une
-  confirmation explicite** : le garde-fou de déploiement l'a bloquée.
+- **En production** (après confirmation du propriétaire) : image `utilisateurs-moderne-20261105`, contrôle sain, 0 erreur PHP.
