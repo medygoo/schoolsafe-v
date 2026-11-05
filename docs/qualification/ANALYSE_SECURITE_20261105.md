@@ -102,6 +102,7 @@ présences et journal.
   - D : présentation moderne des formulaires étendue aux pages de Sécurité.
 - Contrôle à l'écran : 8 pages sans erreur ni texte anglais visible. Sur « Pointage manuel », la phrase d'aide
   passait en bas et le nom « Personnel » sous sa liste.
-- **Correctif S2b préparé, pas encore en service** : image `securite-s2b-20261105` (2 fichiers CSS, commit
-  `d0433eb`), essayée à l'écran par injection de style.
+- **Correctif S2b en production** (accord du propriétaire) : image `securite-s2b-20261105` (2 fichiers CSS,
+  commit `d0433eb`). Service sain, 0 erreur PHP. À l'écran, sur « Pointage manuel », la phrase d'aide est en haut
+  et chaque nom de champ est au-dessus de sa valeur.
 - Reste pour Sécurité : points reportés S7, S11, B1, et décisions C2, C3.
