@@ -20,7 +20,8 @@ $message = '<table><tr><td colspan="7" class="center">' . _( 'From' ) . ' ' .
 	DateInput( DBDate(), 'min', '', false, false ) . ' ' . _( 'to' ) . ' ' .
 	DateInput( DBDate(), 'max', '', false, false ) . '</td></tr></table>';
 
-if ( Prompt( _( 'Confirm' ), _( 'When do you want to recalculate the daily attendance?' ), $message ) )
+// SchoolSafe lot S1 (S5) : outil de maintenance réservé au droit de modification.
+if ( AllowEdit() && Prompt( _( 'Confirm' ), _( 'When do you want to recalculate the daily attendance?' ), $message ) )
 {
 	// Display notice while calculating daily attendance
 	echo '<br />';

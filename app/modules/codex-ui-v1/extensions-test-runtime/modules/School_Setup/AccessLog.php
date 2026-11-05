@@ -32,6 +32,16 @@ $start_date = RequestedDate( 'start', date( 'Y-m-d', time() - 60 * 60 * 24 ) );
 $end_date = RequestedDate( 'end', DBDate() );
 
 
+// SchoolSafe lot S1 (S3, 05/11/2026) : le journal est commun à toutes les écoles ; seul
+// l'administrateur de la plateforme peut le vider.
+if ( $_REQUEST['modfunc'] === 'delete'
+	&& ( ! function_exists( 'SchoolSafeGlobalAdmin' ) || ! SchoolSafeGlobalAdmin() ) )
+{
+	$error[] = 'Le journal des connexions est commun à toutes les écoles : seul l’administrateur de la plateforme peut le vider.';
+
+	$_REQUEST['modfunc'] = false;
+}
+
 if ( $_REQUEST['modfunc'] === 'delete' )
 {
 	// Prompt before deleting log.
@@ -56,6 +66,7 @@ if ( count( $_REQUEST ) === 3
 }
 
 echo ErrorMessage( $note, 'note' );
+echo ErrorMessage( $error );
 
 if ( ! $_REQUEST['modfunc'] )
 {

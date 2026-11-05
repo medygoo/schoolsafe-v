@@ -30,7 +30,8 @@ if ( $_REQUEST['delete'] === 'true' )
 {
 	//DeletePrompt(_('Duplicate Attendance Record'));
 
-	if ( ! empty( $_REQUEST['deletecheck'] ) )
+	// SchoolSafe lot S1 (S5) : outil de maintenance réservé au droit de modification.
+	if ( ! empty( $_REQUEST['deletecheck'] ) && AllowEdit() )
 	{
 		if ( DeletePrompt( _( 'Duplicate Attendance Record' ) ) )
 		{

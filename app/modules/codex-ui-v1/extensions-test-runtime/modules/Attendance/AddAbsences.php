@@ -29,7 +29,9 @@ else
 	$_REQUEST['year'] = ( $_REQUEST['year'] < 1900 ? '20' . $_REQUEST['year'] : $_REQUEST['year'] );
 }
 
-if ( $_REQUEST['modfunc'] === 'save' )
+// SchoolSafe lot S1 (S4, 05/11/2026) : écrire des absences exige le droit de modification.
+if ( $_REQUEST['modfunc'] === 'save'
+	&& AllowEdit() )
 {
 	if ( ! empty( $_REQUEST['period'] )
 		&& ! empty( $_REQUEST['student'] )

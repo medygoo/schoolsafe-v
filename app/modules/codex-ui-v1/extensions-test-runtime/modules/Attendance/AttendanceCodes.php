@@ -95,7 +95,18 @@ if ( $_REQUEST['modfunc'] === 'remove'
 {
 	if ( $_REQUEST['table'] !== 'new' )
 	{
-		if ( DeletePrompt( _( 'Attendance Code' ) ) )
+		// SchoolSafe lot S1 (S8, 05/11/2026) : un code de présence utilisé ne se supprime pas.
+		$ss_code_used = (int) DBGetOne( "SELECT COUNT(*) FROM attendance_period
+			WHERE ATTENDANCE_CODE='" . (int) $_REQUEST['id'] . "'
+			OR ATTENDANCE_TEACHER_CODE='" . (int) $_REQUEST['id'] . "'" );
+
+		if ( $ss_code_used )
+		{
+			$error[] = 'Ce code est utilisé dans ' . $ss_code_used . ' appel(s) : il ne peut pas être supprimé.';
+
+			$_REQUEST['modfunc'] = false;
+		}
+		elseif ( DeletePrompt( _( 'Attendance Code' ) ) )
 		{
 			DBQuery( "DELETE FROM attendance_codes
 				WHERE ID='" . (int) $_REQUEST['id'] . "'

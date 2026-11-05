@@ -203,7 +203,8 @@ if ( ! empty( $_REQUEST['attendance'] ) // Fix GET form: do not check $_POST.
 	RedirectURL( 'attendance' );
 }
 
-if ( ! empty( $_REQUEST['attendance_day'] ) )
+// SchoolSafe lot S1 (S9, 05/11/2026) : le commentaire du jour exige le droit de modification.
+if ( ! empty( $_REQUEST['attendance_day'] ) && AllowEdit() )
 {
 	foreach ( (array) $_REQUEST['attendance_day'] as $student_id => $comment )
 	{

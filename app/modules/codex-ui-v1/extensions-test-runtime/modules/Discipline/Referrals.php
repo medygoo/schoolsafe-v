@@ -72,6 +72,17 @@ if ( $_REQUEST['modfunc'] === 'save'
 		$update_columns[ $column_name ] = $value;
 	}
 
+	// SchoolSafe lot S1 (S6, 05/11/2026) : un enseignant ne modifie que les incidents qu'il a signalés,
+	// même par une requête directe (avant : seul l'affichage était filtré).
+	if ( User( 'PROFILE' ) === 'teacher'
+		&& (int) DBGetOne( "SELECT STAFF_ID FROM discipline_referrals
+			WHERE ID='" . (int) $_REQUEST['referral_id'] . "'" ) !== (int) User( 'STAFF_ID' ) )
+	{
+		$error[] = 'Vous ne pouvez modifier que les incidents que vous avez signalés.';
+
+		$_REQUEST['referral_id'] = 0;
+	}
+
 	DBUpdate(
 		'discipline_referrals',
 		$update_columns,

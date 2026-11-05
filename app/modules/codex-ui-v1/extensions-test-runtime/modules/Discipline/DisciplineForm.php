@@ -191,7 +191,24 @@ if ( $_REQUEST['modfunc'] === 'save'
 if ( $_REQUEST['modfunc'] === 'delete'
 	&& AllowEdit() )
 {
-	if ( DeletePrompt( _( 'Category' ) ) )
+	// SchoolSafe lot S1 (S1, 05/11/2026) : supprimer un champ efface sa colonne pour TOUS les
+	// incidents de toutes les écoles. Refusé s'il contient des données ou sert à une autre école.
+	$ss_field_id = (int) issetVal( $_REQUEST['id'] );
+	$ss_field_col = DBEscapeIdentifier( 'CATEGORY_' . $ss_field_id );
+	$ss_field_data = (int) DBGetOne( "SELECT COUNT(*) FROM discipline_referrals
+		WHERE " . $ss_field_col . " IS NOT NULL AND CAST(" . $ss_field_col . " AS TEXT)<>''" );
+	$ss_field_elsewhere = (int) DBGetOne( "SELECT COUNT(*) FROM discipline_field_usage
+		WHERE DISCIPLINE_FIELD_ID='" . $ss_field_id . "' AND SCHOOL_ID<>'" . UserSchool() . "'" );
+
+	if ( $ss_field_data || $ss_field_elsewhere )
+	{
+		$error[] = 'Ce champ ne peut pas être supprimé : '
+			. ( $ss_field_data ? $ss_field_data . ' incident(s) contiennent une valeur' : 'une autre école l’utilise' )
+			. '. Utilisez « Ne plus utiliser » pour le retirer du formulaire sans perdre les données.';
+
+		$_REQUEST['modfunc'] = false;
+	}
+	elseif ( DeletePrompt( 'Champ du formulaire d’incident (suppression définitive)' ) )
 	{
 		$id = issetVal( $_REQUEST['id'] );
 
