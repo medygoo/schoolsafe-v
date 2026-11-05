@@ -90,3 +90,23 @@ Non vérifié : droits des profils parent et enseignant en base, cascades des ta
 - Limite connue : le compte cantine reste plafonné à 9 999 999,99 (colonne de la base).
 - Reste : lot F2 (reçus numérotés, « Annuler avec motif » au lieu de « Supprimer »), lot F3 (cohérence, mise en page),
   décisions C1 (monnaie), C2 (clôture de caisse), C3 (plan de tranches).
+
+## Réalisation — lot F2 (5 novembre 2026)
+
+- **En production** (accord du propriétaire) :
+  - script `ops/releases/finance-f2-20261105/fix.sql` appliqué en transaction : tables
+    `schoolsafe_payment_receipts` et `schoolsafe_money_cancellations`, déclencheur `schoolsafe_receipt_on_payment`
+    sur `billing_payments` ; retour arrière : `rollback.sql` (déclencheur retiré, tables renommées, rien effacé) ;
+  - image `schoolsafe-rosario:finance-f2-20261105`, commit `7e69709` (9 fichiers). Service sain, 0 erreur PHP.
+- F1 : un reçu à chaque paiement d'élève, numéro `REC-année-000001` qui se suit par école et par année ; état
+  remboursé, annulé ou remplacé (correction) ; colonne « Reçu » sur « Encaisser un paiement » ; en-tête du papier de
+  l'école. Le paiement existant de 75 000 a reçu `REC-2026-000001`.
+- F6 : paiements et frais d'un élève : « Annuler » avec motif (ligne d'annulation, rien d'effacé). Paie et
+  trésorerie : motif obligatoire et ligne complète gardée avant effacement.
+- Vérifié à l'écran : reçu `REC-2026-000001` (papier de l'école, montants, reste 145 000), PDF A5 téléchargé,
+  bouton « Annuler » présent, 7 pages sans erreur. Essai à blanc avant application : reçus n° 1 à 3, correction
+  et annulation, retour arrière.
+- Non rejoué en production : une vraie annulation (rien n'est enregistré par l'assistant).
+- Restent hors lot : reçus et motif pour la cantine ; table des brouillons hors connexion
+  (`schoolsafe_pwa_payment_intents`) absente en production, donc confirmation d'un brouillon impossible.
+- Reste : lot F3 (cohérence, mise en page), décisions C1 (monnaie), C2 (clôture de caisse), C3 (plan de tranches).
