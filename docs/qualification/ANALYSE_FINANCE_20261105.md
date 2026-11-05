@@ -126,3 +126,31 @@ Non vérifié : droits des profils parent et enseignant en base, cascades des ta
 - **Reporté à une décision** : B3 (type de frais choisi dans une liste), lié à C1 (monnaie).
 - Reste pour Finance : décisions C1 (monnaie), C2 (clôture de caisse), C3 (plan de tranches), B3 ; hors lot :
   reçus et motif pour la cantine, table des brouillons hors connexion absente en production.
+
+## Décision C1 — deux monnaies (5 novembre 2026) : plan proposé, à valider
+
+Décision du propriétaire (`docs/DECISIONS.md`) : FC et USD ensemble, conversion au **taux du jour**, **USD par défaut**.
+Ampleur mesurée : une trentaine d'endroits additionnent les frais et les paiements (soldes, caisse du jour,
+relevés, tableau de bord, contrôle des frais au scan, rattrapage, exports). Tous doivent compter par monnaie,
+sinon des FC et des USD seraient additionnés.
+
+**Modèle proposé**
+- `billing_fees.CURRENCY` (USD ou FC) : la monnaie du frais.
+- `billing_payments.CURRENCY` : la monnaie du **compte** réglé (celle des frais visés) ; `AMOUNT` reste dans
+  cette monnaie, ce qui garde les soldes justes par monnaie. Le paiement garde aussi ce qui a été **réellement
+  reçu** : `PAID_CURRENCY`, `PAID_AMOUNT`, `RATE` (FC pour 1 USD).
+- Table `schoolsafe_exchange_rates` : le taux du jour par école, saisi par la direction ou l'économat (qui, quand).
+  Sans taux du jour, un paiement dans l'autre monnaie est refusé avec un message clair.
+- Soldes affichés par monnaie : « Reste à payer : 145,00 USD et 20 000,00 FC ».
+- Reçu : montant reçu dans la monnaie payée, taux, équivalent porté au compte, reste par monnaie.
+
+**Découpage proposé**
+1. **F4a — base et saisie** : colonnes et table des taux (script réversible, essai à blanc), page « Taux du jour »,
+   choix de la monnaie sur les frais (simple et groupés) et les paiements (simple et groupés), conversion,
+   reçu à deux monnaies, format français (`75 000,00 USD`).
+2. **F4b — tous les totaux par monnaie** : soldes des élèves, caisse du jour, relevés, tableau de bord,
+   contrôle des frais au scan et rappels, rattrapage, exports.
+3. **F4c — paie, trésorerie et cantine** en deux monnaies.
+
+**Question ouverte** : les 3 frais et le paiement existants (données d'essai « TEST essai barème ») sont-ils en USD
+ou en FC ?
