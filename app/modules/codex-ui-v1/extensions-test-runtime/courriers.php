@@ -107,11 +107,16 @@ if($staffAllowed&&$_SERVER['REQUEST_METHOD']==='POST'){
             DBQuery('COMMIT');$inTx=false;
             $savedId=(int)$row[1]['ID'];
             $message='Courrier '.$ref.' enregistré.';
-            if($v['send']){$sent=$send($row[1]);$message.=' Envoyé aux parents : '.$sent.' élève(s) concerné(s).';}
+            // Lot K1 (C8, 05/11) : envoyer aux familles demande le droit de modifier les élèves.
+            if($v['send']&&!AllowEdit('Students/Student.php'))$message.=' Non envoyé : l’envoi aux parents demande le droit de modifier les élèves.';
+            elseif($v['send']){$sent=$send($row[1]);$message.=' Envoyé aux parents : '.$sent.' élève(s) concerné(s).';}
         }elseif(($_POST['action']??'')==='envoyer'){
             $L=DBGet("SELECT * FROM schoolsafe_letters WHERE ID=".(int)($_POST['id']??0)." AND SCHOOL_ID=".$school);
             if(!$L)throw new RuntimeException('Courrier introuvable.');
             if($L[1]['KIND']==='attestation')throw new RuntimeException('Une attestation s’imprime ; elle ne s’envoie pas.');
+            // Lot K1 (C8, 05/11) : droit de modifier les élèves et confirmation explicite avant un envoi aux familles.
+            if(!AllowEdit('Students/Student.php'))throw new RuntimeException('L’envoi aux parents demande le droit de modifier les élèves.');
+            if(($_POST['confirm']??'')!=='1')throw new RuntimeException('Cochez « Je confirme l’envoi aux familles » pour envoyer ce courrier.');
             $sent=$send($L[1]);$savedId=(int)$L[1]['ID'];
             $message='Courrier '.$L[1]['REFERENCE'].' envoyé : '.$sent.' élève(s) dont les parents n’avaient pas encore reçu ce courrier.';
         }elseif(($_POST['action']??'')==='jaspe'){
@@ -172,7 +177,7 @@ $need=$kind?$models[$kind][4]:'';
 <?php if($models[$kind][5]):?><div class="ss-grid"><label>Date du rendez-vous<input type="date" name="date" required></label><label>Heure<input type="time" name="time" value="08:00" required></label><label>Lieu<input type="text" name="place" maxlength="200" placeholder="ex. au bureau de la direction"></label></div><?php endif;?>
 <label>Objet<input type="text" name="subject" maxlength="200" required value="<?=$e($draftSubject)?>"></label>
 <label>Texte<textarea name="body" maxlength="10000" required><?=$e($draftBody)?></textarea></label>
-<?php if($models[$kind][6]):?><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="send" value="1" checked> Envoyer aussi aux parents (fil, e-mail, WhatsApp) avec le document à imprimer</label><?php endif;?>
+<?php if($models[$kind][6]):?><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="send" value="1"<?=$pickClass?'':' checked'?>> Envoyer aussi aux parents (fil, e-mail, WhatsApp) avec le document à imprimer<?=$pickClass?' — toute la classe : cochez seulement si vous êtes sûr':''?></label><?php endif;?>
 <div><button class="ss-btn" type="submit">Enregistrer<?=$models[$kind][6]?' et envoyer':''?></button></div></form></section>
 <?php endif;?><?php endif;?>
 <section class="ss-box"><h2>Registre des courriers <?=$e($year.'-'.($year+1))?></h2>
@@ -182,5 +187,5 @@ $need=$kind?$models[$kind][4]:'';
 <td><?=$r['STUDENT_ID']?$e($r['FIRST_NAME'].' '.$r['LAST_NAME']):($r['COURSE_PERIOD_ID']?$e(ParseMLField((string)$r['CLASS_TITLE'])):'Toute l’école')?></td>
 <td><?=$r['SENT_AT']?$e((int)$r['SENT_COUNT'].' élève(s)'):($r['KIND']==='attestation'?'—':'non envoyé')?></td>
 <td><div class="ss-chips"><a href="courriers.php?voir=<?=(int)$r['ID']?>" target="_blank" rel="noopener">Voir</a><a href="courriers.php?pdf=<?=(int)$r['ID']?>">PDF</a>
-<?php if($r['KIND']!=='attestation'&&!$r['SENT_AT']):?><form method="post" style="display:inline"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="envoyer"><input type="hidden" name="id" value="<?=(int)$r['ID']?>"><button class="ss-btn" style="min-height:30px;font-size:13px" type="submit">Envoyer</button></form><?php endif;?></div></td></tr><?php endforeach;?>
+<?php if($r['KIND']!=='attestation'&&!$r['SENT_AT']):?><form method="post" style="display:inline"><input type="hidden" name="csrf" value="<?=$e($csrf)?>"><input type="hidden" name="action" value="envoyer"><input type="hidden" name="id" value="<?=(int)$r['ID']?>"><label style="font-size:13px"><input type="checkbox" name="confirm" value="1" required> Je confirme l’envoi aux familles</label> <button class="ss-btn" style="min-height:30px;font-size:13px" type="submit">Envoyer</button></form><?php endif;?></div></td></tr><?php endforeach;?>
 </tbody></table><?php endif;?></section></main></body></html>

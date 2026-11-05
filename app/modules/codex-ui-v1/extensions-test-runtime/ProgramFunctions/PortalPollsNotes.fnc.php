@@ -30,10 +30,11 @@ function PortalPollsVote( $poll_id, $votes_array )
 		WHERE PORTAL_POLL_ID='" . (int) $poll_id . "'
 		ORDER BY ID" );
 
-	if ( ! $poll_RET || ! $poll_questions_RET )
+	// Lot K1 (C3, 05/11) : le sondage doit être visible pour cette personne (école, année, dates, profil),
+	// comme sur le tableau de bord ; sinon, aucun vote n'est compté.
+	if ( ! $poll_RET || ! $poll_questions_RET || ! SchoolSafePollVisible( $poll_id ) )
 	{
-		// Should never be displayed, so do not translate.
-		return ErrorMessage( [ 'Poll does not exist' ] );
+		return ErrorMessage( [ 'Ce sondage n’est pas disponible.' ] );
 	}
 
 	// Add user to excluded users list, format = '|[profile_id]:[user_id]'.
@@ -42,8 +43,15 @@ function PortalPollsVote( $poll_id, $votes_array )
 	if ( ! $excluded_user
 		|| mb_strpos( $poll_RET[1]['EXCLUDED_USERS'] . '|', $excluded_user . '|' ) !== false )
 	{
-		// Should never be displayed, so do not translate.
-		return ErrorMessage( [ 'User excluded from this poll' ] );
+		return ErrorMessage( [ 'Vous avez déjà répondu à ce sondage.' ] );
+	}
+
+	// Lot K1 (C3) : seuls des choix existants, une seule fois chacun par question.
+	$votes_array = SchoolSafePollCleanVotes( $poll_questions_RET, (array) $votes_array );
+
+	if ( ! $votes_array )
+	{
+		return ErrorMessage( [ 'Choisissez au moins une réponse.' ] );
 	}
 
 	$excluded_users = $poll_RET[1]['EXCLUDED_USERS'] . $excluded_user;
@@ -63,6 +71,100 @@ function PortalPollsVote( $poll_id, $votes_array )
 		( empty( $poll_RET[1]['VOTES_NUMBER'] ) ? 1 : $poll_RET[1]['VOTES_NUMBER'] + 1 ),
 		true
 	);
+}
+
+/**
+ * Lot K1 (C3, 05/11/2026) : le sondage est-il visible pour la personne connectée ?
+ * Mêmes conditions que l'affichage du tableau de bord (misc/Portal.php) : année, dates, école, profil
+ * (et, pour un élève, enseignant ciblé).
+ *
+ * @param int $poll_id Sondage.
+ *
+ * @return bool
+ */
+function SchoolSafePollVisible( $poll_id )
+{
+	$base = "pp.ID='" . (int) $poll_id . "'
+		AND pp.SYEAR='" . UserSyear() . "'
+		AND (pp.START_DATE<=CURRENT_DATE OR pp.START_DATE IS NULL)
+		AND (pp.END_DATE>=CURRENT_DATE OR pp.END_DATE IS NULL)";
+
+	if ( User( 'STAFF_ID' ) )
+	{
+		$profile = in_array( User( 'PROFILE' ), [ 'admin', 'teacher', 'parent' ], true ) ? User( 'PROFILE' ) : 'none';
+
+		return (bool) DBGetOne( "SELECT 1 FROM portal_polls pp,staff st
+			WHERE " . $base . "
+			AND st.STAFF_ID='" . (int) User( 'STAFF_ID' ) . "'
+			AND (st.SCHOOLS IS NULL OR position(CONCAT(',', pp.SCHOOL_ID, ',') IN st.SCHOOLS)>0)
+			AND (st.PROFILE_ID IS NULL AND position('," . $profile . ",' IN pp.PUBLISHED_PROFILES)>0
+				OR st.PROFILE_ID IS NOT NULL AND position(CONCAT(',', st.PROFILE_ID, ',') IN pp.PUBLISHED_PROFILES)>0)
+			LIMIT 1" );
+	}
+
+	if ( UserStudentID() )
+	{
+		return (bool) DBGetOne( "SELECT 1 FROM portal_polls pp
+			WHERE " . $base . "
+			AND pp.SCHOOL_ID='" . UserSchool() . "'
+			AND position(',0,' IN pp.PUBLISHED_PROFILES)>0
+			AND (pp.STUDENTS_TEACHER_ID IS NULL OR pp.STUDENTS_TEACHER_ID IN (SELECT cp.TEACHER_ID
+				FROM schedule sch,course_periods cp
+				WHERE sch.SYEAR='" . UserSyear() . "' AND sch.SCHOOL_ID='" . UserSchool() . "'
+				AND sch.STUDENT_ID='" . (int) UserStudentID() . "' AND sch.COURSE_PERIOD_ID=cp.COURSE_PERIOD_ID))
+			LIMIT 1" );
+	}
+
+	return false;
+}
+
+/**
+ * Lot K1 (C3, 05/11/2026) : garde seulement des choix qui existent, une seule fois chacun par question.
+ *
+ * @param array $questions Questions du sondage (ID, OPTIONS).
+ * @param array $votes     Votes envoyés : [question => choix] ou [question => [choix, ...]].
+ *
+ * @return array Votes nettoyés.
+ */
+function SchoolSafePollCleanVotes( $questions, $votes )
+{
+	$clean = [];
+
+	foreach ( (array) $questions as $question )
+	{
+		$id = $question['ID'];
+
+		if ( ! isset( $votes[ $id ] ) )
+		{
+			continue;
+		}
+
+		$count = count( explode( "\r", str_replace( [ "\r\n", "\n" ], "\r", (string) $question['OPTIONS'] ) ) );
+
+		if ( is_array( $votes[ $id ] ) )
+		{
+			$set = [];
+
+			foreach ( $votes[ $id ] as $choice )
+			{
+				if ( ctype_digit( (string) $choice ) && (int) $choice < $count )
+				{
+					$set[ (int) $choice ] = (int) $choice;
+				}
+			}
+
+			if ( $set )
+			{
+				$clean[ $id ] = array_values( $set );
+			}
+		}
+		elseif ( ctype_digit( (string) $votes[ $id ] ) && (int) $votes[ $id ] < $count )
+		{
+			$clean[ $id ] = (int) $votes[ $id ];
+		}
+	}
+
+	return $clean;
 }
 
 /**

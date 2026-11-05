@@ -19,6 +19,16 @@ SchoolSafeCard(
 	'Cette page envoie un message aux parents qui ont un compte et qui ne se sont jamais connectés. Le mot de passe du compte est réinitialisé.'
 );
 
+// Lot K1 (C1, C2 — 05/11/2026, docs/qualification/ANALYSE_COMMUNICATION_20261105.md) : page désactivée.
+// Elle réinitialisait les mots de passe sans contrôle du droit de modification ni du profil, avec un mot de passe
+// prévisible envoyé en clair par e-mail (et même en « mode essai »), alors que les familles n'ont pas d'e-mail.
+// Le fichier reste en place ; rien n'est enregistré ni envoyé.
+echo ErrorMessage( [ 'Cette page est désactivée : elle réinitialisait les mots de passe des parents et les envoyait par e-mail, '
+	. 'alors que les familles n’ont pas d’adresse e-mail. Pour créer ou rétablir l’accès d’un parent, passez par '
+	. '<b>École › Familles et accès</b>.' ], 'warning' );
+
+return;
+
 if ( $_REQUEST['modfunc'] === 'save' )
 {
 	// If $test email is set then this script will only 'go through the motions'

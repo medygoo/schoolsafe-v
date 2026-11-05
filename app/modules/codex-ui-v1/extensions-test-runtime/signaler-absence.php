@@ -30,10 +30,16 @@ if($allowed&&$_SERVER['REQUEST_METHOD']==='POST'){
             throw new RuntimeException('Choisissez une date entre aujourd’hui et les 30 prochains jours.');
         $note=mb_substr(trim((string)($_POST['note']??'')),0,300);
         $school=(int)$child['SCHOOL_ID'];$student=(int)$child['STUDENT_ID'];
-        $reason=$motives[$motive].($note!==''?' — '.$note:'').' (signalé par le parent)';
+        // Lot K1 (C5, 05/11) : au plus 10 signalements par enfant sur les 30 prochains jours.
+        $pending=$get('SELECT COUNT(*) AS N FROM schoolsafe_attendance_exceptions WHERE SCHOOL_ID='.$school.' AND STUDENT_ID='.$student
+            ." AND SCHOOL_DATE>=CURRENT_DATE AND REASON LIKE '%(signalé par le parent%'");
+        if((int)($pending[1]['N']??0)>=10)throw new RuntimeException('Vous avez déjà signalé 10 jours à venir pour cet enfant. Contactez l’école directement.');
+        $reason=$motives[$motive].($note!==''?' — '.$note:'').' (signalé par le parent, à confirmer par l’école)';
         $sql="'".str_replace("'","''",$reason)."'";
-        $get('INSERT INTO schoolsafe_attendance_exceptions(SCHOOL_ID,SYEAR,STUDENT_ID,SCHOOL_DATE,REASON) VALUES('.$school.','.$year.','.$student.",'".$day."',".$sql.')'
-            .' ON CONFLICT (SCHOOL_ID,STUDENT_ID,SCHOOL_DATE) DO UPDATE SET REASON=EXCLUDED.REASON RETURNING ID');
+        // Lot K1 (C5) : un retard prévu ne retire pas l'alerte d'absence de la journée (l'enfant doit arriver) ;
+        // et un motif déjà saisi par l'école n'est jamais remplacé par celui du parent.
+        if($motive!=='retard')$get('INSERT INTO schoolsafe_attendance_exceptions(SCHOOL_ID,SYEAR,STUDENT_ID,SCHOOL_DATE,REASON) VALUES('.$school.','.$year.','.$student.",'".$day."',".$sql.')'
+            .' ON CONFLICT (SCHOOL_ID,STUDENT_ID,SCHOOL_DATE) DO NOTHING RETURNING ID');
         // La direction de l'ecole recoit le signalement dans son fil.
         $recipients=[];
         foreach((array)$get("SELECT STAFF_ID,SCHOOLS FROM staff WHERE PROFILE='admin' AND SYEAR=".$year)as$admin)

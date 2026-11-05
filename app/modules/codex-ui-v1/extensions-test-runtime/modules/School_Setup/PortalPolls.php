@@ -78,8 +78,19 @@ if ( $_REQUEST['modfunc'] === 'update'
 					]
 				);
 
+				// Lot K1 (C4, 05/11) : les questions ne se modifient que si le sondage est de l'école et de l'année en cours.
+				$poll_in_school = (bool) DBGetOne( "SELECT 1 FROM portal_polls
+					WHERE ID='" . (int) $id . "'
+					AND SCHOOL_ID='" . UserSchool() . "'
+					AND SYEAR='" . UserSyear() . "'" );
+
 				foreach ( (array) $update_questions_columns as $id_question => $update_question_columns )
 				{
+					if ( ! $poll_in_school )
+					{
+						break;
+					}
+
 					DBUpdate(
 						'portal_poll_questions',
 						$update_question_columns,

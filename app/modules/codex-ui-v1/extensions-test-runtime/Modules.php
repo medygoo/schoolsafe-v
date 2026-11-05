@@ -56,6 +56,13 @@ if ( AllowUse() )
 
 		HackingLog();
 	}
+	elseif ( ! is_file( 'modules/' . $modname ) )
+	{
+		// Lot K1 (B5, 05/11) : une page retirée (ex. ancienne messagerie) affiche un message au lieu d'une erreur serveur.
+		DrawHeader( 'Page indisponible' );
+
+		echo ErrorMessage( [ 'Cette page n’existe plus dans SchoolSafe. Utilisez le menu pour retrouver la fonction.' ], 'warning' );
+	}
 	else
 	{
 		require_once 'modules/' . $modname;
