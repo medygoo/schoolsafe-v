@@ -372,3 +372,11 @@ données d'abord, puis clarté.
 - aucun compte réel créé et aucun mot de passe saisi par l'agent : analyse par le code, par l'ouverture des pages
   sans enregistrer, et par la base en lecture seule ;
 - mise en ligne seulement par image vérifiée, après accord.
+
+## 5 novembre 2026 — complément à la méthode d'analyse : mise en page moderne partout
+
+Décision du propriétaire : l'analyse en profondeur de chaque fonctionnalité (méthode verrouillée ci-dessus) regarde
+aussi **la disposition du contenu des anciennes pages** (pages d'origine du logiciel). Chaque page doit devenir
+**moderne** et cohérente avec les pages SchoolSafe : en-tête clair, blocs en cartes, champs alignés et lisibles,
+boutons visibles, aucun tableau de mise en page tassé, lisible sur téléphone. Cela s'applique **partout**, une
+fonctionnalité à la fois, par la feuille de style et la présentation, sans changer le fonctionnement ni les droits.

@@ -173,3 +173,24 @@ le « Jr » de Medy Lomela, retirer le profil « Obsolète », corriger le compt
   vérifiée à l'écran.**
 - Petit écart restant : le titre de l'onglet du navigateur garde l'ancien nom (« Informations utilisateur »).
   À aligner avec B3.
+
+## Lot U3 — appliqué en production (5 novembre 2026)
+
+- Profil 10 « Obsolète — Accès école 3 / compte 6 » retiré, avec ses 242 droits (déjà portés par le profil 7) ;
+  suffixe « Jr » de Medy Lomela vidé. Sauvegardes `schoolsafe_bak_u3_*` en base ; retour arrière :
+  `ops/releases/utilisateurs-u3-20261105/rollback.sql`.
+- Non fait, et pourquoi :
+  - profils de base : déjà affichés en français par traduction ;
+  - « Gardien » → « Tuteur » en base : l'assistant cherche ce nom, et la migration 015 le recréerait en double ;
+  - le « compte sans école » est l'administrateur de la plateforme (normal).
+
+## Mise en page moderne et cadrage des photos (5 novembre 2026)
+
+- Règle ajoutée à la méthode (`docs/DECISIONS.md`) : chaque ancienne page est rendue moderne, partout.
+- Utilisateurs : le nom de chaque champ est au-dessus de sa valeur, encadrée si elle est modifiable ; l'assistant a
+  le style SchoolSafe ; le titre de l'onglet du navigateur suit le menu.
+- **Cadrage des photos** (demande du propriétaire) : fenêtre pour déplacer, zoomer et tourner, puis envoi d'un carré
+  de 450 px. Testé dans le navigateur : une photo de 1 200 × 1 600 devient un carré de 450 × 450 de 9 Ko. Vaut pour
+  les fiches utilisateur et élève.
+- Image candidate `utilisateurs-moderne-20261105` construite et contrôlée. **Mise en ligne en attente d'une
+  confirmation explicite** : le garde-fou de déploiement l'a bloquée.
