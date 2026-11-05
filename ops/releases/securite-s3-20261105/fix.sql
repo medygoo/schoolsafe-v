@@ -21,7 +21,7 @@ BEGIN
   UPDATE discipline_fields SET title='Faute' WHERE title='Violation';
   UPDATE discipline_fields SET title='Retenue' WHERE title='Detention Assigned';
   UPDATE discipline_fields SET title='Exclusion (direction seulement)' WHERE title='Suspensions (Office Only)';
-  UPDATE discipline_fields SET title='Parents prévenus par l’enseignant' WHERE title='Parents Contacted by Teacher';
+  UPDATE discipline_fields SET title='Parents prévenus par l’enseignant' WHERE title IN ('Parents Contacted by Teacher','Parents Contacted By Teacher');
   UPDATE discipline_fields SET title='Parents prévenus par la direction' WHERE title='Parent Contacted by Administrator';
   UPDATE discipline_fields SET title='Commentaires' WHERE title='Comments';
 
