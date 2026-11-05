@@ -90,3 +90,18 @@ présences et journal.
   ligne de `discipline_fields`). Traduit aussi, dans une transaction ; plus aucun titre anglais dans la table.
   Script complété (commit `45dd94b`).
 - Reste pour Sécurité : lot S2 (cohérence, mise en page), points reportés S7, S11, B1, et décisions C2, C3.
+
+## Réalisation — lot S2 (5 novembre 2026)
+
+- **En production** (accord du propriétaire) : image `schoolsafe-rosario:securite-s2-20261105` (commit `ab3e104`).
+  Service sain, 0 erreur PHP.
+  - B2 : un seul lien « Scanner les cartes » ; le scanner propose ensuite arrivée, remise d'enfant ou frais.
+  - B3 : textes alignés sur le menu (Contrôle des présences, Ajouter des absences, Signaler un incident,
+    Formulaire d'incident, Tableau des présences) ; « Entrées et sorties » devient **Pointages du personnel**.
+  - C4 : confirmation et liste du formulaire d'incident, message d'envoi d'e-mail, en français.
+  - D : présentation moderne des formulaires étendue aux pages de Sécurité.
+- Contrôle à l'écran : 8 pages sans erreur ni texte anglais visible. Sur « Pointage manuel », la phrase d'aide
+  passait en bas et le nom « Personnel » sous sa liste.
+- **Correctif S2b préparé, pas encore en service** : image `securite-s2b-20261105` (2 fichiers CSS, commit
+  `d0433eb`), essayée à l'écran par injection de style.
+- Reste pour Sécurité : points reportés S7, S11, B1, et décisions C2, C3.
