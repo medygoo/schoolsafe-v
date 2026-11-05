@@ -173,3 +173,21 @@ ou en FC ?
   « Monnaie reçue » et « Compte » (paiements), « Monnaie » (frais) ; vérifié sur écran étroit, listes entières.
 - Limites connues : la règle rouge et le blocage au scan restent en USD (une dette en FC s'affiche sans bloquer) ;
   tri des soldes alphabétique ; recherche par solde en USD ; rattrapage, paie, trésorerie et cantine en USD (lot F4c).
+
+## Réalisation — lot F4c, deux monnaies : paie, trésorerie, cantine, rattrapage (5 novembre 2026)
+
+- **En production** (accord du propriétaire) :
+  - script `ops/releases/finance-f4c-20261105/fix.sql` appliqué en transaction (monnaie des salaires, recettes,
+    paiements du personnel et dépenses ; monnaie des dossiers de rattrapage ; cantine en FC pour les 3 écoles) ;
+    retour arrière : `rollback.sql` ;
+  - image `finance-f4c-20261105` (commit `9bd0d51`, 22 fichiers). Service sain, 0 erreur PHP.
+- Paie et trésorerie : monnaie par ligne, paiement du personnel converti au taux du jour, solde général en deux
+  blocs USD et FC (caisse, tableaux de bord, budget, matrice du personnel). Cantine en FC : dépôt en USD converti
+  et noté sur l'opération ; crédit ou débit en USD refusé. Rattrapage : monnaie par dossier.
+- Vérifié : essai à blanc du script et du retour arrière ; tests du scan, de l'entrée et de la remise verts (le test
+  du rattrapage échoue à l'identique avant et après : défaut ancien de son environnement de test) ; copie d'essai
+  de la base (conversion, refus sans taux, cantine, sommes et soldes par monnaie justes, copie supprimée) ;
+  13 pages ouvertes sans erreur après la mise en service.
+- Limites : budget annuel et courbe de trésorerie en USD (indiqué à l'écran) ; le choix d'un salaire dans un
+  paiement ne remplit pas la monnaie ; articles d'exemple de « Default School » inchangés ; règle rouge et blocage
+  au scan en USD.
