@@ -36,12 +36,14 @@ function SchoolSafeUsersHubDeny( $message )
 	exit( '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
 		. '<title>SchoolSafe — Utilisateurs</title><body style="font-family:system-ui;padding:2rem">'
 		. '<p role="alert">' . htmlspecialchars( $message, ENT_QUOTES, 'UTF-8' ) . '</p>'
-		. '<p><a href="Modules.php?modname=misc/Portal.php">Retour au portail</a></p></body></html>' );
+		. '<p><a href="/Modules.php?modname=misc/Portal.php">Retour au portail</a></p></body></html>' );
 }
 
 if ( ! User( 'STAFF_ID' ) )
 {
-	header( 'Location: index.php' );
+	// Lot U2 (B9) : adresse absolue — sous /ecoles/{id}/utilisateurs, « index.php »
+	// relatif menait à une page introuvable.
+	header( 'Location: /index.php' );
 	exit;
 }
 
@@ -66,19 +68,19 @@ $token = (string) ( $_SESSION['token'] ?? '' );
 // Catégories du formulaire adaptatif -> profils Rosario réels (033 + 015 + natifs).
 $categories = [
 	'direction' => [ 'label' => 'Direction', 'title' => 'Directeur', 'kind' => 'admin',
-		'note' => 'Responsable d’école : profil Directeur, au moins une école. Ne peut pas nommer un pair.' ],
+		'note' => 'Dirige l’école : voit et gère tout dans son école.' ],
 	'enseignant' => [ 'label' => 'Enseignant / professeur', 'title' => null, 'kind' => 'teacher',
-		'note' => 'Profil Teacher natif. Affectation aux classes après création (Teacher Programs natif).' ],
+		'note' => 'Voit ses classes, fait l’appel, donne les devoirs et les notes. Les classes lui sont attribuées ensuite.' ],
 	'admin_scolaire' => [ 'label' => 'Administrateur scolaire', 'title' => 'Administrateur scolaire', 'kind' => 'admin',
-		'note' => 'Gère les comptes de son école. Ne peut pas créer de GlobalAdmin ni gérer les profils.' ],
+		'note' => 'Gère les comptes et l’organisation de son école, sans toucher aux réglages de la plateforme.' ],
 	'parent' => [ 'label' => 'Parent / tuteur', 'title' => null, 'kind' => 'parent',
-		'note' => 'Jamais rattaché à une école : ses enfants le lient (Custom/CreateParents après création).' ],
+		'note' => 'Suit ses enfants. Après la création, reliez-le à ses enfants (Relier un parent à ses enfants).' ],
 	'gardien' => [ 'label' => 'Gardien', 'title' => 'Gardien', 'kind' => 'parent',
-		'note' => 'Personne de récupération autorisée à se connecter (base parent).' ],
+		'note' => 'Personne autorisée à venir chercher un enfant, avec son propre compte.' ],
 	'personnel' => [ 'label' => 'Personnel administratif', 'title' => 'Personnel administratif', 'kind' => 'teacher',
-		'note' => 'Fonctions administratives, multi-écoles autorisé, sans gestion d’utilisateurs.' ],
+		'note' => 'Secrétariat et tâches administratives, sans gérer les comptes.' ],
 	'cantine' => [ 'label' => 'Cantine et autres fonctions', 'title' => 'Cantine', 'kind' => 'teacher',
-		'note' => 'Fonctions Food_Service existantes, sans gestion d’utilisateurs ni d’écoles.' ],
+		'note' => 'Service de la cantine, sans gérer les comptes ni l’école.' ],
 ];
 
 $can_create = AllowUse( 'Users/User.php' ) && AllowEdit( 'Users/User.php' );
@@ -129,7 +131,7 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST' && isset( $_POST['l3_create
 
 			if ( $cat['title'] !== null && ! $profile_id )
 			{
-				$error = 'Profil « ' . $cat['title'] . ' » indisponible (migration 033 requise).';
+				$error = 'Le profil « ' . $cat['title'] . ' » n’existe pas encore pour cette école. Contactez le support SchoolSafe.';
 			}
 			elseif ( ! SchoolSafeProfileDelegable( $profile_id, $kind ) )
 			{
@@ -212,7 +214,20 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST' && isset( $_POST['l3_create
 				{
 					$dupes = SchoolSafeIdentityFindDuplicates( $username, $email, $phone );
 
-					if ( $dupes && ! $verified )
+					// Lot U2 (B8) : un homonyme (même prénom et même nom) est aussi
+					// signalé ; la même case de confirmation permet de continuer.
+					$homonym = (string) DBGetOne( "SELECT USERNAME FROM staff
+						WHERE SYEAR='" . (int) UserSyear() . "'
+						AND LOWER(FIRST_NAME)=LOWER('" . DBEscapeString( $first ) . "')
+						AND LOWER(LAST_NAME)=LOWER('" . DBEscapeString( $last ) . "')
+						LIMIT 1" );
+
+					if ( $homonym !== '' && ! $dupes && ! $verified )
+					{
+						$error = 'Une personne nommée ' . $first . ' ' . $last . ' a déjà un compte (identifiant : '
+							. $homonym . '). S’il s’agit bien d’une autre personne, cochez la confirmation et recommencez.';
+					}
+					elseif ( $dupes && ! $verified )
 					{
 						$error = 'Doublon possible : un compte partage déjà cet identifiant, cet e-mail ou ce téléphone. '
 							. 'Vérifiez la propriété avec la personne concernée, puis cochez la confirmation — '
@@ -249,7 +264,7 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST' && isset( $_POST['l3_create
 							'category' => $cat['label'], 'temp' => $temp,
 						];
 
-						$message = 'Vérifications OK. Confirmez pour créer via le moteur natif.';
+						$message = 'Tout est correct. Vérifiez les informations ci-dessous, puis confirmez la création.';
 					}
 				}
 			}
@@ -305,7 +320,7 @@ small{color:#456}
 </head>
 <body>
 <nav class="top" aria-label="Navigation SchoolSafe">
-<a href="Modules.php?modname=misc/Portal.php">Portail</a>
+<a href="/Modules.php?modname=misc/Portal.php">Portail</a>
 <a href="/ecoles/<?php echo $school_id; ?>/utilisateurs">Utilisateurs</a>
 <a href="/ecoles/<?php echo $school_id; ?>/utilisateurs/nouveau">Nouvel utilisateur</a>
 <a href="/ecoles/<?php echo $school_id; ?>/profils">Profils</a>
@@ -313,8 +328,8 @@ small{color:#456}
 </nav>
 <main>
 <h1>Utilisateurs — <?php echo htmlspecialchars( (string) $school_title, ENT_QUOTES, 'UTF-8' ); ?></h1>
-<p><small>Centre officiel de gestion des comptes de l’établissement. Création et modification via le moteur natif
-(Users/User.php) ; dossiers élèves séparés ; parents liés via Custom/CreateParents après création.</small></p>
+<p><small>Créer et retrouver les comptes de l’école : direction, enseignants, personnel et parents.
+Les élèves ont leur propre fiche dans École.</small></p>
 <?php if ( $message !== '' ) : ?>
 <p class="status" role="status"><?php echo htmlspecialchars( $message, ENT_QUOTES, 'UTF-8' ); ?></p>
 <?php endif; ?>
@@ -324,16 +339,16 @@ small{color:#456}
 
 <?php if ( $confirm ) : ?>
 <section class="card" aria-labelledby="t-confirm">
-<h2 id="t-confirm">Confirmer la création (moteur natif)</h2>
+<h2 id="t-confirm">Confirmer la création du compte</h2>
 <dl>
 <dt>Catégorie</dt><dd><?php echo htmlspecialchars( $confirm['category'], ENT_QUOTES, 'UTF-8' ); ?></dd>
 <dt>Personne</dt><dd><?php echo htmlspecialchars( $confirm['first'] . ' ' . $confirm['last'], ENT_QUOTES, 'UTF-8' ); ?></dd>
 <dt>Identifiant</dt><dd><?php echo htmlspecialchars( $confirm['username'], ENT_QUOTES, 'UTF-8' ); ?></dd>
 <dt>Mot de passe temporaire (affiché une seule fois)</dt><dd><code><?php echo htmlspecialchars( $confirm['temp'], ENT_QUOTES, 'UTF-8' ); ?></code> — à remettre en mains propres, jamais par e-mail.</dd>
 </dl>
-<p><small>Le mot de passe temporaire sera affiché UNE SEULE FOIS par le moteur natif et remis en mains propres.
-Première connexion : changement obligatoire (LAST_LOGIN NULL). Aucun secret envoyé par e-mail.</small></p>
-<form method="post" action="Modules.php?modname=Users/User.php&amp;modfunc=update&amp;staff_id=new">
+<p><small>Notez ce mot de passe temporaire : il ne sera plus affiché. Remettez-le en mains propres.
+À sa première connexion, la personne devra choisir son propre mot de passe.</small></p>
+<form method="post" action="/Modules.php?modname=Users/User.php&amp;modfunc=update&amp;staff_id=new">
 <input type="hidden" name="token" value="<?php echo htmlspecialchars( $token, ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="staff[FIRST_NAME]" value="<?php echo htmlspecialchars( $confirm['first'], ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="staff[LAST_NAME]" value="<?php echo htmlspecialchars( $confirm['last'], ENT_QUOTES, 'UTF-8' ); ?>">
@@ -348,7 +363,7 @@ Première connexion : changement obligatoire (LAST_LOGIN NULL). Aucun secret env
 <?php foreach ( $confirm['targets'] as $sid ) : ?>
 <input type="hidden" name="staff[SCHOOLS][<?php echo (int) $sid; ?>]" value="Y">
 <?php endforeach; ?>
-<p><button type="submit">Créer le compte (natif)</button>
+<p><button type="submit">Créer le compte</button>
 <a href="/ecoles/<?php echo $school_id; ?>/utilisateurs">Annuler</a></p>
 </form>
 </section>
@@ -357,7 +372,7 @@ Première connexion : changement obligatoire (LAST_LOGIN NULL). Aucun secret env
 <?php if ( $view_user > 0 ) : ?>
 <section class="card" aria-labelledby="t-fiche">
 <h2 id="t-fiche">Fiche consultative n°<?php echo (int) $view_user; ?></h2>
-<p><a href="Modules.php?modname=Users/User.php&amp;staff_id=<?php echo (int) $view_user; ?>">Ouvrir dans Users/User.php natif (modifier selon permissions)</a></p>
+<p><a href="/Modules.php?modname=Users/User.php&amp;staff_id=<?php echo (int) $view_user; ?>">Ouvrir la fiche pour la modifier</a></p>
 <p><a href="/plateforme/prodeli">Désactiver / réactiver via la console (même application)</a></p>
 <p><a href="/ecoles/<?php echo $school_id; ?>/utilisateurs">Retour à la liste</a></p>
 </section>
@@ -365,7 +380,7 @@ Première connexion : changement obligatoire (LAST_LOGIN NULL). Aucun secret env
 
 <?php if ( $is_new || $confirm ) : ?>
 <section class="card" aria-labelledby="t-new">
-<h2 id="t-new">Nouvel utilisateur — formulaire adaptatif</h2>
+<h2 id="t-new">Nouvel utilisateur</h2>
 <?php if ( ! $can_create ) : ?>
 <p role="alert">Votre profil ne permet pas la création (lecture seule).</p>
 <?php else : ?>
@@ -379,10 +394,12 @@ Première connexion : changement obligatoire (LAST_LOGIN NULL). Aucun secret env
 <option value="<?php echo $key; ?>"><?php echo htmlspecialchars( $cat['label'], ENT_QUOTES, 'UTF-8' ); ?></option>
 <?php endforeach; ?>
 </select></label>
-<p><small>Direction → Directeur · Enseignant → Teacher natif · Administrateur scolaire → profil 033 ·
-Parent → Parent natif (sans école) · Gardien → Gardien 015 · Personnel → Personnel administratif 033 ·
-Cantine → Cantine 033. Champs et permissions affichés selon la catégorie.</small></p>
-<?php $ecole_prof_options = DBGet( "SELECT ID,TITLE FROM user_profiles WHERE SCHOOL_ID='" . $school_id . "' ORDER BY ID" ); ?>
+<p><small>La catégorie fixe ce que la personne pourra voir et faire.</small></p>
+<ul><small><?php foreach ( $categories as $cat ) : ?><li><b><?php echo htmlspecialchars( $cat['label'], ENT_QUOTES, 'UTF-8' ); ?></b> : <?php echo htmlspecialchars( $cat['note'], ENT_QUOTES, 'UTF-8' ); ?></li><?php endforeach; ?></small></ul>
+<?php
+// Lot U2 (B4) : ni profil « Obsolète », ni copie technique « Accès école X / compte Y ».
+$ecole_prof_options = DBGet( "SELECT ID,TITLE FROM user_profiles WHERE SCHOOL_ID='" . $school_id . "'
+	AND TITLE NOT LIKE 'Obsol%' AND TITLE NOT LIKE '%Accès école % / compte %' ORDER BY ID" ); ?>
 <?php if ( $ecole_prof_options ) : ?>
 <label>Profil personnalisé de l’école (optionnel, remplace le profil de catégorie)
 <select name="profil_ecole">
@@ -397,7 +414,7 @@ Cantine → Cantine 033. Champs et permissions affichés selon la catégorie.</s
 <label>Identifiant <input required name="username" maxlength="100" autocomplete="off"></label>
 <label>E-mail <input type="email" name="email" maxlength="255"></label>
 <label>Téléphone <input name="phone" placeholder="+243…" autocomplete="off"><br>
-<small>Numéros congolais normalisés en +243 pour la détection. Vérification de propriété exigée avant tout rapprochement.</small></label>
+<small>Numéro congolais, par exemple +243 81 234 5678. Il sert aussi à repérer un compte en double.</small></label>
 <fieldset><legend>Écoles (défaut : cet établissement ; parents : aucune)</legend>
 <?php
 $school_options = DBGet( "SELECT ID,TITLE FROM schools WHERE SYEAR='" . (int) UserSyear() . "' ORDER BY TITLE" );
@@ -411,7 +428,7 @@ foreach ( (array) $school_options as $opt )
 ?>
 </fieldset>
 <label><input type="checkbox" name="doublon_verifie" value="1"> J’ai vérifié avec la personne qu’aucun compte existant ne lui appartient (aucune fusion automatique).</label>
-<p><button type="submit">Vérifier et préparer (natif)</button></p>
+<p><button type="submit">Vérifier</button></p>
 </form>
 <?php endif; ?>
 </section>
@@ -420,7 +437,7 @@ foreach ( (array) $school_options as $opt )
 <section class="card" aria-labelledby="t-list">
 <h2 id="t-list">Comptes de l’établissement (<?php echo count( (array) $staff_rows ); ?> + <?php echo count( (array) $parent_rows ); ?> parents liés)</h2>
 <table>
-<thead><tr><th>Compte</th><th>Profil / fonction</th><th>Écoles</th><th>Actions natives</th></tr></thead>
+<thead><tr><th>Compte</th><th>Profil / fonction</th><th>Écoles</th><th>Actions</th></tr></thead>
 <tbody>
 <?php foreach ( (array) $staff_rows as $row ) : ?>
 <tr>
@@ -428,20 +445,19 @@ foreach ( (array) $school_options as $opt )
 <td><?php echo htmlspecialchars( ( $row['PROFILE_TITLE'] ?? '' ) !== '' ? $row['PROFILE_TITLE'] . ' — ' . $row['PROFILE'] : $row['PROFILE'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><?php echo htmlspecialchars( (string) ( $row['SCHOOLS'] ?? '' ) === '' ? '—' : (string) $row['SCHOOLS'], ENT_QUOTES, 'UTF-8' ); ?></td>
 <td><a href="/ecoles/<?php echo $school_id; ?>/utilisateurs/<?php echo (int) $row['STAFF_ID']; ?>">Consulter</a>
-· <a href="Modules.php?modname=Users/User.php&amp;staff_id=<?php echo (int) $row['STAFF_ID']; ?>">Modifier (natif)</a></td>
+· <a href="/Modules.php?modname=Users/User.php&amp;staff_id=<?php echo (int) $row['STAFF_ID']; ?>">Modifier</a></td>
 </tr>
 <?php endforeach; ?>
 </tbody>
 </table>
-<h3>Parents liés à au moins un enfant de l’école (comptes sans école, lien natif conservé)</h3>
+<h3>Parents reliés à au moins un enfant de l’école</h3>
 <ul>
 <?php foreach ( (array) $parent_rows as $row ) : ?>
 <li><?php echo htmlspecialchars( $row['FIRST_NAME'] . ' ' . $row['LAST_NAME'] . ' (' . $row['USERNAME'] . ')', ENT_QUOTES, 'UTF-8' ); ?>
-— <a href="Modules.php?modname=Users/User.php&amp;staff_id=<?php echo (int) $row['STAFF_ID']; ?>">Fiche native</a></li>
+— <a href="/Modules.php?modname=Users/User.php&amp;staff_id=<?php echo (int) $row['STAFF_ID']; ?>">Fiche</a></li>
 <?php endforeach; ?>
 </ul>
-<p><small>Anciens écrans natifs (Users/Search, AddStudents, Associate Students with Parents) : préservés.
-La navigation visible converge ici. Désactivation / réactivation : <a href="/plateforme/prodeli">console PRODELI (même application)</a>.</small></p>
+<p><small>Désactiver ou réactiver un compte : <a href="/plateforme/prodeli">console PRODELI</a>.</small></p>
 </section>
 </main>
 </body>

@@ -110,4 +110,6 @@ $scanAction = function_exists('SchoolSafeGlobalAdmin') && !SchoolSafeGlobalAdmin
     && (int) UserSchool() > 0 ? 'scanner-native.php' : null;
 // Profil connecte (04/11) : sert seulement a ranger le menu par profil, jamais a donner un droit.
 $role = in_array(User('PROFILE'), ['admin', 'teacher', 'parent', 'student'], true) ? User('PROFILE') : '';
-echo json_encode(['links' => $links, 'profile' => $profile, 'role' => $role, 'scanAction' => $scanAction], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+// École en cours (05/11, lot U2 B1) : « Ajouter un utilisateur » ouvre l'assistant de cette école.
+$schoolNow = (int) UserSchool();
+echo json_encode(['links' => $links, 'profile' => $profile, 'role' => $role, 'school' => $schoolNow, 'scanAction' => $scanAction], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

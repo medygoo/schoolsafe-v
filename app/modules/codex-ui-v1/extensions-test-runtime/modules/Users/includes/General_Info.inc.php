@@ -39,13 +39,19 @@ if ( $_REQUEST['staff_id'] !== 'new' && $picture_path ):
 
 echo '</td><td colspan="2">';
 
+// SchoolSafe lot U2 (C3, 05/11/2026) : « Mrs » et « Ms » s'affichaient tous deux
+// « Mme ». « Ms » n'est plus proposé, mais reste lisible sur une fiche ancienne.
 $titles_array = [
 	'Mr' => _( 'Mr' ),
 	'Mrs' => _( 'Mrs' ),
-	'Ms' => _( 'Ms' ),
 	'Miss' => _( 'Miss' ),
 	'Dr' => _( 'Dr' ),
 ];
+
+if ( isset( $staff['TITLE'] ) && $staff['TITLE'] === 'Ms' )
+{
+	$titles_array['Ms'] = _( 'Ms' );
+}
 
 $suffixes_array = [
 	'Jr' => _( 'Jr' ),
@@ -83,10 +89,11 @@ if ( AllowEdit() && ! isset( $_REQUEST['_ROSARIO_PDF'] ) )
 		'size=12 maxlength=50 required',
 		$div
 	) . '</td><td>' .
+	// SchoolSafe lot U2 (C1) : en RDC, le second nom est le postnom.
 	TextInput(
 		issetVal( $staff['MIDDLE_NAME'], '' ),
 		'staff[MIDDLE_NAME]',
-		_( 'Middle Name' ),
+		SchoolSafeT( 'Middle Name', 'Postnom' ),
 		'maxlength=50',
 		$div
 	) . '</td><td>' .
@@ -97,7 +104,9 @@ if ( AllowEdit() && ! isset( $_REQUEST['_ROSARIO_PDF'] ) )
 		'size=12 maxlength=50 required',
 		$div
 	) . '</td><td>' .
-	SelectInput(
+	// SchoolSafe lot U2 (C2) : le suffixe (Jr, Sr, II…) n'a pas d'usage en RDC ;
+	// il n'est plus demandé. Une valeur déjà enregistrée reste modifiable.
+	( ! empty( $staff['NAME_SUFFIX'] ) ? SelectInput(
 		issetVal( $staff['NAME_SUFFIX'], '' ),
 		'staff[NAME_SUFFIX]',
 		_( 'Suffix' ),
@@ -105,7 +114,7 @@ if ( AllowEdit() && ! isset( $_REQUEST['_ROSARIO_PDF'] ) )
 		'',
 		'',
 		$div
-	) . '</td></tr></table>';
+	) : '' ) . '</td></tr></table>';
 
 	if ( $_REQUEST['staff_id'] === 'new'
 		|| ! empty( $_REQUEST['moodle_create_user'] ) )
@@ -265,7 +274,11 @@ if ( basename( $_SERVER['PHP_SELF'] ) != 'index.php' )
 
 		foreach ( (array) $schoolsafe_profiles as $schoolsafe_profile )
 		{
+			// SchoolSafe lot U2 (B4) : les copies techniques par compte
+			// (« Accès école X / compte Y ») et les profils « Obsolète » ne sont
+			// jamais proposés pour un nouveau compte.
 			if ( ! isset( $schoolsafe_families[ $schoolsafe_profile['PROFILE'] ] )
+				|| preg_match( '/^Obsol|Accès école \d+ \/ compte \d+/u', (string) $schoolsafe_profile['TITLE'] )
 				|| ! SchoolSafeProfileDelegable( (string) $schoolsafe_profile['ID'], $schoolsafe_profile['PROFILE'] ) )
 			{
 				continue;
@@ -287,7 +300,7 @@ if ( basename( $_SERVER['PHP_SELF'] ) != 'index.php' )
 			'staff[PROFILE_ID]',
 			_( 'Profile' ),
 			$named_profile_options,
-			_( 'Choose a profile' ),
+			SchoolSafeT( 'Choose a profile', 'Choisir un profil' ),
 			'required',
 			empty( $_REQUEST['moodle_create_user'] )
 		);
@@ -310,7 +323,10 @@ if ( basename( $_SERVER['PHP_SELF'] ) != 'index.php' )
 	if ( $schoolsafe_single_profile )
 	{
 		// Le profil nommé porte les permissions : le second sélecteur disparaît.
-		echo '<div class="mut">' . _( 'The profile sets the permissions. A Director or Accountant account needs at least one school.' ) . '</div>';
+		echo '<div class="mut">' . SchoolSafeT(
+			'The profile sets the permissions. A Director or Accountant account needs at least one school.',
+			'Le profil fixe les droits. Un compte de directeur ou de comptable doit être rattaché à au moins une école.'
+		) . '</div>';
 	}
 	elseif ( $staff['PROFILE'] !== 'none' )
 	{
@@ -357,6 +373,8 @@ if ( basename( $_SERVER['PHP_SELF'] ) != 'index.php' )
 			{
 				if ( (int) $named_profile['ID'] < 1
 					|| ! isset( $profile_families[$named_profile['PROFILE']] )
+					// SchoolSafe lot U2 (B4) : pas de copie technique ni de profil obsolète.
+					|| preg_match( '/^Obsol|Accès école \d+ \/ compte \d+/u', (string) $named_profile['TITLE'] )
 					|| ! function_exists( 'SchoolSafeProfileDelegable' )
 					|| ! SchoolSafeProfileDelegable( (string) $named_profile['ID'], $named_profile['PROFILE'] )
 					|| ( $default_profile_ids[$named_profile['PROFILE']] ?? -1 ) === (int) $named_profile['ID'] )

@@ -202,7 +202,11 @@ if ( $_REQUEST['modfunc'] === 'update'
 		if ( SchoolSafeSchoolScopedProfileRequiresSchool( $guard_profile_id )
 			&& trim( $guard_schools, ',' ) === '' )
 		{
-			$error[] = _( 'A school-level profile (Director, Accountant...) must be assigned at least one school: without a school, the account would manage the whole platform.' );
+			// SchoolSafe lot U2 (B7) : message en français.
+			$error[] = SchoolSafeT(
+				'A school-level profile (Director, Accountant...) must be assigned at least one school: without a school, the account would manage the whole platform.',
+				'Un profil d’école (directeur, comptable…) doit être rattaché à au moins une école : sans école, ce compte gérerait toute la plateforme.'
+			);
 		}
 	}
 
@@ -1087,6 +1091,14 @@ if (  ( UserStaffID()
 					$delete_button = '<input type="button" value="' . AttrEscape( _( 'Delete' ) ) .
 						// @since RosarioSIS 12.5 CSP remove unsafe-inline Javascript
 						'" class="onclick-ajax-link" data-link="' . URLEscape( $delete_url ) . '" />';
+				}
+				else
+				{
+					// SchoolSafe lot U2 (B6) : dire pourquoi le bouton Supprimer manque.
+					$delete_button = '<span class="legend-gray">'
+						. 'Suppression impossible : ce compte est encore lié à des données de l’école '
+						. '(cours, notes, paiements…). Retirez-le d’abord de ses cours, ou passez son profil '
+						. 'à « Sans accès » pour bloquer la connexion en gardant l’historique.</span>';
 				}
 			}
 		}

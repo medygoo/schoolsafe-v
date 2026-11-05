@@ -19,6 +19,7 @@
 	// Shared SchoolSafe presentation is loaded by Warehouse for every theme (2026-10-14).
 	var centralProfile = null;
 	var centralRole = '';
+	var centralSchool = 0;
 	var headerNotificationUrl = null;
 	var headerScanUrl = null;
 	var branchDefinitions = [
@@ -358,7 +359,8 @@
 	menuPlans.users = {
 		admin: [
 			['1 · Comptes', [
-				['Users/User.php#new', 'Ajouter un utilisateur', 'Créer le compte d’un membre du personnel ou d’un parent.'],
+				// Lot U2 (B1) : ouvre l'assistant (rôle clair, doublons, mot de passe temporaire).
+				['Users/User.php#new', 'Ajouter un utilisateur', 'Créer le compte d’un membre du personnel ou d’un parent.', '/ecoles/{school}/utilisateurs/nouveau'],
 				['Users/User.php', 'Fiche d’un utilisateur', 'Rechercher une personne, voir et modifier sa fiche.'],
 				['Users/AddStudents.php', 'Relier un parent à ses enfants', 'Partir du parent pour choisir ses enfants (6 parents au plus par élève).']]],
 			['2 · Réglages', [
@@ -477,7 +479,7 @@
 		var rules = {};
 		plan.forEach(function (step, s) {
 			step[1].forEach(function (row, r) {
-				rules[row[0]] = {heading: step[0], title: row[1], hint: row[2], rank: s * 100 + r};
+				rules[row[0]] = {heading: step[0], title: row[1], hint: row[2], href: row[3] || '', rank: s * 100 + r};
 			});
 		});
 		var matched = 0, kept = [];
@@ -490,6 +492,8 @@
 				entry.heading = rule.heading;
 				entry.planRank = rule.rank;
 				decorateMenuLink(anchor, rule.title, rule.hint);
+				// Adresse remplacée seulement si l'école en cours est connue (sinon, lien d'origine).
+				if (rule.href && centralSchool > 0) anchor.setAttribute('href', rule.href.replace('{school}', String(centralSchool)));
 			} else entry.planRank = 10000 + index;
 			kept.push(entry);
 		});
@@ -734,6 +738,18 @@
 		markOpen();
 		if (menuIsNarrow()) setMobilePanel('');
 	}
+	// Lot U2 (B3, 05/11) : le titre de la page reprend le nom donné par le plan du menu,
+	// pour qu'une page porte partout le même nom (ex. « Fiche d'un utilisateur »).
+	function menuTitleForPage() {
+		var here = document.createElement('a');
+		here.setAttribute('href', location.href);
+		var key = menuKey(here);
+		var match = Array.from(document.querySelectorAll('#menu .wp-submenu a.ss-link-with-hint')).find(function (link) {
+			return menuKey(link) === key;
+		});
+		var title = match && match.querySelector('.ss-link-title');
+		return title ? title.textContent.trim() : '';
+	}
 	function presentPageHeading(body) {
 		if (body.querySelector('.ss-page-heading')) return;
 		var title = body.querySelector('header[class*="ss-f"] h2, .header1 h2');
@@ -743,7 +759,7 @@
 		var logo = document.createElement('img');
 		logo.src = '/schoolsafe-card-bridge/studio-validated-20261008/logo-schoolsafe.png';
 		logo.alt = 'SchoolSafe'; logo.width = 40; logo.height = 40;
-		var label = document.createElement('h2'); label.textContent = title.textContent.trim();
+		var label = document.createElement('h2'); label.textContent = menuTitleForPage() || title.textContent.trim();
 		var back = document.createElement('button');
 		back.type = 'button';
 		back.className = 'ss-page-back';
@@ -1456,6 +1472,7 @@
 				}) ? 'Modules.php?modname=SchoolSafe/Notifications.php' : null;
 				if (manifest.profile && typeof manifest.profile.name === 'string' && /^Modules\.php\?modname=Users\/User\.php&category_id=1&staff_id=\d+$/.test(manifest.profile.url)) centralProfile = manifest.profile;
 				centralRole = ['admin', 'teacher', 'parent', 'student'].indexOf(manifest.role) >= 0 ? manifest.role : '';
+				centralSchool = Number.isInteger(manifest.school) && manifest.school > 0 ? manifest.school : 0;
 				centralEntries = Array.isArray(manifest.links) ? manifest.links.filter(function (entry) {
 					return branchDefinitions.some(function (definition) { return definition[0] === entry.branch; }) && schoolSafeCentralDestination(entry.url) && typeof entry.title === 'string' && typeof entry.group === 'string';
 				}) : [];

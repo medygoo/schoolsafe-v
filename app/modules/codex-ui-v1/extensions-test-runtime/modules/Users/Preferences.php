@@ -383,6 +383,17 @@ if ( ! $_REQUEST['modfunc'] )
 		];
 	}
 
+	// SchoolSafe lot U2 (C4, 05/11/2026) : l'enseignant et le parent ne voient que
+	// l'essentiel — Mot de passe et Options d'affichage. Les onglets techniques
+	// (impression, listes, champs, widgets) restent pour la direction.
+	if ( in_array( User( 'PROFILE' ), [ 'teacher', 'parent' ], true ) )
+	{
+		$tabs = array_values( array_filter( $tabs, function( $tab )
+		{
+			return (bool) preg_match( '/&tab=(password|display_options)$/', $tab['link'] );
+		} ) );
+	}
+
 	$_ROSARIO['selected_tab'] = 'Modules.php?modname=' . $_REQUEST['modname'] . '&tab=' . $_REQUEST['tab'];
 
 	$LO_options = [
