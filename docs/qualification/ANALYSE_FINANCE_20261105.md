@@ -110,3 +110,19 @@ Non vérifié : droits des profils parent et enseignant en base, cascades des ta
 - Restent hors lot : reçus et motif pour la cantine ; table des brouillons hors connexion
   (`schoolsafe_pwa_payment_intents`) absente en production, donc confirmation d'un brouillon impossible.
 - Reste : lot F3 (cohérence, mise en page), décisions C1 (monnaie), C2 (clôture de caisse), C3 (plan de tranches).
+
+## Réalisation — lot F3 (5 novembre 2026)
+
+- **En production** (accord du propriétaire) : image `schoolsafe-rosario:finance-f3-20261105`, commit `f2af6a0`
+  (14 fichiers). Service sain, 0 erreur PHP.
+- Réalisés : B1 (consultation du barème avec le droit de voir les frais), B2 (historique du barème, 30 dernières
+  modifications, dans `program_config` titre `FEE_TYPES_HISTORY`), B4 (une seule en-tête), D1 (listes sur téléphone
+  alignées), D2 (lien des brouillons lisible), D3 (accents, cantine « Dépôt, Crédit, Débit », colonne « Actions »),
+  D4 (présentation moderne étendue à Finance, css v3.11).
+- Vérifié à l'écran : « Contrôle des frais » sans second bandeau, avec « Dernières modifications du barème » ;
+  « Encaisser un paiement » sur téléphone : noms et valeurs alignés (0, 48, 96… px), lien des brouillons dans un
+  cadre blanc.
+- Non rejoué : enregistrement d'une modification du barème (rien n'est enregistré par l'assistant).
+- **Reporté à une décision** : B3 (type de frais choisi dans une liste), lié à C1 (monnaie).
+- Reste pour Finance : décisions C1 (monnaie), C2 (clôture de caisse), C3 (plan de tranches), B3 ; hors lot :
+  reçus et motif pour la cantine, table des brouillons hors connexion absente en production.
