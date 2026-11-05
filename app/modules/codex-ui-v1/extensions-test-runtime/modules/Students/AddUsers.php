@@ -145,7 +145,7 @@ if ( ! $_REQUEST['modfunc'] )
 		'Associate parents with students',
 		'Associer les parents aux élèves',
 		'This page links a parent user to a student. Choose the student, then the parent. The parent then sees that student.',
-		'Cette page relie un compte parent à un élève : le parent voit ensuite cet élève dans son application. Maximum 6 parents par élève. La tutelle principale — celle qui reçoit les alertes critiques et valide les changements — se désigne dans SchoolSafe → Familles → « Enregistrer une personne familiale », et se change via « Retirer ou remplacer ».'
+		'Cette page relie un compte parent à un élève : le parent voit ensuite cet élève dans son application. Maximum 6 parents par élève. La tutelle principale — celle qui reçoit les alertes critiques et valide les changements — se désigne et se change dans École › Personnes de récupération.'
 	);
 
 	$extra['SELECT'] = ",(SELECT count(u.STAFF_ID) FROM students_join_users u,staff st WHERE u.STUDENT_ID=s.STUDENT_ID AND st.STAFF_ID=u.STAFF_ID AND st.SYEAR=ssm.SYEAR) AS ASSOCIATED";

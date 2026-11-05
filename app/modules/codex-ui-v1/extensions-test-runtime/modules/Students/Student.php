@@ -238,6 +238,23 @@ if ( $_REQUEST['modfunc'] === 'update'
 				$error[] = 'Un nouvel élève doit être inscrit : indiquez sa date d’entrée, son niveau et son calendrier.';
 			}
 
+			// SchoolSafe lot E2 (C3) : l'identité qui figure sur la carte, le bulletin et le palmarès.
+			$ss_missing = [];
+
+			foreach ( [ 'CUSTOM_200000000' => 'le sexe', 'CUSTOM_200000004' => 'la date de naissance',
+				'CUSTOM_200000014' => 'le lieu de naissance' ] as $ss_col => $ss_label )
+			{
+				if ( isset( $_REQUEST['students'][ $ss_col ] ) && trim( (string) $_REQUEST['students'][ $ss_col ] ) === '' )
+				{
+					$ss_missing[] = $ss_label;
+				}
+			}
+
+			if ( $ss_missing )
+			{
+				$error[] = 'Pour un nouvel élève, indiquez aussi ' . implode( ', ', $ss_missing ) . '.';
+			}
+
 			// A3 — élève déjà enregistré sous le même nom (et la même date de naissance si connue).
 			$ss_first = trim( (string) ( $_REQUEST['students']['FIRST_NAME'] ?? '' ) );
 			$ss_last = trim( (string) ( $_REQUEST['students']['LAST_NAME'] ?? '' ) );
@@ -531,7 +548,7 @@ if ( $_REQUEST['modfunc'] === 'update'
 						'ID6' => (string) $ss_n,
 						'CREATED_BY' => User( 'STAFF_ID' ),
 					] );
-					echo '<div style="background:#d4efdf;color:#196f3d;border-radius:12px;padding:12px 14px;margin:8px 0">🎓 ' . _( 'ID universel de eleve' ) . ' : <b style="font-size:1.5rem;letter-spacing:3px">' . $ss_n . '</b> — ' . _( 'numero employe sur la machine et code de secours.' ) . '</div>';
+					echo '<div style="background:#d4efdf;color:#196f3d;border-radius:12px;padding:12px 14px;margin:8px 0">🎓 ' . 'Numéro unique de l’élève' . ' : <b style="font-size:1.5rem;letter-spacing:3px">' . $ss_n . '</b> — ' . 'utilisé sur la borne de pointage et comme code de secours.' . '</div>';
 				}
 			}
 		}
@@ -880,6 +897,13 @@ if (  ( UserStudentID()
 					$delete_button = '<input type="button" value="' . AttrEscape( _( 'Delete' ) ) .
 						// @since RosarioSIS 12.5 CSP remove unsafe-inline Javascript
 						'" class="onclick-ajax-link" data-link="' . URLEscape( $delete_url ) . '" />';
+				}
+				else
+				{
+					// SchoolSafe lot E2 (B4) : dire pourquoi la suppression est impossible.
+					$delete_button = '<span class="legend-gray">Suppression impossible : cet élève a des données '
+						. 'liées (inscriptions, notes, personnes de récupération…). Pour qu’il quitte l’école, '
+						. 'indiquez une date de sortie et son motif.</span>';
 				}
 			}
 		}

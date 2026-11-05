@@ -952,6 +952,10 @@
 			'Email_Log/EmailLog': 'Ce journal permet de consulter les emails enregistrés par SchoolSafe et les erreurs signalées. Filtrez les dates pour retrouver un envoi. Une entrée du journal ne garantit pas que le destinataire a reçu ou lu le message.',
 			'School_Setup/MarkingPeriods': 'Les périodes scolaires organisent l’année, les semestres et les périodes de notation. Sélectionnez le niveau concerné avant de modifier ses dates et ses paramètres ; ces réglages servent aux notes et aux bulletins.'
 		};
+		// Lot E2 (B1, 05/11) : « Ajouter un élève » a sa propre aide (et non celle de la fiche).
+		if (body.dataset.ssPage === 'Students/Student' && new URL(location.href).searchParams.get('student_id') === 'new') {
+			pageHelp['Students/Student'] = 'Remplissez l’identité de l’élève (nom, postnom, prénom, sexe, date et lieu de naissance), puis son inscription : date d’entrée, niveau et calendrier.';
+		}
 		if (body.dataset.ssPage === 'Email_Log/EmailLog' && new URL(location.href).searchParams.get('tab') === 'config') {
 			pageHelp['Email_Log/EmailLog'] = 'Définissez la durée de conservation du journal en jours. Les entrées plus anciennes sont supprimées automatiquement lors de la consultation du journal. L’option de notifications inclut les emails automatiques de Rosario dans ce journal ; elle ne déclenche pas leur envoi.';
 			body.querySelectorAll('form > .postbox-wrapper').forEach(function (panel) { panel.classList.add('ss-help-settings'); });

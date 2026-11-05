@@ -20,7 +20,7 @@ SchoolSafeCard(
 	'Registration',
 	'Inscription',
 	'This page is the registration form. An administrator chooses the fields families fill in. A family uses the same form to request a place.',
-	'Cette page est le formulaire d’inscription. L’administrateur choisit les champs que les familles remplissent. Une famille utilise le même formulaire pour demander une place.'
+	'Cette page est le formulaire d’inscription. L’administrateur choisit les champs que les parents remplissent. Les parents y complètent la fiche de leur enfant déjà relié à leur compte.'
 );
 
 if ( User( 'PROFILE' ) === 'admin' )

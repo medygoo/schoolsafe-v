@@ -52,7 +52,8 @@ if ( AllowEdit() && ! isset( $_REQUEST['_ROSARIO_PDF'] ) )
 	TextInput(
 		issetVal( $student['MIDDLE_NAME'], '' ),
 		'students[MIDDLE_NAME]',
-		_( 'Middle Name' ),
+		// SchoolSafe lot E2 (C1, 05/11/2026) : en RDC, le second nom est le postnom.
+		SchoolSafeT( 'Middle Name', 'Postnom' ),
 		'maxlength=50',
 		$div
 	) . '</td><td>' .
@@ -63,7 +64,8 @@ if ( AllowEdit() && ! isset( $_REQUEST['_ROSARIO_PDF'] ) )
 		'size=12 maxlength=50 required',
 		$div
 	) . '</td><td>' .
-	SelectInput(
+	// SchoolSafe lot E2 (C2) : suffixe Jr/Sr sans usage en RDC ; affiché seulement s'il est déjà rempli.
+	( empty( $student['NAME_SUFFIX'] ) ? '' : SelectInput(
 		issetVal( $student['NAME_SUFFIX'], '' ),
 		'students[NAME_SUFFIX]',
 		_( 'Suffix' ),
@@ -78,7 +80,7 @@ if ( AllowEdit() && ! isset( $_REQUEST['_ROSARIO_PDF'] ) )
 		'',
 		'',
 		$div
-	) . '</td></tr></table>';
+	) ) . '</td></tr></table>';
 
 	//FJ Moodle integrator
 
@@ -154,11 +156,11 @@ echo TextInput(
 	// SchoolSafe - l'adresse de l'eleve collectee des la creation (GO 2026-10-28).
 	if ( $_REQUEST['student_id'] === 'new' )
 	{
-		echo '<tr class="st"><td colspan="2"><table class="col1-align-left" style="width:100%"><tr><td>' . TextInput( '', 'adr_no', _( 'No et avenue' ), 'maxlength=100' ) . '</td>';
-		echo '<td>' . TextInput( '', 'adr_street', _( 'Avenue / Quartier' ), 'maxlength=30' ) . '</td></tr>';
-		echo '<tr><td>' . TextInput( '', 'adr_city', _( 'Ville' ), 'maxlength=30' ) . '</td>';
-		echo '<td>' . TextInput( '', 'adr_phone', _( 'Telephone' ), 'maxlength=30' ) . '</td></tr>';
-		echo '<tr><td colspan="2"><p style="font-size:.75rem;color:#516176">' . _( 'Cette adresse figurera sur la carte de l eleve.' ) . '</p></td></tr></table></td></tr>';
+		echo '<tr class="st"><td colspan="2"><table class="col1-align-left" style="width:100%"><tr><td>' . TextInput( '', 'adr_no', 'N°', 'maxlength=100' ) . '</td>';
+		echo '<td>' . TextInput( '', 'adr_street', 'Avenue et quartier', 'maxlength=30' ) . '</td></tr>';
+		echo '<tr><td>' . TextInput( '', 'adr_city', 'Ville ou commune', 'maxlength=30' ) . '</td>';
+		echo '<td>' . TextInput( '', 'adr_phone', 'Téléphone', 'maxlength=30' ) . '</td></tr>';
+		echo '<tr><td colspan="2"><p style="font-size:.75rem;color:#516176">' . 'Cette adresse figurera sur la carte de l’élève.' . '</p></td></tr></table></td></tr>';
 	}
 	// SchoolSafe - le message visible quand les champs obligatoires manquent (GO 2026-10-28).
 
