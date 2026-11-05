@@ -77,3 +77,16 @@ attend la validation du propriétaire.**
 4. **Décisions** : C1 (monnaie), C2 (clôture de caisse), C3 (plan de tranches).
 
 Non vérifié : droits des profils parent et enseignant en base, cascades des tables du rattrapage.
+
+## Réalisation — lot F1 (5 novembre 2026)
+
+- **En production** (accord du propriétaire) : image `schoolsafe-rosario:finance-f1-20261105`, commit `ecf6df9`
+  (14 fichiers, dont `ProgramFunctions/SchoolSafeMoney.fnc.php`). Service sain, 0 erreur PHP.
+- Réalisés : F2, F3, F4, F5, F7 à F13. F11 : une même opération renvoyée dans les 60 secondes est refusée.
+  F12 : case « Accepter un trop-perçu » à côté du bouton Enregistrer.
+- Vérifié : règles de montant essayées dans l'image (10 valeurs) ; nouvelles requêtes lancées en lecture seule
+  (reste dû de l'élève 16 : 145 000) ; 14 pages de Finance ouvertes sans erreur après la mise en service.
+- Non rejoué (rien n'est enregistré en production par l'assistant) : vrai paiement, remboursement, double clic.
+- Limite connue : le compte cantine reste plafonné à 9 999 999,99 (colonne de la base).
+- Reste : lot F2 (reçus numérotés, « Annuler avec motif » au lieu de « Supprimer »), lot F3 (cohérence, mise en page),
+  décisions C1 (monnaie), C2 (clôture de caisse), C3 (plan de tranches).
