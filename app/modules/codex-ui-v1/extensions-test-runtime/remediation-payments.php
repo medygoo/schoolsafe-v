@@ -54,7 +54,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
    DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(".$case.",'payment_recorded',".$user.')');
   }
   DBQuery('COMMIT');
-  $message=$dossier?'Paiement de rattrapage enregistre dans SchoolSafe. Confirmation et repartition restent a effectuer.':'Dossier indisponible ou montant superieur au solde.';
+  $message=$dossier?'Paiement de rattrapage enregistré dans SchoolSafe. Confirmation et répartition restent à effectuer.':'Dossier indisponible ou montant supérieur au solde.';
  }else{
  DBQuery('BEGIN ISOLATION LEVEL READ COMMITTED');
  DBQuery("SET LOCAL lock_timeout='5s'");DBQuery("SET LOCAL statement_timeout='30s'");
@@ -69,7 +69,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(".$case.",'".($previous?'payment_reconfirmed':'payment_confirmed')."',".$user.')');
  }
  DBQuery('COMMIT');
- $message=$source?'Paiement associe et confirme. Répartition comptable école / enseignant '.$shareText.' enregistrée.':'Paiement indisponible, rembourse, deja associe, frais modifie ou montant superieur au solde du rattrapage.';
+ $message=$source?'Paiement associé et confirmé. Répartition comptable école / enseignant '.$shareText.' enregistrée.':'Paiement indisponible, remboursé, déjà associé, frais modifié ou montant supérieur au solde du rattrapage.';
  }
  $_SESSION['ss_remediation_finance_csrf']=bin2hex(random_bytes(32));$token=$_SESSION['ss_remediation_finance_csrf'];
 }

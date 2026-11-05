@@ -41,7 +41,8 @@ if ( $_REQUEST['modfunc'] === 'save'
 			$values = "'" . UserSyear() . "','" . UserSchool() . "','" . $account_id . "','" . UserStudentID() . "',
 				(SELECT BALANCE FROM food_service_accounts WHERE ACCOUNT_ID='" . (int) $account_id . "'),
 				CURRENT_TIMESTAMP,'" . mb_strtoupper( $_REQUEST['values']['TYPE'] ) . "','" .
-				$_REQUEST['values']['TYPE'] . "','" . User( 'STAFF_ID' ) . "'";
+				// Lot F3 (D3, 05/11) : libellé enregistré en français (le code reste dans SHORT_NAME).
+				( [ 'Deposit' => 'Dépôt', 'Credit' => 'Crédit', 'Debit' => 'Débit' ][ $_REQUEST['values']['TYPE'] ] ?? $_REQUEST['values']['TYPE'] ) . "','" . User( 'STAFF_ID' ) . "'";
 
 			$sql = "INSERT INTO food_service_transactions (" . $fields . ") values (" . $values . ")";
 

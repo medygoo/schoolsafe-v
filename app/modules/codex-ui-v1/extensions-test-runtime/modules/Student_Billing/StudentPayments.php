@@ -7,7 +7,7 @@ require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
 if (isset($_SESSION['schoolsafe_payment_draft']) && ($_SESSION['schoolsafe_payment_draft']['expires']??0)<time()) unset($_SESSION['schoolsafe_payment_draft']);
 if ($_REQUEST['modfunc']==='save' && isset($_POST['schoolsafe_payment_draft_id'])
  && (User('PROFILE')!=='admin'||!AllowEdit())) {
- http_response_code(403);echo ErrorMessage(['Acces a la confirmation du brouillon refuse.'],'error');return;
+ http_response_code(403);echo ErrorMessage(['Accès à la confirmation du brouillon refusé.'],'error');return;
 }
 
 if ( empty( $_REQUEST['print_statements'] ) )
@@ -37,21 +37,21 @@ if ( $_REQUEST['modfunc'] === 'save'
 	$draft_id=$_POST['schoolsafe_payment_draft_id']??null;
 	if ($draft_id!==null || !empty($_SESSION['schoolsafe_payment_draft'])) {
 		if ($draft_id===null && isset($_REQUEST['values']['new'])) {
-			http_response_code(400);echo ErrorMessage(['Identifiant du brouillon manquant. Aucun paiement enregistre.'],'error');return;
+			http_response_code(400);echo ErrorMessage(['Identifiant du brouillon manquant. Aucun paiement enregistré.'],'error');return;
 		}
 		if ($draft_id!==null) {
 			if (!is_array($_POST['values']??null) || count($_POST['values'])!==1 || !is_array($_POST['values']['new']??null)) {
-				http_response_code(400);echo ErrorMessage(['Valider le brouillon separement des autres modifications.'],'error');return;
+				http_response_code(400);echo ErrorMessage(['Validez le brouillon séparément des autres modifications.'],'error');return;
 			}
 			require_once 'ProgramFunctions/SchoolSafePaymentIntent.fnc.php';
 			try {
 				$result=SchoolSafeConfirmPaymentIntent(SchoolSafePaymentDraftId($draft_id),$_POST['values']['new']);
 				unset($_SESSION['schoolsafe_payment_draft']);
-				echo '<p role="status">Paiement enregistre une seule fois pour ce brouillon. <a href="/schoolsafe-receipt.php?id='.(int)$result['receiptId'].'">Consulter le recu</a></p>';
+				echo '<p role="status">Paiement enregistré une seule fois pour ce brouillon. <a href="/schoolsafe-receipt.php?id='.(int)$result['receiptId'].'">Consulter le reçu</a></p>';
 				return;
 			} catch(Throwable $failure) {
 				http_response_code(in_array($failure->getCode(),[400,403,409],true)?$failure->getCode():503);
-				echo ErrorMessage(['Confirmation refusee ou indisponible. Verifier le dossier : aucune nouvelle confirmation n’est affichee.'],'error');return;
+				echo ErrorMessage(['Confirmation refusée ou indisponible. Vérifiez le dossier : aucune nouvelle confirmation n’est affichée.'],'error');return;
 			}
 		}
 	}
@@ -342,7 +342,7 @@ if ( UserStudentID()
 		&& AllowEdit()
 		&& ! isset( $_REQUEST['_ROSARIO_PDF'] ) )
 	{
-		$columns = [ 'REMOVE' => '<span class="a11y-hidden">' . _( 'Delete' ) . '</span>' ];
+		$columns = [ 'REMOVE' => '<span class="a11y-hidden">Actions</span>' ];
 	}
 
 	$columns += [
@@ -382,8 +382,8 @@ if ( UserStudentID()
 			|| ($local_draft['year']??0)!==(int)UserSyear() || ($local_draft['student']??0)!==(int)UserStudentID()
 			|| ($local_draft['expires']??0)<time()) $local_draft=[];
 		if (User('PROFILE')==='admin' && !isset($_REQUEST['_ROSARIO_PDF']))
-			echo '<p><a href="/pwa-payment-drafts.html">Brouillons de paiements hors connexion</a></p>';
-		if ($local_draft) echo '<p role="status">Brouillon repris : verifier les informations avant de confirmer le paiement.</p>';
+			echo '<p class="ss-finance-link"><a href="/pwa-payment-drafts.html">Brouillons de paiements hors connexion</a></p>';
+		if ($local_draft) echo '<p role="status">Brouillon repris : vérifiez les informations avant de confirmer le paiement.</p>';
 		$link['add']['html'] = [
 			'REMOVE' => button( 'add' ),
 			'AMOUNT' => $local_draft ? TextInput($local_draft['amount'],'values[new][AMOUNT]','',' type="number" step="0.01" min="0.01"',false) : _makePaymentsTextInput('', 'AMOUNT'),

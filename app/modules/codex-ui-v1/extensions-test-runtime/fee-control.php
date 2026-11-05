@@ -9,9 +9,10 @@ $level=ob_get_level();ob_start();require_once __DIR__.'/Warehouse.php';
 require_once __DIR__.'/modules/SchoolSafe/Gateway.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeFeeTypes.fnc.php';
 $school=(int)UserSchool();$year=(int)UserSyear();
-$allowed=User('STAFF_ID')&&User('PROFILE')==='admin'&&$school>0&&$year>0&&AllowEdit('Student_Billing/StudentFees.php')
+// Lot F3 (B1, 05/11) : consulter le barème demande le droit de voir les frais ; le modifier, le droit de les modifier.
+$allowed=User('STAFF_ID')&&User('PROFILE')==='admin'&&$school>0&&$year>0&&AllowUse('Student_Billing/StudentFees.php')
     &&SchoolSafeEndpointGateway('fee-control.php','GET')!=='deny';
-$canManage=$allowed&&SchoolSafeEndpointGateway('scanner-relay.php','POST','fees',['action'=>'save'])!=='deny';
+$canManage=$allowed&&AllowEdit('Student_Billing/StudentFees.php')&&SchoolSafeEndpointGateway('scanner-relay.php','POST','fees',['action'=>'save'])!=='deny';
 if(empty($_SESSION['SchoolSafeScannerCsrf']))$_SESSION['SchoolSafeScannerCsrf']=bin2hex(random_bytes(32));
 $csrf=$_SESSION['SchoolSafeScannerCsrf'];
 $get=function($sql){return DBGet(DBQuery($sql));};
@@ -25,7 +26,19 @@ if($canManage&&$_SERVER['REQUEST_METHOD']==='POST'){
     try{
         if(!is_string($_POST['csrf']??null)||!hash_equals($csrf,$_POST['csrf']))throw new RuntimeException('Session expirée : rechargez la page.');
         $action=(string)($_POST['action']??'');
+        // Lot F3 (B2, 05/11) : historique du barème (qui, quand, quoi, ancienne valeur), 30 dernières modifications.
+        $history=function(string $what)use($school,$year,$get){
+            $before=SchoolSafeFeeTypesRead($school,$year,$get);
+            $where="SYEAR=".$year." AND SCHOOL_ID=".$school." AND PROGRAM='schoolsafe_scan' AND TITLE='FEE_TYPES_HISTORY'";
+            $old=$get('SELECT VALUE FROM program_config WHERE '.$where);
+            $list=json_decode((string)($old[1]['VALUE']??'[]'),true);if(!is_array($list))$list=[];
+            array_unshift($list,['at'=>date('Y-m-d H:i'),'by'=>(string)User('NAME'),'what'=>$what,'before'=>$before]);
+            $sql="'".str_replace("'","''",json_encode(array_slice($list,0,30),JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES))."'";
+            $done=$get('UPDATE program_config SET VALUE='.$sql.',UPDATED_AT=CURRENT_TIMESTAMP WHERE '.$where.' RETURNING TITLE');
+            if(!is_array($done)||!isset($done[1]))$get("INSERT INTO program_config(SYEAR,SCHOOL_ID,PROGRAM,TITLE,VALUE) VALUES(".$year.','.$school.",'schoolsafe_scan','FEE_TYPES_HISTORY',".$sql.') RETURNING TITLE');
+        };
         if($action==='lock'||$action==='unlock'){
+            $history($action==='lock'?'Barème verrouillé':'Barème déverrouillé');
             SchoolSafeFeeTypesWrite($school,$year,null,$action==='lock',$get);
             $message=$action==='lock'?'Barème verrouillé : il s’applique automatiquement à chaque scan.':'Barème déverrouillé.';
         }elseif($action==='save'){
@@ -43,12 +56,15 @@ if($canManage&&$_SERVER['REQUEST_METHOD']==='POST'){
             $canteen=null;
             if(trim((string)($_POST['canteen_validated']??''))!==''||trim((string)($_POST['canteen_tolerated']??''))!=='')
                 $canteen=['validated'=>trim((string)$_POST['canteen_validated']),'tolerated'=>trim((string)$_POST['canteen_tolerated'])];
+            $history('Barème modifié');
             SchoolSafeFeeTypesWrite($school,$year,['types'=>$types,'canteen'=>$canteen],null,$get);
             $message='Barème enregistré ('.count($types).' type(s) de frais).';
         }else throw new RuntimeException('Action inconnue.');
     }catch(Throwable $failure){$error=$failure instanceof RuntimeException?$failure->getMessage():'Enregistrement impossible.';}
 }
 $config=$allowed?SchoolSafeFeeTypesRead($school,$year,$get):SchoolSafeFeeTypesDefault();
+$changes=[];
+if($allowed){$h=$get("SELECT VALUE FROM program_config WHERE SYEAR=".$year." AND SCHOOL_ID=".$school." AND PROGRAM='schoolsafe_scan' AND TITLE='FEE_TYPES_HISTORY'");$changes=json_decode((string)($h[1]['VALUE']??'[]'),true);if(!is_array($changes))$changes=[];}
 while(ob_get_level()>$level)ob_end_clean();
 if(!$allowed){http_response_code(403);exit('Permission administrative et financière requise.');}
 $e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
@@ -91,4 +107,9 @@ Les tranches se créent dans la facturation (frais avec date d’échéance) ; l
 <label>🟡 Toléré si le solde est au moins<input type="text" inputmode="decimal" name="canteen_tolerated" value="<?=$e($config['canteen']['tolerated']??'')?>" placeholder="ex. -2000"<?=$off?>></label></div>
 <p style="margin:0;font-size:13px">Laissez vide pour ne pas contrôler la cantine. En dessous du seuil toléré : 🔴, le repas est servi et l’économat est prévenu.</p></fieldset>
 <?php if($canManage&&!$locked):?><button class="ss-btn" type="submit">Enregistrer le barème</button><?php endif;?>
-</form></main></body></html>
+<?php if(!$canManage):?><p class="ss-legend">Consultation seulement : le barème se modifie avec le droit de modifier les frais.</p><?php endif;?>
+</form>
+<section class="ss-fees"><h2>Dernières modifications du barème</h2>
+<?php if(!$changes):?><p>Aucune modification enregistrée depuis la mise en place de l’historique.</p><?php else:?><ul>
+<?php foreach(array_slice($changes,0,10) as $c):?><li><?=$e(($c['at']??'').' — '.($c['what']??'').' — '.($c['by']??''))?></li><?php endforeach;?>
+</ul><?php endif;?></section></main></body></html>

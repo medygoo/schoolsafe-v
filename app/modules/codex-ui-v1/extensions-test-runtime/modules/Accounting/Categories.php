@@ -64,7 +64,7 @@ if ( $_REQUEST['modfunc'] === 'update'
 
 if ( $_REQUEST['modfunc'] === 'remove' && AllowEdit()
     && DBGetOne("SELECT COUNT(*) FROM schoolsafe_accounting_budgets WHERE school_id=".(int)UserSchool()." AND category_id=".(int)($_REQUEST['id']??0)) ) {
-    $error[] = 'Cette categorie est utilisee par un budget annuel et ne peut pas etre supprimee.';
+    $error[] = 'Cette catégorie est utilisée par un budget annuel et ne peut pas être supprimée.';
     $_REQUEST['modfunc'] = '';
 }
 

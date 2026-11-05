@@ -1826,3 +1826,27 @@
 	}
 	if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ssMeteo); } else { ssMeteo(); }
 })();
+
+// Lot F3 (B4, 05/11) : « Contrôle des frais » et « Paiements du rattrapage » s'ouvrent dans un cadre de la page ;
+// leur propre bandeau « SchoolSafe » faisait une deuxième en-tête. Il est masqué dans le cadre seulement
+// (la page ouverte seule garde son bandeau).
+(function () {
+	function strip(frame) {
+		try {
+			var doc = frame.contentDocument;
+			if (!doc || !/\/(fee-control|remediation-payments)\.php$/.test(doc.location.pathname)) return;
+			var bar = doc.querySelector('body > header');
+			if (bar) bar.style.setProperty('display', 'none', 'important');
+		} catch (error) { /* cadre d'une autre origine : rien à faire */ }
+	}
+	function bind() {
+		document.querySelectorAll('iframe.schoolsafe-native-tool').forEach(function (frame) {
+			if (frame.dataset.ssStrip) return;
+			frame.dataset.ssStrip = '1';
+			frame.addEventListener('load', function () { strip(frame); });
+			strip(frame);
+		});
+	}
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
+	new MutationObserver(bind).observe(document.documentElement, { childList: true, subtree: true });
+})();
