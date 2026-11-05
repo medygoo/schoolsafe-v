@@ -108,3 +108,17 @@ du propriétaire.**
 
 Aucune page effacée, aucun droit changé, aucune donnée modifiée pendant l'analyse. Chaque lot sera testé dans une
 image candidate, puis mis en ligne après votre accord.
+
+## Réalisation — lot E1 sécurité et intégrité (5 novembre 2026)
+
+- A1 à A13 réalisés. Commit `e95781f` (worktree `SchoolSafeProdDrift-20261103`), 11 fichiers.
+- Image candidate : syntaxe PHP correcte. Requêtes essayées en lecture seule : le calendrier de l'école (33 usages)
+  serait protégé ; l'onglet Famille est reconnu comme protégé ; un second « Josué KABEYA » serait signalé ; Josué
+  compte 2 parents pour l'année en cours.
+- **En production** (confirmation du propriétaire) : image `schoolsafe-rosario:ecole-e1-20261105`. Contrôle
+  `verify` : service sain, 200, 0 erreur PHP, autres services inchangés. À l'écran : case « homonyme » présente sur
+  Ajouter un élève, et 8 pages ouvertes sans erreur.
+- **Non rejoué** : les vraies créations d'élèves et suppressions. Essai conseillé : ajouter un élève d'essai sans
+  date d'entrée, qui doit être refusé.
+- **Reste** : lot E2 (cohérence, normes RDC, mise en page moderne de la fiche élève), lot E3 (codes d'inscription
+  RDC), décisions C6 (« Ethnie ») et les ajouts.
