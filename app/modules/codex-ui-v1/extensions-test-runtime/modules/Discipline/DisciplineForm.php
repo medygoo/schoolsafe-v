@@ -7,7 +7,7 @@ SchoolSafeCard(
 	'Setup',
 	'Mise en place',
 	'Referral form',
-	'Formulaire de discipline',
+	'Formulaire d’incident',
 	'This page sets the fields of the discipline referral form.',
 	'Cette page règle les champs du formulaire d’incident.'
 );
@@ -235,7 +235,7 @@ if ( $_REQUEST['modfunc'] === 'delete'
 if ( $_REQUEST['modfunc'] === 'delete_usage'
 	&& AllowEdit() )
 {
-	if ( DeletePrompt( _( 'Category' ), _( 'Don\'t use' ) ) )
+	if ( DeletePrompt( SchoolSafeT( 'form field', 'champ du formulaire' ), SchoolSafeT( 'stop using', 'ne plus utiliser' ) ) )
 	{
 		$id = issetVal( $_REQUEST['id'] );
 
@@ -324,7 +324,7 @@ if ( ! $_REQUEST['modfunc'] )
 
 	DrawHeader( '', SubmitButton() );
 
-	ListOutput( $referrals_RET, $columns, 'Referral Form Category', 'Referral Form Categories', $link );
+	ListOutput( $referrals_RET, $columns, SchoolSafeT( 'Form field', 'Champ du formulaire' ), SchoolSafeT( 'Form fields', 'Champs du formulaire' ), $link );
 	echo '<div class="center">' . SubmitButton() . '</div>';
 	echo '</form>';
 }

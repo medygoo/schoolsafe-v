@@ -17,10 +17,10 @@ SchoolSafeCard(
 	'check',
 	'Attendance',
 	'Présences',
-	'Administration',
-	'Administration',
-	'This page records the attendance of one student, day by day.',
-	'Cette page saisit les présences d’un élève, jour par jour.'
+	'Attendance control',
+	'Contrôle des présences',
+	'This page checks and corrects the attendance of a day, class by class.',
+	'Cette page vérifie et corrige les présences d’une journée, classe par classe.'
 );
 
 

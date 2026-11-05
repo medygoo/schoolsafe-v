@@ -13,9 +13,9 @@ SchoolSafeCard(
 	'Reports',
 	'Rapports',
 	'Attendance chart',
-	'Tableau des absences',
-	'This page shows the absences of one student on a chart.',
-	'Cette page montre les absences d’un élève sur un tableau.'
+	'Tableau des présences',
+	'This page shows attendance, student by student and day by day.',
+	'Cette page montre les présences, élève par élève et jour par jour.'
 );
 
 

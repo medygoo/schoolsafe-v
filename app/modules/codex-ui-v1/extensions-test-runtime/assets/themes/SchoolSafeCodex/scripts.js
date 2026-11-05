@@ -246,12 +246,12 @@
 	menuPlans.security = {
 		admin: [
 			['1 · Contrôle à l’entrée', [
-				['SchoolSafe/ScanVerify.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération, frais.'],
-				['SchoolSafe/ScanArrival.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération, frais.'],
-				['SchoolSafe/ScanPickup.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération, frais.'],
-				['SchoolSafe/ScanFees.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération, frais.'],
-				['Entry_Exit/Records.php', 'Entrées et sorties', 'Qui est entré ou sorti de l’école, et à quelle heure.'],
-				['Entry_Exit/AddRecords.php', 'Pointage manuel', 'Noter une entrée ou une sortie sans carte.']]],
+				['SchoolSafe/ScanVerify.php', 'Scanner les cartes', 'Un seul scanner : choisissez ensuite arrivée, remise d’enfant ou frais.'],
+				['SchoolSafe/ScanArrival.php', 'Scanner les cartes', 'Un seul scanner : choisissez ensuite arrivée, remise d’enfant ou frais.'],
+				['SchoolSafe/ScanPickup.php', 'Scanner les cartes', 'Un seul scanner : choisissez ensuite arrivée, remise d’enfant ou frais.'],
+				['SchoolSafe/ScanFees.php', 'Scanner les cartes', 'Un seul scanner : choisissez ensuite arrivée, remise d’enfant ou frais.'],
+				['Entry_Exit/Records.php', 'Pointages du personnel', 'Arrivées et départs du personnel, jour par jour.'],
+				['Entry_Exit/AddRecords.php', 'Pointage manuel', 'Noter l’arrivée ou le départ d’un membre du personnel sans badge.']]],
 			['2 · Présences et absences', [
 				['Attendance/Administration.php', 'Contrôle des présences', 'Voir et corriger les présences d’une journée, classe par classe.'],
 				['Attendance/AddAbsences.php', 'Ajouter des absences', 'Marquer absents plusieurs élèves à la fois (sortie, maladie…).'],
@@ -268,9 +268,9 @@
 		],
 		teacher: [
 			['Contrôle à l’entrée', [
-				['SchoolSafe/ScanVerify.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération.'],
-				['SchoolSafe/ScanArrival.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération.'],
-				['SchoolSafe/ScanPickup.php', 'Scanner les cartes', 'Vérifier une carte à l’entrée : élève, parent, récupération.']]],
+				['SchoolSafe/ScanVerify.php', 'Scanner les cartes', 'Un seul scanner : choisissez ensuite arrivée ou remise d’enfant.'],
+				['SchoolSafe/ScanArrival.php', 'Scanner les cartes', 'Un seul scanner : choisissez ensuite arrivée ou remise d’enfant.'],
+				['SchoolSafe/ScanPickup.php', 'Scanner les cartes', 'Un seul scanner : choisissez ensuite arrivée ou remise d’enfant.']]],
 			['Présences', [
 				['Attendance/TakeAttendance.php', null, ''],
 				['Attendance/DailySummary.php', 'Tableau des présences', 'Les présences de vos élèves, jour par jour. L’appel se fait dans Ma journée.']]],
@@ -482,13 +482,18 @@
 				rules[row[0]] = {heading: step[0], title: row[1], hint: row[2], href: row[3] || '', rank: s * 100 + r};
 			});
 		});
-		var matched = 0, kept = [];
+		var matched = 0, kept = [], shown = {};
 		entries.forEach(function (entry, index) {
 			var anchor = entry.item.querySelector('a[href]');
 			var rule = anchor && rules[menuKey(anchor)];
 			if (rule) {
 				matched++;
 				if (rule.title === null) return;
+				// Lot S2 (B2, 05/11) : un même nom dans une même rubrique n'apparaît qu'une fois
+				// (les 4 pages du scanner ouvrent le même écran, qui propose ensuite le mode).
+				var once = rule.heading + '|' + rule.title;
+				if (shown[once]) return;
+				shown[once] = true;
 				entry.heading = rule.heading;
 				entry.planRank = rule.rank;
 				decorateMenuLink(anchor, rule.title, rule.hint);

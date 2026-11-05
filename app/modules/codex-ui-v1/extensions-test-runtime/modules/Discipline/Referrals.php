@@ -12,8 +12,8 @@ SchoolSafeCard(
 	'Discipline',
 	'Referrals',
 	'Incidents',
-	'This page lists the discipline referrals of one student.',
-	'Cette page liste les incidents de discipline d’un élève.'
+	'This page lists the discipline incidents, student by student.',
+	'Cette page liste les incidents de discipline, élève par élève.'
 );
 
 

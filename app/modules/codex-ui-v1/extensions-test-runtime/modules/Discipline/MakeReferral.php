@@ -12,10 +12,10 @@ SchoolSafeCard(
 	'shield',
 	'Discipline',
 	'Discipline',
-	'Add referral',
-	'Ajouter un incident',
-	'This page adds a discipline referral for one student.',
-	'Cette page ajoute un incident de discipline pour un élève.'
+	'Report an incident',
+	'Signaler un incident',
+	'This page records a discipline incident for one or more students.',
+	'Cette page signale un incident de discipline pour un ou plusieurs élèves.'
 );
 
 
@@ -132,7 +132,7 @@ if ( $_REQUEST['modfunc'] === 'save' )
 				}
 				elseif ( ROSARIO_DEBUG )
 				{
-					echo 'Referral not emailed: ' . $referral_id;
+					echo SchoolSafeT( 'Incident not emailed: ', 'Incident non envoyé par e-mail : ' ) . (int) $referral_id;
 				}
 			}
 		}

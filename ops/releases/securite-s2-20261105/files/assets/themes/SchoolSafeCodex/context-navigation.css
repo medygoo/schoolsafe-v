@@ -1,0 +1,150 @@
+/* Context panel dimensions and hierarchy from the approved SchoolSafe model. */
+body.modules #menu .adminmenu > .menu-module > .menu-top {
+    box-sizing: border-box;
+    width: 100% !important;
+    padding-right: 8px !important;
+    white-space: nowrap !important;
+}
+body.modules #menu .adminmenu > .menu-module[data-ss-branch="security"] > .menu-top {
+    font-size: 13px !important;
+}
+body.modules #menu .adminmenu > .menu-module > .menu-top .module-icon {
+    flex-shrink: 0;
+}
+body.modules #menu .menu-module[data-ss-branch="pilotage"] { --ss-branch: #91b6ff; --ss-branch-ink: #2455c6; }
+.menu-module[data-ss-branch="school"] { --ss-branch: #7bddc5; --ss-branch-ink: #08766b; }
+.menu-module[data-ss-branch="pedagogy"] { --ss-branch: #d4b5ff; --ss-branch-ink: #7445a6; }
+.menu-module[data-ss-branch="security"] { --ss-branch: #ffa6b8; --ss-branch-ink: #a5324d; }
+.menu-module[data-ss-branch="finance"] { --ss-branch: #9fd38b; --ss-branch-ink: #23682d; }
+.menu-module[data-ss-branch="feeControl"] { --ss-branch: #f2cd7b; --ss-branch-ink: #8a5900; }
+.menu-module[data-ss-branch="accounting"] { --ss-branch: #adb6f4; --ss-branch-ink: #4e5990; }
+.menu-module[data-ss-branch="people"] { --ss-branch: #eab0d1; --ss-branch-ink: #9c446b; }
+.menu-module[data-ss-branch="inventory"] { --ss-branch: #efb98e; --ss-branch-ink: #9a4f20; }
+body.modules #menu .menu-module[data-ss-branch="communication"] { --ss-branch: #83d3eb; --ss-branch-ink: #066e93; }
+.menu-module[data-ss-branch="care"] { --ss-branch: #ffb8ce; --ss-branch-ink: #ad3d5b; }
+body.modules #menu .menu-module[data-ss-branch="administration"] { --ss-branch: #bfccd6; --ss-branch-ink: #526170; }
+body.modules #menu .menu-module[data-ss-branch="reports"] { --ss-branch: #d1db85; --ss-branch-ink: #5e6c1b; }
+body.modules #menu .adminmenu > .menu-module > .menu-top {
+    border: 1px solid color-mix(in srgb, var(--ss-branch) 26%, #123488) !important;
+    border-left: 3px solid var(--ss-branch) !important;
+}
+body.modules #menu .adminmenu > .ss-open > .menu-top {
+    border-color: var(--ss-branch-ink) !important;
+    color: var(--ss-branch-ink) !important;
+}
+body.modules #menu .adminmenu .wp-submenu {
+    background: #fff !important;
+    color: #172333;
+    scrollbar-width: thin;
+}
+body.modules #menu .adminmenu .wp-submenu .ss-context-heading {
+    min-height: 70px; box-sizing: border-box;
+    color: #172333; border-bottom: 1px solid #dbe2ec;
+}
+body.modules #menu .adminmenu .wp-submenu .menu-inter:not(.ss-context-heading) {
+    margin: 16px 0 4px !important; padding: 8px 8px 6px !important;
+    font: 700 12px/1.5 system-ui, sans-serif;
+    text-transform: none; color: var(--ss-branch-ink, #2455c6);
+    text-align: left; letter-spacing: 0;
+    background: #fff !important; border-radius: 0; box-shadow: none;
+    cursor: default;
+}
+body.modules #menu .adminmenu .wp-submenu .menu-inter:not(.ss-context-heading):not(:nth-child(2)) {
+    border-top: 1px solid #dbe2ec; padding-top: 16px !important;
+}
+body.modules #menu .adminmenu .wp-submenu a {
+    display: flex; align-items: flex-start; box-sizing: border-box;
+    min-height: 44px; width: 100%; margin: 0 0 3px !important;
+    padding: 10px 8px 10px 16px !important;
+    border: 1px solid transparent; border-left-width: 3px;
+    border-radius: 5px; background: transparent !important;
+    color: #172333 !important; font: 400 13px/1.5 system-ui, sans-serif;
+    white-space: normal; overflow-wrap: anywhere; text-decoration: none;
+}
+body.modules #menu .adminmenu .wp-submenu a:hover,
+body.modules #menu .adminmenu .wp-submenu a:focus-visible {
+    border-color: #dbe2ec; border-left-color: var(--ss-branch-ink, #2455c6);
+}
+body.modules #menu .adminmenu .wp-submenu a:focus-visible {
+    outline: 2px solid var(--ss-branch-ink, #2455c6); outline-offset: -2px;
+}
+body.modules #menu .adminmenu .wp-submenu #selectedMenuLink {
+    background: #edf3ff !important; color: var(--ss-branch-ink, #2455c6) !important;
+    border-left-color: var(--ss-branch-ink, #2455c6); font-weight: 700;
+    box-shadow: none !important;
+}
+@media screen and (min-width: 701px) {
+    body.modules #menu .adminmenu .wp-submenu { padding: 16px 10px !important; }
+    body.modules #menu .wp-submenu .ss-context-heading { margin: -16px -10px 12px; padding: 12px 16px; }
+}
+@media screen and (max-width: 700px) {
+    body.modules[data-ss-mobile-panel="context"] #menu { background: rgba(16, 24, 40, .4) !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu #menu-top { display: block !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu #menu-top .logo { display: block !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu .adminmenu { width: min(220px, calc(100% - 24px)) !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu .adminmenu > .menu-module { display: block !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu .adminmenu > .menu-module > .menu-top { display: flex !important; }
+    body.modules[data-ss-mobile-panel="context"] #menu #ss-settings-button { visibility: hidden; }
+    body.modules[data-ss-mobile-panel="context"] #menu .ss-open > .wp-submenu {
+        inset: 12px auto calc(84px + env(safe-area-inset-bottom)) min(220px, max(12px, calc(100% - 244px))) !important;
+        width: min(220px, calc(100% - 24px)) !important;
+        padding: 0 10px 16px !important;
+        border: 1px solid var(--ss-branch-ink, #2455c6) !important; border-top: 3px solid var(--ss-branch-ink, #2455c6) !important;
+        border-radius: 6px; box-shadow: 0 8px 24px rgba(16, 24, 40, .2);
+    }
+    body.modules #menu .wp-submenu .ss-context-heading { padding: 12px 6px; }
+}
+
+/* Pedagogie (04/11, harmonisation) : sous chaque lien, une phrase qui dit a quoi il sert. */
+body.modules #menu .adminmenu .wp-submenu a.ss-link-with-hint { flex-direction: column; gap: 2px; }
+body.modules #menu .adminmenu .wp-submenu a.ss-link-with-hint .ss-link-title { display: block; }
+body.modules #menu .adminmenu .wp-submenu a.ss-link-with-hint .ss-link-hint {
+    display: block; font: 400 12px/1.35 system-ui, sans-serif; color: #5d6b7e;
+    white-space: normal; text-transform: none; letter-spacing: 0;
+}
+html[data-ss-background="night"] body.modules #menu .adminmenu .wp-submenu a.ss-link-with-hint .ss-link-hint { color: #b6c2d3; }
+
+/* Photos des personnes (05/11) : fenêtre de cadrage. */
+dialog.ss-photo-cropper { border: 0; border-radius: 14px; padding: 18px; width: min(92vw, 480px); box-shadow: 0 20px 60px rgba(15,30,50,.35); }
+dialog.ss-photo-cropper::backdrop { background: rgba(15,30,50,.55); }
+dialog.ss-photo-cropper h2 { margin: 0 0 4px; font: 700 18px/1.3 system-ui, sans-serif; color: #172333; }
+dialog.ss-photo-cropper p { margin: 0 0 12px; font: 400 14px/1.4 system-ui, sans-serif; color: #5d6b7e; }
+dialog.ss-photo-cropper canvas { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 10px; background: #eef2f6; cursor: grab; touch-action: none; }
+dialog.ss-photo-cropper canvas:active { cursor: grabbing; }
+.ss-photo-zoom { display: flex; align-items: center; gap: 10px; margin: 12px 0; font: 600 14px system-ui, sans-serif; color: #172333; }
+.ss-photo-zoom input { flex: 1; }
+.ss-photo-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.ss-photo-actions button { min-height: 42px; padding: 0 16px; border-radius: 8px; border: 1px solid #c9d3e0; background: #fff; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+.ss-photo-actions .ss-photo-ok { background: #08766b; border-color: #08766b; color: #fff; }
+img.ss-photo-preview { display: block; width: 96px; height: 96px; margin-top: 8px; border-radius: 50%; object-fit: cover; border: 2px solid #dbe2ec; }
+
+/* Pages Utilisateurs (05/11, mise en page moderne) : le nom du champ au-dessus de sa valeur,
+   la valeur dans un cadre lisible. Présentation seulement. */
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox table td { padding: 8px 10px; vertical-align: top; }
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox .onclick { display: flex; flex-direction: column-reverse; gap: 4px; cursor: pointer; }
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox .onclick br { display: none; }
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox .legend-gray { display: block; font: 600 11px/1.3 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .04em; color: #5d6b7e; }
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox .onclick .uld,
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox td > .uld { display: block; min-height: 38px; box-sizing: border-box; padding: 9px 12px; border: 1px solid #dbe2ec; border-radius: 8px; background: #f7f9fb; color: #172333; font: 400 15px/1.35 system-ui, sans-serif; text-decoration: none; }
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox .onclick:hover .uld,
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox .onclick:focus-visible .uld { border-color: #08766b; background: #fff; }
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox input[type="text"],
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox input[type="email"],
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox input[type="password"],
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox select { min-height: 40px; box-sizing: border-box; padding: 8px 10px; border: 1px solid #b9c6d4; border-radius: 8px; font: 400 15px system-ui, sans-serif; max-width: 100%; }
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox hr { border: 0; border-top: 1px solid #e3e9f0; margin: 14px 0; }
+/* Champs en lecture seule : même ordre (nom au-dessus), valeur en texte appuyé, sans cadre. */
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox td:has(> .legend-gray) { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 4px; }
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox td:has(> .legend-gray) > br { display: none; }
+#body:is([data-ss-users],[data-ss-section="school"],[data-ss-section="security"]) .postbox .no-input-value { font: 600 15px/1.35 system-ui, sans-serif; color: #172333; }
+
+/* Lot E2 (D, 05/11) : la présentation moderne des comptes s'applique aussi aux pages d'École
+   (fiche élève, ajouter un élève). L'âge reste séparé de son étiquette. */
+#body[data-ss-section="school"] .postbox .no-input-value + .legend-gray { margin-top: 2px; }
+
+/* Lot S2 (D, 05/11) : la même présentation moderne s'applique aux pages de Sécurité
+   (incidents, présences, pointage manuel, journal) ; dates, heures et commentaires au même gabarit. */
+#body[data-ss-section="security"] .postbox input:is([type="date"],[type="time"],[type="number"]),
+#body[data-ss-section="security"] .postbox textarea { min-height: 40px; box-sizing: border-box; padding: 8px 10px; border: 1px solid #b9c6d4; border-radius: 8px; font: 400 15px system-ui, sans-serif; max-width: 100%; }
+#body[data-ss-section="security"] .postbox label { display: inline-flex; flex-direction: column; gap: 4px; font: 600 12px/1.3 system-ui, sans-serif; color: #5d6b7e; }
+#body[data-ss-section="security"] .postbox p.legend-gray { text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 14px; margin: 0 0 10px; }

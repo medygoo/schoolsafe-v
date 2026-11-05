@@ -9,7 +9,7 @@ SchoolSafeCard(
 	'Attendance',
 	'Présences',
 	'Add absences',
-	'Ajouter absences',
+	'Ajouter des absences',
 	'This page adds the same absence to several students.',
 	'Cette page ajoute la même absence à plusieurs élèves.'
 );
