@@ -396,6 +396,7 @@ if ( UserStudentID()
 
 	$columns += [
 		'AMOUNT' => _( 'Amount' ),
+	] + ( SchoolSafeMoneyCurrencyReady() ? [ 'PAID_CURRENCY' => 'Monnaie reçue', 'CURRENCY' => 'Compte' ] : [] ) + [
 		'PAYMENT_DATE' => _( 'Date' ),
 		'COMMENTS' => _( 'Comment' ),
 		'LUNCH_PAYMENT' => _( 'Lunch Payment' ),
@@ -435,10 +436,10 @@ if ( UserStudentID()
 		if ($local_draft) echo '<p role="status">Brouillon repris : vérifiez les informations avant de confirmer le paiement.</p>';
 		$link['add']['html'] = [
 			'REMOVE' => button( 'add' ),
-			'AMOUNT' => ( $local_draft ? TextInput($local_draft['amount'],'values[new][AMOUNT]','',' type="number" step="0.01" min="0.01"',false) : _makePaymentsTextInput('', 'AMOUNT') )
-				// Lot F4a : monnaie reçue et compte réglé (USD par défaut) ; conversion au taux du jour si elles diffèrent.
-				. ( SchoolSafeMoneyCurrencyReady() && ! $local_draft ? '<div class="ss-pay-currency">' . SchoolSafeMoneyCurrencySelect( 'values[new][PAID_CURRENCY]', 'USD', 'Monnaie reçue' )
-					. ' ' . SchoolSafeMoneyCurrencySelect( 'values[new][CURRENCY]', 'USD', 'Porté au compte' ) . '</div>' : '' ),
+			'AMOUNT' => ( $local_draft ? TextInput($local_draft['amount'],'values[new][AMOUNT]','',' type="number" step="0.01" min="0.01"',false) : _makePaymentsTextInput('', 'AMOUNT') ),
+			// Lot F4a : monnaie reçue et compte réglé (USD par défaut), chacun dans sa colonne ; conversion au taux du jour si elles diffèrent.
+			'PAID_CURRENCY' => SchoolSafeMoneyCurrencyReady() && ! $local_draft ? SchoolSafeMoneyCurrencySelect( 'values[new][PAID_CURRENCY]', 'USD' ) : '',
+			'CURRENCY' => SchoolSafeMoneyCurrencyReady() && ! $local_draft ? SchoolSafeMoneyCurrencySelect( 'values[new][CURRENCY]', 'USD' ) : '',
 			'PAYMENT_DATE' => $local_draft ? DateInput($local_draft['date'],'values[new][PAYMENT_DATE]','',false,false) : _makePaymentsDateInput(DBDate(), 'PAYMENT_DATE'),
 			'COMMENTS' => $local_draft ? TextInput($local_draft['comment'],'values[new][COMMENTS]','','maxlength="250"',false) : _makePaymentsCommentsInput('', 'COMMENTS'),
 			'LUNCH_PAYMENT' => _lunchInput( '', 'LUNCH_PAYMENT' ),

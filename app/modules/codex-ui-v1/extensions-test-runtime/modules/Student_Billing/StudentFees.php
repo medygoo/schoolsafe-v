@@ -280,6 +280,7 @@ if ( UserStudentID()
 	$columns += [
 		'TITLE' => _( 'Fee' ),
 		'AMOUNT' => _( 'Amount' ),
+	] + ( SchoolSafeMoneyCurrencyReady() ? [ 'CURRENCY' => 'Monnaie' ] : [] ) + [
 		'ASSIGNED_DATE' => _( 'Assigned' ),
 		'DUE_DATE' => _( 'Due' ),
 		'COMMENTS' => _( 'Comment' ),
@@ -307,7 +308,9 @@ if ( UserStudentID()
 		$link['add']['html'] = [
 			'REMOVE' => button( 'add' ),
 			'TITLE' => _makeFeesTextInput( '', 'TITLE' ),
-			'AMOUNT' => _makeFeesTextInput( '', 'AMOUNT' ) . ( SchoolSafeMoneyCurrencyReady() ? ' ' . SchoolSafeMoneyCurrencySelect( 'values[new][CURRENCY]', 'USD' ) : '' ),
+			'AMOUNT' => _makeFeesTextInput( '', 'AMOUNT' ),
+			// Lot F4a : monnaie du frais dans sa propre colonne (USD par défaut).
+			'CURRENCY' => SchoolSafeMoneyCurrencyReady() ? SchoolSafeMoneyCurrencySelect( 'values[new][CURRENCY]', 'USD' ) : '',
 			'ASSIGNED_DATE' => ProperDate( DBDate() ),
 			'DUE_DATE' => _makeFeesDateInput( '', 'DUE_DATE' ),
 			'COMMENTS' => _makeFeesTextInput( '', 'COMMENTS' ),
