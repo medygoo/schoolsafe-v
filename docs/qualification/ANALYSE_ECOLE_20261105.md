@@ -122,3 +122,13 @@ image candidate, puis mis en ligne après votre accord.
   date d'entrée, qui doit être refusé.
 - **Reste** : lot E2 (cohérence, normes RDC, mise en page moderne de la fiche élève), lot E3 (codes d'inscription
   RDC), décisions C6 (« Ethnie ») et les ajouts.
+
+## Réalisation — lot E2 cohérence, normes RDC, fiche moderne (5 novembre 2026)
+
+- Réalisés : B1 à B4, B6, C1 à C3, D. Commit `2dc3150`. Image `schoolsafe-rosario:ecole-e2-20261105` en production
+  (confirmation du propriétaire) : service sain, 0 erreur PHP.
+- À l'écran (fiche de Josué) : nom du champ au-dessus de la valeur, âge séparé de son étiquette, « Postnom »,
+  suffixe absent.
+- Non fait : C4 (champ **Commune**, nouveau champ en base : décision à part ; « Ville » devient « Ville ou
+  commune »), B5 (droit sur l'onglet Famille : changement de droit).
+- Reste : lot E3 (codes d'inscription RDC), décision C6 (« Ethnie »), ajouts proposés.
