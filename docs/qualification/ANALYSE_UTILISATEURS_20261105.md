@@ -158,3 +158,18 @@ mis en ligne par image vérifiée, après accord.
 Reste : le **lot U3 (données, après accord)** — renommer les profils en français, « Gardien » → « Tuteur », vider
 le « Jr » de Medy Lomela, retirer le profil « Obsolète », corriger le compte sans école. Restent aussi les
 **décisions** A8 et C5, et les **ajouts** de la partie 3.
+
+### Contrôle à l'écran après reconnexion (5 novembre 2026, compte de direction, sans rien enregistrer)
+
+- Menu : « Ajouter un utilisateur » → `/ecoles/3/utilisateurs/nouveau` ✓.
+- Assistant : aucun jargon, une phrase par catégorie, aucun profil « Obsolète », aucun lien relatif, formulaire
+  envoyé à la bonne adresse ✓.
+- Fiche (Medy Lomela) : titre « Fiche d'un utilisateur », « Postnom », raison affichée à la place de Supprimer ✓.
+  Le suffixe reste visible tant que « Jr » est enregistré (sera vidé en U3).
+- Formulaire d'origine : civilité M./Mme/Mlle/Dr, sans suffixe, Postnom, aucun profil obsolète ✓.
+- Titres identiques au menu : Relier un parent à ses enfants, Champs de la fiche utilisateur, Mes préférences, et
+  « Fiche élève » côté École ✓.
+- Mes préférences : 8 onglets pour la direction, comme prévu. **La vue enseignant/parent (2 onglets) n'est pas
+  vérifiée à l'écran.**
+- Petit écart restant : le titre de l'onglet du navigateur garde l'ancien nom (« Informations utilisateur »).
+  À aligner avec B3.
