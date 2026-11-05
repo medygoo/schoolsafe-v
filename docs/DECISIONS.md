@@ -393,3 +393,14 @@ Décision du propriétaire (décision C1 de `docs/qualification/ANALYSE_FINANCE_
 - **Monnaie par défaut à la saisie : USD** ; le caissier passe en FC si besoin.
 - Les montants s'affichent au format français (`75 000,00 USD`, `150 000,00 FC`).
 - L'option « une seule monnaie FC » a été écartée le même jour (essayée à blanc seulement, rien appliqué).
+
+## 5 novembre 2026 — Finance, deux monnaies : paie, trésorerie, cantine, rattrapage (lot F4c)
+
+Décisions du propriétaire, à la suite de la décision « FC et USD » du même jour :
+- **Paie et trésorerie** : même règle que les élèves. Chaque salaire, paiement du personnel, recette et dépense
+  porte sa monnaie (USD par défaut) ; un paiement dans l'autre monnaie est converti au taux du jour ; les soldes
+  et le solde général sont donnés par monnaie, jamais additionnés.
+- **Cantine : une seule monnaie par école, le franc congolais (FC)**. Soldes des comptes et prix des repas en FC ;
+  une recharge payée en USD est convertie en FC au taux du jour, et la conversion est notée sur l'opération.
+- **Rattrapage : monnaie choisie pour chaque dossier** (USD ou FC) au moment de la tarification ; le frais est
+  créé dans cette monnaie ; le paiement accepte les deux monnaies (taux du jour).
