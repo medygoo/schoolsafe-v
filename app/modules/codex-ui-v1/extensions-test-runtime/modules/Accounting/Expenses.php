@@ -128,7 +128,8 @@ if ( $_REQUEST['modfunc'] === 'remove'
 	// @since 12.1 Add Admin Delete Permission
 	&& AllowEdit( 'Accounting/Expenses.php&modfunc=remove' ) )
 {
-	if ( DeletePrompt( _( 'Expense' ) ) )
+	// Lot F2 (F6, 05/11) : motif obligatoire et trace gardée avant l'effacement.
+	if ( SchoolSafeMoneyCancelPrompt( 'cette dépense', 'accounting_payments', ' AND STAFF_ID IS NULL' ) )
 	{
 		$file_attached = DBGetOne( "SELECT FILE_ATTACHED
 			FROM accounting_payments

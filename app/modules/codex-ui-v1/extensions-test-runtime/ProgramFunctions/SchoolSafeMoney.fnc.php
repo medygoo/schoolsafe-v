@@ -106,3 +106,98 @@ function SchoolSafeMoneyStudentBalance( $student_id )
 
 	return round( $fees - $payments, 2 );
 }
+
+/**
+ * F6 (lot F2, 05/11) : demande le motif d'une annulation. Affiche le formulaire tant que le motif manque.
+ *
+ * @param string $what Ce qui est annulé (« ce paiement », « ce frais »…).
+ *
+ * @return string Motif saisi, ou '' si le formulaire est affiché.
+ */
+function SchoolSafeMoneyReasonPrompt( $what )
+{
+	$reason = trim( (string) ( $_POST['ss_cancel_reason'] ?? '' ) );
+
+	if ( $reason !== '' && ! empty( $_REQUEST['delete_ok'] ) )
+	{
+		RedirectURL( [ 'delete_ok' ] );
+
+		return mb_substr( preg_replace( '/[\x00-\x1f\x7f]+/u', ' ', $reason ), 0, 200 );
+	}
+
+	$action = PreparePHP_SELF( $_REQUEST, [ 'delete_cancel' ], [ 'delete_ok' => '1' ] );
+	$back = PreparePHP_SELF( $_REQUEST, [ 'modfunc', 'id', 'delete_ok' ] );
+
+	PopTable( 'header', 'Annuler ' . $what );
+
+	echo '<form action="' . $action . '" method="POST" class="ss-cancel-form">
+		<p>L’opération n’est pas effacée : elle reste visible, barrée, avec votre nom, la date et le motif.</p>
+		<label>Motif de l’annulation<br><textarea name="ss_cancel_reason" required maxlength="200" rows="3" cols="40"
+		placeholder="Erreur de saisie, mauvais élève, montant erroné…"></textarea></label>
+		<p>' . SubmitButton( 'Annuler ' . $what ) . ' <a href="' . $back . '">Retour, ne rien annuler</a></p>
+	</form>';
+
+	PopTable( 'footer' );
+
+	return '';
+}
+
+/**
+ * F6 (lot F2) : garde la ligne complète, le motif et l'auteur avant qu'une ligne d'argent soit effacée.
+ *
+ * @return bool false si la trace n'a pas pu être gardée (l'effacement doit alors être refusé).
+ */
+function SchoolSafeMoneyArchive( $table, $id, $reason, $extra_where = '' )
+{
+	if ( ! DBGetOne( "SELECT to_regclass('schoolsafe_money_cancellations')" ) )
+	{
+		return false;
+	}
+
+	$row = DBGet( "SELECT * FROM " . $table . "
+		WHERE ID='" . (int) $id . "'
+		AND SCHOOL_ID='" . UserSchool() . "'
+		AND SYEAR='" . UserSyear() . "'" . $extra_where );
+
+	if ( empty( $row[1] ) )
+	{
+		return false;
+	}
+
+	DBQuery( "INSERT INTO schoolsafe_money_cancellations
+		(SCHOOL_ID,SYEAR,SOURCE_TABLE,SOURCE_ID,AMOUNT,REASON,CANCELLED_BY,ROW_DATA)
+		VALUES('" . UserSchool() . "','" . UserSyear() . "','" . DBEscapeString( $table ) . "','" . (int) $id . "',
+		" . ( is_numeric( $row[1]['AMOUNT'] ?? null ) ? "'" . $row[1]['AMOUNT'] . "'" : 'NULL' ) . ",
+		'" . DBEscapeString( $reason ) . "','" . DBEscapeString( User( 'NAME' ) ) . "',
+		'" . DBEscapeString( json_encode( $row[1], JSON_UNESCAPED_UNICODE ) ) . "')" );
+
+	return true;
+}
+
+/**
+ * F6 (lot F2) : motif obligatoire, puis trace gardée, avant l'effacement d'une ligne de paie ou de trésorerie.
+ *
+ * @return bool true si l'effacement peut se faire (motif saisi et trace gardée).
+ */
+function SchoolSafeMoneyCancelPrompt( $what, $table, $extra_where = '' )
+{
+	global $error;
+
+	$reason = SchoolSafeMoneyReasonPrompt( $what );
+
+	if ( $reason === '' )
+	{
+		return false;
+	}
+
+	if ( ! SchoolSafeMoneyArchive( $table, $_REQUEST['id'] ?? 0, $reason, $extra_where ) )
+	{
+		$error[] = 'Annulation impossible : la ligne est introuvable dans l’école en cours, ou la trace n’a pas pu être gardée.';
+
+		RedirectURL( [ 'modfunc', 'id' ] );
+
+		return false;
+	}
+
+	return true;
+}

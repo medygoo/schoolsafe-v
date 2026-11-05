@@ -29,12 +29,22 @@ function _makeFeesRemove( $value, $column )
 	}
 	elseif ( ! empty( $waived_fees_RET[ $THIS_RET['ID'] ] ) )
 	{
-		$return = '<span style="color:#00A642">' . _( 'Waived' ) . '</span><br class="rbr"> ';
+		// Lot F2 (F6, 05/11) : une annulation se distingue d'une exemption.
+		$waiver_comment = (string) ( $waived_fees_RET[ $THIS_RET['ID'] ][1]['COMMENTS'] ?? '' );
+
+		return '<span style="color:#00A642">' . ( mb_strpos( $waiver_comment, 'Annulation' ) !== false ? 'Annulé' : _( 'Waived' ) ) . '</span>';
 	}
 
+	if ( ! empty( $THIS_RET['WAIVED_FEE_ID'] ) )
+	{
+		// Ligne d'exemption ou d'annulation : elle ne s'annule pas.
+		return '';
+	}
+
+	// Lot F2 (F6, 05/11) : « Annuler » (avec motif) remplace « Supprimer » ; le frais n'est plus effacé.
 	return $return . button(
 		'remove',
-		_( 'Delete' ),
+		'Annuler',
 		URLEscape( 'Modules.php?modname=' . $_REQUEST['modname'] .
 			'&modfunc=remove&id=' . $THIS_RET['ID'] . '&student_id=' . UserStudentID() )
 	);
@@ -74,15 +84,24 @@ function _makePaymentsRemove( $value, $column )
 	}
 	elseif ( ! empty( $refunded_payments_RET[ $THIS_RET['ID'] ] ) )
 	{
-		$return = '<span style="color:#00A642">' . _( 'Refunded' ) . '</span><br class="rbr"> ';
+		// Lot F2 (F6, 05/11) : une annulation se distingue d'un remboursement.
+		$refund_comment = (string) ( $refunded_payments_RET[ $THIS_RET['ID'] ][1]['COMMENTS'] ?? '' );
+
+		return '<span style="color:#00A642">' . ( mb_strpos( $refund_comment, 'Annulation' ) !== false ? 'Annulé' : _( 'Refunded' ) ) . '</span>';
+	}
+
+	if ( ! empty( $THIS_RET['REFUNDED_PAYMENT_ID'] ) )
+	{
+		// Ligne de remboursement ou d'annulation : elle ne s'annule pas.
+		return '';
 	}
 
 	if ( AllowEdit( 'Student_Billing/StudentPayments.php&modfunc=remove' ) )
 	{
-		// @since 8.5 Admin Student Payments Delete restriction.
+		// Lot F2 (F6, 05/11) : « Annuler » (avec motif) remplace « Supprimer » ; le paiement n'est plus effacé.
 		$return .= button(
 			'remove',
-			_( 'Delete' ),
+			'Annuler',
 			URLEscape( 'Modules.php?modname=' . $_REQUEST['modname'] .
 				'&modfunc=remove&id=' . $THIS_RET['ID'] . '&student_id=' . UserStudentID() )
 		);

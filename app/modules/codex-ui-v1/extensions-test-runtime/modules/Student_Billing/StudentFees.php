@@ -117,35 +117,43 @@ if ( $_REQUEST['modfunc'] === 'save'
 	RedirectURL( [ 'modfunc', 'values', 'month_values', 'day_values', 'year_values' ] );
 }
 
+// Lot F2 (F6, 05/11) : « Annuler » remplace « Supprimer ». Le frais n'est plus effacé : une ligne
+// d'annulation (montant opposé, motif, auteur, date) s'ajoute dessous ; le solde en tient compte.
 if ( $_REQUEST['modfunc'] === 'remove'
 	&& AllowEdit() )
 {
-	if ( DeletePrompt( _( 'Fee' ) ) )
+	$fee_RET = DBGet( "SELECT f.TITLE,f.AMOUNT
+		FROM billing_fees f
+		WHERE f.ID='" . (int) $_REQUEST['id'] . "'
+		AND f.STUDENT_ID='" . UserStudentID() . "'
+		AND f.SCHOOL_ID='" . UserSchool() . "'
+		AND f.SYEAR='" . UserSyear() . "'
+		AND f.WAIVED_FEE_ID IS NULL
+		AND f.AMOUNT>0
+		AND NOT EXISTS(SELECT 1 FROM billing_fees w WHERE w.WAIVED_FEE_ID=f.ID)" );
+
+	if ( empty( $fee_RET[1] ) )
 	{
-		$file_attached = DBGetOne( "SELECT FILE_ATTACHED
-			FROM billing_fees
-			WHERE ID='" . (int) $_REQUEST['id'] . "'
-			AND STUDENT_ID='" . UserStudentID() . "'
-			AND SCHOOL_ID='" . UserSchool() . "'
-			AND SYEAR='" . UserSyear() . "'" );
+		$error[] = 'Annulation impossible : ce frais n’appartient pas à cet élève, ou il est déjà annulé ou exempté.';
 
-		// Delete File Attached.
-		// Security: use FileDelete() instead of unlink()
-		FileDelete( $file_attached );
-
-		$delete_sql = "DELETE FROM billing_fees
-			WHERE ID='" . (int) $_REQUEST['id'] . "'
-			AND STUDENT_ID='" . UserStudentID() . "'
-			AND SCHOOL_ID='" . UserSchool() . "'
-			AND SYEAR='" . UserSyear() . "';";
-
-		$delete_sql .= "DELETE FROM billing_fees
-			WHERE WAIVED_FEE_ID='" . (int) $_REQUEST['id'] . "'
-			AND STUDENT_ID='" . UserStudentID() . "'
-			AND SCHOOL_ID='" . UserSchool() . "'
-			AND SYEAR='" . UserSyear() . "';";
-
-		DBQuery( $delete_sql );
+		RedirectURL( [ 'modfunc', 'id' ] );
+	}
+	elseif ( $reason = SchoolSafeMoneyReasonPrompt( 'ce frais' ) )
+	{
+		DBInsert(
+			'billing_fees',
+			[
+				'SYEAR' => UserSyear(),
+				'SCHOOL_ID' => UserSchool(),
+				'STUDENT_ID' => UserStudentID(),
+				'TITLE' => DBEscapeString( $fee_RET[1]['TITLE'] . ' (annulé)' ),
+				'AMOUNT' => ( $fee_RET[1]['AMOUNT'] * -1 ),
+				'WAIVED_FEE_ID' => (int) $_REQUEST['id'],
+				'ASSIGNED_DATE' => DBDate(),
+				'COMMENTS' => DBEscapeString( 'Annulation : ' . $reason ),
+				'CREATED_BY' => DBEscapeString( User( 'NAME' ) ),
+			]
+		);
 
 		// Unset modfunc & ID & redirect URL.
 		RedirectURL( [ 'modfunc', 'id' ] );

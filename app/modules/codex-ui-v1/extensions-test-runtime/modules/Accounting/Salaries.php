@@ -120,7 +120,8 @@ if ( $_REQUEST['modfunc'] === 'remove'
 	// @since 12.1 Add Admin Delete Permission
 	&& AllowEdit( 'Accounting/Salaries.php&modfunc=remove' ) )
 {
-	if ( DeletePrompt( _( 'Salary' ) ) )
+	// Lot F2 (F6, 05/11) : motif obligatoire et trace gardée avant l'effacement.
+	if ( SchoolSafeMoneyCancelPrompt( 'ce salaire', 'accounting_salaries', " AND STAFF_ID='" . UserStaffID() . "'" ) )
 	{
 		$file_attached = DBGetOne( "SELECT FILE_ATTACHED
 			FROM accounting_salaries

@@ -121,7 +121,8 @@ if ( $_REQUEST['modfunc'] === 'remove'
 	// @since 12.1 Add Admin Delete Permission
 	&& AllowEdit( 'Accounting/Incomes.php&modfunc=remove' ) )
 {
-	if ( DeletePrompt( _( 'Income' ) ) )
+	// Lot F2 (F6, 05/11) : motif obligatoire et trace gardée avant l'effacement.
+	if ( SchoolSafeMoneyCancelPrompt( 'cette recette', 'accounting_incomes' ) )
 	{
 		$file_attached = DBGetOne( "SELECT FILE_ATTACHED
 			FROM accounting_incomes

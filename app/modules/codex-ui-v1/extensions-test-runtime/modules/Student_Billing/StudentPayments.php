@@ -166,29 +166,45 @@ if ( $_REQUEST['modfunc'] === 'save'
 	RedirectURL( [ 'modfunc', 'values', 'month_values', 'day_values', 'year_values', 'billing_fees' ] );
 }
 
+// Lot F2 (F6, 05/11) : « Annuler » remplace « Supprimer ». Le paiement n'est plus effacé : une ligne
+// d'annulation (montant opposé, motif, auteur, date) s'ajoute dessous, et le reçu passe à « Paiement annulé ».
 if ( $_REQUEST['modfunc'] === 'remove'
 	// @since 8.5 Admin Student Payments Delete restriction.
 	&& AllowEdit( 'Student_Billing/StudentPayments.php&modfunc=remove' ) )
 {
-	if ( DeletePrompt( _( 'Payment' ) ) )
+	$payment_RET = DBGet( "SELECT p.AMOUNT
+		FROM billing_payments p
+		WHERE p.ID='" . (int) $_REQUEST['id'] . "'
+		AND p.STUDENT_ID='" . UserStudentID() . "'
+		AND p.SCHOOL_ID='" . UserSchool() . "'
+		AND p.SYEAR='" . UserSyear() . "'
+		AND p.REFUNDED_PAYMENT_ID IS NULL
+		AND p.AMOUNT>0
+		AND NOT EXISTS(SELECT 1 FROM billing_payments r WHERE r.REFUNDED_PAYMENT_ID=p.ID)" );
+
+	if ( empty( $payment_RET[1] ) )
 	{
-		$file_attached = DBGetOne( "SELECT FILE_ATTACHED
-			FROM billing_payments
-			WHERE ID='" . (int) $_REQUEST['id'] . "'
-			AND STUDENT_ID='" . UserStudentID() . "'
-			AND SCHOOL_ID='" . UserSchool() . "'
-			AND SYEAR='" . UserSyear() . "'" );
+		$error[] = 'Annulation impossible : ce paiement n’appartient pas à cet élève, ou il est déjà annulé ou remboursé.';
 
-		// Delete File Attached.
-		// Security: use FileDelete() instead of unlink()
-		FileDelete( $file_attached );
+		RedirectURL( [ 'modfunc', 'id' ] );
+	}
+	elseif ( $reason = SchoolSafeMoneyReasonPrompt( 'ce paiement' ) )
+	{
+		DBInsert(
+			'billing_payments',
+			[
+				'SYEAR' => UserSyear(),
+				'SCHOOL_ID' => UserSchool(),
+				'STUDENT_ID' => UserStudentID(),
+				'AMOUNT' => ( $payment_RET[1]['AMOUNT'] * -1 ),
+				'PAYMENT_DATE' => DBDate(),
+				'COMMENTS' => DBEscapeString( 'Annulation : ' . $reason ),
+				'REFUNDED_PAYMENT_ID' => (int) $_REQUEST['id'],
+				'CREATED_BY' => DBEscapeString( User( 'NAME' ) ),
+			]
+		);
 
-		DBQuery( "DELETE FROM billing_payments
-			WHERE (ID='" . (int) $_REQUEST['id'] . "'
-			OR REFUNDED_PAYMENT_ID='" . (int) $_REQUEST['id'] . "')
-			AND STUDENT_ID='" . UserStudentID() . "'
-			AND SCHOOL_ID='" . UserSchool() . "'
-			AND SYEAR='" . UserSyear() . "'" );
+		$note[] = button( 'check' ) . '&nbsp;Paiement annulé. Il reste visible, avec le motif ; son reçu indique « Paiement annulé ».';
 
 		// Unset modfunc & ID & redirect URL.
 		RedirectURL( [ 'modfunc', 'id' ] );
@@ -249,6 +265,7 @@ if ( $_REQUEST['modfunc'] === 'refund'
 if ( UserStudentID()
 	&& ! $_REQUEST['modfunc'] )
 {
+	echo ErrorMessage( $note, 'note' );
 	echo ErrorMessage( $error );
 
 	$payments_total = 0;
@@ -284,8 +301,29 @@ if ( UserStudentID()
 	$i = 1;
 	$RET = [];
 
+	// Lot F2 (F1, 05/11) : le reçu de chaque paiement (numéro, état, lien pour l'imprimer).
+	require_once 'ProgramFunctions/SchoolSafeReceipts.fnc.php';
+
+	$receipts_ready = SchoolSafeReceiptsTableReady();
+
+	$receipts_RET = $receipts_ready ? DBGet( "SELECT DISTINCT ON (SOURCE_ID) ID,SOURCE_ID,NUMBER,STATUS,SCHOOL_ID,SYEAR
+		FROM schoolsafe_payment_receipts
+		WHERE SOURCE='billing'
+		AND STUDENT_ID='" . UserStudentID() . "'
+		AND SCHOOL_ID='" . UserSchool() . "'
+		AND SYEAR='" . UserSyear() . "'
+		ORDER BY SOURCE_ID,REVISION DESC", [], [ 'SOURCE_ID' ] ) : [];
+
 	foreach ( (array) $payments_RET as $payment )
 	{
+		$receipt = $receipts_RET[ $payment['ID'] ][1] ?? null;
+
+		$payment['RECEIPT'] = $receipt ?
+			'<a href="schoolsafe-receipt.php?id=' . (int) $receipt['ID'] . '" target="_blank" rel="noopener">'
+				. SchoolSafeReceiptNumber( $receipt ) . '</a>'
+				. ( $receipt['STATUS'] === 'valid' ? '' : '<br><small>' . [ 'corrected' => 'remplacé', 'cancelled' => 'annulé', 'refunded' => 'remboursé' ][ $receipt['STATUS'] ] . '</small>' ) :
+			'';
+
 		$RET[$i] = $payment;
 
 		if ( ! empty( $refunded_payments_RET[$payment['ID']] ) )
@@ -317,6 +355,11 @@ if ( UserStudentID()
 	if ( empty( $_REQUEST['print_statements'] ) )
 	{
 		$columns += [ 'FILE_ATTACHED' => _( 'File Attached' ) ];
+	}
+
+	if ( ! empty( $receipts_ready ) && ! isset( $_REQUEST['_ROSARIO_PDF'] ) )
+	{
+		$columns += [ 'RECEIPT' => 'Reçu' ];
 	}
 
 	if ( isset( $_REQUEST['expanded_view'] )

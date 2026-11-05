@@ -29,6 +29,12 @@ function SchoolSafeReceiptPermission( array $receipt )
 
 function SchoolSafeReceiptNumber( array $receipt )
 {
+    // Lot F2 (05/11) : numéro qui se suit par école et par année (colonne NUMBER), sinon l'ancien format.
+    if ( ! empty( $receipt['NUMBER'] ) )
+    {
+        return 'REC-' . (int) $receipt['SYEAR'] . '-' . str_pad( (string) (int) $receipt['NUMBER'], 6, '0', STR_PAD_LEFT );
+    }
+
     return 'SS-' . (int) $receipt['SCHOOL_ID'] . '-' . (int) $receipt['SYEAR'] . '-' .
         str_pad( (string) $receipt['ID'], 8, '0', STR_PAD_LEFT );
 }
@@ -36,6 +42,12 @@ function SchoolSafeReceiptNumber( array $receipt )
 function SchoolSafeReceiptHtml( array $receipt )
 {
     $data = json_decode( $receipt['SNAPSHOT'], true, 32, JSON_THROW_ON_ERROR );
+    // Lot F2 (05/11) : en-tête et pied du reçu = papier de l'école (nom, logo, devise, adresse, contacts).
+    if ( empty( $data['school'] ) && (int) $receipt['SCHOOL_ID'] === (int) UserSchool() )
+    {
+        require_once 'ProgramFunctions/SchoolSafeLetterhead.fnc.php';
+        $data += SchoolSafeLetterheadIdentity( (int) $receipt['SCHOOL_ID'] );
+    }
     $escape = static function ( $value ) { return htmlspecialchars( (string) $value, ENT_QUOTES, 'UTF-8' ); };
     $money = static function ( $value ) use ( $escape, $data ) {
         return $escape( number_format( (float) $value, 2, ',', ' ' ) . ' ' . ( $data['currency'] ?? '' ) );
