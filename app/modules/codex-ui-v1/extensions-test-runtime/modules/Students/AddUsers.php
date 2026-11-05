@@ -19,10 +19,20 @@ if ( $_REQUEST['modfunc'] === 'save'
 		$ss_ajoutes = 0;
 		$ss_refuses = 0;
 
+		$ss_non_parents = 0;
+
 		foreach ( (array) $_REQUEST['staff'] as $staff_id )
 		{
 			if ( empty( $current_RET[$staff_id] ) )
 			{
+				// SchoolSafe lot U1 (A2) : seul un compte parent est relié à un élève.
+				if ( DBGetOne( "SELECT PROFILE FROM staff
+					WHERE STAFF_ID='" . (int) $staff_id . "'" ) !== 'parent' )
+				{
+					$ss_non_parents++;
+					continue;
+				}
+
 				if ( $ss_lies + $ss_ajoutes >= $ss_max_parents )
 				{
 					$ss_refuses++;
@@ -44,14 +54,22 @@ if ( $_REQUEST['modfunc'] === 'save'
 		if ( $ss_refuses )
 		{
 			$error[] = sprintf(
-				_( 'Limite de %d parents par eleve atteinte : %d parent(s) non associe(s). Retirez d\'abord un parent existant.' ),
+				'Limite de %d parents par élève atteinte : %d parent(s) non associé(s). Retirez d’abord un parent existant.',
 				$ss_max_parents,
 				$ss_refuses
 			);
 		}
 
+		if ( $ss_non_parents )
+		{
+			$error[] = sprintf(
+				'%d compte(s) non relié(s) : seul un compte parent peut être relié à un élève.',
+				$ss_non_parents
+			);
+		}
+
 		if ( $ss_ajoutes
-			|| ! $ss_refuses )
+			|| ! ( $ss_refuses || $ss_non_parents ) )
 		{
 			$note[] = _( 'The selected user\'s profile now includes access to the selected students.' );
 		}
@@ -69,6 +87,18 @@ if ( $_REQUEST['modfunc'] === 'delete'
 	&& AllowEdit()
 	&& UserStudentID() )
 {
+	// SchoolSafe lot U1 (A3, 05/11/2026) : nommer le parent concerné avant
+	// confirmation, comme côté parent (Users/AddStudents.php).
+	if ( ! empty( $_REQUEST['staff_id_remove'] ) )
+	{
+		$ss_remove_parent = (string) DBGetOne( "SELECT " . DisplayNameSQL( 's' ) . "
+			FROM staff s
+			WHERE s.STAFF_ID='" . (int) $_REQUEST['staff_id_remove'] . "'" );
+
+		echo ErrorMessage( [ 'Vous vous apprêtez à retirer à <b>' . AttrEscape( $ss_remove_parent )
+			. '</b> l’accès à cet élève : ce parent ne le verra plus et ne recevra plus ses notifications.' ], 'note' );
+	}
+
 	if ( DeletePrompt( _( 'student from that user' ), _( 'remove access to' ) )
 		&& ! empty( $_REQUEST['staff_id_remove'] ) )
 	{

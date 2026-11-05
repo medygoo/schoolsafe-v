@@ -233,6 +233,15 @@ if ( ( $_SERVER['REQUEST_METHOD'] ?? '' ) === 'POST' && isset( $_POST['l3_create
 							$temp .= $alphabet[ random_int( 0, strlen( $alphabet ) - 1 ) ];
 						}
 
+						// Lot U1 (A6, 05/11/2026) : le mot de passe temporaire reste sur le
+						// serveur (session, 15 minutes) ; la page de confirmation ne
+						// l'envoie plus dans un champ caché. User.php le reprend.
+						$_SESSION['SchoolSafeHubPassword'] = [
+							'username' => $username,
+							'password' => $temp,
+							'expires' => time() + 900,
+						];
+
 						$confirm = [
 							'first' => $first, 'last' => $last, 'username' => $username,
 							'email' => $email, 'phone' => $phone, 'kind' => $kind,
@@ -332,7 +341,7 @@ Première connexion : changement obligatoire (LAST_LOGIN NULL). Aucun secret env
 <input type="hidden" name="staff[EMAIL]" value="<?php echo htmlspecialchars( $confirm['email'], ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="staff[CUSTOM_200000001]" value="<?php echo htmlspecialchars( $confirm['phone'], ENT_QUOTES, 'UTF-8' ); ?>">
 <input type="hidden" name="staff[PROFILE]" value="<?php echo htmlspecialchars( $confirm['kind'], ENT_QUOTES, 'UTF-8' ); ?>">
-<input type="hidden" name="staff[PASSWORD]" value="<?php echo htmlspecialchars( $confirm['temp'], ENT_QUOTES, 'UTF-8' ); ?>">
+<input type="hidden" name="schoolsafe_hub_password" value="1">
 <?php if ( $confirm['profile_id'] ) : ?>
 <input type="hidden" name="staff[PROFILE_ID]" value="<?php echo (int) $confirm['profile_id']; ?>">
 <?php endif; ?>

@@ -84,6 +84,19 @@ if ( $_REQUEST['modfunc'] === 'save'
 		//hook
 		do_action( 'Users/Preferences.php|update_password_checks' );
 
+		// SchoolSafe lot U1 (A4, 05/11/2026) : robustesse vérifiée sur le serveur.
+		require_once 'ProgramFunctions/SchoolSafePasswordPolicy.fnc.php';
+
+		$schoolsafe_pw_problem = SchoolSafePasswordProblem(
+			(string) $new_password,
+			(string) User( 'USERNAME' )
+		);
+
+		if ( $schoolsafe_pw_problem !== '' )
+		{
+			$error[] = $schoolsafe_pw_problem;
+		}
+
 		if ( ! $error )
 		{
 			//FJ enable password change for students
@@ -130,6 +143,31 @@ if ( $_REQUEST['modfunc'] === 'save'
 						[ 'PASSWORD' => encrypt_password( $new_password ) ],
 						[ 'USERNAME' => DBEscapeString( User( 'USERNAME' ) ) ]
 					);
+
+					// SchoolSafe lot U1 (A5) : comme la fiche utilisateur, un mot de
+					// passe changé ferme les autres sessions (appareil perdu, partagé).
+					// La session en cours est recalée sur la nouvelle époque : la
+					// personne qui vient de changer son mot de passe reste connectée.
+					if ( function_exists( 'SchoolSafeAccountRevoke' )
+						&& SchoolSafeAccountRevoke( (string) User( 'USERNAME' ), 0 ) )
+					{
+						$schoolsafe_epochs = isset( $_SESSION['SchoolSafeEpochs'] )
+							&& is_array( $_SESSION['SchoolSafeEpochs'] )
+							? $_SESSION['SchoolSafeEpochs'] : [];
+
+						$schoolsafe_epochs[ (int) SchoolSafeAccountCurrentSchool() ] = 0;
+
+						foreach ( array_keys( $schoolsafe_epochs ) as $schoolsafe_school )
+						{
+							$schoolsafe_epochs[ $schoolsafe_school ] = SchoolSafeAccountSchoolEpoch(
+								(string) User( 'USERNAME' ),
+								(int) $schoolsafe_school
+							);
+						}
+
+						$_SESSION['SchoolSafeEpochs'] = $schoolsafe_epochs;
+						$_SESSION['SchoolSafeEpoch'] = SchoolSafeAccountEpoch( (string) User( 'USERNAME' ) );
+					}
 				}
 
 				$note[] = _( 'Your new password was saved.' );

@@ -40,21 +40,62 @@ if ( $_REQUEST['modfunc'] === 'save'
 			$student_ids = empty( $students_RET ) ? [] : array_keys( $students_RET );
 		}
 
+		// SchoolSafe lot U1 (A2, 05/11/2026) : mêmes règles que côté élève
+		// (Students/AddUsers.php) — seul un compte parent est relié, et un élève
+		// n'a jamais plus de 6 parents (GO 2026-10-28).
+		$ss_is_parent = DBGetOne( "SELECT PROFILE FROM staff
+			WHERE STAFF_ID='" . (int) UserStaffID() . "'" ) === 'parent';
+		$ss_max_parents = 6;
+		$ss_ajoutes = 0;
+		$ss_complets = [];
+
+		if ( ! $ss_is_parent )
+		{
+			$error[] = 'Seul un compte parent peut être relié à des élèves.';
+			$student_ids = [];
+		}
+
 		foreach ( (array) $student_ids as $student_id )
 		{
 			if ( empty( $current_RET[$student_id] ) )
 			{
+				$ss_lies = (int) DBGetOne( "SELECT COUNT(*)
+					FROM students_join_users
+					WHERE STUDENT_ID='" . (int) $student_id . "'" );
+
+				if ( $ss_lies >= $ss_max_parents )
+				{
+					$ss_complets[] = (string) DBGetOne( "SELECT " . DisplayNameSQL( 's' ) . "
+						FROM students s
+						WHERE s.STUDENT_ID='" . (int) $student_id . "'" );
+					continue;
+				}
+
 				DBInsert(
 					'students_join_users',
 					[ 'STUDENT_ID' => (int) $student_id, 'STAFF_ID' => UserStaffID() ]
 				);
+
+				$ss_ajoutes++;
 
 				//hook
 				do_action( 'Users/AddStudents.php|user_assign_role' );
 			}
 		}
 
-		$note[] = _( 'The selected user\'s profile now includes access to the selected students.' );
+		if ( $ss_complets )
+		{
+			$error[] = sprintf(
+				'Limite de %d parents par élève atteinte pour : %s. Retirez d’abord un parent de cet élève.',
+				$ss_max_parents,
+				AttrEscape( implode( ', ', $ss_complets ) )
+			);
+		}
+
+		if ( $ss_ajoutes || ( $ss_is_parent && ! $ss_complets ) )
+		{
+			$note[] = _( 'The selected user\'s profile now includes access to the selected students.' );
+		}
 	}
 	else
 	{

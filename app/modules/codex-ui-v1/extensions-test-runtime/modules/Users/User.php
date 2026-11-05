@@ -406,6 +406,59 @@ if ( $_REQUEST['modfunc'] === 'update'
 			}
 		}
 
+		// SchoolSafe lot U1 (05/11/2026, ANALYSE_UTILISATEURS A1, A4, A6).
+		require_once 'ProgramFunctions/SchoolSafePasswordPolicy.fnc.php';
+
+		// A6 — mot de passe temporaire de l'assistant : gardé en session côté
+		// serveur, jamais dans la page ; repris ici pour la même personne.
+		if ( ! UserStaffID()
+			&& ! empty( $_POST['schoolsafe_hub_password'] )
+			&& ! empty( $_SESSION['SchoolSafeHubPassword']['password'] )
+			&& (int) ( $_SESSION['SchoolSafeHubPassword']['expires'] ?? 0 ) >= time()
+			&& isset( $_REQUEST['staff']['USERNAME'] )
+			&& hash_equals(
+				(string) $_SESSION['SchoolSafeHubPassword']['username'],
+				(string) $_REQUEST['staff']['USERNAME']
+			) )
+		{
+			$_POST['staff']['PASSWORD'] = $_REQUEST['staff']['PASSWORD']
+				= (string) $_SESSION['SchoolSafeHubPassword']['password'];
+		}
+
+		// A1 — un nouveau compte a toujours un nom d'utilisateur et un mot de
+		// passe, sauf le profil « Sans accès » (aucune connexion) et la création
+		// Keycloak (sskc_intent : la connexion passe par Keycloak).
+		if ( ! UserStaffID()
+			&& basename( $_SERVER['PHP_SELF'] ) !== 'index.php'
+			&& empty( $_POST['sskc_intent'] )
+			&& ! ( ( $_REQUEST['staff']['PROFILE'] ?? '' ) === 'none'
+				&& empty( $_REQUEST['staff']['PROFILE_ID'] ) )
+			&& ( empty( $_REQUEST['staff']['USERNAME'] )
+				|| empty( $_POST['staff']['PASSWORD'] ) ) )
+		{
+			$error[] = 'Un nouveau compte doit avoir un nom d’utilisateur et un mot de passe '
+				. '(sauf le profil « Sans accès »).';
+		}
+
+		// A4 — robustesse vérifiée sur le serveur, à la création comme au changement.
+		if ( isset( $_POST['staff']['PASSWORD'] ) && (string) $_POST['staff']['PASSWORD'] !== '' )
+		{
+			$schoolsafe_pw_username = ! empty( $_REQUEST['staff']['USERNAME'] )
+				? (string) $_REQUEST['staff']['USERNAME']
+				: ( UserStaffID() ? (string) DBGetOne( "SELECT USERNAME FROM staff
+					WHERE STAFF_ID='" . (int) UserStaffID() . "'" ) : '' );
+
+			$schoolsafe_pw_problem = SchoolSafePasswordProblem(
+				(string) $_POST['staff']['PASSWORD'],
+				$schoolsafe_pw_username
+			);
+
+			if ( $schoolsafe_pw_problem !== '' )
+			{
+				$error[] = $schoolsafe_pw_problem;
+			}
+		}
+
 		if ( $required_error )
 		{
 			$error[] = _( 'Please fill in the required fields' );
@@ -660,6 +713,13 @@ if ( $_REQUEST['modfunc'] === 'update'
 
 				SetUserStaffID( $_REQUEST['staff_id'] = $staff_id );
 
+				// SchoolSafe lot U1 (A6) : compte créé, le mot de passe temporaire
+				// de l'assistant ne reste pas en session.
+				if ( ! empty( $_POST['schoolsafe_hub_password'] ) )
+				{
+					unset( $_SESSION['SchoolSafeHubPassword'] );
+				}
+
 				// Hook.
 				do_action( 'Users/User.php|create_user' );
 			}
@@ -822,6 +882,44 @@ if ( $_REQUEST['modfunc'] === 'delete'
 	&& ( ! function_exists( 'SchoolSafeAccountBlocksWrite' ) || ! SchoolSafeAccountBlocksWrite() )
 	&& ( ( function_exists( 'SchoolSafeGlobalAdmin' ) && SchoolSafeGlobalAdmin() ) || SchoolSafeStaffWithinScope( (int) $_REQUEST['staff_id'] ) ) )
 {
+	// SchoolSafe lot U1 (A7, 05/11/2026) : supprimer un parent efface ses liens
+	// avec ses enfants. Avant confirmation, on montre ces enfants et on signale
+	// ceux qui n'auraient plus aucun parent relié.
+	$ss_delete_children = DBGet( "SELECT s.STUDENT_ID," . DisplayNameSQL( 's' ) . " AS FULL_NAME,
+		(SELECT COUNT(*) FROM students_join_users j2
+			WHERE j2.STUDENT_ID=s.STUDENT_ID) AS NB_PARENTS
+		FROM students s
+		JOIN students_join_users j ON j.STUDENT_ID=s.STUDENT_ID
+		WHERE j.STAFF_ID='" . (int) $_REQUEST['staff_id'] . "'
+		ORDER BY FULL_NAME" );
+
+	if ( $ss_delete_children && empty( $_REQUEST['delete_ok'] ) )
+	{
+		$ss_children_list = [];
+		$ss_orphans = [];
+
+		foreach ( (array) $ss_delete_children as $ss_child )
+		{
+			$ss_children_list[] = AttrEscape( $ss_child['FULL_NAME'] );
+
+			if ( (int) $ss_child['NB_PARENTS'] <= 1 )
+			{
+				$ss_orphans[] = AttrEscape( $ss_child['FULL_NAME'] );
+			}
+		}
+
+		$ss_delete_note = 'Ce compte est relié à : <b>' . implode( ', ', $ss_children_list ) . '</b>. '
+			. 'La suppression retire ces liens.';
+
+		if ( $ss_orphans )
+		{
+			$ss_delete_note .= ' <b>Attention : ' . implode( ', ', $ss_orphans )
+				. ' n’aura plus aucun parent relié.</b>';
+		}
+
+		echo ErrorMessage( [ $ss_delete_note ], 'warning' );
+	}
+
 	if ( DeletePrompt( _( 'User' ) ) )
 	{
 		$delete_sql = UserDeleteSQL( $_REQUEST['staff_id'] );
@@ -867,6 +965,14 @@ if ( $_REQUEST['modfunc'] === 'remove_file'
 		// Unset modfunc, id, filename & redirect URL.
 		RedirectURL( [ 'modfunc', 'id', 'filename' ] );
 	}
+}
+
+// SchoolSafe lot U1 (A6) : création lancée depuis l'assistant et refusée → retour à l'assistant
+// (le mot de passe temporaire reste en session 15 minutes, rien n'est perdu).
+if ( ! empty( $error ) && ! empty( $_POST['schoolsafe_hub_password'] ) && UserSchool() )
+{
+	$error[] = '<a href="/ecoles/' . (int) UserSchool() . '/utilisateurs/nouveau">'
+		. 'Revenir à l’assistant de création pour corriger</a>';
 }
 
 echo ErrorMessage( $error );
