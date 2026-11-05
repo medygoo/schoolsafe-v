@@ -343,3 +343,32 @@ ensuite à **chaque menu** de l'application, un menu par lot :
 
 Motif : l'application doit être facile à utiliser. Une page cachée ou en double n'est ni trouvée ni comprise.
 Une première version qui repliait les outils a été refusée par le propriétaire pour cette raison.
+
+## 5 novembre 2026 — méthode « analyse en profondeur » de chaque fonctionnalité (verrouillée)
+
+Décision du propriétaire, **verrouillée pour toutes les fonctionnalités**, une fonctionnalité à la fois, en
+commençant par Utilisateurs. Elle suit la méthode « fusion » des menus (4 novembre) et s'applique à l'intérieur des
+pages.
+
+Pour chaque sous-fonctionnalité (exemple : Ajouter un utilisateur) :
+
+1. **Procédure réelle** : les étapes, les champs et leur ordre, ce qui est obligatoire, ce qui se passe après
+   l'enregistrement.
+2. **Chaque bouton et chaque lien** : est-ce qu'il fonctionne, où il mène, s'il aboutit à une erreur, une impasse
+   ou un doublon, et si son nom est compréhensible.
+3. **Cohérence** : mêmes mots, mêmes étapes et même comportement que les pages voisines et les autres menus ; ce que
+   chaque profil voit et peut faire.
+4. **Normes des logiciels de gestion scolaire** : une personne = un compte avec un rôle clair ; champs obligatoires
+   minimaux ; aucun doublon ; premier mot de passe sûr, changé à la première connexion ; rattachement à l'école ;
+   journal des actions ; messages d'erreur clairs ; confirmation avant toute action irréversible.
+
+**Livrable** : un document de propositions de corrections, page par page. Chaque point indique ce qui se passe
+aujourd'hui, le problème, la correction proposée et sa raison. Les points sont classés par importance : sécurité et
+données d'abord, puis clarté.
+
+**Garde-fous** :
+- rien n'est corrigé avant la validation du propriétaire ;
+- aucune nouvelle fonctionnalité, aucun droit changé ;
+- aucun compte réel créé et aucun mot de passe saisi par l'agent : analyse par le code, par l'ouverture des pages
+  sans enregistrer, et par la base en lecture seule ;
+- mise en ligne seulement par image vérifiée, après accord.
