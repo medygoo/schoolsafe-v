@@ -1,5 +1,7 @@
 <?php
 require_once 'ProgramFunctions/TipMessage.fnc.php';
+// Lot F4c (05/11) : monnaie de la cantine et conversion des dépôts.
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
 
 StaffWidgets( 'fsa_status' );
 StaffWidgets( 'fsa_barcode' );
@@ -25,14 +27,32 @@ if ( $_REQUEST['modfunc'] === 'save'
 
 		$types = [ 'Deposit', 'Credit', 'Debit' ];
 
+		// Lot F4c (05/11) : la cantine tient ses comptes dans une seule monnaie (FC). Un dépôt reçu dans l'autre
+		// monnaie est converti au taux du jour ; la conversion est écrite dans le libellé de l'opération.
+		$canteen_problem = $canteen_note = '';
+
 		if ( in_array( $_REQUEST['values']['TYPE'], $types ) && ( $amount = is_money( $_REQUEST['values']['AMOUNT'] ) ) )
+		{
+			list( $amount, $canteen_problem, $canteen_note ) = SchoolSafeMoneyCanteenAmount(
+				$amount,
+				$_REQUEST['values']['PAID_CURRENCY'] ?? '',
+				$_REQUEST['values']['TYPE']
+			);
+		}
+
+		if ( $canteen_problem !== '' )
+		{
+			$error[] = $canteen_problem;
+		}
+		elseif ( in_array( $_REQUEST['values']['TYPE'], $types ) && $amount )
 		{
 			$fields = 'SYEAR,SCHOOL_ID,STAFF_ID,BALANCE,' . DBEscapeIdentifier( 'TIMESTAMP' ) . ',SHORT_NAME,DESCRIPTION,SELLER_ID';
 
 			$values = "'" . UserSyear() . "','" . UserSchool() . "','" . UserStaffID() . "',
 				(SELECT BALANCE FROM food_service_staff_accounts WHERE STAFF_ID='" . UserStaffID() . "'),
 				CURRENT_TIMESTAMP,'" . mb_strtoupper( $_REQUEST['values']['TYPE'] ) . "','" .
-				$_REQUEST['values']['TYPE'] . "','" . User( 'STAFF_ID' ) . "'";
+				// Lot F4c (05/11) : conversion ajoutée au libellé (50 caractères au plus, taille de la colonne).
+				DBEscapeString( mb_substr( $_REQUEST['values']['TYPE'] . $canteen_note, 0, 50 ) ) . "','" . User( 'STAFF_ID' ) . "'";
 
 			$sql = "INSERT INTO food_service_staff_transactions (" . $fields . ") values (" . $values . ")";
 
@@ -172,12 +192,22 @@ if ( UserStaffID()
 				'type="number" step="0.01" max="999999999999" min="0" required'
 			);
 
+			// Lot F4c (05/11) : monnaie reçue (monnaie de la cantine par défaut) dans sa propre colonne ;
+			// un dépôt dans l'autre monnaie est converti au taux du jour.
+			$link['add']['html']['PAID_CURRENCY'] = SchoolSafeMoneyCurrencySelect( 'values[PAID_CURRENCY]', SchoolSafeMoneyCanteenCurrency() );
+
 			$link['remove']['link'] = "Modules.php?modname=" . $_REQUEST['modname'] . '&modfunc=delete&staff_id=' . UserStaffID();
 
 			$link['remove']['variables'] = [ 'id' => 'TRANSACTION_ID' ];
 		}
 
 		$columns = [ 'TYPE' => _( 'Type' ), 'DESCRIPTION' => _( 'Description' ), 'AMOUNT' => _( 'Amount' ) ];
+
+		if ( AllowEdit() )
+		{
+			// Lot F4c (05/11) : colonne de la monnaie reçue (saisie seulement ; les montants sont en monnaie de la cantine).
+			$columns['PAID_CURRENCY'] = 'Monnaie reçue';
+		}
 
 		ListOutput(
 			$RET,

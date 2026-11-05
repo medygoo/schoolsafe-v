@@ -25,10 +25,13 @@ function SchoolSafeFinanceOverview(): string
     require_once __DIR__.'/SchoolSafeMoney.fnc.php';
     $multiCurrency=SchoolSafeMoneyCurrencyReady();
     $byCurrency=[];$monthByCurrency=[];
+    // Lot F4c (05/11) : revenus, dépenses et paiements du personnel aussi par monnaie (script F4c appliqué).
+    $accountingMulti=SchoolSafeMoneyAccountingReady();
+    $currencyKinds=$accountingMulti?['fees','payments','income','expense']:['fees','payments'];
     foreach($sources as $kind=>$source){
         $range=$start!==''?" AND ".$source[1].">=DATE '$start' AND ".$source[1]."<DATE '$end'+INTERVAL '1 day'":'';
         $totals[$kind]=0;
-        if($multiCurrency&&in_array($kind,['fees','payments'],true)){
+        if($multiCurrency&&in_array($kind,$currencyKinds,true)){
             $rows=DBGet("SELECT CAST(".$source[1]." AS char(7)) AS month,currency,SUM(amount) AS total FROM ".$source[0]." WHERE school_id=$school AND syear=$year$range GROUP BY month,currency ORDER BY month,CASE WHEN currency='USD' THEN 0 ELSE 1 END");
             $byCurrency[$kind]=[];
             foreach($rows as $row){
@@ -65,12 +68,16 @@ function SchoolSafeFinanceOverview(): string
         if(isset($values['payments'])||isset($values['income'])||isset($values['expense']))$cashSeries[$month]=['income'=>($values['payments']??0)+($values['income']??0),'expense'=>$values['expense']??0];
     }
     // Lot F4b (05/11) : la courbe additionne paiements et revenus, elle reste donc en USD seulement.
-    if($multiCurrency&&$billing)$html.='<p>Montants en USD seulement : les paiements des élèves en FC n’y figurent pas.</p>';
+    // Lot F4c (05/11) : revenus et dépenses en FC exclus de la courbe aussi.
+    if($accountingMulti&&($billing||$accounting))$html.='<p>Montants en USD seulement : les opérations en FC n’y figurent pas (voir les totaux par monnaie ci-dessus).</p>';
+    elseif($multiCurrency&&$billing)$html.='<p>Montants en USD seulement : les paiements des élèves en FC n’y figurent pas.</p>';
     $html.=SchoolSafeDashboardLineChart($cashSeries,$labels).'</section>';
     if($accounting){
         $range=$start!==''?" AND p.payment_date>=DATE '$start' AND p.payment_date<DATE '$end'+INTERVAL '1 day'":'';
-        $categories=DBGet("SELECT COALESCE(c.title,'Sans catégorie') AS title,SUM(p.amount) AS total FROM accounting_payments p LEFT JOIN accounting_categories c ON c.id=p.category_id WHERE p.school_id=$school AND p.syear=$year AND p.amount>0$range GROUP BY c.title ORDER BY total DESC");
-        $html.='<section><h3>Répartition des dépenses</h3>'.SchoolSafeDashboardExpenseChart($categories).'</section>';
+        // Lot F4c (05/11) : la répartition additionne les montants, elle porte donc sur les dépenses en USD seulement.
+        $usdExpenses=$accountingMulti?" AND p.currency='USD'":'';
+        $categories=DBGet("SELECT COALESCE(c.title,'Sans catégorie') AS title,SUM(p.amount) AS total FROM accounting_payments p LEFT JOIN accounting_categories c ON c.id=p.category_id WHERE p.school_id=$school AND p.syear=$year AND p.amount>0$range$usdExpenses GROUP BY c.title ORDER BY total DESC");
+        $html.='<section><h3>Répartition des dépenses'.($accountingMulti?' (USD)':'').'</h3>'.SchoolSafeDashboardExpenseChart($categories).'</section>';
     }
     $html.='<section><h3>Volumes enregistrés</h3><div class="ss-native-volume-bars">';
     $maximum=max(1,max(array_map('abs',array_values($totals))));
@@ -134,7 +141,8 @@ function SchoolSafeFinanceOverview(): string
         $range=$start!==''?" AND ".$source[1].">=DATE '$start' AND ".$source[1]."<DATE '$end'+INTERVAL '1 day'":'';
         $label=$selected==='payments'?"'Paiement scolaire'":'title';
         // Lot F4b (05/11) : chaque frais ou paiement d'élève est affiché dans sa monnaie.
-        $withCurrency=$multiCurrency&&in_array($selected,['fees','payments'],true);
+        // Lot F4c (05/11) : revenus et dépenses aussi, avec le script F4c.
+        $withCurrency=$multiCurrency&&in_array($selected,$currencyKinds,true);
         $operations=DBGet("SELECT id,".$source[1]." AS operation_date,$label AS title,amount".($withCurrency?',currency':'')." FROM ".$source[0]." WHERE school_id=$school AND syear=$year$range ORDER BY ".$source[1]." DESC,id DESC LIMIT 101 OFFSET $offset");
         $more=count($operations)>100;
         $html.='<div class="ss-directory-scroll"><table><thead><tr><th>Référence</th><th>Date</th><th>Opération</th><th>Montant</th></tr></thead><tbody>';

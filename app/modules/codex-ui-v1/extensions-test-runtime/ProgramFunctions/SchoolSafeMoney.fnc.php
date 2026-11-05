@@ -380,3 +380,322 @@ function SchoolSafeMoneyRateText( $rate )
 {
 	return '1 USD = ' . number_format( (float) $rate, 2, ',', "\u{00A0}" ) . "\u{00A0}FC";
 }
+
+/* ---------------------------------------------------------------------------------------------------------
+ * Lot F4c (05/11) : paie, trésorerie, cantine et rattrapage en deux monnaies. Décision du propriétaire,
+ * docs/DECISIONS.md (5 novembre 2026) : chaque salaire, paiement du personnel, recette et dépense porte sa
+ * monnaie (USD par défaut) ; soldes et solde général par monnaie, jamais additionnés ; cantine en FC.
+ * --------------------------------------------------------------------------------------------------------- */
+
+/**
+ * Lot F4c (05/11) : les colonnes de monnaie de la paie et de la trésorerie existent-elles (script F4c appliqué) ?
+ * Le lot F4c suppose le lot F4a (monnaies des frais et paiements des élèves, taux du jour).
+ */
+function SchoolSafeMoneyAccountingReady()
+{
+	static $ready = null;
+
+	if ( $ready === null )
+	{
+		$ready = SchoolSafeMoneyCurrencyReady()
+			&& (bool) DBGetOne( "SELECT 1 FROM information_schema.columns
+				WHERE table_name='accounting_payments' AND column_name='paid_currency'" );
+	}
+
+	return $ready;
+}
+
+/** Lot F4c (05/11) : la monnaie des dossiers de rattrapage existe-t-elle (script F4c appliqué) ? */
+function SchoolSafeMoneyRemediationReady()
+{
+	static $ready = null;
+
+	if ( $ready === null )
+	{
+		$ready = SchoolSafeMoneyCurrencyReady()
+			&& (bool) DBGetOne( "SELECT 1 FROM information_schema.columns
+				WHERE table_name='schoolsafe_remediation_cases' AND column_name='currency'" );
+	}
+
+	return $ready;
+}
+
+/** Lot F4c (05/11) : monnaie de la cantine de l'école en cours (une seule par école, FC par défaut). */
+function SchoolSafeMoneyCanteenCurrency()
+{
+	static $by_school = [];
+
+	$school = (int) UserSchool();
+
+	if ( ! isset( $by_school[ $school ] ) )
+	{
+		$value = $school > 0 ? DBGetOne( "SELECT CONFIG_VALUE FROM config
+			WHERE SCHOOL_ID='" . $school . "'
+			AND TITLE='SCHOOLSAFE_CANTEEN_CURRENCY'" ) : '';
+
+		$value = strtoupper( trim( (string) $value ) );
+
+		$by_school[ $school ] = isset( SchoolSafeMoneyCurrencies()[ $value ] ) ? $value : 'FC';
+	}
+
+	return $by_school[ $school ];
+}
+
+/**
+ * Lot F4c (05/11) : montant porté au compte cantine pour un montant saisi dans une monnaie.
+ * Seul un dépôt peut être reçu dans l'autre monnaie : il est converti au taux du jour.
+ *
+ * @param float  $amount        Montant saisi (déjà validé, positif).
+ * @param string $paid_currency Monnaie reçue (USD ou FC ; vide = monnaie de la cantine).
+ * @param string $type          Deposit, Credit ou Debit.
+ *
+ * @return array [ montant dans la monnaie de la cantine ou false, message de refus, note de conversion ].
+ */
+function SchoolSafeMoneyCanteenAmount( $amount, $paid_currency, $type )
+{
+	$canteen = SchoolSafeMoneyCanteenCurrency();
+
+	$paid = trim( (string) $paid_currency ) === '' ? $canteen : SchoolSafeMoneyCurrency( $paid_currency );
+
+	if ( $paid === $canteen )
+	{
+		return [ (float) $amount, '', '' ];
+	}
+
+	if ( $type !== 'Deposit' )
+	{
+		return [ false, 'Opération refusée : seul un dépôt peut être reçu en ' . $paid . '. Un crédit ou un débit se saisit en ' .
+			$canteen . ', la monnaie de la cantine.', '' ];
+	}
+
+	$rate = SchoolSafeMoneyRate( DBDate() );
+
+	$converted = SchoolSafeMoneyConvert( $amount, $paid, $canteen, $rate );
+
+	if ( $converted === false )
+	{
+		return [ false, 'Dépôt refusé : aucun taux du jour pour le ' . ProperDate( DBDate() ) .
+			'. Saisissez le taux (Finance, Réglages, « Taux du jour ») ou encaissez en ' . $canteen . ', la monnaie de la cantine.', '' ];
+	}
+
+	if ( $converted <= 0 || $converted > 9999999.99 )
+	{
+		return [ false, 'Dépôt refusé : le montant converti (' . SchoolSafeMoneyFormat( $converted, $canteen ) .
+			') est hors des limites d’un compte cantine.', '' ];
+	}
+
+	return [ $converted, '', ' (reçu ' . SchoolSafeMoneyFormat( $amount, $paid ) . ', ' . SchoolSafeMoneyRateText( $rate ) . ')' ];
+}
+
+/**
+ * Lot F4c (05/11) : tableau des totaux de paie d'un membre du personnel, une ligne par monnaie
+ * (salaires, paiements, reste dû), dans l'école et l'année en cours.
+ */
+function SchoolSafeMoneyStaffTotalsTable( $staff_id )
+{
+	$rows = DBGet( "SELECT CURRENCY,
+		SUM(CASE WHEN K='S' THEN AMOUNT ELSE 0 END) AS SALARIES,
+		SUM(CASE WHEN K='P' THEN AMOUNT ELSE 0 END) AS PAID
+		FROM (SELECT 'S' AS K, CURRENCY, AMOUNT FROM accounting_salaries
+			WHERE STAFF_ID='" . (int) $staff_id . "' AND SCHOOL_ID='" . UserSchool() . "' AND SYEAR='" . UserSyear() . "'
+		UNION ALL SELECT 'P', CURRENCY, AMOUNT FROM accounting_payments
+			WHERE STAFF_ID='" . (int) $staff_id . "' AND SCHOOL_ID='" . UserSchool() . "' AND SYEAR='" . UserSyear() . "') t
+		GROUP BY CURRENCY ORDER BY CASE WHEN CURRENCY='USD' THEN 0 ELSE 1 END" );
+
+	if ( empty( $rows ) )
+	{
+		$rows = [ 1 => [ 'CURRENCY' => 'USD', 'SALARIES' => 0, 'PAID' => 0 ] ];
+	}
+
+	$html = '<table class="align-right accounting-staff-payroll-totals"><tr><th></th><th>' . _( 'Salaries' ) . '</th><th>' .
+		_( 'Staff Payments' ) . '</th><th>' . _( 'Balance' ) . '</th></tr>';
+
+	foreach ( (array) $rows as $row )
+	{
+		$balance = (float) $row['SALARIES'] - (float) $row['PAID'];
+
+		$html .= '<tr><td><b>' . SchoolSafeMoneyCurrency( $row['CURRENCY'] ) . '</b></td>
+			<td>' . SchoolSafeMoneyFormat( $row['SALARIES'], $row['CURRENCY'] ) . '</td>
+			<td>' . SchoolSafeMoneyFormat( $row['PAID'], $row['CURRENCY'] ) . '</td>
+			<td><b>' . ( $balance < 0 ?
+				'Trop-versé ' . SchoolSafeMoneyFormat( -$balance, $row['CURRENCY'] ) :
+				SchoolSafeMoneyFormat( $balance, $row['CURRENCY'] ) ) . '</b></td></tr>';
+	}
+
+	return $html . '</table>';
+}
+
+/**
+ * Lot F4c (05/11) : sommes de la trésorerie par monnaie sur une période (dates AAAA-MM-JJ).
+ *
+ * @return array [ 'USD' => [ 'INCOMES', 'STUDENT_PAYMENTS', 'EXPENSES', 'STAFF_PAYMENTS' ], 'FC' => [ … ] ].
+ */
+function SchoolSafeMoneyAccountingSums( $start_date, $end_date, $with_student_payments )
+{
+	$start_date = preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) $start_date ) ? $start_date : '1900-01-01';
+	$end_date = preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) $end_date ) ? $end_date : DBDate();
+
+	$scope = "SYEAR='" . UserSyear() . "' AND SCHOOL_ID='" . UserSchool() . "'";
+
+	$sql = "SELECT CURRENCY,K,SUM(AMOUNT) AS TOTAL FROM (
+		SELECT CURRENCY,'INCOMES' AS K,AMOUNT FROM accounting_incomes
+			WHERE " . $scope . " AND ASSIGNED_DATE BETWEEN '" . $start_date . "' AND '" . $end_date . "'
+		UNION ALL SELECT CURRENCY,CASE WHEN STAFF_ID IS NULL THEN 'EXPENSES' ELSE 'STAFF_PAYMENTS' END,AMOUNT FROM accounting_payments
+			WHERE " . $scope . " AND PAYMENT_DATE BETWEEN '" . $start_date . "' AND '" . $end_date . "'" .
+		( $with_student_payments ? "
+		UNION ALL SELECT CURRENCY,'STUDENT_PAYMENTS',AMOUNT FROM billing_payments
+			WHERE " . $scope . " AND PAYMENT_DATE BETWEEN '" . $start_date . "' AND '" . $end_date . "'" : '' ) . "
+		) t GROUP BY CURRENCY,K";
+
+	$sums = [];
+
+	foreach ( array_keys( SchoolSafeMoneyCurrencies() ) as $currency )
+	{
+		$sums[ $currency ] = [ 'INCOMES' => 0.0, 'STUDENT_PAYMENTS' => 0.0, 'EXPENSES' => 0.0, 'STAFF_PAYMENTS' => 0.0 ];
+	}
+
+	foreach ( (array) DBGet( $sql ) as $row )
+	{
+		$sums[ SchoolSafeMoneyCurrency( $row['CURRENCY'] ) ][ $row['K'] ] += (float) $row['TOTAL'];
+	}
+
+	return $sums;
+}
+
+/**
+ * Lot F4c (05/11) : totaux des pages Recettes et Dépenses, une colonne par monnaie (USD, FC) :
+ * recettes moins dépenses, puis solde général (recettes, paiements des élèves, dépenses, paiements du personnel).
+ */
+function SchoolSafeMoneyAccountingTotalsTable( $start_date, $end_date, $with_student_payments )
+{
+	$sums = SchoolSafeMoneyAccountingSums( $start_date, $end_date, $with_student_payments );
+
+	$line = function( $label, $values, $bold = false )
+	{
+		$html = '<tr><td>' . $label . '</td>';
+
+		foreach ( $values as $currency => $amount )
+		{
+			$html .= '<td>' . ( $bold ? '<b>' : '' ) . SchoolSafeMoneyFormat( $amount, $currency ) . ( $bold ? '</b>' : '' ) . '</td>';
+		}
+
+		return $html . '</tr>';
+	};
+
+	$pick = function( $callback ) use ( $sums )
+	{
+		$values = [];
+
+		foreach ( $sums as $currency => $sum )
+		{
+			$values[ $currency ] = $callback( $sum );
+		}
+
+		return $values;
+	};
+
+	$table = '<table class="align-right accounting-totals"><tr><th></th>';
+
+	foreach ( array_keys( $sums ) as $currency )
+	{
+		$table .= '<th>' . $currency . '</th>';
+	}
+
+	$table .= '</tr>';
+
+	$table .= $line( _( 'Total from Incomes' ) . ': ', $pick( function( $s ) { return $s['INCOMES']; } ) );
+	$table .= $line( _( 'Less' ) . ': ' . _( 'Total from Expenses' ) . ': ', $pick( function( $s ) { return $s['EXPENSES']; } ) );
+	$table .= $line( _( 'Balance' ) . ': ', $pick( function( $s ) { return $s['INCOMES'] - $s['EXPENSES']; } ), true );
+
+	// Solde général, par monnaie.
+	$table .= '<tr><td colspan="' . ( count( $sums ) + 1 ) . '"><hr></td></tr>';
+	$table .= $line( _( 'Total from Incomes' ) . ': ', $pick( function( $s ) { return $s['INCOMES']; } ) );
+
+	if ( $with_student_payments )
+	{
+		$table .= $line( '& ' . _( 'Total from Student Payments' ) . ': ', $pick( function( $s ) { return $s['STUDENT_PAYMENTS']; } ) );
+	}
+
+	$table .= $line( _( 'Less' ) . ': ' . _( 'Total from Expenses' ) . ': ', $pick( function( $s ) { return $s['EXPENSES']; } ) );
+	$table .= $line( '& ' . _( 'Total from Staff Payments' ) . ': ', $pick( function( $s ) { return $s['STAFF_PAYMENTS']; } ) );
+	$table .= $line( _( 'General Balance' ) . ': ', $pick( function( $s ) {
+		return $s['INCOMES'] + $s['STUDENT_PAYMENTS'] - $s['EXPENSES'] - $s['STAFF_PAYMENTS'];
+	} ), true );
+
+	return $table . '</table>';
+}
+
+/**
+ * Lot F4c (05/11) : montant d'une ligne de paie ou de trésorerie, dans la monnaie de sa ligne ;
+ * total tenu par monnaie. Payé dans l'autre monnaie : montant reçu et taux appliqué.
+ *
+ * @param array $row    Ligne (CURRENCY, et éventuellement PAID_CURRENCY, PAID_AMOUNT, RATE).
+ * @param array $totals Totaux par monnaie (modifiés).
+ */
+function SchoolSafeMoneyRowAmount( $value, $row, &$totals )
+{
+	$currency = SchoolSafeMoneyCurrency( $row['CURRENCY'] ?? 'USD' );
+
+	if ( ! is_array( $totals ) )
+	{
+		$totals = [];
+	}
+
+	$totals[ $currency ] = ( $totals[ $currency ] ?? 0.0 ) + (float) $value;
+
+	$html = SchoolSafeMoneyFormat( $value, $currency );
+
+	if ( ! empty( $row['RATE'] ) && ! empty( $row['PAID_CURRENCY'] ) && $row['PAID_CURRENCY'] !== $currency )
+	{
+		$html .= '<br><small>reçu ' . SchoolSafeMoneyFormat( $row['PAID_AMOUNT'], $row['PAID_CURRENCY'] )
+			. ' · ' . SchoolSafeMoneyRateText( $row['RATE'] ) . '</small>';
+	}
+
+	return $html;
+}
+
+/**
+ * Lot F4c (05/11) : conversion d'un paiement du personnel ou d'un paiement reçu dans l'autre monnaie.
+ *
+ * @param string $amount        Montant reçu (validé).
+ * @param string $paid_currency Monnaie reçue.
+ * @param string $account       Monnaie du compte réglé.
+ * @param string $date          Date du paiement (AAAA-MM-JJ), pour le taux du jour.
+ *
+ * @return array|string Colonnes AMOUNT, CURRENCY, PAID_CURRENCY, PAID_AMOUNT (et RATE), ou message de refus.
+ */
+function SchoolSafeMoneyPaymentColumns( $amount, $paid_currency, $account, $date )
+{
+	$paid_currency = SchoolSafeMoneyCurrency( $paid_currency );
+	$account = SchoolSafeMoneyCurrency( $account );
+	$amount = SchoolSafeMoneyAmount( $amount );
+
+	$rate = $paid_currency === $account ? 0 : SchoolSafeMoneyRate( $date );
+
+	$converted = SchoolSafeMoneyConvert( $amount, $paid_currency, $account, $rate );
+
+	if ( $converted === false )
+	{
+		return 'Paiement refusé : aucun taux du jour pour le ' . ProperDate( $date ) .
+			'. Saisissez le taux (Finance, Réglages, « Taux du jour ») ou payez dans la monnaie du compte.';
+	}
+
+	if ( $converted <= 0 )
+	{
+		return 'Paiement refusé : le montant converti est nul.';
+	}
+
+	$columns = [
+		'AMOUNT' => number_format( $converted, 2, '.', '' ),
+		'CURRENCY' => $account,
+		'PAID_CURRENCY' => $paid_currency,
+		'PAID_AMOUNT' => $amount,
+	];
+
+	if ( $rate > 0 )
+	{
+		$columns['RATE'] = $rate;
+	}
+
+	return $columns;
+}

@@ -102,9 +102,10 @@ Les tranches se créent dans la facturation (frais avec date d’échéance) ; l
 <label class="check"><input type="checkbox" name="types[<?=$i?>][block_service]" value="1"<?=$type['block_service']?' checked':''?><?=$off?>> En rouge, suspendre ce service (examens, sorties — jamais l’entrée ni le repas)</label>
 <?php if(!$new):?><label class="check"><input type="checkbox" name="types[<?=$i?>][delete]" value="1"<?=$off?>> Supprimer ce type</label><?php endif;?>
 </fieldset><?php endforeach;?>
-<fieldset><legend>🍽️ Cantine (solde du compte cantine)</legend>
-<div class="row"><label>🟢 Validé si le solde est au moins<input type="text" inputmode="decimal" name="canteen_validated" value="<?=$e($config['canteen']['validated']??'')?>" placeholder="ex. 5000"<?=$off?>></label>
-<label>🟡 Toléré si le solde est au moins<input type="text" inputmode="decimal" name="canteen_tolerated" value="<?=$e($config['canteen']['tolerated']??'')?>" placeholder="ex. -2000"<?=$off?>></label></div>
+<?php // Lot F4c (05/11) : les comptes de la cantine sont en FC (une seule monnaie par école) ; les seuils aussi. ?>
+<fieldset><legend>🍽️ Cantine (solde du compte cantine, en FC)</legend>
+<div class="row"><label>🟢 Validé si le solde est au moins (FC)<input type="text" inputmode="decimal" name="canteen_validated" value="<?=$e($config['canteen']['validated']??'')?>" placeholder="ex. 5000"<?=$off?>></label>
+<label>🟡 Toléré si le solde est au moins (FC)<input type="text" inputmode="decimal" name="canteen_tolerated" value="<?=$e($config['canteen']['tolerated']??'')?>" placeholder="ex. -2000"<?=$off?>></label></div>
 <p style="margin:0;font-size:13px">Laissez vide pour ne pas contrôler la cantine. En dessous du seuil toléré : 🔴, le repas est servi et l’économat est prévenu.</p></fieldset>
 <?php if($canManage&&!$locked):?><button class="ss-btn" type="submit">Enregistrer le barème</button><?php endif;?>
 <?php if(!$canManage):?><p class="ss-legend">Consultation seulement : le barème se modifie avec le droit de modifier les frais.</p><?php endif;?>

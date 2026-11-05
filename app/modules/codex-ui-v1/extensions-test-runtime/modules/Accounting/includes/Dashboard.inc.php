@@ -50,6 +50,14 @@ if ( ! function_exists( 'DashboardAccountingAdmin' ) )
 			return [];
 		}
 
+		require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+		if ( SchoolSafeMoneyAccountingReady() )
+		{
+			// Lot F4c (05/11) : solde général et mois par monnaie (USD, FC), jamais additionnés.
+			return DashboardAccountingAdminByCurrency();
+		}
+
 		$general_balance = 0;
 
 		$incomes_RET = DBGet( "SELECT CAST(ASSIGNED_DATE AS char(7)) AS YEAR_MONTH_DATE,
@@ -220,5 +228,112 @@ if ( ! function_exists( 'DashboardAccountingAdmin' ) )
 		}
 
 		return $data;
+	}
+}
+
+if ( ! function_exists( 'DashboardAccountingAdminByCurrency' ) )
+{
+	/**
+	 * Lot F4c (05/11) : données du tableau de bord Comptabilité par monnaie (USD, FC).
+	 * Pour chaque monnaie : recettes + paiements des élèves - dépenses - paiements du personnel.
+	 *
+	 * @return array Dashboard data
+	 */
+	function DashboardAccountingAdminByCurrency()
+	{
+		$scope = "SYEAR='" . UserSyear() . "' AND SCHOOL_ID='" . UserSchool() . "'";
+
+		$rows = DBGet( "SELECT YEAR_MONTH_DATE,CURRENCY,
+			SUM(CASE WHEN K='I' THEN AMOUNT ELSE 0 END) AS TOTAL_INCOMES,
+			SUM(CASE WHEN K='E' THEN AMOUNT ELSE 0 END) AS TOTAL_EXPENSES,
+			SUM(CASE WHEN K='S' THEN AMOUNT ELSE 0 END) AS TOTAL_STAFF,
+			SUM(CASE WHEN K='P' THEN AMOUNT ELSE 0 END) AS TOTAL_STUDENT_PAYMENTS
+			FROM (SELECT CAST(ASSIGNED_DATE AS char(7)) AS YEAR_MONTH_DATE,CURRENCY,'I' AS K,AMOUNT
+				FROM accounting_incomes WHERE " . $scope . "
+			UNION ALL SELECT CAST(PAYMENT_DATE AS char(7)),CURRENCY,CASE WHEN STAFF_ID IS NULL THEN 'E' ELSE 'S' END,AMOUNT
+				FROM accounting_payments WHERE " . $scope . "
+			UNION ALL SELECT CAST(PAYMENT_DATE AS char(7)),CURRENCY,'P',AMOUNT
+				FROM billing_payments WHERE " . $scope . ") t
+			GROUP BY YEAR_MONTH_DATE,CURRENCY" );
+
+		$months = [];
+
+		foreach ( (array) $rows as $row )
+		{
+			$months[ $row['YEAR_MONTH_DATE'] ][ SchoolSafeMoneyCurrency( $row['CURRENCY'] ) ] = $row;
+		}
+
+		krsort( $months );
+
+		// Les deux derniers mois, comme le tableau de bord d'origine.
+		$months = array_slice( $months, 0, 2, true );
+
+		$balances = function( $by_currency )
+		{
+			$balances = [];
+
+			foreach ( array_keys( SchoolSafeMoneyCurrencies() ) as $currency )
+			{
+				if ( isset( $by_currency[ $currency ] ) )
+				{
+					$row = $by_currency[ $currency ];
+
+					$balances[ $currency ] = (float) $row['TOTAL_INCOMES'] + (float) $row['TOTAL_STUDENT_PAYMENTS']
+						- (float) $row['TOTAL_EXPENSES'] - (float) $row['TOTAL_STAFF'];
+				}
+			}
+
+			return $balances ? $balances : [ 'USD' => 0.0 ];
+		};
+
+		$general_balance = isset( $months[ date( 'Y-m' ) ] ) ? $balances( $months[ date( 'Y-m' ) ] ) : [ 'USD' => 0.0 ];
+
+		$accounting_data = [ _( 'General Balance' ) => SchoolSafeMoneyBalancesText( $general_balance ) ];
+
+		$labels = [
+			'TOTAL_INCOMES' => _( 'Incomes' ),
+			'TOTAL_EXPENSES' => _( 'Expenses' ),
+			'TOTAL_STAFF' => _( 'Staff Payments' ),
+			'TOTAL_STUDENT_PAYMENTS' => _( 'Student Payments' ),
+		];
+
+		foreach ( $months as $year_month => $by_currency )
+		{
+			// Remove dummy day from proper date.
+			$proper_month_year = ucfirst( strftime_compat(
+				trim( str_replace( [ '%d', '//' ], [ '', '/'], Preferences( 'DATE' ) ), '-./ ' ),
+				strtotime( $year_month . '-28' )
+			) );
+
+			$lines = [];
+
+			foreach ( array_keys( SchoolSafeMoneyCurrencies() ) as $currency )
+			{
+				if ( ! isset( $by_currency[ $currency ] ) )
+				{
+					continue;
+				}
+
+				foreach ( $labels as $column => $label )
+				{
+					if ( (float) $by_currency[ $currency ][ $column ] )
+					{
+						$lines[] = NoInput( SchoolSafeMoneyFormat( $by_currency[ $currency ][ $column ], $currency ), $label );
+					}
+				}
+			}
+
+			$month_key = NoInput( SchoolSafeMoneyBalancesText( $balances( $by_currency ) ), $proper_month_year );
+
+			$accounting_data[ $month_key ] = implode( '<br />', $lines );
+		}
+
+		if ( array_filter( $general_balance )
+			|| count( $accounting_data ) > 1 )
+		{
+			return $accounting_data;
+		}
+
+		return [];
 	}
 }

@@ -35,20 +35,26 @@ class StaffBalance implements \RosarioSIS\StaffWidget
 			$_REQUEST['balance_low'] = $temp;
 		}
 
+		// Lot F4c (05/11) : avec deux monnaies, la recherche porte sur le solde de paie en USD seulement
+		// (un intervalle de montants n'a pas de sens si FC et USD sont additionnés).
+		require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+		$usd_only = SchoolSafeMoneyAccountingReady();
+
 		$extra['WHERE'] .= " AND (coalesce((SELECT sum(p.AMOUNT)
 				FROM accounting_payments p
 				WHERE p.STAFF_ID=s.STAFF_ID
-				AND p.SYEAR=s.SYEAR),0)
+				AND p.SYEAR=s.SYEAR" . ( $usd_only ? " AND p.CURRENCY='USD'" : '' ) . "),0)
 			-coalesce((SELECT sum(f.AMOUNT)
 				FROM accounting_salaries f
 				WHERE f.STAFF_ID=s.STAFF_ID
-				AND f.SYEAR=s.SYEAR),0))
+				AND f.SYEAR=s.SYEAR" . ( $usd_only ? " AND f.CURRENCY='USD'" : '' ) . "),0))
 			BETWEEN '" . $_REQUEST['balance_low'] . "'
 			AND '" . $_REQUEST['balance_high'] . "' ";
 
 		if ( ! $extra['NoSearchTerms'] )
 		{
-			$extra['SearchTerms'] .= '<b>' . _( 'Staff Payroll Balance' ) . ': </b>' .
+			$extra['SearchTerms'] .= '<b>' . _( 'Staff Payroll Balance' ) . ( $usd_only ? ' (USD)' : '' ) . ': </b>' .
 				_( 'Between' ) . ' ' . $_REQUEST['balance_low'] .
 				' &amp; ' . $_REQUEST['balance_high'] . '<br />';
 		}
@@ -58,7 +64,10 @@ class StaffBalance implements \RosarioSIS\StaffWidget
 
 	function html()
 	{
-		return '<tr class="st"><td>' . _( 'Staff Payroll Balance' ) . '</td><td><label>' .
+		// Lot F4c (05/11) : avec deux monnaies, le critère porte sur le solde de paie en USD.
+		require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+		return '<tr class="st"><td>' . _( 'Staff Payroll Balance' ) . ( SchoolSafeMoneyAccountingReady() ? ' (USD)' : '' ) . '</td><td><label>' .
 		_( 'Between' ) .
 		' <input type="number" name="balance_low" step="0.01" min="-999999999999999" max="999999999999999"></label> <label>&amp;
 		<input type="number" name="balance_high" step="0.01" min="-999999999999999" max="999999999999999"></label>

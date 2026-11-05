@@ -17,6 +17,8 @@ function SchoolSafeNativeCommandPermission($path) { return true; }
 function DBEscapeString($value) { return str_replace("'", "''", (string) $value); }
 function ParseMLField($value) { return $value; }
 function DBQuery($sql) { $GLOBALS['queries'][] = $sql; return $sql; }
+// Lot F4c (05/11) : SchoolSafeMoney.fnc.php (monnaie du rattrapage) lit une seule valeur.
+function DBGetOne($sql) { $rows = DBGet($sql); return $rows ? reset($rows[1]) : false; }
 function DBGet($sql) {
     $GLOBALS['queries'][] = $sql;
     if (!empty($GLOBALS['fixture']['empty'])) return [];
@@ -53,7 +55,7 @@ file_put_contents($fixturePath . '/Warehouse.php', '<?php /* bootstrap supplied 
 file_put_contents($fixturePath . '/modules/SchoolSafe/Gateway.php', '<?php /* gateway supplied by test */');
 $runtime = dirname(__DIR__, 2);
 foreach (['rattrapage.php','remediation-payments.php'] as $file) copy($runtime . '/' . $file, $fixturePath . '/' . $file);
-foreach (['SchoolSafeRemediationSettings.fnc.php','SchoolSafeRemediationOverview.fnc.php','SchoolSafeRemediationSessions.fnc.php','SchoolSafeAttendance.fnc.php','SchoolSafeCardVerify.fnc.php'] as $file) copy($runtime . '/ProgramFunctions/' . $file, $fixturePath . '/ProgramFunctions/' . $file);
+foreach (['SchoolSafeMoney.fnc.php','SchoolSafeRemediationSettings.fnc.php','SchoolSafeRemediationOverview.fnc.php','SchoolSafeRemediationSessions.fnc.php','SchoolSafeAttendance.fnc.php','SchoolSafeCardVerify.fnc.php'] as $file) copy($runtime . '/ProgramFunctions/' . $file, $fixturePath . '/ProgramFunctions/' . $file);
 foreach (['Workspace.inc.php','PaymentScope.fnc.php'] as $file) copy(dirname(__DIR__) . '/' . $file, $fixturePath . '/schoolsafe-remediation/' . $file);
 register_shutdown_function(static function () use ($fixturePath) {
     foreach (glob($fixturePath . '/schoolsafe-remediation/*') as $file) unlink($file);

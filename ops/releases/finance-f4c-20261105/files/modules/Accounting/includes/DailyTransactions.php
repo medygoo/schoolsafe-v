@@ -1,0 +1,536 @@
+<?php
+/**
+ * Daily Transactions program
+ *
+ * @package RosarioSIS
+ * @subpackage modules
+ */
+
+// Set start date.
+$start_date = RequestedDate( 'start', date( 'Y-m' ) . '-01' );
+
+// Set end date.
+$end_date = RequestedDate( 'end', DBDate() );
+
+$_REQUEST['category'] = issetVal( $_REQUEST['category'], '' );
+
+// Sanitize category (type or ID).
+if ( ! empty( $_REQUEST['category'] )
+	&& ! in_array( $_REQUEST['category'], [ 'common', 'incomes', 'expenses'] )
+	&& (string) (int) $_REQUEST['category'] !== $_REQUEST['category'] )
+{
+	$_REQUEST['category'] = '';
+}
+
+if ( User( 'PROFILE' ) === 'admin' )
+{
+	DrawHeader( _programMenu( 'transactions' ) );
+}
+
+echo '<form action="' . URLEscape( 'Modules.php?modname=' . $_REQUEST['modname'] . '&program=transactions&accounting=' ) . '" method="GET">';
+
+$header_checkboxes = '<label><input type="checkbox" value="true" name="accounting" id="accounting" ' .
+( ! isset( $_REQUEST['accounting'] )
+	|| $_REQUEST['accounting'] == 'true' ? 'checked ' : '' ) . '/> ' .
+_( 'Income' ) . ' & ' . _( 'Expense' ) . '</label>';
+
+$header_checkboxes .= ' &mdash; <label>' . _( 'Category' ) . ' ' . _categorySelect( $_REQUEST['category'] ) . '</label> ';
+
+$header_checkboxes .= '<br /><label><input type="checkbox" value="true" name="staff_payroll" id="staff_payroll" ' .
+( ! empty( $_REQUEST['staff_payroll'] ) ? 'checked ' : '' ) . '/> ' .
+_( 'Staff Payroll' ) . '</label>';
+
+if ( $RosarioModules['Student_Billing'] )
+{
+	$header_checkboxes .= '<br /><label><input type="checkbox" value="true" name="student_billing" id="student_billing" ' .
+	( ! empty( $_REQUEST['student_billing'] ) ? 'checked ' : '' ) . '/> ' .
+	_( 'Student Billing' ) . '</label>';
+}
+
+DrawHeader( $header_checkboxes, '' );
+
+DrawHeader( _( 'Report Timeframe' ) . ': ' .
+	PrepareDate( $start_date, '_start', false ) . ' &nbsp; ' . _( 'to' ) . ' &nbsp; ' .
+	PrepareDate( $end_date, '_end', false ) . ' ' . Buttons( _( 'Go' ) ) );
+
+echo '</form>';
+
+// Sort by date since the list is two lists merged and not already properly sorted.
+$_REQUEST['LO_sort'] = issetVal( $_REQUEST['LO_sort'], 'DATE' );
+
+// @global $totals.
+$totals = [
+	'DEBIT' => 0,
+	'CREDIT' => 0,
+];
+
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+// Lot F4c (05/11) : chaque ligne est affichée dans sa monnaie (colonne SS_CURRENCY) et les totaux sont tenus
+// par monnaie ($totals_by_currency, voir _makeCurrency()), jamais additionnés entre USD et FC.
+$ss_f4c = SchoolSafeMoneyAccountingReady();
+
+$totals_by_currency = [];
+
+
+$extra['functions'] = [ 'DEBIT' => '_makeCurrency', 'CREDIT' => '_makeCurrency', 'DATE' => 'ProperDate' ];
+
+$RET = $debit_col = $credit_col = $name_col = $sql_count = [];
+
+// Accounting.
+
+if ( ! isset( $_REQUEST['accounting'] )
+	|| $_REQUEST['accounting'] == 'true' )
+{
+	$name_col_sql = '';
+
+	if ( isset( $_REQUEST['staff_payroll'] ) || isset( $_REQUEST['student_billing'] ) )
+	{
+		$name_col_sql = "'' AS FULL_NAME,";
+	}
+
+	$where_category_sql = '';
+
+	if ( is_numeric( $_REQUEST['category'] ) )
+	{
+		$where_category_sql = " AND CATEGORY_ID='" . (int) $_REQUEST['category'] . "'";
+
+		if ( ! $_REQUEST['category'] )
+		{
+			// "0", N/A => Category ID is NULL.
+			$where_category_sql = " AND CATEGORY_ID IS NULL";
+		}
+	}
+	elseif ( $_REQUEST['category'] )
+	{
+		$where_category_sql = " AND CATEGORY_ID IN (SELECT ID
+			FROM accounting_categories
+			WHERE SCHOOL_ID='" . Userschool() . "'
+			AND TYPE='" . $_REQUEST['category'] . "')";
+	}
+
+	$RET = DBGet( "SELECT " . $name_col_sql . "f.AMOUNT AS CREDIT,'' AS DEBIT,CONCAT(f.TITLE,' ',COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID" .
+		( $ss_f4c ? ",f.CURRENCY AS SS_CURRENCY" : '' ) . "
+	FROM accounting_incomes f
+	WHERE f.SYEAR='" . UserSyear() . "'
+	AND f.SCHOOL_ID='" . UserSchool() . "'
+	AND f.ASSIGNED_DATE BETWEEN '" . $start_date . "'
+	AND '" . $end_date . "'" . $where_category_sql, $extra['functions'] );
+
+	$payments_SQL = "SELECT " . $name_col_sql . "'' AS CREDIT,p.AMOUNT AS DEBIT,CONCAT(p.TITLE,' ',COALESCE(p.COMMENTS,'')) AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID" .
+		( $ss_f4c ? ",p.CURRENCY AS SS_CURRENCY" : '' ) . "
+	FROM accounting_payments p
+	WHERE p.SYEAR='" . UserSyear() . "'
+	AND p.SCHOOL_ID='" . UserSchool() . "'
+	AND p.PAYMENT_DATE BETWEEN '" . $start_date . "'
+	AND '" . $end_date . "'
+	AND STAFF_ID IS NULL" . $where_category_sql;
+
+	$payments_RET = DBGet( $payments_SQL, $extra['functions'] );
+
+	$i = count( $RET ) + 1;
+
+	foreach ( (array) $payments_RET as $payment )
+	{
+		$RET[$i++] = $payment;
+	}
+
+	$sql_count[] = count( $RET );
+
+	$credit_col[] = _( 'Income' );
+	$debit_col[] = _( 'Expense' );
+}
+
+// Staff salaries.
+
+if ( ! empty( $_REQUEST['staff_payroll'] ) )
+{
+	$salaries_extra = $extra;
+	$name_col_sql = '';
+
+	if ( ! empty( $_REQUEST['student_billing'] ) )
+	{
+		$name_col_sql = ",'' AS STUDENT_NAME";
+	}
+
+	$salaries_extra['SELECT'] = issetVal( $salaries_extra['SELECT'], '' );
+	$salaries_extra['FROM'] = issetVal( $salaries_extra['FROM'], '' );
+	$salaries_extra['WHERE'] = issetVal( $salaries_extra['WHERE'], '' );
+
+	$salaries_extra['SELECT'] .= $name_col_sql . ",'' AS DEBIT,f.AMOUNT AS CREDIT,CONCAT(f.TITLE,' ',COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID" .
+		// Lot F4c (05/11) : monnaie du salaire.
+		( $ss_f4c ? ",f.CURRENCY AS SS_CURRENCY" : '' );
+
+	$salaries_extra['FROM'] .= ',accounting_salaries f';
+
+	$salaries_extra['WHERE'] .= " AND f.STAFF_ID=s.STAFF_ID
+		AND f.SYEAR=s.SYEAR
+		AND f.SCHOOL_ID='" . UserSchool() . "'
+		AND f.ASSIGNED_DATE BETWEEN '" . $start_date . "' AND '" . $end_date . "'";
+
+	$salaries_RET = GetStaffList( $salaries_extra );
+
+	$sql_count[] = $_ROSARIO['SQLLimitForList']['sql_count'];
+
+	$i = count( $RET ) + 1;
+
+	foreach ( (array) $salaries_RET as $salary )
+	{
+		$RET[$i++] = $salary;
+	}
+
+	$staff_payments_extra = $extra;
+
+	$staff_payments_extra['SELECT'] = issetVal( $staff_payments_extra['SELECT'], '' );
+	$staff_payments_extra['FROM'] = issetVal( $staff_payments_extra['FROM'], '' );
+	$staff_payments_extra['WHERE'] = issetVal( $staff_payments_extra['WHERE'], '' );
+
+	$staff_payments_extra['SELECT'] .= ",'' AS CREDIT,p.AMOUNT AS DEBIT,COALESCE(p.COMMENTS,' ') AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID" .
+		// Lot F4c (05/11) : monnaie du paiement du personnel.
+		( $ss_f4c ? ",p.CURRENCY AS SS_CURRENCY" : '' );
+
+	$staff_payments_extra['FROM'] .= ',accounting_payments p';
+
+	$staff_payments_extra['WHERE'] .= " AND p.STAFF_ID=s.STAFF_ID
+		AND p.SYEAR=s.SYEAR
+		AND p.SCHOOL_ID='" . UserSchool() . "'
+		AND p.PAYMENT_DATE BETWEEN '" . $start_date . "' AND '" . $end_date . "'";
+
+	$staff_payments_RET = GetStaffList( $staff_payments_extra );
+
+	$sql_count[] = $_ROSARIO['SQLLimitForList']['sql_count'];
+
+	$i = count( $RET ) + 1;
+
+	foreach ( (array) $staff_payments_RET as $staff_payment )
+	{
+		$RET[$i++] = $staff_payment;
+	}
+
+	$credit_col[] = _( 'Salary' );
+	$debit_col[] = _( 'Staff Payment' );
+	$name_col = _( 'Staff' );
+}
+
+// Student Billing.
+
+if ( ! empty( $_REQUEST['student_billing'] )
+	&& $RosarioModules['Student_Billing'] )
+{
+	require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+	// Lot F4b (05/11) : le total général est en USD. Les frais et paiements des élèves en FC sont affichés
+	// dans leur monnaie, comptés à part ($billing_fc_totals) et jamais ajoutés aux totaux USD.
+	// Lot F4c (05/11) : avec le script F4c, tout est par monnaie (_makeCurrency()) ; ce mécanisme F4b ne sert plus.
+	$billing_multi_currency = SchoolSafeMoneyCurrencyReady() && ! $ss_f4c;
+
+	$billing_fc_totals = [ 'DEBIT' => 0, 'CREDIT' => 0 ];
+
+	$billing_row = function( $row ) use ( $billing_multi_currency, &$billing_fc_totals )
+	{
+		if ( ! $billing_multi_currency )
+		{
+			return $row;
+		}
+
+		$is_fc = SchoolSafeMoneyCurrency( $row['SS_CURRENCY'] ?? 'USD' ) === 'FC';
+
+		foreach ( [ 'DEBIT', 'CREDIT' ] as $amount_column )
+		{
+			$value = $row[ $amount_column ] ?? '';
+
+			if ( ! $is_fc )
+			{
+				// Même mise en forme et même total que _makeCurrency().
+				$row[ $amount_column ] = _makeCurrency( $value, $amount_column );
+
+				continue;
+			}
+
+			if ( $value === '' || $value === null )
+			{
+				continue;
+			}
+
+			$billing_fc_totals[ $amount_column ] += (float) $value;
+
+			$row[ $amount_column ] = SchoolSafeMoneyFormat( $value, 'FC' );
+		}
+
+		return $row;
+	};
+
+	$fees_extra = $extra;
+
+	if ( $billing_multi_currency )
+	{
+		unset( $fees_extra['functions']['DEBIT'], $fees_extra['functions']['CREDIT'] );
+	}
+
+	// Fix PostgreSQL error ORDER BY "full_name" is ambiguous
+	$name_col_sql = DisplayNameSQL( 's' ) . " AS FULL_NAME,";
+
+	$fees_extra['ORDER_BY'] = 'FULL_NAME';
+
+	if ( ! empty( $_REQUEST['staff_payroll'] ) )
+	{
+		// FULL_NAME column already used for Staff Payroll, use STUDENT_NAME instead.
+		$name_col_sql = DisplayNameSQL( 's' ) . " AS STUDENT_NAME, '' AS FULL_NAME,";
+
+		$fees_extra['ORDER_BY'] = 'STUDENT_NAME';
+	}
+
+	$fees_extra['SELECT_ONLY'] = issetVal( $fees_extra['SELECT_ONLY'], '' );
+	$fees_extra['FROM'] = issetVal( $fees_extra['FROM'], '' );
+	$fees_extra['WHERE'] = issetVal( $fees_extra['WHERE'], '' );
+
+	$fees_extra['SELECT_ONLY'] .= $name_col_sql . "f.AMOUNT AS DEBIT,'' AS CREDIT,CONCAT(f.TITLE,' ',COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID" .
+		( $billing_multi_currency || $ss_f4c ? ",f.CURRENCY AS SS_CURRENCY" : '' );
+
+	$fees_extra['FROM'] .= ',billing_fees f';
+
+	$fees_extra['WHERE'] .= " AND f.STUDENT_ID=s.STUDENT_ID AND f.SYEAR=ssm.SYEAR AND f.SCHOOL_ID=ssm.SCHOOL_ID AND f.ASSIGNED_DATE BETWEEN '" . $start_date . "' AND '" . $end_date . "'";
+
+	$fees_RET = GetStuList( $fees_extra );
+
+	$sql_count[] = $_ROSARIO['SQLLimitForList']['sql_count'];
+
+	$i = count( $RET ) + 1;
+
+	foreach ( (array) $fees_RET as $fee )
+	{
+		$RET[$i++] = $billing_row( $fee );
+	}
+
+	$student_payments_extra = $extra;
+
+	if ( $billing_multi_currency )
+	{
+		unset( $student_payments_extra['functions']['DEBIT'], $student_payments_extra['functions']['CREDIT'] );
+	}
+
+	$student_payments_extra['SELECT_ONLY'] = issetVal( $student_payments_extra['SELECT_ONLY'], '' );
+	$student_payments_extra['FROM'] = issetVal( $student_payments_extra['FROM'], '' );
+	$student_payments_extra['WHERE'] = issetVal( $student_payments_extra['WHERE'], '' );
+
+	$student_payments_extra['SELECT_ONLY'] .= $name_col_sql . "'' AS DEBIT,p.AMOUNT AS CREDIT,COALESCE(p.COMMENTS,' ') AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID" .
+		( $billing_multi_currency || $ss_f4c ? ",p.CURRENCY AS SS_CURRENCY" : '' );
+
+	$student_payments_extra['FROM'] .= ',billing_payments p';
+
+	$student_payments_extra['WHERE'] .= " AND p.STUDENT_ID=s.STUDENT_ID AND p.SYEAR=ssm.SYEAR AND p.SCHOOL_ID=ssm.SCHOOL_ID AND p.PAYMENT_DATE BETWEEN '" . $start_date . "' AND '" . $end_date . "'";
+
+	// Fix PostgreSQL error ORDER BY "full_name" is ambiguous
+	$student_payments_extra['ORDER_BY'] = 'FULL_NAME';
+
+	if ( ! empty( $_REQUEST['staff_payroll'] ) )
+	{
+		$student_payments_extra['ORDER_BY'] = 'STUDENT_NAME';
+	}
+
+	$student_payments_RET = GetStuList( $student_payments_extra );
+
+	$sql_count[] = $_ROSARIO['SQLLimitForList']['sql_count'];
+
+	$i = count( $RET ) + 1;
+
+	foreach ( (array) $student_payments_RET as $student_payment )
+	{
+		$RET[$i++] = $billing_row( $student_payment );
+	}
+
+	$credit_col[] = _( 'Fee' );
+	$debit_col[] = _( 'Student Payment' );
+
+	if ( empty( $_REQUEST['staff_payroll'] ) )
+	{
+		$name_col = _( 'Student' );
+	}
+}
+
+if ( ! empty( $_ROSARIO['SQLLimitForList']['sql_count'] )
+	&& $sql_count )
+{
+	/**
+	 * Fix no results if more than 1000 fees but 0 payments for timeframe.
+	 * Results made of multiple GetStuList() / GetStaffList() calls.
+	 * Sum SQL queries to COUNT total results before ListOutput().
+	 *
+	 * @since 11.7.4
+	 */
+	$_ROSARIO['SQLLimitForList']['sql_count'] = "SELECT (" . implode( ") + (", $sql_count ) . ")
+		AS SUM FROM DUAL";
+}
+
+$credit_col = implode( ' / ', $credit_col );
+$debit_col = implode( ' / ', $debit_col );
+
+$columns = [ 'FULL_NAME' => ( empty( $name_col ) ? _( 'Total' ) : $name_col ) ];
+
+if ( isset( $_REQUEST['staff_payroll'], $_REQUEST['student_billing'] ) )
+{
+	$columns['STUDENT_NAME'] = _( 'Student' );
+}
+
+$columns = $columns + [
+	'CREDIT' => $credit_col,
+	'DEBIT' => $debit_col,
+	'DATE' => _( 'Date' ),
+	'EXPLANATION' => _( 'Comment' ),
+];
+
+$link['add']['html'] = [
+	'FULL_NAME' => ( empty( $name_col ) ? '' : _( 'Total' ) . ': ' ) .
+		'<b>' . Currency( $totals['CREDIT'] - $totals['DEBIT'] ) . '</b>',
+];
+
+if ( ! empty( $billing_multi_currency )
+	&& ( $billing_fc_totals['DEBIT'] || $billing_fc_totals['CREDIT'] ) )
+{
+	// Lot F4b (05/11) : frais et paiements des élèves en FC, hors du total en USD.
+	$link['add']['html']['FULL_NAME'] .= '<br>Dont paiements des élèves en FC : ' .
+		SchoolSafeMoneyFormat( $billing_fc_totals['CREDIT'], 'FC' ) .
+		' (frais en FC : ' . SchoolSafeMoneyFormat( $billing_fc_totals['DEBIT'], 'FC' ) . '), non inclus dans le solde en USD.';
+}
+
+if ( isset( $_REQUEST['staff_payroll'], $_REQUEST['student_billing'] ) )
+{
+	$link['add']['html']['STUDENT_NAME'] = '&nbsp;';
+}
+
+$link['add']['html'] += [
+	'DEBIT' => '<b>' . Currency( $totals['DEBIT'] ) . '</b>',
+	'CREDIT' => '<b>' . Currency( $totals['CREDIT'] ) . '</b>',
+];
+
+if ( $ss_f4c )
+{
+	// Lot F4c (05/11) : totaux et solde par monnaie (USD d'abord ; USD seul s'il n'y a aucune ligne).
+	$ss_lines = [ 'FULL_NAME' => [], 'DEBIT' => [], 'CREDIT' => [] ];
+
+	foreach ( array_keys( SchoolSafeMoneyCurrencies() ) as $ss_currency )
+	{
+		if ( ! isset( $totals_by_currency[ $ss_currency ] )
+			&& ( $ss_currency !== 'USD' || $totals_by_currency ) )
+		{
+			continue;
+		}
+
+		$ss_debit = (float) ( $totals_by_currency[ $ss_currency ]['DEBIT'] ?? 0 );
+		$ss_credit = (float) ( $totals_by_currency[ $ss_currency ]['CREDIT'] ?? 0 );
+
+		$ss_lines['FULL_NAME'][] = SchoolSafeMoneyFormat( $ss_credit - $ss_debit, $ss_currency );
+		$ss_lines['DEBIT'][] = SchoolSafeMoneyFormat( $ss_debit, $ss_currency );
+		$ss_lines['CREDIT'][] = SchoolSafeMoneyFormat( $ss_credit, $ss_currency );
+	}
+
+	$link['add']['html']['FULL_NAME'] = ( empty( $name_col ) ? '' : _( 'Total' ) . ': ' ) .
+		'<b>' . implode( '<br>', $ss_lines['FULL_NAME'] ) . '</b>';
+	$link['add']['html']['DEBIT'] = '<b>' . implode( '<br>', $ss_lines['DEBIT'] ) . '</b>';
+	$link['add']['html']['CREDIT'] = '<b>' . implode( '<br>', $ss_lines['CREDIT'] ) . '</b>';
+}
+
+// Force display of $link['add'] on PDF, Export or if not allowed to edit
+$options['add'] = true;
+
+// @since 11.8 Add pagination for list > 1000 results
+$options['pagination'] = true;
+
+ListOutput( $RET, $columns, 'Transaction', 'Transactions', $link, [], $options );
+
+/**
+ * @param $value
+ * @param $column
+ */
+function _makeCurrency( $value, $column )
+{
+	global $totals,
+		$totals_by_currency,
+		$THIS_RET;
+
+	if ( isset( $THIS_RET['SS_CURRENCY'] )
+		&& SchoolSafeMoneyAccountingReady() )
+	{
+		// Lot F4c (05/11) : montant dans la monnaie de sa ligne ; total tenu par monnaie.
+		$currency = SchoolSafeMoneyCurrency( $THIS_RET['SS_CURRENCY'] );
+
+		if ( $value === '' || $value === null )
+		{
+			return '';
+		}
+
+		$totals_by_currency[ $currency ][ $column ] = ( $totals_by_currency[ $currency ][ $column ] ?? 0 ) + (float) $value;
+
+		// Commentaire HTML : même tri numérique de la liste que Currency().
+		return '<!-- ' . (float) $value . ' -->' . SchoolSafeMoneyFormat( $value, $currency );
+	}
+
+	$totals[$column] += (float) $value;
+
+	if ( ! empty( $value ) || $value == '0' )
+	{
+		return Currency( $value );
+	}
+}
+
+/**
+ * Category Select Input
+ *
+ * @since 11.0
+ *
+ * Local function
+ *
+ * @param  string $category Category: lookup in category table.
+ *
+ * @return string Select Category input.
+ */
+function _categorySelect( $category )
+{
+	AllowEditTemporary( 'start' );
+
+	// Build options menu
+	$category_RET = DBGet( "SELECT ID,TITLE,SHORT_NAME,TYPE
+		FROM accounting_categories
+		WHERE SCHOOL_ID='" . UserSchool() . "'
+		ORDER BY TYPE,SORT_ORDER" );
+
+	$category_options = [ '0' => _( 'None' ) ];
+
+	$previous_category = '';
+
+	$category_types = [
+		'common' => _( 'Incomes' ) . ' & ' . _( 'Expenses' ),
+		'incomes' => _( 'Incomes' ),
+		'expenses' => _( 'Expenses' ),
+	];
+
+	foreach ( (array) $category_RET as $category_a )
+	{
+		if ( $previous_category !== $category_a['TYPE'] )
+		{
+			$previous_category = $category_a['TYPE'];
+
+			$category_options[ $previous_category ] = $category_types[ $previous_category ];
+		}
+
+		$category_options[$category_a['ID']] = '&nbsp;&nbsp;&nbsp;' . $category_a['TITLE'];
+	}
+
+	$link = PreparePHP_SELF( [], [ 'category' ] ) . '&category=';
+
+	$menu = SelectInput(
+		$category,
+		'category',
+		'',
+		$category_options,
+		_( 'All' ),
+		// @since RosarioSIS 12.5 CSP remove unsafe-inline Javascript
+		// Note: `this.value` inside link is automatically replaced
+		'class="onchange-ajax-link" data-link="' . $link . 'this.value" autocomplete="off"',
+		false
+	);
+
+	AllowEditTemporary( 'stop' );
+
+	return $menu;
+}

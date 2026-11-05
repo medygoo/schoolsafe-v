@@ -1,0 +1,357 @@
+<?php
+
+require_once 'ProgramFunctions/FileUpload.fnc.php';
+require_once 'modules/Accounting/functions.inc.php';
+// Lot F1 (05/11) : colonnes autorisées, montant positif, pas de doublon.
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+$_REQUEST['print_statements'] = issetVal( $_REQUEST['print_statements'], '' );
+
+// Set start date.
+$start_date = RequestedDate( 'start', '' );
+
+// Fix PostgreSQL error if BETWEEN date is empty.
+$start_date_sql = $start_date ? $start_date : '1900-01-01';
+
+// Set end date.
+$end_date = RequestedDate( 'end', DBDate() );
+
+if ( empty( $_REQUEST['print_statements'] ) )
+{
+	DrawHeader( ProgramTitle() );
+
+SchoolSafeCard(
+	'coins',
+	'Accounting',
+	'Comptabilité',
+	'Incomes',
+	'Recettes',
+	'This page records the school incomes.',
+	'Cette page enregistre les recettes de l’école.'
+);
+
+}
+
+if ( $_REQUEST['modfunc'] === 'save'
+	&& AllowEdit() )
+{
+	// Add eventual Dates to $_REQUEST['values'].
+	AddRequestedDates( 'values', 'post' );
+
+	foreach ( (array) $_REQUEST['values'] as $id => $columns )
+	{
+		// F3 / F4 (lot F1, 05/11) : seules les colonnes du formulaire ; montant strictement positif.
+		$columns = SchoolSafeMoneyColumns( $columns, [ 'TITLE', 'CATEGORY_ID', 'AMOUNT', 'ASSIGNED_DATE', 'COMMENTS', 'CURRENCY' ] );
+
+		// Lot F4c (05/11) : monnaie de la recette (USD par défaut) ; elle ne change pas sur une ligne existante.
+		if ( $id !== 'new' || ! SchoolSafeMoneyAccountingReady() )
+		{
+			unset( $columns['CURRENCY'] );
+		}
+		else
+		{
+			$columns['CURRENCY'] = SchoolSafeMoneyCurrency( $columns['CURRENCY'] ?? 'USD' );
+		}
+
+		if ( isset( $columns['AMOUNT'] ) && trim( (string) $columns['AMOUNT'] ) !== '' )
+		{
+			if ( $problem = SchoolSafeMoneyAmountProblem( $columns['AMOUNT'] ) )
+			{
+				$error[] = $problem;
+				continue;
+			}
+
+			$columns['AMOUNT'] = SchoolSafeMoneyAmount( $columns['AMOUNT'] );
+		}
+		elseif ( $id !== 'new' )
+		{
+			unset( $columns['AMOUNT'] );
+		}
+
+		if ( isset( $columns['CATEGORY_ID'] )
+			&& $columns['CATEGORY_ID'] === '0' )
+		{
+			// Category ID 0 is N/A, reset to NULL.
+			$columns['CATEGORY_ID'] = '';
+		}
+
+		if ( $id !== 'new' )
+		{
+			$columns['FILE_ATTACHED'] = _saveIncomesFile( $id );
+
+			if ( ! $columns['FILE_ATTACHED'] )
+			{
+				unset( $columns['FILE_ATTACHED'] );
+			}
+
+			DBUpdate(
+				'accounting_incomes',
+				$columns,
+				[
+					'ID' => (int) $id,
+					'SYEAR' => UserSyear(),
+					'SCHOOL_ID' => UserSchool(),
+				]
+			);
+		}
+		elseif ( isset( $columns['AMOUNT'] )
+			&& is_numeric( $columns['AMOUNT'] )
+			&& ! empty( $columns['ASSIGNED_DATE'] )
+			&& $columns['TITLE'] )
+		{
+			// F11 : double clic ou formulaire renvoyé.
+			if ( SchoolSafeMoneyRecentDuplicate( 'accounting_incomes', [
+				'SCHOOL_ID' => (int) UserSchool(),
+				'SYEAR' => (int) UserSyear(),
+				'TITLE' => $columns['TITLE'],
+				'AMOUNT' => $columns['AMOUNT'],
+				'ASSIGNED_DATE' => $columns['ASSIGNED_DATE'],
+			] + ( isset( $columns['CURRENCY'] ) ? [ 'CURRENCY' => $columns['CURRENCY'] ] : [] ) ) )
+			{
+				// Lot F4c (05/11) : même monnaie comprise.
+				$error[] = 'Cette recette vient déjà d’être enregistré(e). Il/elle n’a pas été ajouté(e) une seconde fois.';
+				continue;
+			}
+
+			$insert_columns = [ 'SYEAR' => UserSyear(), 'SCHOOL_ID' => UserSchool() ];
+
+			$columns['FILE_ATTACHED'] = _saveIncomesFile( $id );
+
+			DBInsert(
+				'accounting_incomes',
+				$insert_columns + $columns
+			);
+		}
+	}
+
+	// Unset modfunc, values, dates & redirect URL.
+	RedirectURL( [ 'modfunc', 'values', 'month_values', 'day_values', 'year_values' ] );
+}
+
+if ( $_REQUEST['modfunc'] === 'remove'
+	// @since 12.1 Add Admin Delete Permission
+	&& AllowEdit( 'Accounting/Incomes.php&modfunc=remove' ) )
+{
+	// Lot F2 (F6, 05/11) : motif obligatoire et trace gardée avant l'effacement.
+	if ( SchoolSafeMoneyCancelPrompt( 'cette recette', 'accounting_incomes' ) )
+	{
+		$file_attached = DBGetOne( "SELECT FILE_ATTACHED
+			FROM accounting_incomes
+			WHERE ID='" . (int) $_REQUEST['id'] . "'
+			AND SYEAR='" . UserSyear() . "'
+			AND SCHOOL_ID='" . UserSchool() . "'" );
+
+		// Delete File Attached.
+		// Security: use FileDelete() instead of unlink()
+		FileDelete( $file_attached );
+
+		DBQuery( "DELETE FROM accounting_incomes
+			WHERE ID='" . (int) $_REQUEST['id'] . "'
+			AND SYEAR='" . UserSyear() . "'
+			AND SCHOOL_ID='" . UserSchool() . "'" );
+
+		// Unset modfunc & ID & redirect URL.
+		RedirectURL( [ 'modfunc', 'id' ] );
+	}
+}
+
+if ( ! $_REQUEST['modfunc'] )
+{
+	$incomes_total = 0;
+
+	// Lot F4c (05/11) : monnaie de chaque recette ; totaux par monnaie ($incomes_totals).
+	$incomes_totals = [];
+
+	$ss_currency_column = SchoolSafeMoneyAccountingReady() ? 'f.CURRENCY,' : '';
+
+	$functions = [
+		'REMOVE' => '_makeIncomesRemove',
+		'CATEGORY_ID' => '_makeIncomesCategory',
+		'ASSIGNED_DATE' => 'ProperDate',
+		'COMMENTS' => '_makeIncomesTextInput',
+		'AMOUNT' => '_makeIncomesAmount',
+		'FILE_ATTACHED' => '_makeIncomesFileInput',
+	];
+
+	$incomes_RET = DBGet( "SELECT '' AS REMOVE,f.ID,f.TITLE,f.CATEGORY_ID,f.ASSIGNED_DATE,f.COMMENTS,
+		f.AMOUNT," . $ss_currency_column . "f.FILE_ATTACHED
+		FROM accounting_incomes f
+		WHERE f.SYEAR='" . UserSyear() . "'
+		AND f.SCHOOL_ID='" . UserSchool() . "'
+		AND f.ASSIGNED_DATE BETWEEN '" . $start_date_sql . "'
+		AND '" . $end_date . "'
+		ORDER BY f.ASSIGNED_DATE,f.ID", $functions );
+
+	$i = 1;
+	$RET = [];
+
+	foreach ( (array) $incomes_RET as $income )
+	{
+		$RET[$i] = $income;
+		$i++;
+	}
+
+	$columns = [];
+
+	if ( ! empty( $RET )
+		&& ! $_REQUEST['print_statements']
+		&& AllowEdit()
+		&& ! isset( $_REQUEST['_ROSARIO_PDF'] ) )
+	{
+		$columns = [ 'REMOVE' => '<span class="a11y-hidden">Actions</span>' ];
+	}
+
+	$columns += [
+		'TITLE' => _( 'Income' ),
+		'CATEGORY_ID' => _( 'Category' ),
+		'AMOUNT' => _( 'Amount' ),
+	] + ( SchoolSafeMoneyAccountingReady() ? [ 'CURRENCY' => 'Monnaie' ] : [] ) + [
+		'ASSIGNED_DATE' => _( 'Date' ),
+		'COMMENTS' => _( 'Comment' ),
+	];
+
+	if ( empty( $_REQUEST['print_statements'] ) )
+	{
+		$columns += [ 'FILE_ATTACHED' => _( 'File Attached' ) ];
+	}
+
+	if ( empty( $_REQUEST['print_statements'] ) )
+	{
+		$link['add']['html'] = [
+			'REMOVE' => button( 'add' ),
+			'TITLE' => _makeIncomesTextInput( '', 'TITLE' ),
+			'CATEGORY_ID' => _makeIncomesCategory( '', 'CATEGORY_ID' ),
+			'AMOUNT' => _makeIncomesTextInput( '', 'AMOUNT' ),
+			// Lot F4c (05/11) : monnaie de la recette dans sa propre colonne (USD par défaut).
+			'CURRENCY' => SchoolSafeMoneyAccountingReady() ? SchoolSafeMoneyCurrencySelect( 'values[new][CURRENCY]', 'USD' ) : '',
+			'ASSIGNED_DATE' => _makeIncomesDateInput( DBDate(), 'ASSIGNED_DATE' ),
+			'COMMENTS' => _makeIncomesTextInput( '', 'COMMENTS' ),
+			'FILE_ATTACHED' => _makeIncomesFileInput( '', 'FILE_ATTACHED' ),
+		];
+	}
+
+	if ( ! $_REQUEST['print_statements'] )
+	{
+		echo '<form action="' . PreparePHP_SELF( [], [
+			'month_start',
+			'day_start',
+			'year_start',
+			'month_end',
+			'day_end',
+			'year_end',
+		] ) . '" method="GET">';
+
+		DrawHeader( _( 'Timeframe' ) . ': ' .
+			PrepareDate( $start_date, '_start', true ) . ' &nbsp; ' . _( 'to' ) . ' &nbsp; ' .
+			PrepareDate( $end_date, '_end', false ) . ' ' . Buttons( _( 'Go' ) ) );
+
+		echo '</form>';
+	}
+
+	$options = [];
+
+	if ( ! $_REQUEST['print_statements'] && AllowEdit() )
+	{
+		echo '<form action="' . PreparePHP_SELF( [], [], [ 'modfunc' => 'save' ] ) . '" method="POST">';
+
+		DrawHeader( '', SubmitButton() );
+
+		$options = [ 'valign-middle' => true ];
+	}
+
+	ListOutput( $RET, $columns, 'Income', 'Incomes', $link, [], $options );
+
+	if ( ! $_REQUEST['print_statements']
+		&& AllowEdit() )
+	{
+		echo '<div class="center">' . SubmitButton() . '</div>';
+	}
+
+	echo '<br />';
+
+	if ( SchoolSafeMoneyAccountingReady() )
+	{
+		// Lot F4c (05/11) : recettes, dépenses, paiements des élèves et du personnel, soldes et solde général
+		// par monnaie (une colonne USD, une colonne FC), jamais additionnés.
+		DrawHeader( SchoolSafeMoneyAccountingTotalsTable( $start_date_sql, $end_date, ! empty( $RosarioModules['Student_Billing'] ) ) );
+	}
+	else
+	{
+		$payments_total = DBGetOne( "SELECT SUM(p.AMOUNT) AS TOTAL
+			FROM accounting_payments p
+			WHERE p.STAFF_ID IS NULL
+			AND p.SYEAR='" . UserSyear() . "'
+			AND p.SCHOOL_ID='" . UserSchool() . "'
+			AND p.PAYMENT_DATE BETWEEN '" . $start_date_sql . "'
+			AND '" . $end_date . "'" );
+
+		$table = '<table class="align-right accounting-totals"><tr><td>' . _( 'Total from Incomes' ) . ': ' . '</td><td>' . Currency( $incomes_total ) . '</td></tr>';
+
+		$table .= '<tr><td>' . _( 'Less' ) . ': ' . _( 'Total from Expenses' ) . ': ' . '</td><td>' . Currency( $payments_total ) . '</td></tr>';
+
+		$table .= '<tr><td>' . _( 'Balance' ) . ': <b>' . '</b></td><td><b id="update_balance">' . Currency(  ( $incomes_total - $payments_total ) ) . '</b></td></tr>';
+
+		//add General Balance
+		$table .= '<tr><td colspan="2"><hr></td></tr><tr><td>' . _( 'Total from Incomes' ) . ': ' . '</td><td>' . Currency( $incomes_total ) . '</td></tr>';
+
+		if ( $RosarioModules['Student_Billing'] )
+		{
+			$student_payments_total = DBGetOne( "SELECT SUM(p.AMOUNT) AS TOTAL
+				FROM billing_payments p
+				WHERE p.SYEAR='" . UserSyear() . "'
+				AND p.SCHOOL_ID='" . UserSchool() . "'
+				AND p.PAYMENT_DATE BETWEEN '" . $start_date_sql . "'
+				AND '" . $end_date . "'" .
+				// Lot F4b (05/11) : le solde général est en USD : seuls les paiements des élèves en USD y entrent.
+				( SchoolSafeMoneyCurrencyReady() ? " AND p.CURRENCY='USD'" : '' ) );
+
+			$table .= '<tr><td>& ' . _( 'Total from Student Payments' ) . ': ' . '</td><td>' . Currency( $student_payments_total ) . '</td></tr>';
+
+			if ( SchoolSafeMoneyCurrencyReady() )
+			{
+				// Lot F4b (05/11) : paiements des élèves en FC, sur une ligne à part, hors du solde en USD.
+				$student_payments_total_fc = DBGetOne( "SELECT SUM(p.AMOUNT) AS TOTAL
+					FROM billing_payments p
+					WHERE p.SYEAR='" . UserSyear() . "'
+					AND p.SCHOOL_ID='" . UserSchool() . "'
+					AND p.PAYMENT_DATE BETWEEN '" . $start_date_sql . "'
+					AND '" . $end_date . "'
+					AND p.CURRENCY='FC'" );
+
+				if ( (float) $student_payments_total_fc )
+				{
+					$table .= '<tr><td colspan="2">Dont paiements des élèves en FC : ' .
+						SchoolSafeMoneyFormat( $student_payments_total_fc, 'FC' ) . ', non inclus dans le solde en USD.</td></tr>';
+				}
+			}
+		}
+		else
+		{
+			$student_payments_total = 0;
+		}
+
+		$table .= '<tr><td>' . _( 'Less' ) . ': ' . _( 'Total from Expenses' ) . ': ' . '</td><td>' . Currency( $payments_total ) . '</td></tr>';
+
+		$staff_payments_total = DBGetOne( "SELECT SUM(p.AMOUNT) AS TOTAL
+			FROM accounting_payments p
+			WHERE p.STAFF_ID IS NOT NULL
+			AND p.SYEAR='" . UserSyear() . "'
+			AND p.SCHOOL_ID='" . UserSchool() . "'
+			AND p.PAYMENT_DATE BETWEEN '" . $start_date_sql . "'
+			AND '" . $end_date . "'" );
+
+		$table .= '<tr><td>& ' . _( 'Total from Staff Payments' ) . ': ' . '</td><td>' . Currency( $staff_payments_total ) . '</td></tr>';
+
+		$table .= '<tr><td>' . _( 'General Balance' ) . ': </td>
+			<td><b id="update_balance">' . Currency(  ( $incomes_total + $student_payments_total - $payments_total - $staff_payments_total ) ) .
+			'</b></td></tr></table>';
+
+		DrawHeader( $table );
+	}
+
+	if ( ! $_REQUEST['print_statements']
+		&& AllowEdit() )
+	{
+		echo '</form>';
+	}
+}

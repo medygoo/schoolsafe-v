@@ -1,4 +1,7 @@
 <?php
+// Lot F4c (05/11) : montants affichés avec la monnaie de chaque ligne (FC ou USD), totaux par monnaie.
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
 function _makeIncomesRemove( $value, $column )
 {
 	global $THIS_RET;
@@ -120,7 +123,9 @@ function _makePaymentsCommentsInput( $value, $name )
 	}
 
 	// Add Salaries dropdown to reconcile Payment.
-	$salaries_RET = DBGet( "SELECT ID,TITLE,ASSIGNED_DATE,DUE_DATE,AMOUNT
+	// Lot F4c (05/11) : monnaie de chaque salaire, affichée dans la liste.
+	$salaries_RET = DBGet( "SELECT ID,TITLE,ASSIGNED_DATE,DUE_DATE,AMOUNT" .
+		( SchoolSafeMoneyAccountingReady() ? ',CURRENCY' : '' ) . "
 		FROM accounting_salaries sal
 		WHERE STAFF_ID='" . UserStaffID() . "'
 		AND SYEAR='" . UserSyear() . "'
@@ -144,7 +149,7 @@ function _makePaymentsCommentsInput( $value, $name )
 	foreach ( $salaries_RET as $salary )
 	{
 		$salaries_options[ $salary['AMOUNT'] . '|' . $salary['TITLE'] ] = ProperDate( $salary['ASSIGNED_DATE'], 'short' ) .
-			' — ' . Currency( $salary['AMOUNT'] ) .
+			' — ' . ( isset( $salary['CURRENCY'] ) ? SchoolSafeMoneyFormat( $salary['AMOUNT'], $salary['CURRENCY'] ) : Currency( $salary['AMOUNT'] ) ) .
 			' — ' . $salary['TITLE'];
 	}
 
@@ -167,27 +172,51 @@ function _makePaymentsCommentsInput( $value, $name )
 
 function _makeSalariesAmount( $value, $column )
 {
-	global $salaries_total;
+	global $salaries_total,
+		$salaries_totals,
+		$THIS_RET;
 
 	$salaries_total += $value;
+
+	// Lot F4c (05/11) : montant dans la monnaie de sa ligne ; $salaries_totals tient le total de chaque monnaie.
+	if ( isset( $THIS_RET['CURRENCY'] ) && SchoolSafeMoneyAccountingReady() )
+	{
+		return SchoolSafeMoneyRowAmount( $value, $THIS_RET, $salaries_totals );
+	}
 
 	return Currency( $value );
 }
 
 function _makeIncomesAmount( $value, $column )
 {
-	global $incomes_total;
+	global $incomes_total,
+		$incomes_totals,
+		$THIS_RET;
 
 	$incomes_total += $value;
+
+	// Lot F4c (05/11) : montant dans la monnaie de sa ligne ; $incomes_totals tient le total de chaque monnaie.
+	if ( isset( $THIS_RET['CURRENCY'] ) && SchoolSafeMoneyAccountingReady() )
+	{
+		return SchoolSafeMoneyRowAmount( $value, $THIS_RET, $incomes_totals );
+	}
 
 	return Currency( $value );
 }
 
 function _makePaymentsAmount( $value, $column )
 {
-	global $payments_total;
+	global $payments_total,
+		$payments_totals,
+		$THIS_RET;
 
 	$payments_total += $value;
+
+	// Lot F4c (05/11) : montant dans la monnaie de sa ligne ; $payments_totals tient le total de chaque monnaie.
+	if ( isset( $THIS_RET['CURRENCY'] ) && SchoolSafeMoneyAccountingReady() )
+	{
+		return SchoolSafeMoneyRowAmount( $value, $THIS_RET, $payments_totals );
+	}
 
 	return Currency( $value );
 }

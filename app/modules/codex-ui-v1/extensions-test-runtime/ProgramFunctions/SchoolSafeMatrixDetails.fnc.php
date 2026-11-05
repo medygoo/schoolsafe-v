@@ -1,4 +1,6 @@
 <?php
+// Lot F4c (05/11) : montants de paie et de trésorerie par monnaie.
+require_once __DIR__ . '/SchoolSafeMoney.fnc.php';
 function SchoolSafeMatrixDetails(string $kind,array $rows,int $school,int $year): array
 {
     $ids=array_unique(array_map(static fn($r)=>(int)$r['PERSON_ID'],$rows));
@@ -47,10 +49,24 @@ function SchoolSafeMatrixDetails(string $kind,array $rows,int $school,int $year)
         $totals=[];
         foreach([['accounting_salaries','Accounting/Salaries.php',3],['accounting_payments','Accounting/StaffPayments.php',4]] as [$table,$permission,$index])if(AllowUse($permission)){
             foreach($ids as $id){$totals[$id][$index]=0;$values[$id][$index]=$e($money(0));}
+            // Lot F4c (05/11) : montants par monnaie (USD, FC), jamais additionnés.
+            if(function_exists('SchoolSafeMoneyAccountingReady')&&SchoolSafeMoneyAccountingReady()){
+                $byCur=[];
+                foreach(DBGet("SELECT staff_id,currency,SUM(amount) AS total FROM $table WHERE school_id=$school AND syear=$year AND staff_id IN ($list) GROUP BY staff_id,currency") as $r)$byCur[(int)$r['STAFF_ID']][SchoolSafeMoneyCurrency($r['CURRENCY'])]=(float)$r['TOTAL'];
+                foreach($byCur as $id=>$cur){$totals[$id][$index]=$cur;$parts=[];foreach(['USD','FC'] as $c)if(isset($cur[$c]))$parts[]=$e(SchoolSafeMoneyFormat($cur[$c],$c));$values[$id][$index]=implode('<br>',$parts);}
+                continue;
+            }
             $amounts=DBGet("SELECT staff_id,SUM(amount) AS total FROM $table WHERE school_id=$school AND syear=$year AND staff_id IN ($list) GROUP BY staff_id");
             foreach($amounts as $r){$id=(int)$r['STAFF_ID'];$totals[$id][$index]=(float)$r['TOTAL'];$values[$id][$index]=$e($money($r['TOTAL']));}
         }
-        foreach($totals as $id=>$amounts)if(isset($amounts[3],$amounts[4]))$values[$id][5]=$e($money($amounts[3]-$amounts[4]));
+        foreach($totals as $id=>$amounts)if(isset($amounts[3],$amounts[4])){
+            if(is_array($amounts[3])||is_array($amounts[4])){
+                // Lot F4c : reste dû au membre du personnel, par monnaie.
+                $a=is_array($amounts[3])?$amounts[3]:['USD'=>(float)$amounts[3]];$b=is_array($amounts[4])?$amounts[4]:['USD'=>(float)$amounts[4]];$parts=[];
+                foreach(['USD','FC'] as $c)if(isset($a[$c])||isset($b[$c]))$parts[]=$e(SchoolSafeMoneyFormat(($a[$c]??0)-($b[$c]??0),$c));
+                $values[$id][5]=implode('<br>',$parts);
+            }else $values[$id][5]=$e($money($amounts[3]-$amounts[4]));
+        }
     }
     return [$headers,$values];
 }

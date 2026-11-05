@@ -31,6 +31,18 @@ function Currency( $num, $sign = 'before', $red = false )
 		$currency = Config( 'CURRENCY' );
 	}
 
+	// Lot F4c (05/11) : la cantine (Food_Service) tient ses comptes dans sa propre monnaie (FC par défaut).
+	// Le libellé est choisi à chaque appel ; la monnaie de la cantine est gardée en cache par école
+	// dans SchoolSafeMoneyCanteenCurrency(), le symbole de l'école reste en cache ici.
+	$label = $currency;
+
+	if ( strpos( (string) ( $_REQUEST['modname'] ?? '' ), 'Food_Service/' ) === 0 )
+	{
+		require_once __DIR__ . '/../ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+		$label = SchoolSafeMoneyCanteenCurrency();
+	}
+
 	$num = (float) $num;
 
 	$original = $num;
@@ -70,11 +82,11 @@ function Currency( $num, $sign = 'before', $red = false )
 	{
 		// @since 10.0 Place currency symbol after amount for some locales
 		// @link https://fastspring.com/blog/how-to-format-30-currencies-from-countries-all-over-the-world/
-		$num .= '&nbsp;' . $currency;
+		$num .= '&nbsp;' . $label;
 	}
 	else
 	{
-		$num = $currency . $num;
+		$num = $label . ( $label !== $currency ? '&nbsp;' : '' ) . $num;
 	}
 
 	// Add minus if negative.

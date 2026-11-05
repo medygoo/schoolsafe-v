@@ -18,6 +18,8 @@ $ssDirectorTitle = DBEscapeString(json_decode('"Directeur p\u00e9dagogique"'));
 $ssDirector = $ssManage && (!empty($GLOBALS['RosarioModules']['SchoolSafe'])
     || (bool) DBGet("SELECT id FROM user_profiles WHERE id=" . (int) User('PROFILE_ID') . " AND title='" . $ssDirectorTitle . "'"));
 $ssEscape = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+// Lot F4c (05/11) : montant avec la monnaie du dossier (USD si la colonne n'existe pas encore).
+$ssMoney = static function ($amount, $case) { return SchoolSafeMoneyFormat($amount, $case['CURRENCY'] ?? 'USD'); };
 $ssScope = 'r.school_id=' . $ssSchool . ' AND r.syear=' . $ssYear;
 if (User('PROFILE') === 'teacher') {
     // Enseignant de la matiere, ou enseignant a qui la direction a confie une seance (04/11).
@@ -38,6 +40,8 @@ $ssMessage = '';
 require_once __DIR__ . '/../ProgramFunctions/SchoolSafeRemediationSettings.fnc.php';
 $ssRule = SchoolSafeRemediationSettings($ssSchool, function ($sql) { return DBGet($sql); });
 require_once __DIR__ . '/../ProgramFunctions/SchoolSafeRemediationSessions.fnc.php';
+// Lot F4c (05/11) : monnaie du rattrapage (USD ou FC, choisie pour chaque dossier).
+require_once __DIR__ . '/../ProgramFunctions/SchoolSafeMoney.fnc.php';
 $ssJaspeDraft = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf']) || !is_string($_POST['csrf']) || !hash_equals($ssToken, $_POST['csrf'])) {
@@ -157,6 +161,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'billing' && $ssDirector) {
         $caseId = (int) ($_POST['case_id'] ?? 0);
         $mode = (string) ($_POST['mode'] ?? '');
+        // Lot F4c (05/11) : monnaie choisie pour ce dossier (liste fermee USD / FC, USD par defaut).
+        $currency = SchoolSafeMoneyCurrency((string) ($_POST['currency'] ?? 'USD'));
         // Tarif juste (04/11) : reduction motivee possible ; l'accompagnement ne depend jamais du paiement.
         try {
             $price = SchoolSafeRemediationTariff($mode, (string) ($_POST['tariff'] ?? '0'), (string) ($_POST['reduction'] ?? '0'), (string) ($_POST['reduction_reason'] ?? ''));
@@ -167,10 +173,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($locked) {
             $feeId = 'NULL';
             if ($mode === 'paid') {
-                $fee = DBGet(DBQuery("INSERT INTO billing_fees(student_id,school_id,syear,title,amount,assigned_date,created_by) VALUES(" . (int) $locked[1]['STUDENT_ID'] . ',' . $ssSchool . ',' . $ssYear . ",'Rattrapage - dossier " . $caseId . "'," . $price['tariff'] . ",CURRENT_DATE,'" . DBEscapeString(User('NAME')) . "') RETURNING id"));
+                $fee = DBGet(DBQuery("INSERT INTO billing_fees(student_id,school_id,syear,title,amount,assigned_date,created_by" . (SchoolSafeMoneyRemediationReady() ? ',currency' : '') . ") VALUES(" . (int) $locked[1]['STUDENT_ID'] . ',' . $ssSchool . ',' . $ssYear . ",'Rattrapage - dossier " . $caseId . "'," . $price['tariff'] . ",CURRENT_DATE,'" . DBEscapeString(User('NAME')) . "'" . (SchoolSafeMoneyRemediationReady() ? ",'" . $currency . "'" : '') . ") RETURNING id")); // Lot F4c (05/11) : frais dans la monnaie du dossier.
                 $feeId = (int) $fee[1]['ID'];
             }
-            DBQuery("UPDATE schoolsafe_remediation_cases SET billing_mode='" . $mode . "',tariff=" . $price['tariff'] . ',base_tariff=' . ($price['base'] ?? 'NULL') . ',reduction_percent=' . ($price['reduction'] ?? 'NULL') . ',reduction_reason=' . ($price['reason'] === null ? 'NULL' : "'" . DBEscapeString($price['reason']) . "'") . ',fee_id=' . $feeId . ' WHERE id=' . $caseId);
+            DBQuery("UPDATE schoolsafe_remediation_cases SET billing_mode='" . $mode . "',tariff=" . $price['tariff'] . ',base_tariff=' . ($price['base'] ?? 'NULL') . ',reduction_percent=' . ($price['reduction'] ?? 'NULL') . ',reduction_reason=' . ($price['reason'] === null ? 'NULL' : "'" . DBEscapeString($price['reason']) . "'") . ',fee_id=' . $feeId . (SchoolSafeMoneyRemediationReady() ? ",currency='" . $currency . "'" : '') . ' WHERE id=' . $caseId); // Lot F4c (05/11) : monnaie du dossier.
             DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(" . $caseId . ",'billing_configured'," . $ssUser . ')');
         }
         DBQuery('COMMIT');
@@ -262,7 +268,7 @@ $ssWatch = in_array(User('PROFILE'), ['admin', 'teacher'], true) ? DBGet('SELECT
 <div class="remediation-plan"><h4>Plan d’accompagnement</h4><ul>
 <li>Séances : <?= (int) $ssPlan[1]['HELD'] ?> tenue(s) sur <?= (int) $ssPlan[1]['TOTAL'] ?> programmée(s) · présent à <?= (int) $ssPlan[1]['PRESENT'] ?></li>
 <li>Prochaine séance : <?= $ssPlan[1]['NEXT'] ? $ssEscape(substr((string) $ssPlan[1]['NEXT'], 0, 16)) : 'à programmer par l’école' ?></li>
-<li>Participation : <?php if (!$case['BILLING_MODE']): ?>à définir par l’école<?php elseif ($case['BILLING_MODE'] === 'free'): ?>gratuite<?php else: ?><?= $ssEscape($case['TARIFF']) ?> · déjà payé <?= $ssEscape(number_format($ssPaid, 2, '.', '')) ?> · reste <?= $ssEscape(number_format(max(0, (float) $case['TARIFF'] - $ssPaid), 2, '.', '')) ?><?php endif; ?></li>
+<li>Participation : <?php if (!$case['BILLING_MODE']): ?>à définir par l’école<?php elseif ($case['BILLING_MODE'] === 'free'): ?>gratuite<?php else: ?><?= $ssEscape($ssMoney($case['TARIFF'], $case)) ?> · déjà payé <?= $ssEscape($ssMoney($ssPaid, $case)) ?> · reste <?= $ssEscape($ssMoney(max(0, (float) $case['TARIFF'] - $ssPaid), $case)) ?><?php endif; ?></li>
 <li>L’accompagnement de votre enfant ne dépend jamais du paiement.</li></ul>
 <?php if ($case['PARENT_RESPONSE']): ?><p>Votre réponse : <?= $ssEscape($ssResponses[$case['PARENT_RESPONSE']] ?? '') ?> (<?= $ssEscape(substr((string) $case['PARENT_RESPONSE_AT'], 0, 10)) ?>)</p>
 <?php elseif ($ssActions['parent_response'] && in_array($case['STATUS'], ['approved','repeat'], true)): ?>
@@ -278,11 +284,11 @@ $ssWatch = in_array(User('PROFILE'), ['admin', 'teacher'], true) ? DBGet('SELECT
 <?php foreach ($evidenceGrades as $evidence): ?><li><?= $ssEscape($evidence['TITLE']) ?> · <?= $ssEscape(['homework'=>'Devoir','quiz'=>'Interrogation','exam'=>'Examen'][$evidence['KIND']] ?? 'Type a reverifier') ?> · <?= $ssEscape($evidence['POINTS']) ?> / <?= $ssEscape($evidence['MAXIMUM']) ?> · P&eacute;riode <?= $ssEscape($evidence['MARKING_PERIOD_ID']) ?></li><?php endforeach; ?>
 </ul><?php endif; ?>
 <?php if ($case['BILLING_MODE'] === 'paid' && User('PROFILE') === 'admin' && AllowEdit('Student_Billing/StudentPayments.php') && SchoolSafeEndpointGateway('remediation-payments.php','GET') !== 'deny'): ?><p><a href="remediation-payments.php#remediation-case-<?= (int) $case['ID'] ?>">Paiements de ce rattrapage</a></p><?php endif; ?>
-<?php if ($case['BILLING_MODE']): ?><p>Rattrapage <?= $case['BILLING_MODE'] === 'free' ? 'gratuit' : 'payant' ?><?php if ($case['BILLING_MODE'] === 'paid'): ?> · Tarif <?= $ssEscape($case['TARIFF']) ?><?php if (($case['REDUCTION_PERCENT'] ?? '') !== '' && $case['REDUCTION_PERCENT'] !== null): ?> · <?= User('PROFILE') === 'parent' ? 'tarif réduit accordé' : $ssEscape('réduit de ' . (float) $case['REDUCTION_PERCENT'] . ' % (tarif de base ' . $case['BASE_TARIFF'] . ') : ' . $case['REDUCTION_REASON']) ?><?php endif; ?> · L’accompagnement ne dépend pas du paiement<?php endif; ?></p><?php endif; ?>
+<?php if ($case['BILLING_MODE']): ?><p>Rattrapage <?= $case['BILLING_MODE'] === 'free' ? 'gratuit' : 'payant' ?><?php if ($case['BILLING_MODE'] === 'paid'): ?> · Tarif <?= $ssEscape($ssMoney($case['TARIFF'], $case)) ?><?php if (($case['REDUCTION_PERCENT'] ?? '') !== '' && $case['REDUCTION_PERCENT'] !== null): ?> · <?= User('PROFILE') === 'parent' ? 'tarif réduit accordé' : $ssEscape('réduit de ' . (float) $case['REDUCTION_PERCENT'] . ' % (tarif de base ' . $ssMoney($case['BASE_TARIFF'], $case) . ') : ' . $case['REDUCTION_REASON']) ?><?php endif; ?> · L’accompagnement ne dépend pas du paiement<?php endif; ?></p><?php endif; ?>
 <?php if ($ssDirector && $ssActions['billing'] && !$case['BILLING_MODE'] && in_array($case['STATUS'], ['approved','repeat'], true)): ?>
 <form method="post"><input type="hidden" name="csrf" value="<?= $ssEscape($ssToken) ?>"><input type="hidden" name="action" value="billing"><input type="hidden" name="case_id" value="<?= (int) $case['ID'] ?>">
 <label>Accompagnement<select name="mode"><option value="free">Gratuit</option><option value="paid">Payant</option></select></label>
-<label>Tarif dans l'unit&eacute; mon&eacute;taire SchoolSafe<input name="tariff" type="number" min="0" step="0.01" value="0" required></label>
+<?php if (SchoolSafeMoneyRemediationReady()): /* Lot F4c (05/11) : tarif dans la monnaie choisie pour ce dossier. */ ?><label>Tarif<input name="tariff" type="number" min="0" step="0.01" value="0" required></label><?= SchoolSafeMoneyCurrencySelect('currency', 'USD', 'Monnaie du tarif') ?><?php else: ?><label>Tarif dans l'unit&eacute; mon&eacute;taire SchoolSafe<input name="tariff" type="number" min="0" step="0.01" value="0" required></label><?php endif; ?>
 <label>R&eacute;duction en % (facultatif)<input name="reduction" type="number" min="0" max="100" step="0.01" value="0"></label>
 <label>Motif de la r&eacute;duction<input name="reduction_reason" maxlength="500" placeholder="ex. famille en difficult&eacute;, fratrie"></label>
 <p>Le tarif est suivi par l'&eacute;conomat ; l'accompagnement ne d&eacute;pend jamais du paiement et l'entr&eacute;e de l'&eacute;l&egrave;ve n'est pas bloqu&eacute;e.</p><button>Enregistrer la tarification</button></form>

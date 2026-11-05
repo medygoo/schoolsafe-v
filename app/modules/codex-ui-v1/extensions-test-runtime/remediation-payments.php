@@ -23,6 +23,10 @@ $escape=static function($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8
 $message='';
 require_once __DIR__.'/schoolsafe-remediation/PaymentScope.fnc.php';
 require_once __DIR__.'/ProgramFunctions/SchoolSafeRemediationSettings.fnc.php';
+// Lot F4c (05/11) : chaque dossier a sa monnaie (USD ou FC) ; un paiement recu dans l'autre monnaie est converti
+// au taux du jour de la date du paiement, et le montant recu, sa monnaie et le taux restent gardes avec le paiement.
+require_once __DIR__.'/ProgramFunctions/SchoolSafeMoney.fnc.php';
+$money=static function($v,$r){return SchoolSafeMoneyFormat($v,$r['CURRENCY']??'USD');};
 $shareRule=SchoolSafeRemediationSettings($school,function($sql){return DBGet($sql);});
 $sharePct=number_format((float)$shareRule['school_share_percent'],2,'.','');
 $shareText=SchoolSafeRemediationPct((float)$shareRule['school_share_percent']).' / '.SchoolSafeRemediationPct(100-(float)$shareRule['school_share_percent']);
@@ -40,6 +44,18 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   $parsed=DateTimeImmutable::createFromFormat('!Y-m-d',$date);
   if(!preg_match('/^(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,2})?$/D',$amount)||(float)$amount<=0
     ||$reference===''||mb_strlen($reference)>100||!$parsed||$parsed->format('Y-m-d')!==$date){http_response_code(400);exit('Paiement incomplet.');}
+  // Lot F4c (05/11) : montant porte au dossier dans la monnaie du dossier (celle du frais) ; refus clair sans taux du jour.
+  $caseCurrency=SchoolSafeMoneyRemediationReady()?SchoolSafeMoneyCurrency(DBGetOne('SELECT currency FROM schoolsafe_remediation_cases WHERE id='.$case.' AND school_id='.$school.' AND syear='.$year)):'USD';
+  $paidCurrency=SchoolSafeMoneyRemediationReady()?SchoolSafeMoneyCurrency($_POST['paid_currency']??$caseCurrency):$caseCurrency;
+  $paidAmount=$amount;$rate=$paidCurrency===$caseCurrency?0:SchoolSafeMoneyRate($date);
+  $converted=SchoolSafeMoneyConvert($paidAmount,$paidCurrency,$caseCurrency,$rate);
+  $refusal='';
+  if($converted===false)$refusal='Paiement refusé : aucun taux du jour pour le '.$date.'. Saisissez le taux (Finance, Réglages, « Taux du jour ») ou encaissez en '.$caseCurrency.', la monnaie du dossier.';
+  elseif($converted<=0)$refusal='Paiement refusé : le montant converti est nul.';
+  else $amount=number_format($converted,2,'.','');
+  $payCols=SchoolSafeMoneyCurrencyReady()?',currency,paid_currency,paid_amount,rate':'';
+  $payVals=SchoolSafeMoneyCurrencyReady()?",'".$caseCurrency."','".$paidCurrency."',".$paidAmount.','.($rate>0?number_format((float)$rate,4,'.',''):'NULL'):'';
+  if($refusal===''){
   DBQuery('BEGIN ISOLATION LEVEL READ COMMITTED');
   DBQuery("SET LOCAL lock_timeout='5s'");DBQuery("SET LOCAL statement_timeout='30s'");
   $feeLocked=DBGet(SchoolSafeRemediationLockFeeSql($case,$school,$year));
@@ -47,14 +63,15 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
    ." AND r.billing_mode='paid' AND ".SchoolSafeRemediationFeeScopeSql()." AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_payment_purpose purpose WHERE purpose.fee_id=r.fee_id AND purpose.receipt_reference='".DBEscapeString($reference)."') AND ".$amount.'<=r.tariff-COALESCE((SELECT sum(p.amount) FROM schoolsafe_remediation_payment_purpose purpose JOIN billing_payments p ON p.id=purpose.payment_id WHERE purpose.fee_id=r.fee_id AND p.refunded_payment_id IS NULL AND NOT EXISTS(SELECT 1 FROM billing_payments ref WHERE ref.refunded_payment_id=p.id)),0) FOR UPDATE'):[];
   if($dossier){
    $r=$dossier[1];
-   $saved=DBGet(DBQuery('INSERT INTO billing_payments(student_id,school_id,syear,amount,payment_date,comments,created_by) VALUES('
-    .(int)$r['STUDENT_ID'].','.$school.','.$year.','.$amount.",'".DBEscapeString($date)."','Rattrapage - dossier ".$case."','".DBEscapeString(User('NAME'))."') RETURNING id"));
+   $saved=DBGet(DBQuery('INSERT INTO billing_payments(student_id,school_id,syear,amount,payment_date,comments,created_by'.$payCols.') VALUES('
+    .(int)$r['STUDENT_ID'].','.$school.','.$year.','.$amount.",'".DBEscapeString($date)."','Rattrapage - dossier ".$case."','".DBEscapeString(User('NAME'))."'".$payVals.') RETURNING id'));
    DBQuery('INSERT INTO schoolsafe_remediation_payment_purpose(payment_id,fee_id,recorded_by,receipt_reference) VALUES('
     .(int)$saved[1]['ID'].','.(int)$r['FEE_ID'].','.$user.",'".DBEscapeString($reference)."')");
    DBQuery("INSERT INTO schoolsafe_remediation_events(case_id,kind,actor_id) VALUES(".$case.",'payment_recorded',".$user.')');
   }
   DBQuery('COMMIT');
   $message=$dossier?'Paiement de rattrapage enregistré dans SchoolSafe. Confirmation et répartition restent à effectuer.':'Dossier indisponible ou montant supérieur au solde.';
+  }else $message=$refusal;
  }else{
  DBQuery('BEGIN ISOLATION LEVEL READ COMMITTED');
  DBQuery("SET LOCAL lock_timeout='5s'");DBQuery("SET LOCAL statement_timeout='30s'");
@@ -73,17 +90,17 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
  }
  $_SESSION['ss_remediation_finance_csrf']=bin2hex(random_bytes(32));$token=$_SESSION['ss_remediation_finance_csrf'];
 }
-$rows=DBGet('SELECT r.id,r.student_id,r.fee_id,r.tariff,s.first_name,s.last_name,c.title AS course_title FROM schoolsafe_remediation_cases r JOIN students s ON s.student_id=r.student_id JOIN courses c ON c.course_id=r.course_id WHERE r.school_id='.$school.' AND r.syear='.$year." AND r.billing_mode='paid' ORDER BY r.id DESC LIMIT 200");
+$rows=DBGet('SELECT r.id,r.student_id,r.fee_id,r.tariff'.(SchoolSafeMoneyRemediationReady()?',r.currency':'').',s.first_name,s.last_name,c.title AS course_title FROM schoolsafe_remediation_cases r JOIN students s ON s.student_id=r.student_id JOIN courses c ON c.course_id=r.course_id WHERE r.school_id='.$school.' AND r.syear='.$year." AND r.billing_mode='paid' ORDER BY r.id DESC LIMIT 200");
 ?>
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paiements de rattrapage | SchoolSafe</title><link rel="stylesheet" href="schoolsafe-remediation/remediation.css"></head>
 <body><header><strong>School<span>Safe</span></strong><a href="Modules.php?modname=misc/Portal.php">Tableau de bord</a></header><main><nav>Finance / Paiements de rattrapage</nav><h1>Paiements de rattrapage</h1>
 <p>Associer uniquement un paiement SchoolSafe effectivement confirm&eacute; pour ce rattrapage. La r&eacute;partition est comptable ; aucun transfert bancaire n'est effectu&eacute;.</p>
 <?php if($message):?><p role="status"><?= $escape($message) ?></p><?php endif;?>
 <?php if(!$rows):?><p>Aucun dossier de rattrapage payant dans cette &eacute;cole.</p><?php endif;?>
-<?php foreach($rows as $r):?><section id="remediation-case-<?= (int)$r['ID'] ?>"><h2><?= $escape($r['FIRST_NAME'].' '.$r['LAST_NAME'].' / '.ParseMLField($r['COURSE_TITLE'])) ?></h2><p>Dossier <?= (int)$r['ID'] ?> · Tarif <?= $escape($r['TARIFF']) ?></p>
+<?php foreach($rows as $r):?><section id="remediation-case-<?= (int)$r['ID'] ?>"><h2><?= $escape($r['FIRST_NAME'].' '.$r['LAST_NAME'].' / '.ParseMLField($r['COURSE_TITLE'])) ?></h2><p>Dossier <?= (int)$r['ID'] ?> · Tarif <?= $escape($money($r['TARIFF'],$r)) ?></p>
 <?php if(SchoolSafeEndpointGateway('rattrapage.php','GET')!=='deny' && AllowUse('Grades/StudentGrades.php')):?><p><a href="rattrapage.php#remediation-case-<?= (int)$r['ID'] ?>">Dossier pedagogique</a></p><?php endif;?>
-<?php if($canRecord && $r['FEE_ID']):?><form method="post"><input type="hidden" name="csrf" value="<?= $escape($token) ?>"><input type="hidden" name="case_id" value="<?= (int)$r['ID'] ?>"><input type="hidden" name="action" value="record"><label>Montant re&ccedil;u<input name="amount" type="number" min="0.01" step="0.01" required></label><label>Date du paiement<input name="payment_date" type="date" required></label><label>R&eacute;f&eacute;rence du re&ccedil;u<input name="receipt_reference" maxlength="100" required></label><button>Enregistrer le paiement de rattrapage</button></form><?php endif;?>
+<?php if($canRecord && $r['FEE_ID']):?><form method="post"><input type="hidden" name="csrf" value="<?= $escape($token) ?>"><input type="hidden" name="case_id" value="<?= (int)$r['ID'] ?>"><input type="hidden" name="action" value="record"><label>Montant re&ccedil;u<input name="amount" type="number" min="0.01" step="0.01" required></label><?php if(SchoolSafeMoneyRemediationReady()): /* Lot F4c (05/11) : monnaie recue, convertie au taux du jour si elle differe. */ ?><?= SchoolSafeMoneyCurrencySelect('paid_currency',$r['CURRENCY']??'USD','Monnaie reçue') ?><small>Porté au dossier en <?= $escape(SchoolSafeMoneyCurrency($r['CURRENCY']??'USD')) ?> ; dans l’autre monnaie, conversion au taux du jour.</small><?php endif;?><label>Date du paiement<input name="payment_date" type="date" required></label><label>R&eacute;f&eacute;rence du re&ccedil;u<input name="receipt_reference" maxlength="100" required></label><button>Enregistrer le paiement de rattrapage</button></form><?php endif;?>
 <?php $payments=$canConfirm?DBGet('SELECT p.id,p.amount,p.payment_date FROM billing_payments p JOIN schoolsafe_remediation_payment_purpose purpose ON purpose.payment_id=p.id WHERE purpose.fee_id='.(int)$r['FEE_ID'].' AND p.student_id='.(int)$r['STUDENT_ID'].' AND p.school_id='.$school.' AND p.syear='.$year.' AND p.amount>0 AND p.payment_date IS NOT NULL AND p.refunded_payment_id IS NULL AND NOT EXISTS(SELECT 1 FROM billing_payments ref WHERE ref.refunded_payment_id=p.id) AND NOT EXISTS(SELECT 1 FROM schoolsafe_remediation_payments used WHERE used.payment_id=p.id'.($canReconfirm?' AND (used.invalidated_at IS NULL OR used.case_id<>'.(int)$r['ID'].')':'').') ORDER BY p.payment_date DESC'):[]; ?>
-<?php if($payments):?><form method="post"><input type="hidden" name="csrf" value="<?= $escape($token) ?>"><input type="hidden" name="action" value="confirm"><input type="hidden" name="case_id" value="<?= (int)$r['ID'] ?>"><label>Paiement natif<select name="payment_id" required><?php foreach($payments as $p):?><option value="<?= (int)$p['ID'] ?>">#<?= (int)$p['ID'] ?> · <?= $escape($p['PAYMENT_DATE']) ?> · <?= $escape($p['AMOUNT']) ?></option><?php endforeach;?></select></label><button>Associer et confirmer le paiement</button></form><?php elseif($canConfirm):?><p>Aucun paiement natif disponible.</p><?php endif;?>
-<?php $allocations=$canRead?DBGet('SELECT a.*,st.first_name AS teacher_first,st.last_name AS teacher_last FROM schoolsafe_remediation_payments a LEFT JOIN staff st ON st.staff_id=a.teacher_id WHERE a.case_id='.(int)$r['ID'].' ORDER BY a.confirmed_at,a.id'):[];foreach($allocations as $a):?><p>Paiement #<?= (int)($a['SOURCE_PAYMENT_ID']??$a['PAYMENT_ID']) ?><?php if(isset($a['CONFIRMATION_VERSION'])):?> · Version <?= (int)$a['CONFIRMATION_VERSION'] ?><?php endif;?> : <?= $escape($a['AMOUNT']) ?> · &Eacute;cole <?= $escape($a['SCHOOL_SHARE']) ?> · Enseignant <?= $escape($a['TEACHER_SHARE']) ?><?php if(!empty($a['TEACHER_FIRST'])||!empty($a['TEACHER_LAST'])):?> (<?= $escape(trim($a['TEACHER_FIRST'].' '.$a['TEACHER_LAST'])) ?>, qui a donné les séances)<?php endif;?><?php if($a['INVALIDATED_AT']):?> · Version invalid&eacute;e<?php else:?> · Confirm&eacute;<?php endif;?></p><?php endforeach;?></section><?php endforeach;?>
+<?php if($payments):?><form method="post"><input type="hidden" name="csrf" value="<?= $escape($token) ?>"><input type="hidden" name="action" value="confirm"><input type="hidden" name="case_id" value="<?= (int)$r['ID'] ?>"><label>Paiement natif<select name="payment_id" required><?php foreach($payments as $p):?><option value="<?= (int)$p['ID'] ?>">#<?= (int)$p['ID'] ?> · <?= $escape($p['PAYMENT_DATE']) ?> · <?= $escape($money($p['AMOUNT'],$r)) ?></option><?php endforeach;?></select></label><button>Associer et confirmer le paiement</button></form><?php elseif($canConfirm):?><p>Aucun paiement natif disponible.</p><?php endif;?>
+<?php $allocations=$canRead?DBGet('SELECT a.*,st.first_name AS teacher_first,st.last_name AS teacher_last FROM schoolsafe_remediation_payments a LEFT JOIN staff st ON st.staff_id=a.teacher_id WHERE a.case_id='.(int)$r['ID'].' ORDER BY a.confirmed_at,a.id'):[];foreach($allocations as $a):?><p>Paiement #<?= (int)($a['SOURCE_PAYMENT_ID']??$a['PAYMENT_ID']) ?><?php if(isset($a['CONFIRMATION_VERSION'])):?> · Version <?= (int)$a['CONFIRMATION_VERSION'] ?><?php endif;?> : <?= $escape($money($a['AMOUNT'],$r)) ?> · &Eacute;cole <?= $escape($money($a['SCHOOL_SHARE'],$r)) ?> · Enseignant <?= $escape($money($a['TEACHER_SHARE'],$r)) ?><?php if(!empty($a['TEACHER_FIRST'])||!empty($a['TEACHER_LAST'])):?> (<?= $escape(trim($a['TEACHER_FIRST'].' '.$a['TEACHER_LAST'])) ?>, qui a donné les séances)<?php endif;?><?php if($a['INVALIDATED_AT']):?> · Version invalid&eacute;e<?php else:?> · Confirm&eacute;<?php endif;?></p><?php endforeach;?></section><?php endforeach;?>
 </main></body></html>

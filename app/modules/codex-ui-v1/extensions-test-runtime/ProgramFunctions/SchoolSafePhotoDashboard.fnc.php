@@ -99,16 +99,19 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     // (revenus de la comptabilité compris, tenus en USD) ; ils sont comptés à part et affichés « … USD et … FC ».
     require_once __DIR__.'/SchoolSafeMoney.fnc.php';
     $multiCurrency=SchoolSafeMoneyCurrencyReady();$fcReceipts=['month'=>0.0,'daily'=>0.0,'annual'=>0.0];
+    // Lot F4c (05/11) : recettes et dépenses de la comptabilité aussi par monnaie (script F4c appliqué).
+    $accountingMulti=SchoolSafeMoneyAccountingReady();$fcExpenses=null;
     foreach([[$billing,'billing_payments','payment_date'],[$accounting,'accounting_incomes','assigned_date']] as [$allowed,$table,$date]){
         if(!$allowed)continue;
-        $usdOnly=$multiCurrency&&$table==='billing_payments'?" AND currency='USD'":'';
+        $usdOnly=$multiCurrency&&($table==='billing_payments'||$accountingMulti)?" AND currency='USD'":'';
         $rows=DBGet("SELECT COALESCE(SUM(amount),0) AS total FROM $table WHERE school_id=$school AND syear=$year AND $date>=date_trunc('month',CURRENT_DATE) AND $date<=CURRENT_DATE$usdOnly");
         $row=reset($rows);$receipts=($receipts??0)+(float)($row['TOTAL']??0);
         $cash=DBGet("SELECT COALESCE(SUM(amount) FILTER(WHERE $date=CURRENT_DATE),0) AS daily,COALESCE(SUM(amount),0) AS annual FROM $table WHERE school_id=$school AND syear=$year AND $date<=CURRENT_DATE$usdOnly");
         $cash=reset($cash);$dailyReceipts=($dailyReceipts??0)+(float)($cash['DAILY']??0);$annualReceipts=($annualReceipts??0)+(float)($cash['ANNUAL']??0);
         if($usdOnly!==''){
             $fc=DBGet("SELECT COALESCE(SUM(amount) FILTER(WHERE $date>=date_trunc('month',CURRENT_DATE)),0) AS month,COALESCE(SUM(amount) FILTER(WHERE $date=CURRENT_DATE),0) AS daily,COALESCE(SUM(amount),0) AS annual FROM $table WHERE school_id=$school AND syear=$year AND $date<=CURRENT_DATE AND currency='FC'");
-            $fc=reset($fc);$fcReceipts=['month'=>(float)($fc['MONTH']??0),'daily'=>(float)($fc['DAILY']??0),'annual'=>(float)($fc['ANNUAL']??0)];
+            // Lot F4c (05/11) : cumul des encaissements en FC des deux sources (élèves, recettes).
+            $fc=reset($fc);foreach(['month','daily','annual'] as $period)$fcReceipts[$period]+=(float)($fc[strtoupper($period)]??0);
         }
     }
     // Lot F4b (05/11) : « 1 250,00 USD et 300 000,00 FC » ; FC omis s'il n'y a aucun encaissement en FC.
@@ -116,7 +119,12 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
         if(!$multiCurrency)return $money($usd);
         return SchoolSafeMoneyBalancesText(['USD'=>$usd]+((float)$fc!=0.0?['FC'=>$fc]:[]));
     };
-    if($accounting){$expense=DBGet("SELECT COALESCE(SUM(amount),0) AS total FROM accounting_payments WHERE school_id=$school AND syear=$year AND payment_date<=CURRENT_DATE");$expense=reset($expense);$annualExpenses=(float)($expense['TOTAL']??0);}
+    if($accounting&&$accountingMulti){
+        // Lot F4c (05/11) : dépenses et paiements du personnel par monnaie, jamais additionnés.
+        $expense=DBGet("SELECT COALESCE(SUM(amount) FILTER(WHERE currency='USD'),0) AS total,COALESCE(SUM(amount) FILTER(WHERE currency='FC'),0) AS fc FROM accounting_payments WHERE school_id=$school AND syear=$year AND payment_date<=CURRENT_DATE");
+        $expense=reset($expense);$annualExpenses=(float)($expense['TOTAL']??0);$fcExpenses=(float)($expense['FC']??0);
+    }
+    elseif($accounting){$expense=DBGet("SELECT COALESCE(SUM(amount),0) AS total FROM accounting_payments WHERE school_id=$school AND syear=$year AND payment_date<=CURRENT_DATE");$expense=reset($expense);$annualExpenses=(float)($expense['TOTAL']??0);}
     $unpaid=null;
     // Lot F4b (05/11) : un dossier est débiteur s'il doit dans au moins une monnaie (USD ou FC).
     if($billing&&AllowUse('Students/Student.php')&&$multiCurrency)$unpaid=$count("SELECT COUNT(DISTINCT student_id) AS total FROM
@@ -197,7 +205,8 @@ function SchoolSafePhotoDashboard(array $data,array $feed,string $tabs): void
     if($birthdays!==''||$topTen!=='')echo '<div class="ss-photo-top-row">'.$birthdays.$topTen.'</div>';
     $financeSummary='<section class="ss-closing-finance" aria-label="Encaissements et dépenses">';
     // Lot F4b (05/11) : encaissements par monnaie ; dépenses (comptabilité) en USD seulement.
-    foreach([['Encaissements du jour',$dailyReceipts,'Aujourd\'hui',$fcReceipts['daily']],['Encaissements du mois',$receipts,'Mois en cours',$fcReceipts['month']],['Depenses',$annualExpenses,'Année scolaire, à ce jour',null],['Recettes',$annualReceipts,'Année scolaire, à ce jour',$fcReceipts['annual']]] as [$label,$amount,$period,$fcAmount])if($amount!==null)$financeSummary.='<article><span>'.$e($label).'</span><strong>'.$e($fcAmount===null?$money($amount):$receiptText($amount,$fcAmount)).'</strong><small>'.$e($period).'</small></article>';
+    // Lot F4c (05/11) : dépenses aussi par monnaie avec le script F4c ($fcExpenses ; null sinon).
+    foreach([['Encaissements du jour',$dailyReceipts,'Aujourd\'hui',$fcReceipts['daily']],['Encaissements du mois',$receipts,'Mois en cours',$fcReceipts['month']],['Depenses',$annualExpenses,'Année scolaire, à ce jour',$fcExpenses],['Recettes',$annualReceipts,'Année scolaire, à ce jour',$fcReceipts['annual']]] as [$label,$amount,$period,$fcAmount])if($amount!==null)$financeSummary.='<article><span>'.$e($label).'</span><strong>'.$e($fcAmount===null?$money($amount):$receiptText($amount,$fcAmount)).'</strong><small>'.$e($period).'</small></article>';
     $financeSummary.='</section>';
     echo '<div class="ss-photo-grid"><div class="ss-photo-core"><section id="ss-photo-rubriques" class="ss-photo-modules"><header><h2><span class="ss-photo-desktop-title">Modules principaux</span><span class="ss-photo-mobile-title">Accès rapides</span></h2><a href="#ss-photo-rubriques">Voir tout</a></header><div class="ss-photo-module-grid">';
     $modules=[['pilotage','Pilotage','LayoutDashboard','#ss-photo-home','Retour à l’accueil de l’école'],['school','École','School','School_Setup/Calendar.php',($data['total']??0).' élèves inscrits'],['people','Personnel','ContactRound','Users/User.php',($staff??0).' membres'],['pedagogy','Pédagogie','BookOpenCheck','Users/TeacherPrograms.php&include=Grades/InputFinalGrades.php',($subjects??0).' matières'],['finance','Finances','WalletCards','Student_Billing/StudentFees.php','Année scolaire '.$year],['accounting','Comptabilité','Landmark','Accounting/DailyTransactions.php','Année scolaire '.$year],['communication','Communication','MessagesSquare','School_Setup/PortalNotes.php',count($feed['activities']).' annonces accessibles'],['reports','Contrôle et rapports','ChartNoAxesCombined','Students/AdvancedReport.php','Période sélectionnée']];

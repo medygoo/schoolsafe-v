@@ -38,7 +38,17 @@ if ( $_REQUEST['modfunc'] === 'save'
 	foreach ( (array) $_REQUEST['values'] as $id => $columns )
 	{
 		// F3 / F4 (lot F1, 05/11) : seules les colonnes du formulaire ; montant strictement positif.
-		$columns = SchoolSafeMoneyColumns( $columns, [ 'TITLE', 'AMOUNT', 'DUE_DATE', 'COMMENTS' ] );
+		$columns = SchoolSafeMoneyColumns( $columns, [ 'TITLE', 'AMOUNT', 'DUE_DATE', 'COMMENTS', 'CURRENCY' ] );
+
+		// Lot F4c (05/11) : monnaie du salaire (USD par défaut) ; elle ne change pas sur un salaire existant.
+		if ( $id !== 'new' || ! SchoolSafeMoneyAccountingReady() )
+		{
+			unset( $columns['CURRENCY'] );
+		}
+		else
+		{
+			$columns['CURRENCY'] = SchoolSafeMoneyCurrency( $columns['CURRENCY'] ?? 'USD' );
+		}
 
 		if ( isset( $columns['AMOUNT'] ) && trim( (string) $columns['AMOUNT'] ) !== '' )
 		{
@@ -88,8 +98,9 @@ if ( $_REQUEST['modfunc'] === 'save'
 				'SYEAR' => (int) UserSyear(),
 				'TITLE' => $columns['TITLE'],
 				'AMOUNT' => $columns['AMOUNT'],
-			] ) )
+			] + ( isset( $columns['CURRENCY'] ) ? [ 'CURRENCY' => $columns['CURRENCY'] ] : [] ) ) )
 			{
+				// Lot F4c (05/11) : même monnaie comprise.
 				$error[] = 'Ce salaire vient déjà d’être enregistré(e). Il/elle n’a pas été ajouté(e) une seconde fois.';
 				continue;
 			}
@@ -148,6 +159,12 @@ if ( $_REQUEST['modfunc'] === 'remove'
 if ( UserStaffID() && ! $_REQUEST['modfunc'] )
 {
 	$salaries_total = 0;
+
+	// Lot F4c (05/11) : monnaie de chaque salaire ; totaux par monnaie ($salaries_totals).
+	$salaries_totals = [];
+
+	$ss_currency_column = SchoolSafeMoneyAccountingReady() ? 'f.CURRENCY,' : '';
+
 	$functions = [
 		'REMOVE' => '_makeSalariesRemove',
 		'ASSIGNED_DATE' => 'ProperDate',
@@ -158,7 +175,7 @@ if ( UserStaffID() && ! $_REQUEST['modfunc'] )
 	];
 
 	$salaries_RET = DBGet( "SELECT '' AS REMOVE,f.ID,f.TITLE,f.ASSIGNED_DATE,f.DUE_DATE,f.COMMENTS,
-		f.AMOUNT,f.FILE_ATTACHED
+		f.AMOUNT," . $ss_currency_column . "f.FILE_ATTACHED
 		FROM accounting_salaries f
 		WHERE f.STAFF_ID='" . UserStaffID() . "'
 		AND f.SYEAR='" . UserSyear() . "'
@@ -189,6 +206,7 @@ if ( UserStaffID() && ! $_REQUEST['modfunc'] )
 	$columns += [
 		'TITLE' => _( 'Salary' ),
 		'AMOUNT' => _( 'Amount' ),
+	] + ( SchoolSafeMoneyAccountingReady() ? [ 'CURRENCY' => 'Monnaie' ] : [] ) + [
 		'ASSIGNED_DATE' => _( 'Assigned' ),
 		'DUE_DATE' => _( 'Due' ),
 		'COMMENTS' => _( 'Comment' ),
@@ -208,6 +226,8 @@ if ( UserStaffID() && ! $_REQUEST['modfunc'] )
 			'REMOVE' => button( 'add' ),
 			'TITLE' => _makeSalariesTextInput( '', 'TITLE' ),
 			'AMOUNT' => _makeSalariesTextInput( '', 'AMOUNT' ),
+			// Lot F4c (05/11) : monnaie du salaire dans sa propre colonne (USD par défaut).
+			'CURRENCY' => SchoolSafeMoneyAccountingReady() ? SchoolSafeMoneyCurrencySelect( 'values[new][CURRENCY]', 'USD' ) : '',
 			'ASSIGNED_DATE' => ProperDate( DBDate() ),
 			'DUE_DATE' => _makeSalariesDateInput( '', 'DUE_DATE' ),
 			'COMMENTS' => _makeSalariesTextInput( '', 'COMMENTS' ),
@@ -238,7 +258,15 @@ if ( UserStaffID() && ! $_REQUEST['modfunc'] )
 
 	echo '<br />';
 
-	if ( empty( $_REQUEST['print_statements'] ) )
+	if ( empty( $_REQUEST['print_statements'] )
+		&& SchoolSafeMoneyAccountingReady() )
+	{
+		// Lot F4c (05/11) : salaires, paiements et reste dû par monnaie, jamais additionnés.
+		DrawHeader( SchoolSafeMoneyStaffTotalsTable( UserStaffID() ) );
+
+		echo '</form>';
+	}
+	elseif ( empty( $_REQUEST['print_statements'] ) )
 	{
 		$payments_total = DBGetOne( "SELECT SUM(p.AMOUNT) AS TOTAL
 			FROM accounting_payments p

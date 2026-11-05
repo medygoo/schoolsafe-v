@@ -64,6 +64,14 @@ $totals = [
 	'CREDIT' => 0,
 ];
 
+require_once 'ProgramFunctions/SchoolSafeMoney.fnc.php';
+
+// Lot F4c (05/11) : chaque ligne est affichée dans sa monnaie (colonne SS_CURRENCY) et les totaux sont tenus
+// par monnaie ($totals_by_currency, voir _makeCurrency()), jamais additionnés entre USD et FC.
+$ss_f4c = SchoolSafeMoneyAccountingReady();
+
+$totals_by_currency = [];
+
 
 $extra['functions'] = [ 'DEBIT' => '_makeCurrency', 'CREDIT' => '_makeCurrency', 'DATE' => 'ProperDate' ];
 
@@ -101,14 +109,16 @@ if ( ! isset( $_REQUEST['accounting'] )
 			AND TYPE='" . $_REQUEST['category'] . "')";
 	}
 
-	$RET = DBGet( "SELECT " . $name_col_sql . "f.AMOUNT AS CREDIT,'' AS DEBIT,CONCAT(f.TITLE,' ',COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID
+	$RET = DBGet( "SELECT " . $name_col_sql . "f.AMOUNT AS CREDIT,'' AS DEBIT,CONCAT(f.TITLE,' ',COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID" .
+		( $ss_f4c ? ",f.CURRENCY AS SS_CURRENCY" : '' ) . "
 	FROM accounting_incomes f
 	WHERE f.SYEAR='" . UserSyear() . "'
 	AND f.SCHOOL_ID='" . UserSchool() . "'
 	AND f.ASSIGNED_DATE BETWEEN '" . $start_date . "'
 	AND '" . $end_date . "'" . $where_category_sql, $extra['functions'] );
 
-	$payments_SQL = "SELECT " . $name_col_sql . "'' AS CREDIT,p.AMOUNT AS DEBIT,CONCAT(p.TITLE,' ',COALESCE(p.COMMENTS,'')) AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID
+	$payments_SQL = "SELECT " . $name_col_sql . "'' AS CREDIT,p.AMOUNT AS DEBIT,CONCAT(p.TITLE,' ',COALESCE(p.COMMENTS,'')) AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID" .
+		( $ss_f4c ? ",p.CURRENCY AS SS_CURRENCY" : '' ) . "
 	FROM accounting_payments p
 	WHERE p.SYEAR='" . UserSyear() . "'
 	AND p.SCHOOL_ID='" . UserSchool() . "'
@@ -147,7 +157,9 @@ if ( ! empty( $_REQUEST['staff_payroll'] ) )
 	$salaries_extra['FROM'] = issetVal( $salaries_extra['FROM'], '' );
 	$salaries_extra['WHERE'] = issetVal( $salaries_extra['WHERE'], '' );
 
-	$salaries_extra['SELECT'] .= $name_col_sql . ",'' AS DEBIT,f.AMOUNT AS CREDIT,CONCAT(f.TITLE,' ',COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID";
+	$salaries_extra['SELECT'] .= $name_col_sql . ",'' AS DEBIT,f.AMOUNT AS CREDIT,CONCAT(f.TITLE,' ',COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID" .
+		// Lot F4c (05/11) : monnaie du salaire.
+		( $ss_f4c ? ",f.CURRENCY AS SS_CURRENCY" : '' );
 
 	$salaries_extra['FROM'] .= ',accounting_salaries f';
 
@@ -173,7 +185,9 @@ if ( ! empty( $_REQUEST['staff_payroll'] ) )
 	$staff_payments_extra['FROM'] = issetVal( $staff_payments_extra['FROM'], '' );
 	$staff_payments_extra['WHERE'] = issetVal( $staff_payments_extra['WHERE'], '' );
 
-	$staff_payments_extra['SELECT'] .= ",'' AS CREDIT,p.AMOUNT AS DEBIT,COALESCE(p.COMMENTS,' ') AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID";
+	$staff_payments_extra['SELECT'] .= ",'' AS CREDIT,p.AMOUNT AS DEBIT,COALESCE(p.COMMENTS,' ') AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID" .
+		// Lot F4c (05/11) : monnaie du paiement du personnel.
+		( $ss_f4c ? ",p.CURRENCY AS SS_CURRENCY" : '' );
 
 	$staff_payments_extra['FROM'] .= ',accounting_payments p';
 
@@ -207,7 +221,8 @@ if ( ! empty( $_REQUEST['student_billing'] )
 
 	// Lot F4b (05/11) : le total général est en USD. Les frais et paiements des élèves en FC sont affichés
 	// dans leur monnaie, comptés à part ($billing_fc_totals) et jamais ajoutés aux totaux USD.
-	$billing_multi_currency = SchoolSafeMoneyCurrencyReady();
+	// Lot F4c (05/11) : avec le script F4c, tout est par monnaie (_makeCurrency()) ; ce mécanisme F4b ne sert plus.
+	$billing_multi_currency = SchoolSafeMoneyCurrencyReady() && ! $ss_f4c;
 
 	$billing_fc_totals = [ 'DEBIT' => 0, 'CREDIT' => 0 ];
 
@@ -270,7 +285,7 @@ if ( ! empty( $_REQUEST['student_billing'] )
 	$fees_extra['WHERE'] = issetVal( $fees_extra['WHERE'], '' );
 
 	$fees_extra['SELECT_ONLY'] .= $name_col_sql . "f.AMOUNT AS DEBIT,'' AS CREDIT,CONCAT(f.TITLE,' ',COALESCE(f.COMMENTS,'')) AS EXPLANATION,f.ASSIGNED_DATE AS DATE,f.ID AS ID" .
-		( $billing_multi_currency ? ",f.CURRENCY AS SS_CURRENCY" : '' );
+		( $billing_multi_currency || $ss_f4c ? ",f.CURRENCY AS SS_CURRENCY" : '' );
 
 	$fees_extra['FROM'] .= ',billing_fees f';
 
@@ -299,7 +314,7 @@ if ( ! empty( $_REQUEST['student_billing'] )
 	$student_payments_extra['WHERE'] = issetVal( $student_payments_extra['WHERE'], '' );
 
 	$student_payments_extra['SELECT_ONLY'] .= $name_col_sql . "'' AS DEBIT,p.AMOUNT AS CREDIT,COALESCE(p.COMMENTS,' ') AS EXPLANATION,p.PAYMENT_DATE AS DATE,p.ID AS ID" .
-		( $billing_multi_currency ? ",p.CURRENCY AS SS_CURRENCY" : '' );
+		( $billing_multi_currency || $ss_f4c ? ",p.CURRENCY AS SS_CURRENCY" : '' );
 
 	$student_payments_extra['FROM'] .= ',billing_payments p';
 
@@ -388,6 +403,33 @@ $link['add']['html'] += [
 	'CREDIT' => '<b>' . Currency( $totals['CREDIT'] ) . '</b>',
 ];
 
+if ( $ss_f4c )
+{
+	// Lot F4c (05/11) : totaux et solde par monnaie (USD d'abord ; USD seul s'il n'y a aucune ligne).
+	$ss_lines = [ 'FULL_NAME' => [], 'DEBIT' => [], 'CREDIT' => [] ];
+
+	foreach ( array_keys( SchoolSafeMoneyCurrencies() ) as $ss_currency )
+	{
+		if ( ! isset( $totals_by_currency[ $ss_currency ] )
+			&& ( $ss_currency !== 'USD' || $totals_by_currency ) )
+		{
+			continue;
+		}
+
+		$ss_debit = (float) ( $totals_by_currency[ $ss_currency ]['DEBIT'] ?? 0 );
+		$ss_credit = (float) ( $totals_by_currency[ $ss_currency ]['CREDIT'] ?? 0 );
+
+		$ss_lines['FULL_NAME'][] = SchoolSafeMoneyFormat( $ss_credit - $ss_debit, $ss_currency );
+		$ss_lines['DEBIT'][] = SchoolSafeMoneyFormat( $ss_debit, $ss_currency );
+		$ss_lines['CREDIT'][] = SchoolSafeMoneyFormat( $ss_credit, $ss_currency );
+	}
+
+	$link['add']['html']['FULL_NAME'] = ( empty( $name_col ) ? '' : _( 'Total' ) . ': ' ) .
+		'<b>' . implode( '<br>', $ss_lines['FULL_NAME'] ) . '</b>';
+	$link['add']['html']['DEBIT'] = '<b>' . implode( '<br>', $ss_lines['DEBIT'] ) . '</b>';
+	$link['add']['html']['CREDIT'] = '<b>' . implode( '<br>', $ss_lines['CREDIT'] ) . '</b>';
+}
+
 // Force display of $link['add'] on PDF, Export or if not allowed to edit
 $options['add'] = true;
 
@@ -402,7 +444,26 @@ ListOutput( $RET, $columns, 'Transaction', 'Transactions', $link, [], $options )
  */
 function _makeCurrency( $value, $column )
 {
-	global $totals;
+	global $totals,
+		$totals_by_currency,
+		$THIS_RET;
+
+	if ( isset( $THIS_RET['SS_CURRENCY'] )
+		&& SchoolSafeMoneyAccountingReady() )
+	{
+		// Lot F4c (05/11) : montant dans la monnaie de sa ligne ; total tenu par monnaie.
+		$currency = SchoolSafeMoneyCurrency( $THIS_RET['SS_CURRENCY'] );
+
+		if ( $value === '' || $value === null )
+		{
+			return '';
+		}
+
+		$totals_by_currency[ $currency ][ $column ] = ( $totals_by_currency[ $currency ][ $column ] ?? 0 ) + (float) $value;
+
+		// Commentaire HTML : même tri numérique de la liste que Currency().
+		return '<!-- ' . (float) $value . ' -->' . SchoolSafeMoneyFormat( $value, $currency );
+	}
 
 	$totals[$column] += (float) $value;
 

@@ -1,4 +1,6 @@
 <?php
+// Lot F4c (05/11) : montants de paie et de trésorerie par monnaie.
+require_once __DIR__ . '/SchoolSafeMoney.fnc.php';
 function SchoolSafeBudgetPage(): void
 {
     if(User('PROFILE')!=='admin'||!AllowUse('Accounting/Categories.php')){
@@ -49,9 +51,9 @@ function SchoolSafeBudgetPayrollSummary(string $start='',string $end=''): string
     if(AllowUse('Accounting/Categories.php')&&AllowUse('Accounting/DailyTransactions.php')){
         $rows=DBGet("SELECT c.id,c.title,b.amount AS planned,COALESCE(p.spent,0) AS spent FROM accounting_categories c
             LEFT JOIN schoolsafe_accounting_budgets b ON b.category_id=c.id AND b.school_id=$school AND b.syear=$year
-            LEFT JOIN (SELECT category_id,SUM(amount) AS spent FROM accounting_payments WHERE school_id=$school AND syear=$year GROUP BY category_id) p ON p.category_id=c.id
+            LEFT JOIN (SELECT category_id,SUM(amount) AS spent FROM accounting_payments WHERE school_id=$school AND syear=$year".(function_exists('SchoolSafeMoneyAccountingReady')&&SchoolSafeMoneyAccountingReady()?" AND currency='USD'":'')." GROUP BY category_id) p ON p.category_id=c.id
             WHERE c.school_id=$school AND c.type IN ('expenses','common') ORDER BY c.sort_order NULLS LAST,c.title");
-        $html.='<section class="ss-budget-summary"><header class="ss-chart-heading"><h3>Budget annuel</h3><a href="Modules.php?modname=Accounting/Categories.php&amp;tab=budget">Configurer</a></header><p>Budget et depenses cumules de l\'annee scolaire selectionnee.</p><div class="ss-directory-scroll"><table><thead><tr><th>Categorie</th><th>Prevu</th><th>Depense</th><th>Disponible</th><th>Consommation</th></tr></thead><tbody>';
+        $html.='<section class="ss-budget-summary"><header class="ss-chart-heading"><h3>Budget annuel</h3><a href="Modules.php?modname=Accounting/Categories.php&amp;tab=budget">Configurer</a></header><p>Budget et dépenses cumulés de l\'année scolaire sélectionnée'.(function_exists('SchoolSafeMoneyAccountingReady')&&SchoolSafeMoneyAccountingReady()?' (en USD ; les dépenses en FC ne sont pas comptées dans ce budget)':'').'.</p><div class="ss-directory-scroll"><table><thead><tr><th>Categorie</th><th>Prevu</th><th>Depense</th><th>Disponible</th><th>Consommation</th></tr></thead><tbody>';
         foreach($rows as $row){
             $planned=$row['PLANNED'];$spent=(float)$row['SPENT'];
             $html.='<tr><th scope="row">'.$e(ParseMLField($row['TITLE'])).'</th><td>'.($planned===null?'Non defini':$money($planned)).'</td><td>'.$money($spent).'</td><td>'.($planned===null?'Non defini':$money((float)$planned-$spent)).'</td><td>';
@@ -70,6 +72,13 @@ function SchoolSafeBudgetPayrollSummary(string $start='',string $end=''): string
             if(!$source[4])continue;
             $range=$start!==''&&preg_match('/^\d{4}-\d{2}-\d{2}$/D',$start)&&preg_match('/^\d{4}-\d{2}-\d{2}$/D',$end)?" AND ".$source[1].">=DATE '$start' AND ".$source[1]."<DATE '$end'+INTERVAL '1 day'":'';
             $staffFilter=$source[0]==='accounting_payments'?' AND staff_id IS NOT NULL':'';
+            // Lot F4c (05/11) : total par monnaie (USD, FC), jamais additionné.
+            if(function_exists('SchoolSafeMoneyAccountingReady')&&SchoolSafeMoneyAccountingReady()){
+                $parts=[];
+                foreach(DBGet("SELECT currency,COALESCE(SUM(amount),0) AS total FROM ".$source[0]." WHERE school_id=$school AND syear=$year$staffFilter$range GROUP BY currency ORDER BY CASE WHEN currency='USD' THEN 0 ELSE 1 END") as $r)$parts[]=$e(SchoolSafeMoneyFormat($r['TOTAL'],$r['CURRENCY']));
+                $html.='<dt><a href="Modules.php?modname='.$source[3].'">'.$source[2].'</a></dt><dd>'.($parts?implode('<br>',$parts):$e(SchoolSafeMoneyFormat(0,'USD'))).'</dd>';
+                continue;
+            }
             $total=DBGetOne("SELECT COALESCE(SUM(amount),0) FROM ".$source[0]." WHERE school_id=$school AND syear=$year$staffFilter$range");
             $html.='<dt><a href="Modules.php?modname='.$source[3].'">'.$source[2].'</a></dt><dd>'.$money($total).'</dd>';
         }
