@@ -380,3 +380,16 @@ aussi **la disposition du contenu des anciennes pages** (pages d'origine du logi
 **moderne** et cohérente avec les pages SchoolSafe : en-tête clair, blocs en cartes, champs alignés et lisibles,
 boutons visibles, aucun tableau de mise en page tassé, lisible sur téléphone. Cela s'applique **partout**, une
 fonctionnalité à la fois, par la feuille de style et la présentation, sans changer le fonctionnement ni les droits.
+
+## 5 novembre 2026 — Finance : deux monnaies, franc congolais et dollar
+
+Décision du propriétaire (décision C1 de `docs/qualification/ANALYSE_FINANCE_20261105.md`) : SchoolSafe gère
+**le franc congolais (FC) et le dollar (USD) ensemble**, et non une seule monnaie.
+
+- Chaque frais et chaque paiement porte sa monnaie (FC ou USD).
+- **Taux du jour** : un paiement dans l'autre monnaie que le frais est converti au taux du jour, saisi par l'école
+  et enregistré avec le paiement. Le solde reste dans la monnaie du frais. Le reçu indique le montant payé, le taux
+  et l'équivalent.
+- **Monnaie par défaut à la saisie : USD** ; le caissier passe en FC si besoin.
+- Les montants s'affichent au format français (`75 000,00 USD`, `150 000,00 FC`).
+- L'option « une seule monnaie FC » a été écartée le même jour (essayée à blanc seulement, rien appliqué).
