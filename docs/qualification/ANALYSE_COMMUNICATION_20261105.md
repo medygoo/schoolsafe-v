@@ -107,3 +107,20 @@ avec « STOP », textes WhatsApp gardés 90 jours.
    WhatsApp avec message d'essai et accord daté), retrait par « STOP », tableau de suivi de la direction.
 3. **K2c — retours des parents** : page « Signalements des parents » à valider par l'école (B1), accusé de lecture
    des convocations (N1), boîte du parent par pages et filtres complets (N3, B6).
+
+## Réalisation — lot K2a, chaque message dans les deux canaux (6 novembre 2026)
+
+- **En production** (accord du propriétaire) : image `schoolsafe-rosario:communication-k2a-20261105`, commit
+  `e9cf23f` (9 fichiers). Service sain, 0 erreur PHP.
+- Réalisés : B2 (messages de l'école dans « Messages de l'école », filtres en français), B3 (WhatsApp indépendant de
+  l'e-mail, tous les messages aux parents, frais compris, avec accord), N2 (plus d'e-mail sans adresse ; SMS de
+  secours conservé), B4 (annonces : « Prévenir les parents », décochée, avec confirmation ; un envoi par note et par
+  élève), effacement des textes WhatsApp après 90 jours.
+- Vérifié : tests de notification (notify, attendance, cases) identiques avant et après, sur copies d'essai
+  supprimées ensuite ; sur copie, un message parent part dans l'application et sur WhatsApp, sans l'e-mail voué à
+  l'échec ; après la mise en service, le distributeur tourne toutes les 30 secondes sans erreur ; la case
+  « Prévenir les parents » est présente sur la page des annonces.
+- Non rejoué : un vrai envoi (aucun nouvel événement depuis la mise en service ; rien n'est envoyé par l'assistant).
+- Restent hors lot : deux émetteurs créent encore un e-mail sans vérifier l'adresse (devoirs du Studio, reprise
+  `schoolsafe-notify-recover.php`) — sans effet autre qu'un envoi en échec.
+- Suite : lot K2b (activer une famille à l'école, « STOP », tableau de suivi), puis K2c.
