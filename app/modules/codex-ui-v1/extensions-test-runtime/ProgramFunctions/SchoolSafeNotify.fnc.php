@@ -63,8 +63,12 @@ function SchoolSafeNotifyResolveRecipients($eventType, $school, $year, $studentI
         $parent = (int) $row['STAFF_ID'];
         if ($parent < 1) continue;
         $recipients[] = ['audience' => 'parent', 'staff_id' => $parent, 'channel' => 'feed'];
-        $recipients[] = ['audience' => 'parent', 'staff_id' => $parent, 'channel' => 'email'];
+        // Lot K2a (05/11) : e-mail seulement si le parent a une adresse (plus d'envoi voue a l'echec).
+        // Ligne sans colonne EMAIL (ancien lecteur) : comportement precedent conserve.
+        if (!array_key_exists('EMAIL', $row) || trim((string) $row['EMAIL']) !== '')
+            $recipients[] = ['audience' => 'parent', 'staff_id' => $parent, 'channel' => 'email'];
         // WhatsApp direct (03/11) : un parent sans e-mail est prevenu quand meme.
+        // Lot K2a (05/11) : canal independant, cree pour chaque parent sans exiger d'e-mail ni de push.
         if (in_array($eventType, SchoolSafeNotifyWaEventTypes(), true))
             $recipients[] = ['audience' => 'parent', 'staff_id' => $parent, 'channel' => 'whatsapp'];
     }

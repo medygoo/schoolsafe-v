@@ -1,0 +1,131 @@
+<?php
+// Existing native Notify deliveries: durable per-row ownership, no parallel
+// outbox and no lease expiry that could resend an accepted-but-unacknowledged message.
+require_once __DIR__.'/SchoolSafeNotifyRecipient.fnc.php';
+require_once __DIR__.'/SchoolSafeSchoolScope.fnc.php';
+
+function SchoolSafeNotifyDispatchGet($connection,string $sql): array
+{
+    $result=pg_query($connection,$sql);
+    if($result===false)throw new RuntimeException('NOTIFY_DB_UNAVAILABLE');
+    $rows=[];while($row=pg_fetch_assoc($result))$rows[count($rows)+1]=array_change_key_case($row,CASE_UPPER);
+    return $rows;
+}
+
+function SchoolSafeNotifyDispatchClaim($connection,string $channel): ?array
+{
+    if(!in_array($channel,['all','feed','email','push','whatsapp','sms'],true)
+        ||pg_transaction_status($connection)!==PGSQL_TRANSACTION_IDLE)throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
+    $token=bin2hex(random_bytes(16));
+    // One statement, autocommitted BEFORE any network/provider work.
+    $sql="WITH candidate AS (SELECT id FROM schoolsafe_notify_deliveries WHERE status='pending'"
+        ." AND dispatch_claim_token IS NULL AND ($1='all' OR channel=$1)"
+        .' ORDER BY created_at,id FOR UPDATE SKIP LOCKED LIMIT 1), claimed AS ('
+        ."UPDATE schoolsafe_notify_deliveries d SET dispatch_claim_token=$2,dispatch_claimed_at=CURRENT_TIMESTAMP,"
+        ."attempts=attempts+1,updated_at=CURRENT_TIMESTAMP FROM candidate c WHERE d.id=c.id RETURNING d.*)"
+        .' SELECT d.id,d.channel,d.audience,d.recipient_staff_id,d.event_id,d.dispatch_claim_token,'
+        .' d.school_id AS delivery_school,d.syear AS delivery_year,e.school_id,e.syear,e.student_id,'
+        .' e.event_type,e.payload,sch.title AS school_title FROM claimed d'
+        .' JOIN schoolsafe_notify_events e ON e.id=d.event_id'
+        .' LEFT JOIN schools sch ON sch.id=e.school_id AND sch.syear=e.syear';
+    $result=pg_query_params($connection,$sql,[$channel,$token]);
+    if($result===false)throw new RuntimeException('DISPATCH_CLAIM_UNAVAILABLE');
+    if(pg_num_rows($result)>1)throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
+    return pg_fetch_assoc($result)?:null;
+}
+
+// Consume the original delivery, never resolve a new historical recipient.
+// Both the event scope AND live native identity/link/account authority hold.
+function SchoolSafeNotifyDispatchRecipient($connection,array $row): array
+{
+    $school=(int)($row['school_id']??0);$year=(int)($row['syear']??0);$parent=(int)($row['recipient_staff_id']??0);
+    if(($row['school_title']??null)===null||min($school,$year,$parent)<1||$school!==(int)($row['delivery_school']??0)||$year!==(int)($row['delivery_year']??0))throw new RuntimeException('RECIPIENT_FORBIDDEN');
+    $query=static fn($sql)=>SchoolSafeNotifyDispatchGet($connection,$sql);
+    $db=['get'=>$query];$student=$row['student_id']===null?0:(int)$row['student_id'];
+    if($row['student_id']!==null&&$student<1)throw new RuntimeException('RECIPIENT_FORBIDDEN');
+    if(in_array($row['event_type'],['financial.control','payment.receipt'],true)&&(($row['audience']??null)!=='parent'||$student<1))throw new RuntimeException('RECIPIENT_FORBIDDEN');
+    $payload=json_decode((string)($row['payload']??''),true);
+    if(!is_array($payload))throw new RuntimeException('RECIPIENT_UNAVAILABLE');
+    if(($payload['source']??null)==='native_scan'){
+        if(($row['audience']??null)!=='parent'||$student<1||!in_array($row['event_type'],['security.entry','student.pickup','financial.control'],true))throw new RuntimeException('RECIPIENT_FORBIDDEN');
+        if($row['event_type']==='financial.control'&&(($payload['observation']['school']['id']??null)!==$school
+            ||($payload['observation']['syear']??null)!==$year||($payload['observation']['student']['id']??null)!==$student))throw new RuntimeException('RECIPIENT_FORBIDDEN');
+    }
+    if(($row['audience']??null)==='parent'&&!SchoolSafeNotifyParentCurrent($parent,$school,$year,$student,$db))throw new RuntimeException('RECIPIENT_FORBIDDEN');
+    $staff=$query('SELECT STAFF_ID,PROFILE,SCHOOLS,USERNAME,EMAIL,FIRST_NAME,LAST_NAME'.(in_array($row['channel'],['whatsapp','sms'],true)?',CUSTOM_200000001':'').' FROM staff WHERE STAFF_ID='.$parent.' AND SYEAR='.$year);
+    if(count($staff)!==1)throw new RuntimeException('RECIPIENT_FORBIDDEN');
+    $staff=$staff[1];
+    if(($row['audience']??null)==='parent'&&($staff['PROFILE']??null)!=='parent')throw new RuntimeException('RECIPIENT_FORBIDDEN');
+    if(($row['audience']??null)!=='parent'){
+        $allowed=['teacher'=>['teacher'],'direction'=>['admin'],'staff'=>['admin','teacher']];
+        if(!in_array($staff['PROFILE']??null,$allowed[$row['audience']??'']??[],true)
+            ||!SchoolSafeScopeContains(SchoolSafeScopeParse($staff['SCHOOLS']),$school)
+            ||!SchoolSafeNotifyAccountReadable($staff['USERNAME'],$school,$db))throw new RuntimeException('RECIPIENT_FORBIDDEN');
+    }
+    return $staff;
+}
+
+function SchoolSafeNotifyDispatchFinish($connection,array $row,string $status,string $error='',string $provider='',bool $uncertain=false): void
+{
+    if(!in_array($status,['sent','accepted','failed','pending'],true)||($uncertain&&$status!=='pending'))throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
+    $result=pg_query_params($connection,'UPDATE schoolsafe_notify_deliveries SET status=$3,last_error=$4,provider_msg_id=$5,updated_at=CURRENT_TIMESTAMP'
+        .($uncertain?'':',dispatch_claim_token=NULL')
+        ." WHERE id=$1 AND dispatch_claim_token=$2 AND status='pending' RETURNING id",
+        [(int)$row['id'],$row['dispatch_claim_token'],$status,substr($error,0,500),substr($provider,0,128)]);
+    if($result===false||pg_num_rows($result)!==1)throw new RuntimeException('DISPATCH_RESULT_UNAVAILABLE');
+}
+
+// SMS de secours (04/11, decision du proprietaire) : texte court, sans lien (parents sans internet), 2 SMS au plus.
+function SchoolSafeNotifySmsText(array $payload, string $school): string
+{
+    $title = trim((string) ($payload['title'] ?? ''));
+    $message = (string) ($payload['message'] ?? '');
+    // Liens retires avec leur libelle (« Voir : https://… ») ; emojis et selecteurs de variante retires.
+    $message = preg_replace(['#[^\n.:!?]{0,40}:\s*https?://\S+#u', '#https?://\S+#u', '/[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}\x{FE0F}\x{200D}]/u', '/\s+/u'], ['', '', '', ' '], $message);
+    $message = trim(preg_replace('/\s*—\s*[^—]*SchoolSafe[^—]*$/u', '', (string) $message));
+    $text = 'SchoolSafe - ' . ($school !== '' ? $school . ' : ' : '') . ($title !== '' ? $title . '. ' : '') . $message;
+    return mb_substr(trim($text), 0, 300);
+}
+
+// Evenements qui meritent un SMS : absence, alerte de securite, convocation ou conseil de discipline.
+function SchoolSafeNotifySmsMirrorSql(): string
+{
+    return "INSERT INTO schoolsafe_notify_deliveries(event_id,school_id,syear,audience,recipient_staff_id,channel)"
+        . " SELECT DISTINCT d.event_id,d.school_id,d.syear,d.audience,d.recipient_staff_id,'sms'"
+        . " FROM schoolsafe_notify_deliveries d JOIN schoolsafe_notify_events e ON e.id=d.event_id AND e.school_id=d.school_id AND e.syear=d.syear"
+        // Lot K2a (05/11) : plus d'envoi e-mail pour un parent sans adresse ; la source est aussi le fil du parent sans e-mail.
+        . " WHERE d.audience='parent' AND ((d.channel='email' AND d.status='failed' AND d.last_error='PRE_SEND:NO_RECIPIENT_EMAIL')"
+        . "  OR (d.channel='feed' AND EXISTS (SELECT 1 FROM staff st WHERE st.staff_id=d.recipient_staff_id AND st.syear=d.syear AND coalesce(btrim(st.email),'')='')))"
+        . " AND e.created_at>CURRENT_TIMESTAMP-interval '2 hours'"
+        . " AND (e.event_type IN ('absence.detected','security.p1') OR (e.event_type='school.announcement' AND e.payload->>'source'='letter'"
+        . "  AND EXISTS (SELECT 1 FROM schoolsafe_letters l WHERE l.id::text=e.payload->>'letter_id' AND l.kind IN ('convocation','discipline'))))"
+        . " AND NOT EXISTS (SELECT 1 FROM schoolsafe_notify_deliveries w WHERE w.event_id=d.event_id AND w.recipient_staff_id=d.recipient_staff_id"
+        . "  AND w.channel='whatsapp' AND w.status IN ('pending','accepted','sent','delivered','read'))"
+        . " AND (EXISTS (SELECT 1 FROM schoolsafe_sms_lines WHERE status='active') OR EXISTS (SELECT 1 FROM config WHERE school_id=0 AND title='SMS_SIMULATE' AND config_value='Y'))"
+        . " ON CONFLICT(event_id,audience,recipient_staff_id,channel) DO NOTHING";
+}
+
+// Lot K2a (05/11) : libelles francais des evenements (texte WhatsApp de secours, jamais le code brut).
+function SchoolSafeNotifyEventLabelFr(string $eventType): string
+{
+    $labels = ['security.entry' => 'Arrivée à l’école', 'student.pickup' => 'Sortie de l’école',
+        'payment.receipt' => 'Reçu de paiement', 'school.announcement' => 'Message de l’école',
+        'remediation.update' => 'Rattrapage', 'attendance.closure' => 'Présences du jour',
+        'absence.detected' => 'Absence constatée', 'case.updated' => 'Suivi du dossier de l’élève',
+        'security.p1' => 'Alerte de sécurité', 'financial.control' => 'Contrôle des frais',
+        'fee.reminder' => 'Rappel de frais', 'homework.published' => 'Nouveau devoir', 'grade.published' => 'Nouvelle note'];
+    return $labels[$eventType] ?? 'Message de l’école';
+}
+
+// Lot K2a (05/11) : texte WhatsApp = le message complet de l'application (meme texte).
+// Sans « message » : titre + corps s'ils existent, sinon une phrase francaise lisible.
+// Un « message » present mais non textuel est rendu tel quel : l'appelant le refuse (WA_COPY_UNAVAILABLE).
+function SchoolSafeNotifyWaCopy(array $payload, string $eventType, string $school)
+{
+    if (array_key_exists('message', $payload) && $payload['message'] !== null) return $payload['message'];
+    $title = is_string($payload['title'] ?? null) ? trim($payload['title']) : '';
+    $body = is_string($payload['body'] ?? null) ? trim($payload['body']) : '';
+    if ($body !== '') return ($title !== '' ? $title . "\n" : '') . $body;
+    return 'SchoolSafe — ' . ($title !== '' ? $title : SchoolSafeNotifyEventLabelFr($eventType))
+        . ($school !== '' ? ' — ' . $school : '') . '. Les détails sont dans l’application SchoolSafe.';
+}

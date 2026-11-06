@@ -97,6 +97,53 @@ function SchoolSafeNotificationFinancialRows(array $ids,int $user,int $school,in
     }
     return $items;
 }
+// Lot K2a (05/11) : « Messages de l'ecole » — les envois du fil de CE parent (notes, devoirs, absences,
+// annonces, courriers, rappels de frais, alertes) qui etaient marques envoyes sans etre lus par le fil.
+// Seuls les types que les autres sources n'affichent pas deja (pas de doublon) : arrivees/sorties
+// (passages), controle financier, recus et rattrapage ont deja leur source.
+function SchoolSafeNotificationSchoolMessageTypes(): array
+{
+    return ['school.announcement','homework.published','grade.published','absence.detected',
+        'attendance.closure','case.updated','security.p1','fee.reminder'];
+}
+// Lot K2a (05/11) : destinataire d'origine (livraison feed/parent) ET lien parent actuel exiges ;
+// ecole et annee courantes seulement ; enfant inscrit et lie (liste $ids) ou message d'ecole sans enfant.
+function SchoolSafeNotificationSchoolMessageRows(array $ids,int $user,int $school,int $year,callable $query): array
+{
+    require_once __DIR__.'/../schoolsafe-attendance/ArrivalRead.php';
+    require_once __DIR__.'/SchoolSafeNotifyRecipient.fnc.php';
+    SchoolSafeArrivalReadId($user);SchoolSafeArrivalReadId($school);SchoolSafeArrivalReadId($year);
+    $ids=array_map(static fn($id)=>SchoolSafeArrivalReadId($id),$ids);
+    $meta=$query("SELECT to_regclass('public.schoolsafe_notify_events') AS EVENTS_TABLE,to_regclass('public.schoolsafe_notify_deliveries') AS DELIVERIES_TABLE");
+    if(!is_array($meta)||count($meta)!==1||empty($meta[1]['EVENTS_TABLE'])||empty($meta[1]['DELIVERIES_TABLE']))throw new RuntimeException('SCHOOL_MESSAGES_UNAVAILABLE');
+    if(!SchoolSafeNotifyParentCurrent($user,$school,$year,0,['get'=>$query]))return [];
+    $types="'".implode("','",SchoolSafeNotificationSchoolMessageTypes())."'";
+    $rows=$query('SELECT d.ID,e.EVENT_TYPE,e.STUDENT_ID,e.CREATED_AT,e.PAYLOAD,s.FIRST_NAME,s.LAST_NAME'
+        .' FROM schoolsafe_notify_deliveries d'
+        .' JOIN schoolsafe_notify_events e ON e.ID=d.EVENT_ID AND e.SCHOOL_ID=d.SCHOOL_ID AND e.SYEAR=d.SYEAR'
+        .' LEFT JOIN students s ON s.STUDENT_ID=e.STUDENT_ID'
+        ." WHERE d.CHANNEL='feed' AND d.AUDIENCE='parent' AND d.RECIPIENT_STAFF_ID=".$user
+        .' AND d.SCHOOL_ID='.$school.' AND d.SYEAR='.$year.' AND e.EVENT_TYPE IN ('.$types.')'
+        .' AND (e.STUDENT_ID IS NULL'.($ids?' OR e.STUDENT_ID IN ('.implode(',',$ids).')':'').')'
+        ." AND e.CREATED_AT>=CURRENT_TIMESTAMP-INTERVAL '90 days'"
+        .' ORDER BY e.CREATED_AT DESC,d.ID DESC LIMIT 60');
+    if(!is_array($rows))throw new RuntimeException('SCHOOL_MESSAGES_UNAVAILABLE');
+    $items=[];
+    foreach($rows as $row){
+        if(!isset($row['ID'],$row['EVENT_TYPE'],$row['CREATED_AT'])||(int)$row['ID']<1)continue;
+        $payload=is_string($row['PAYLOAD']??null)?json_decode($row['PAYLOAD'],true):($row['PAYLOAD']??null);
+        if(!is_array($payload))$payload=[];
+        $title=is_string($payload['title']??null)?trim($payload['title']):'';
+        $message=is_string($payload['message']??null)?trim($payload['message']):'';
+        if($message===''&&is_string($payload['body']??null))$message=trim($payload['body']);
+        $student=isset($row['STUDENT_ID'])&&$row['STUDENT_ID']!==null&&$row['STUDENT_ID']!==''?(string)(int)$row['STUDENT_ID']:'';
+        $items[]=['id'=>'notify:'.(int)$row['ID'],'student_id'=>$student==='0'?'':$student,
+            'student_name'=>mb_substr(trim(($row['FIRST_NAME']??'').' '.($row['LAST_NAME']??'')),0,250),
+            'event_type'=>(string)$row['EVENT_TYPE'],'created_at'=>(string)$row['CREATED_AT'],
+            'payload'=>['title'=>mb_substr($title,0,300),'message'=>mb_substr($message,0,2500)]];
+    }
+    return $items;
+}
 function SchoolSafeNotificationFeed(array $scans,array $principal,array $ids,int $user,int $school,int $year,array &$degraded): array
 {
     require_once __DIR__.'/../schoolsafe-remediation/ParentInbox.fnc.php';
@@ -134,6 +181,8 @@ function SchoolSafeNotificationFeed(array $scans,array $principal,array $ids,int
             return $items;
         },
         'financial_controls'=>static fn()=>SchoolSafeNotificationFinancialRows($ids,$user,$school,$year,static fn($sql)=>DBGet($sql)),
+        // Lot K2a (05/11) : notes, devoirs, absences, annonces, courriers, frais et alertes du fil du parent.
+        'school_messages'=>static fn()=>SchoolSafeNotificationSchoolMessageRows($ids,$user,$school,$year,static fn($sql)=>DBGet($sql)),
         'remediation'=>static fn()=>SchoolSafeRemediationParentInbox($principal,$ids,$user,$school,$year),
         'birthdays'=>static fn()=>SchoolSafeBirthdayParentInbox($principal,$ids,$school,$year),
         'palmares'=>static fn()=>SchoolSafePalmaresParentInbox(),

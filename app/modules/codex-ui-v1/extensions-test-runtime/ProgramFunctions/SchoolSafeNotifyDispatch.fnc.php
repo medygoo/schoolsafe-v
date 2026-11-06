@@ -93,7 +93,9 @@ function SchoolSafeNotifySmsMirrorSql(): string
     return "INSERT INTO schoolsafe_notify_deliveries(event_id,school_id,syear,audience,recipient_staff_id,channel)"
         . " SELECT DISTINCT d.event_id,d.school_id,d.syear,d.audience,d.recipient_staff_id,'sms'"
         . " FROM schoolsafe_notify_deliveries d JOIN schoolsafe_notify_events e ON e.id=d.event_id AND e.school_id=d.school_id AND e.syear=d.syear"
-        . " WHERE d.audience='parent' AND d.channel='email' AND d.status='failed' AND d.last_error='PRE_SEND:NO_RECIPIENT_EMAIL'"
+        // Lot K2a (05/11) : plus d'envoi e-mail pour un parent sans adresse ; la source est aussi le fil du parent sans e-mail.
+        . " WHERE d.audience='parent' AND ((d.channel='email' AND d.status='failed' AND d.last_error='PRE_SEND:NO_RECIPIENT_EMAIL')"
+        . "  OR (d.channel='feed' AND EXISTS (SELECT 1 FROM staff st WHERE st.staff_id=d.recipient_staff_id AND st.syear=d.syear AND coalesce(btrim(st.email),'')='')))"
         . " AND e.created_at>CURRENT_TIMESTAMP-interval '2 hours'"
         . " AND (e.event_type IN ('absence.detected','security.p1') OR (e.event_type='school.announcement' AND e.payload->>'source'='letter'"
         . "  AND EXISTS (SELECT 1 FROM schoolsafe_letters l WHERE l.id::text=e.payload->>'letter_id' AND l.kind IN ('convocation','discipline'))))"
@@ -101,4 +103,29 @@ function SchoolSafeNotifySmsMirrorSql(): string
         . "  AND w.channel='whatsapp' AND w.status IN ('pending','accepted','sent','delivered','read'))"
         . " AND (EXISTS (SELECT 1 FROM schoolsafe_sms_lines WHERE status='active') OR EXISTS (SELECT 1 FROM config WHERE school_id=0 AND title='SMS_SIMULATE' AND config_value='Y'))"
         . " ON CONFLICT(event_id,audience,recipient_staff_id,channel) DO NOTHING";
+}
+
+// Lot K2a (05/11) : libelles francais des evenements (texte WhatsApp de secours, jamais le code brut).
+function SchoolSafeNotifyEventLabelFr(string $eventType): string
+{
+    $labels = ['security.entry' => 'Arrivée à l’école', 'student.pickup' => 'Sortie de l’école',
+        'payment.receipt' => 'Reçu de paiement', 'school.announcement' => 'Message de l’école',
+        'remediation.update' => 'Rattrapage', 'attendance.closure' => 'Présences du jour',
+        'absence.detected' => 'Absence constatée', 'case.updated' => 'Suivi du dossier de l’élève',
+        'security.p1' => 'Alerte de sécurité', 'financial.control' => 'Contrôle des frais',
+        'fee.reminder' => 'Rappel de frais', 'homework.published' => 'Nouveau devoir', 'grade.published' => 'Nouvelle note'];
+    return $labels[$eventType] ?? 'Message de l’école';
+}
+
+// Lot K2a (05/11) : texte WhatsApp = le message complet de l'application (meme texte).
+// Sans « message » : titre + corps s'ils existent, sinon une phrase francaise lisible.
+// Un « message » present mais non textuel est rendu tel quel : l'appelant le refuse (WA_COPY_UNAVAILABLE).
+function SchoolSafeNotifyWaCopy(array $payload, string $eventType, string $school)
+{
+    if (array_key_exists('message', $payload) && $payload['message'] !== null) return $payload['message'];
+    $title = is_string($payload['title'] ?? null) ? trim($payload['title']) : '';
+    $body = is_string($payload['body'] ?? null) ? trim($payload['body']) : '';
+    if ($body !== '') return ($title !== '' ? $title . "\n" : '') . $body;
+    return 'SchoolSafe — ' . ($title !== '' ? $title : SchoolSafeNotifyEventLabelFr($eventType))
+        . ($school !== '' ? ' — ' . $school : '') . '. Les détails sont dans l’application SchoolSafe.';
 }

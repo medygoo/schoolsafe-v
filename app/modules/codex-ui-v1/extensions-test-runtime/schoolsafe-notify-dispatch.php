@@ -78,13 +78,18 @@ if($releaseStale){
     if(pg_num_rows($stale)>0)fwrite(STDERR,'RELEASED_STALE='.pg_num_rows($stale)."\n");
 }
 // Original deliveries only; no newly linked parent is resolved by this mirror.
+// Lot K2a (05/11) : WhatsApp independant de l'e-mail et du push. Le fil du parent suffit aussi
+// (emetteurs qui composent eux-memes leurs destinataires). Fenetre de 6 h : jamais de rattrapage
+// d'anciens evenements (types nouvellement eligibles compris).
 if($channel==='all'||$channel==='whatsapp'){
     $mirror=pg_query($conn,"INSERT INTO schoolsafe_notify_deliveries(event_id,school_id,syear,audience,recipient_staff_id,channel)"
         ." SELECT DISTINCT d.event_id,d.school_id,d.syear,d.audience,d.recipient_staff_id,'whatsapp'"
         .' FROM schoolsafe_notify_deliveries d JOIN schoolsafe_notify_events e ON e.id=d.event_id'
         .' AND e.school_id=d.school_id AND e.syear=d.syear'
-        ." WHERE d.channel IN ('email','push') AND d.status IN ('pending','accepted','sent')"
+        ." WHERE ((d.channel IN ('email','push') AND d.status IN ('pending','accepted','sent'))"
+        ." OR (d.channel='feed' AND d.audience='parent' AND d.status IN ('pending','sent')))"
         ." AND e.event_type IN ('".implode("','",SchoolSafeNotifyWaEventTypes())."')"
+        ." AND e.created_at>CURRENT_TIMESTAMP-interval '6 hours'"
         .' ON CONFLICT(event_id,audience,recipient_staff_id,channel) DO NOTHING');
     if($mirror===false){fwrite(STDERR,"WA_MIRROR_UNAVAILABLE\n");exit(1);}
 }
@@ -92,6 +97,20 @@ if($channel==='all'||$channel==='whatsapp'){
 if($channel==='all'||$channel==='sms'){
     $smsMirror=pg_query($conn,SchoolSafeNotifySmsMirrorSql());
     if($smsMirror===false)fwrite(STDERR,"SMS_MIRROR_UNAVAILABLE\n");
+}
+// Lot K2a (05/11) : conservation WhatsApp (decision du 05/11) : texte garde 90 jours, puis seuls la date
+// et l'etat de l'envoi restent. Au plus une fois par heure (marqueur fichier dans le dossier temporaire).
+// Uniquement les textes WhatsApp : les evenements de l'application ne sont pas touches.
+if($channel==='all'){
+    $retentionStamp=rtrim(sys_get_temp_dir(),'/').'/schoolsafe-wa-retention.stamp';
+    $retentionLast=@filemtime($retentionStamp);
+    if($retentionLast===false||$retentionLast<time()-3600){
+        @touch($retentionStamp);
+        $retention=pg_query($conn,"UPDATE schoolsafe_wa_outbox SET message_text='' WHERE message_text<>''"
+            ." AND created_at<CURRENT_TIMESTAMP-INTERVAL '90 days'");
+        if($retention===false)fwrite(STDERR,"WA_RETENTION_UNAVAILABLE\n");
+        elseif(pg_affected_rows($retention)>0)fwrite(STDERR,'WA_RETENTION_CLEARED='.pg_affected_rows($retention)."\n");
+    }
 }
 $transports=$GLOBALS['schoolsafe_notify_transports']??[];
 if(!is_array($transports)||array_diff(array_keys($transports),['email','push','waha','evolution','status']))throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
@@ -136,7 +155,8 @@ for($i=0;$i<$limit;$i++){
             if($to===false)throw new RuntimeException('NO_RECIPIENT_PHONE');
             if(SchoolSafeWaSimulate())throw new RuntimeException('SIMULATION_ONLY');
             if(!SchoolSafeWaConsented((int)$row['school_id'],(int)$row['recipient_staff_id'],$to))throw new RuntimeException('CONSENT_REQUIRED');
-            $copy=$payload['message']??('SchoolSafe — '.$row['event_type'].' — '.$row['school_title']);
+            // Lot K2a (05/11) : message complet de l'application ; a defaut, texte francais lisible (plus le code brut).
+            $copy=SchoolSafeNotifyWaCopy(is_array($payload)?$payload:[],(string)$row['event_type'],(string)$row['school_title']);
             // Salutation personnalisée du destinataire (03/11).
             $greet=trim((string)($staff['FIRST_NAME']??'').' '.(string)($staff['LAST_NAME']??''));
             if(is_string($copy)&&$greet!=='')$copy='Bonjour '.$greet.",

@@ -3,6 +3,8 @@
   const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
   const native=/^[1-9][0-9]{0,8}$/;
   const nativeScan=/^[1-9][0-9]{0,9}$/;
+  // Lot K2a (05/11) : messages de l'ecole lus depuis le fil du parent (source school_messages).
+  const schoolTypes=['school.announcement','homework.published','grade.published','absence.detected','attendance.closure','case.updated','security.p1','fee.reminder'];
   const kinds=['detected','approved','refused','session_scheduled','session_held','session_postponed','session_cancelled','reassessment_passed','reassessment_repeat','reassessment_closed','billing_configured','payment_recorded','payment_confirmed','payment_review_required'];
   const text=(v,n)=>typeof v==='string'&&v.length<=n;
   const date=v=>text(v,64)&&/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}(?::?\d{2})?)?$/.test(v)&&Number.isFinite(Date.parse(v));
@@ -45,6 +47,11 @@
           ||!text(p.message,500)||!p.message.trim()||!text(p.course,500)
           ||!Number.isSafeInteger(p.case_id)||p.case_id<1) throw new Error('INVALID_NOTIFICATIONS');
         payload={message:p.message,course:p.course,case_id:p.case_id};
+      } else if(row.id.startsWith('notify:')) {
+        // Lot K2a (05/11) : texte brut seulement (affiche par textContent).
+        if(!/^notify:[1-9][0-9]{0,18}$/.test(row.id)||!schoolTypes.includes(row.event_type)
+          ||(row.student_id!==''&&!nativeScan.test(row.student_id))||!text(p.title,1000)||!text(p.message,8000)) throw new Error('INVALID_NOTIFICATIONS');
+        payload={title:p.title,message:p.message};
       } else {
         if(!uuid.test(row.id)||!uuid.test(row.student_id)||!['student.arrival','student.pickup','student.fee_control'].includes(row.event_type)||!date(p.occurredAt)) throw new Error('INVALID_NOTIFICATIONS');
         payload={occurredAt:p.occurredAt};

@@ -1,0 +1,226 @@
+<?php
+// Native Notify CLI only. Claims are durable BEFORE provider work. Never
+// expire claims or retry uncertain acceptance: a crashed worker may have sent.
+if(PHP_SAPI!=='cli'){http_response_code(403);exit;}
+require_once __DIR__.'/ProgramFunctions/SchoolSafeMailTemplate.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeBrevo.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeSmtpMail.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeWebPush.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeSms.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeWhatsapp.fnc.php';
+require_once __DIR__.'/ProgramFunctions/SchoolSafeNotifyDispatch.fnc.php';
+require_once __DIR__.'/schoolsafe-notify-cli.php';
+$once=in_array('--once',$argv,true);$limit=50;$channel='all';$retryFailed=in_array('--retry-failed',$argv,true);
+$retryBounded=in_array('--retry-bounded',$argv,true);$releaseStale=in_array('--release-stale',$argv,true);
+foreach($argv as$arg){
+    if(str_starts_with($arg,'--limit='))$limit=max(1,min(500,(int)substr($arg,8)));
+    if(str_starts_with($arg,'--channel='))$channel=substr($arg,10);
+}
+if(!$once||!in_array($channel,['all','feed','email','push','whatsapp','sms'],true)){
+    fwrite(STDERR,"Usage: php schoolsafe-notify-dispatch.php --once [--limit=50] [--channel=all|feed|email|push|whatsapp] [--retry-failed] [--retry-bounded] [--release-stale]\n");exit(2);
+}
+$host=getenv('SCHOOLSAFE_DB_HOST')?:'db';$port=getenv('SCHOOLSAFE_DB_PORT')?:'5432';
+$user=getenv('POSTGRES_USER')?:'schoolsafe';$pass=getenv('POSTGRES_PASSWORD')?:'';$dbname=getenv('POSTGRES_DB')?:'schoolsafe';
+$conn=@pg_connect("host=$host port=$port dbname=$dbname user=$user password=$pass connect_timeout=5");
+if($conn===false){fwrite(STDERR,"DB_UNAVAILABLE\n");exit(1);}
+SchoolSafeNotifyCliInit($conn);
+// SMS de secours (04/11) : fonctions de base de l'application utilisees par l'envoi SMS, absentes en ligne de commande.
+// Chaque valeur est echappee ici (le texte d'un SMS peut contenir une apostrophe).
+if(!function_exists('DBGetOne')){function DBGetOne($sql){$rows=DBGet($sql);if(!$rows)return false;$row=reset($rows);return reset($row);}}
+if(!function_exists('DBInsert')){function DBInsert($table,$columns,$return='true'){
+    $fields=[];$values=[];
+    foreach((array)$columns as $column=>$value){if(!is_string($column)||!preg_match('/^[a-z_][a-z0-9_]*$/i',$column)||(string)$value==='')continue;$fields[]=$column;$values[]="'".pg_escape_string($GLOBALS['schoolsafe_notify_connection'],(string)$value)."'";}
+    if(!$fields||!preg_match('/^[a-z_][a-z0-9_]*$/i',$table))return false;
+    $rows=DBGet('INSERT INTO '.$table.'('.implode(',',$fields).') VALUES('.implode(',',$values).')'.($return==='id'?' RETURNING id AS ID':''));
+    return $return==='id'?(int)($rows[1]['ID']??0):true;}}
+// Missing migration is unavailable, never permission to run the old unclaimed path.
+$ready=pg_query($conn,"SELECT dispatch_claim_token,dispatch_claimed_at FROM schoolsafe_notify_deliveries LIMIT 0");
+if($ready===false){fwrite(STDERR,"DISPATCH_CLAIM_UNAVAILABLE\n");exit(1);}
+// Rattrapage -> parents (04/11) : les evenements du rattrapage deviennent des notifications avant l'envoi.
+$relayed=0;
+if($channel==='all'){
+    try{require_once __DIR__.'/ProgramFunctions/SchoolSafeRemediationRelay.fnc.php';
+        $relayed=SchoolSafeRemediationRelay(['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}],40);}
+    catch(Throwable $relayFailure){fwrite(STDERR,"REMEDIATION_RELAY_UNAVAILABLE\n");}
+    // Devoirs publies -> chaque parent, fiche au nom de l'enfant (04/11).
+    try{require_once __DIR__.'/ProgramFunctions/SchoolSafeHomeworkRelay.fnc.php';
+        $relayed+=SchoolSafeHomeworkRelay(['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}],
+            rtrim(trim((string)getenv('SCHOOLSAFE_ASSETS_BASE_URL'))?:'https://app.shoolsafe.tech','/'),40);}
+    catch(Throwable $homeworkFailure){fwrite(STDERR,"HOMEWORK_RELAY_UNAVAILABLE\n");}
+    // Notes enregistrees -> chaque parent, avec la correction (04/11).
+    try{require_once __DIR__.'/ProgramFunctions/SchoolSafeGradeNotice.fnc.php';
+        $relayed+=SchoolSafeGradeNoticeRelay(['get'=>function($sql){return DBGet(DBQuery($sql));},'exec'=>function($sql){DBQuery($sql);}],
+            rtrim(trim((string)getenv('SCHOOLSAFE_ASSETS_BASE_URL'))?:'https://app.shoolsafe.tech','/'));}
+    catch(Throwable $gradeFailure){fwrite(STDERR,"GRADE_RELAY_UNAVAILABLE\n");}
+}
+if($retryFailed){
+    $retry=pg_query_params($conn,"UPDATE schoolsafe_notify_deliveries SET status='pending',updated_at=CURRENT_TIMESTAMP"
+        ." WHERE status='failed' AND dispatch_claim_token IS NULL AND last_error LIKE 'PRE_SEND:%' AND ($1='all' OR channel=$1)",[$channel]);
+    if($retry===false){fwrite(STDERR,"RETRY_UNAVAILABLE\n");exit(1);}
+}
+// Service planifie : rejeu des echecs avant envoi, espace (5 min), borne (12 essais, 6 h).
+if($retryBounded){
+    $retry=pg_query_params($conn,"UPDATE schoolsafe_notify_deliveries SET status='pending',updated_at=CURRENT_TIMESTAMP"
+        ." WHERE status='failed' AND dispatch_claim_token IS NULL AND last_error LIKE 'PRE_SEND:%'"
+        ." AND last_error NOT IN ('PRE_SEND:RECIPIENT_FORBIDDEN','PRE_SEND:WA_COPY_UNAVAILABLE','PRE_SEND:SIMULATION_ONLY')"
+        ." AND attempts<12 AND updated_at<CURRENT_TIMESTAMP-interval '5 minutes' AND created_at>CURRENT_TIMESTAMP-interval '6 hours'"
+        ." AND ($1='all' OR channel=$1)",[$channel]);
+    if($retry===false){fwrite(STDERR,"RETRY_UNAVAILABLE\n");exit(1);}
+}
+// Reservation orpheline (travailleur interrompu avant tout resultat) : seulement feed et WhatsApp,
+// rejouables sans doublon (le WhatsApp passe par la cle d'idempotence de l'outbox). Jamais l'e-mail.
+if($releaseStale){
+    $stale=pg_query_params($conn,"UPDATE schoolsafe_notify_deliveries SET dispatch_claim_token=NULL,dispatch_claimed_at=NULL,updated_at=CURRENT_TIMESTAMP"
+        ." WHERE status='pending' AND dispatch_claim_token IS NOT NULL AND coalesce(last_error,'')=''"
+        ." AND dispatch_claimed_at<CURRENT_TIMESTAMP-interval '15 minutes' AND channel IN ('feed','whatsapp')"
+        ." AND ($1='all' OR channel=$1) RETURNING id",[$channel]);
+    if($stale===false){fwrite(STDERR,"RELEASE_UNAVAILABLE\n");exit(1);}
+    if(pg_num_rows($stale)>0)fwrite(STDERR,'RELEASED_STALE='.pg_num_rows($stale)."\n");
+}
+// Original deliveries only; no newly linked parent is resolved by this mirror.
+// Lot K2a (05/11) : WhatsApp independant de l'e-mail et du push. Le fil du parent suffit aussi
+// (emetteurs qui composent eux-memes leurs destinataires). Fenetre de 6 h : jamais de rattrapage
+// d'anciens evenements (types nouvellement eligibles compris).
+if($channel==='all'||$channel==='whatsapp'){
+    $mirror=pg_query($conn,"INSERT INTO schoolsafe_notify_deliveries(event_id,school_id,syear,audience,recipient_staff_id,channel)"
+        ." SELECT DISTINCT d.event_id,d.school_id,d.syear,d.audience,d.recipient_staff_id,'whatsapp'"
+        .' FROM schoolsafe_notify_deliveries d JOIN schoolsafe_notify_events e ON e.id=d.event_id'
+        .' AND e.school_id=d.school_id AND e.syear=d.syear'
+        ." WHERE ((d.channel IN ('email','push') AND d.status IN ('pending','accepted','sent'))"
+        ." OR (d.channel='feed' AND d.audience='parent' AND d.status IN ('pending','sent')))"
+        ." AND e.event_type IN ('".implode("','",SchoolSafeNotifyWaEventTypes())."')"
+        ." AND e.created_at>CURRENT_TIMESTAMP-interval '6 hours'"
+        .' ON CONFLICT(event_id,audience,recipient_staff_id,channel) DO NOTHING');
+    if($mirror===false){fwrite(STDERR,"WA_MIRROR_UNAVAILABLE\n");exit(1);}
+}
+// SMS de secours (04/11) : alertes importantes, parents sans e-mail que WhatsApp n'a pas joints, ligne active.
+if($channel==='all'||$channel==='sms'){
+    $smsMirror=pg_query($conn,SchoolSafeNotifySmsMirrorSql());
+    if($smsMirror===false)fwrite(STDERR,"SMS_MIRROR_UNAVAILABLE\n");
+}
+// Lot K2a (05/11) : conservation WhatsApp (decision du 05/11) : texte garde 90 jours, puis seuls la date
+// et l'etat de l'envoi restent. Au plus une fois par heure (marqueur fichier dans le dossier temporaire).
+// Uniquement les textes WhatsApp : les evenements de l'application ne sont pas touches.
+if($channel==='all'){
+    $retentionStamp=rtrim(sys_get_temp_dir(),'/').'/schoolsafe-wa-retention.stamp';
+    $retentionLast=@filemtime($retentionStamp);
+    if($retentionLast===false||$retentionLast<time()-3600){
+        @touch($retentionStamp);
+        $retention=pg_query($conn,"UPDATE schoolsafe_wa_outbox SET message_text='' WHERE message_text<>''"
+            ." AND created_at<CURRENT_TIMESTAMP-INTERVAL '90 days'");
+        if($retention===false)fwrite(STDERR,"WA_RETENTION_UNAVAILABLE\n");
+        elseif(pg_affected_rows($retention)>0)fwrite(STDERR,'WA_RETENTION_CLEARED='.pg_affected_rows($retention)."\n");
+    }
+}
+$transports=$GLOBALS['schoolsafe_notify_transports']??[];
+if(!is_array($transports)||array_diff(array_keys($transports),['email','push','waha','evolution','status']))throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
+foreach($transports as$transport)if(!is_callable($transport))throw new RuntimeException('INVALID_DISPATCH_CONTEXT');
+$forceFail=getenv('SCHOOLSAFE_NOTIFY_FORCE_FAIL')==='1';$sent=0;$failed=0;$held=0;
+// Anti-blocage WhatsApp (03/11) : au plus 15 messages par passe (30 s), 1,5 a 3,5 s entre deux envois.
+$waRun=0;$waMax=max(1,min(60,(int)(getenv('SCHOOLSAFE_WA_PER_RUN')?:15)));
+for($i=0;$i<$limit;$i++){
+    try{$row=SchoolSafeNotifyDispatchClaim($conn,$channel);}catch(Throwable $error){fwrite(STDERR,"DISPATCH_CLAIM_UNAVAILABLE\n");exit(1);}
+    if($row===null)break;
+    // Server-side injection only for the guarded disposable CLI harness.
+    // No HTTP/env input selects hooks; ordinary workers have none.
+    $afterClaim=$GLOBALS['schoolsafe_notify_after_claim']??null;
+    if(is_callable($afterClaim))$afterClaim($row);
+    $attempted=false;$status='failed';$provider='';$error='';$uncertain=false;
+    try{
+        $staff=SchoolSafeNotifyDispatchRecipient($conn,$row);
+        if($forceFail)throw new RuntimeException('FORCED_FAILURE');
+        $payload=json_decode($row['payload'],true,32,JSON_THROW_ON_ERROR);
+        if($row['channel']==='feed'){
+            $status='sent';
+        }elseif($row['channel']==='email'){
+            $email=trim((string)$staff['EMAIL']);
+            if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('NO_RECIPIENT_EMAIL');
+            // API Brevo si sa clé est installée, sinon le SMTP Brevo déjà configuré pour l'école.
+            $config=SchoolSafeBrevoConfig();$smtp=$config===null?SchoolSafeSmtpConfig($conn,(int)$row['school_id']):null;
+            if($config===null&&$smtp===null)throw new RuntimeException('NO_EMAIL_PROVIDER');
+            $assets=rtrim(trim((string)getenv('SCHOOLSAFE_ASSETS_BASE_URL'))?:'https://app.shoolsafe.tech','/');
+            $mail=SchoolSafeMailBuild(['event_type'=>$row['event_type'],'payload'=>$payload],
+                ['school_name'=>$row['school_title'],'locale'=>'fr','brand_logo_url'=>$assets.'/assets/themes/SchoolSafe/logo.png','jaspe_url'=>$assets.'/assets/jaspe2d/pack1/wave.webp']);
+            $current=SchoolSafeNotifyDispatchRecipient($conn,$row);
+            if(trim((string)$current['EMAIL'])!==$email)throw new RuntimeException('RECIPIENT_CHANGED');
+            if($smtp!==null){$mailer=SchoolSafeSmtpOpen($smtp);$attempted=true;$out=SchoolSafeSmtpSend($mailer,$email,$mail,$smtp);}
+            else{$attempted=true;$out=SchoolSafeBrevoSend($email,$mail,$config,$transports['email']??null);}
+            if(!is_string($out['provider_msg_id']??null)||$out['provider_msg_id']==='')throw new RuntimeException('ACCEPTANCE_UNKNOWN');
+            $provider=$out['provider_msg_id'];$status='accepted';
+        }elseif($row['channel']==='whatsapp'){
+            if($waRun>=$waMax){SchoolSafeNotifyDispatchFinish($conn,$row,'pending','','',false);break;}
+            if($waRun>0&&!$transports)usleep(random_int(1500000,3500000));
+            $waRun++;
+            $to=SchoolSafeWaNormalize($staff['CUSTOM_200000001']??'');
+            if($to===false)throw new RuntimeException('NO_RECIPIENT_PHONE');
+            if(SchoolSafeWaSimulate())throw new RuntimeException('SIMULATION_ONLY');
+            if(!SchoolSafeWaConsented((int)$row['school_id'],(int)$row['recipient_staff_id'],$to))throw new RuntimeException('CONSENT_REQUIRED');
+            // Lot K2a (05/11) : message complet de l'application ; a defaut, texte francais lisible (plus le code brut).
+            $copy=SchoolSafeNotifyWaCopy(is_array($payload)?$payload:[],(string)$row['event_type'],(string)$row['school_title']);
+            // Salutation personnalisée du destinataire (03/11).
+            $greet=trim((string)($staff['FIRST_NAME']??'').' '.(string)($staff['LAST_NAME']??''));
+            if(is_string($copy)&&$greet!=='')$copy='Bonjour '.$greet.",
+".$copy;
+            if(!is_string($copy)||mb_strlen(trim($copy))>2000||!SchoolSafeWaSanitize($copy))throw new RuntimeException('WA_COPY_UNAVAILABLE');
+            $authorize=function()use($conn,$row,$to){
+                $live=SchoolSafeNotifyDispatchRecipient($conn,$row);
+                return SchoolSafeWaNormalize($live['CUSTOM_200000001']??'')===$to;
+            };
+            $attempted=true;
+            $out=SchoolSafeWaSend($to,$copy,['school_id'=>(int)$row['school_id'],'staff_id'=>(int)$row['recipient_staff_id'],
+                'purpose'=>'notify','actor'=>'native-notify-dispatch','dedup_key'=>'notify:delivery:'.$row['id'],'authorize'=>$authorize,'retry_blocked'=>true,
+                'http_waha'=>$transports['waha']??null,'http_evo'=>$transports['evolution']??null,'http_status'=>$transports['status']??null]);
+            if(($out['status']??'')==='blocked'){$attempted=false;
+                throw new RuntimeException(in_array($out['error']??'',['CONSENT_REQUIRED','NO_WA_SESSION'],true)?$out['error']:'WA_BLOCKED');}
+            if(($out['status']??'')==='failed'){$attempted=false;throw new RuntimeException('WA_FAILED');}
+            if(($out['status']??'')==='accepted'){
+                $receipt=pg_query_params($conn,'SELECT engine,provider_msg_id FROM schoolsafe_wa_outbox WHERE id=$1',[(int)($out['outbox_id']??0)]);
+                $proof=$receipt===false?false:pg_fetch_assoc($receipt);
+                if(!$proof||$proof['engine']==='simulated'||trim($proof['provider_msg_id'])==='')throw new RuntimeException('ACCEPTANCE_UNKNOWN');
+                $provider=$proof['provider_msg_id'];$status='accepted';
+            }else{throw new RuntimeException('ACCEPTANCE_UNKNOWN');}
+        }elseif($row['channel']==='sms'){
+            $to=SchoolSafeSmsNormalize($staff['CUSTOM_200000001']??'');
+            if($to===false)throw new RuntimeException('NO_RECIPIENT_PHONE');
+            $text=SchoolSafeNotifySmsText($payload,(string)$row['school_title']);
+            $attempted=true;
+            $out=SchoolSafeSmsSend($to,$text,['school_id'=>(int)$row['school_id'],'actor'=>'native-notify-dispatch','dedup_key'=>'notify:delivery:'.$row['id'],'purpose'=>'alert']);
+            if(($out['status']??'')==='accepted'){$provider='sms:'.(int)($out['outbox_id']??0);$status='accepted';}
+            elseif(($out['status']??'')==='blocked'){$attempted=false;throw new RuntimeException(($out['error']??'')==='NO_SMS_LINE'?'NO_SMS_LINE':'SMS_BLOCKED');}
+            elseif(($out['status']??'')==='failed'){$attempted=false;throw new RuntimeException('SMS_FAILED');}
+            else throw new RuntimeException('ACCEPTANCE_UNKNOWN');
+        }elseif($row['channel']==='push'){
+            $sub=pg_query_params($conn,'SELECT endpoint FROM schoolsafe_notification_push_subscriptions WHERE staff_id=$1 ORDER BY created_at DESC LIMIT 1',[(int)$row['recipient_staff_id']]);
+            if($sub===false)throw new RuntimeException('PUSH_UNAVAILABLE');
+            $subscription=pg_fetch_assoc($sub);$endpoint=$subscription['endpoint']??'';
+            if($endpoint===''||!preg_match('#^https://#i',$endpoint))throw new RuntimeException('PUSH_UNAVAILABLE');
+            $config=SchoolSafeWebPushConfig();if($config===null)throw new RuntimeException('NO_PUSH_PROVIDER');
+            $parts=parse_url($endpoint);SchoolSafeWebPushJwt('https://'.($parts['host']??''),$config);
+            SchoolSafeNotifyDispatchRecipient($conn,$row);
+            $attempted=true;SchoolSafeWebPushSend(['endpoint'=>$endpoint],$config,$transports['push']??null);$status='accepted';
+        }
+    }catch(Throwable $failure){
+        // Never store raw provider/DB errors or presume an ambiguous request
+        // was rejected. A durable unresolved claim requires reconciliation.
+        if($attempted&&$row['channel']==='push'&&$failure->getMessage()==='SUBSCRIPTION_EXPIRED'){
+            pg_query_params($conn,'DELETE FROM schoolsafe_notification_push_subscriptions WHERE staff_id=$1 AND endpoint=$2',[(int)$row['recipient_staff_id'],$endpoint]);
+            $attempted=false;
+        }
+        if($attempted){$status='pending';$uncertain=true;$error='ACCEPTANCE_UNKNOWN';}
+        else{
+            $known=['FORCED_FAILURE','RECIPIENT_FORBIDDEN','RECIPIENT_UNAVAILABLE','NO_RECIPIENT_EMAIL','NO_EMAIL_PROVIDER',
+                'RECIPIENT_CHANGED','SMTP_UNAVAILABLE','NO_RECIPIENT_PHONE','SIMULATION_ONLY','CONSENT_REQUIRED','NO_WA_SESSION','WA_COPY_UNAVAILABLE','WA_BLOCKED','WA_FAILED','PUSH_UNAVAILABLE','NO_PUSH_PROVIDER','SUBSCRIPTION_EXPIRED','NO_SMS_LINE','SMS_BLOCKED','SMS_FAILED'];
+            $code=in_array($failure->getMessage(),$known,true)?$failure->getMessage():'CONTEXT_UNAVAILABLE';
+            $error='PRE_SEND:'.$code;$status='failed';
+        }
+    }
+    try{SchoolSafeNotifyDispatchFinish($conn,$row,$status,$error,$provider,$uncertain);}
+    catch(Throwable $failure){fwrite(STDERR,"DISPATCH_RESULT_UNAVAILABLE\n");exit(1);}
+    if($uncertain)$held++;elseif(in_array($status,['sent','accepted'],true))$sent++;else$failed++;
+}
+// Accuses WhatsApp : 1 envoye, 2 remis au telephone, 3 lu (messages acceptes par WAHA depuis 48 h).
+$acks=0;
+if(($channel==='all'||$channel==='whatsapp')&&!$transports){
+    try{$acks=SchoolSafeWaAckPoll($conn,20);}catch(Throwable $ackFailure){fwrite(STDERR,"WA_ACK_UNAVAILABLE\n");}
+}
+echo "DISPATCH sent=$sent failed=$failed held=$held acks=$acks relayed=$relayed channel=$channel\n";

@@ -16,16 +16,22 @@ if (!$allowed) { http_response_code(403); exit('Connexion avec un compte parent 
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Notifications | SchoolSafe</title>
 <link rel="stylesheet" href="schoolsafe-card-bridge/parent-notifications.css">
-<script defer src="schoolsafe-card-bridge/parent-notification-data.js?v=native-scan-notices-1"></script>
+<script defer src="schoolsafe-card-bridge/parent-notification-data.js?v=k2a-school-messages-1"></script>
 <script defer src="schoolsafe-card-bridge/notification-push-subscribe.js"></script>
 <script defer src="/pwa-outbox.js"></script>
-<script defer src="schoolsafe-card-bridge/parent-notifications-view.js?v=native-scan-notices-1"></script></head>
+<script defer src="schoolsafe-card-bridge/parent-notifications-view.js?v=k2a-school-messages-1"></script></head>
 <body><header><strong>SchoolSafe</strong><a href="Modules.php?modname=misc/Portal.php">Tableau de bord</a></header>
 <main><h1>Notifications</h1><button id="enable-background-notifications" type="button">Activer les notifications en arriere-plan</button><nav aria-label="Categories de notifications">
 <button type="button" data-filter="all" aria-pressed="true">Toutes</button>
 <button type="button" data-filter="student.arrival" aria-pressed="false">Arrivées</button>
 <button type="button" data-filter="student.pickup" aria-pressed="false">Récupérations</button>
-<button type="button" data-filter="student.fee_control" aria-pressed="false">Contrôle des frais</button>
+<button type="button" data-filter="student.fee_control" aria-pressed="false">Frais et contrôles</button>
+<?php /* Lot K2a (05/11) : messages de l'école lus depuis le fil du parent. */ ?>
+<button type="button" data-filter="school.notes" aria-pressed="false">Notes</button>
+<button type="button" data-filter="school.homework" aria-pressed="false">Devoirs</button>
+<button type="button" data-filter="school.absences" aria-pressed="false">Absences</button>
+<button type="button" data-filter="school.announcements" aria-pressed="false">Annonces et courriers</button>
+<button type="button" data-filter="school.alerts" aria-pressed="false">Alertes</button>
 <button type="button" data-filter="remediation" aria-pressed="false">Rattrapage</button>
 <button type="button" data-filter="palmares" aria-pressed="false">Top 10</button>
 </nav><p id="state" role="status">Chargement des notifications...</p>

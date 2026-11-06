@@ -5,11 +5,16 @@ require_once __DIR__.'/SchoolSafeAccountState.fnc.php';
 require_once __DIR__.'/SchoolSafeSchoolState.fnc.php';
 
 // Evenements copies sur WhatsApp : une seule liste (destinataires, distributeur, hub).
-// Jamais de controle financier ni de recu de paiement sur WhatsApp.
+// Lot K2a (05/11) : decision du proprietaire du 05/11/2026 (DECISIONS.md, « deux canaux complets ») :
+// tout message de l'ecole au parent part aussi sur WhatsApp, frais compris (rappel de frais et
+// controle financier), courriers et convocations (school.announcement, source letter) inclus.
+// Toujours sous accord WhatsApp enregistre (SchoolSafeWaConsented) et filtre des secrets
+// (SchoolSafeWaSanitize). Le recu de paiement (payment.receipt) reste hors WhatsApp.
 function SchoolSafeNotifyWaEventTypes(): array
 {
     return ['security.entry','student.pickup','school.announcement','remediation.update',
-        'attendance.closure','absence.detected','case.updated','security.p1','fee.reminder','homework.published','grade.published'];
+        'attendance.closure','absence.detected','case.updated','security.p1','fee.reminder','homework.published','grade.published',
+        'financial.control'];
 }
 
 function SchoolSafeNotifyAccountReadable($username,int $school,array $db): bool
@@ -48,7 +53,8 @@ function SchoolSafeNotifyAccountReadable($username,int $school,array $db): bool
 function SchoolSafeNotifyParentRows(int $school,int $year,int $student,array $db,?int $parent=null): array
 {
     if(min($school,$year)<1||$student<0||($parent!==null&&$parent<1))throw new RuntimeException('INVALID_CONTEXT');
-    $rows=$db['get']('SELECT DISTINCT st.STAFF_ID,st.USERNAME FROM students_join_users su JOIN staff st ON st.STAFF_ID=su.STAFF_ID'
+    // Lot K2a (05/11) : EMAIL lu en plus pour ne creer un envoi e-mail que si le parent a une adresse.
+    $rows=$db['get']('SELECT DISTINCT st.STAFF_ID,st.USERNAME,st.EMAIL FROM students_join_users su JOIN staff st ON st.STAFF_ID=su.STAFF_ID'
         .' JOIN student_enrollment se ON se.STUDENT_ID=su.STUDENT_ID AND se.SCHOOL_ID='.$school.' AND se.SYEAR='.$year
         .' JOIN schools sc ON sc.ID=se.SCHOOL_ID AND sc.SYEAR=se.SYEAR'
         ." WHERE st.PROFILE='parent' AND st.SYEAR=".$year

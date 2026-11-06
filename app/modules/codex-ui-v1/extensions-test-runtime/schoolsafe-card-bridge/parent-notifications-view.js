@@ -6,6 +6,12 @@
   labels['financial.control']='Contrôle financier — état observé';
   const balances={paid:'À jour',partial:'Partiellement payé',due:'Impayé',exempt:'Exonéré',no_data:'Données absentes'};
   labels['payment.receipt']='Recu de paiement';
+  // Lot K2a (05/11) : messages de l'ecole (fil du parent) et leurs categories de filtre.
+  Object.assign(labels,{'school.announcement':"Message de l'école",'homework.published':'Nouveau devoir','grade.published':'Nouvelle note',
+    'absence.detected':'Absence constatée','attendance.closure':'Présences du jour','case.updated':"Suivi du dossier de l'élève",
+    'security.p1':'Alerte de sécurité','fee.reminder':'Rappel de frais'});
+  const groups={'school.notes':['grade.published'],'school.homework':['homework.published'],'school.absences':['absence.detected','attendance.closure'],
+    'school.announcements':['school.announcement','case.updated'],'school.alerts':['security.p1'],'student.fee_control':['fee.reminder']};
   let items=[],filter='all',busy=false,loaded=false;
   const syncState=document.getElementById('pwa-sync-state');
   async function updateReadButtons(){
@@ -19,7 +25,7 @@
   }
   function render() {
     list.replaceChildren();
-    const visible=items.filter(item=>filter==='all'||item.event_type===filter||(filter==='remediation'&&item.event_type.startsWith('remediation.'))||(filter==='palmares'&&item.event_type.startsWith('student.top10.'))||(filter==='student.arrival'&&item.event_type==='security.entry')||(filter==='student.fee_control'&&item.event_type==='financial.control'));
+    const visible=items.filter(item=>filter==='all'||item.event_type===filter||(filter==='remediation'&&item.event_type.startsWith('remediation.'))||(filter==='palmares'&&item.event_type.startsWith('student.top10.'))||(filter==='student.arrival'&&item.event_type==='security.entry')||(filter==='student.fee_control'&&item.event_type==='financial.control')||(groups[filter]||[]).includes(item.event_type));
     for(const item of visible) {
       const remediation=item.event_type.startsWith('remediation.');
       if(!labels[item.event_type]&&!remediation&&item.event_type!=='payment.receipt') continue;
@@ -38,6 +44,11 @@
       }
       if(item.event_type==='financial.control'||item.event_type==='security.entry'||(item.event_type==='student.pickup'&&item.payload?.record_id)) {
         const details=document.createElement('p');details.textContent=item.payload.message;details.style.whiteSpace='pre-wrap';row.append(details);
+      }
+      if(item.id.startsWith('notify:')) {
+        // Lot K2a (05/11) : titre puis texte complet, toujours par textContent (aucun HTML interprete).
+        if(item.payload?.title) {const t=document.createElement('p');t.textContent=item.payload.title;t.style.fontWeight='600';row.append(t);}
+        if(item.payload?.message) {const m=document.createElement('p');m.textContent=item.payload.message;m.style.whiteSpace='pre-wrap';row.append(m);}
       }
       if(remediation) {const p=document.createElement('p');p.textContent=item.payload?.course||'';row.append(p);}
       if(item.event_type.startsWith('student.top10.')) {const p=document.createElement('p');p.textContent=item.payload.message+' '+item.payload.period;row.append(p);}
